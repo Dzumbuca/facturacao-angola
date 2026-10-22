@@ -2,8 +2,20 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://facturacao-angola.vercel.app'),
   title: 'Machine Facturas — Facturação online para empresas em Angola',
   description: 'Crie e emita facturas com assinatura digital (padrão AGT), exportação SAFT-AO, relatórios e gestão de clientes. Grátis para começar, do telemóvel ou computador.',
+  keywords: ['facturação Angola', 'software de facturas Angola', 'facturas online', 'SAFT Angola', 'AGT', 'Multicaixa Express', 'facturação electronica', 'emissão de facturas Luanda'],
+  openGraph: {
+    title: 'Machine Facturas — Facturação online para empresas em Angola',
+    description: 'Facturas com assinatura digital, SAFT-AO e relatórios. Grátis para começar.',
+    url: 'https://facturacao-angola.vercel.app',
+    siteName: 'Machine Facturas',
+    locale: 'pt_AO',
+    type: 'website',
+    images: [{ url: '/logo.png', width: 800, height: 600 }],
+  },
+  twitter: { card: 'summary', title: 'Machine Facturas', description: 'Facturação online para empresas angolanas — grátis para começar.' },
 };
 
 const features: { title: string; body: string }[] = [
@@ -52,7 +64,22 @@ const plans: {
 ];
 
 export default function LandingPage() {
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'Machine Facturas',
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Web',
+    description: 'Facturação online para empresas em Angola com assinatura digital, SAFT-AO e relatórios.',
+    url: 'https://facturacao-angola.vercel.app',
+    offers: [
+      { '@type': 'Offer', name: 'Grátis', price: '0', priceCurrency: 'AOA' },
+      { '@type': 'Offer', name: 'Básico', price: '9900', priceCurrency: 'AOA' },
+      { '@type': 'Offer', name: 'Pro', price: '19900', priceCurrency: 'AOA' },
+    ],
+  };
   return <main className="min-h-screen bg-[#f3f6fa] text-[#1c2d3f]">
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
     <header className="sticky top-0 z-40 border-b border-[#e2e9f1] bg-white/95 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 md:px-6">
         <Link href="/inicio" className="flex items-center gap-2">
