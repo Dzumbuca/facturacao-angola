@@ -56,6 +56,12 @@ const nextAuth = NextAuth({
   callbacks: {
     authorized({ auth, request }: any) {
       const pathname = request.nextUrl.pathname;
+      // Já autenticado nas páginas de entrada: enviar para a aplicação em vez
+      // de mostrar o formulário (evita re-autenticar com outra conta Google
+      // e cair no erro "account already associated with another user").
+      if ((pathname === '/login' || pathname === '/register') && auth?.user?.id) {
+        return NextResponse.redirect(new URL('/', request.url));
+      }
       if (isAdminPagePath(pathname)) return Boolean(auth?.user?.id);
       if (!isProtectedPagePath(pathname)) return true;
       // Sessão sem empresa (ex.: conta criada com Google): enviar para o
