@@ -58,6 +58,14 @@ export function CompanyProfileForm({ initialProfile, initialBankAccounts = [] }:
   const [notice, setNotice] = useState('');
   const isDirty = JSON.stringify(profile) !== JSON.stringify(initialProfile) || Boolean(logoFile) || removeLogo;
   const fileInput = useRef<HTMLInputElement>(null);
+  const noticeRef = useRef<HTMLParagraphElement>(null);
+
+  // Depois de guardar (ou errar), traz a mensagem para o ecrã — o formulário é
+  // comprido e quem carrega Guardar no fundo não vê o alerta no topo.
+  function announce(kind: 'notice' | 'error', message: string) {
+    if (kind === 'notice') setNotice(message); else setError(message);
+    requestAnimationFrame(() => noticeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+  }
 
   useEffect(() => () => {
     if (logoPreview?.startsWith('blob:')) URL.revokeObjectURL(logoPreview);
@@ -82,7 +90,7 @@ export function CompanyProfileForm({ initialProfile, initialBankAccounts = [] }:
       const data = await response.json().catch(() => null);
       if (!response.ok || !data?.profile) {
         const validationErrors = Array.isArray(data?.errors) ? data.errors.join(' ') : '';
-        setError(validationErrors || data?.error || 'Não foi possível guardar os dados da empresa.');
+        announce('error', validationErrors || data?.error || 'Não foi possível guardar os dados da empresa.');
         return;
       }
 
@@ -91,9 +99,9 @@ export function CompanyProfileForm({ initialProfile, initialBankAccounts = [] }:
       setRemoveLogo(false);
       setLogoPreview(data.profile.logoDataUrl);
       if (fileInput.current) fileInput.current.value = '';
-      setNotice('Dados da empresa guardados com sucesso.');
+      announce('notice', 'Dados da empresa guardados com sucesso.');
     } catch {
-      setError('Não foi possível comunicar com o servidor. Verifique a ligação e tente novamente.');
+      announce('error', 'Não foi possível comunicar com o servidor. Verifique a ligação e tente novamente.');
     } finally {
       setIsSaving(false);
     }
@@ -106,8 +114,8 @@ export function CompanyProfileForm({ initialProfile, initialBankAccounts = [] }:
       <p className="mt-2 text-sm text-[#708195]">Actualize os dados que podem aparecer nas facturas emitidas.</p>
     </div>
 
-    {notice && <p role="status" className="rounded-lg border border-[#cbe8dc] bg-[#eff9f4] px-4 py-3 text-sm font-medium text-[#267256]">{notice}</p>}
-    {error && <p role="alert" className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-[#a83939]">{error}</p>}
+    {notice && <p ref={noticeRef} role="status" className="rounded-lg border border-[#cbe8dc] bg-[#eff9f4] px-4 py-3 text-sm font-medium text-[#267256]">{notice}</p>}
+    {error && <p ref={noticeRef} role="alert" className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-[#a83939]">{error}</p>}
 
     <form className="space-y-5" onSubmit={handleSubmit}>
       <section className="company-profile-section overflow-hidden rounded-2xl border border-[#e2e9f1] bg-white shadow-[0_3px_14px_rgba(25,52,80,.035)]">
