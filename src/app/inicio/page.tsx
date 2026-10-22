@@ -119,6 +119,12 @@ export default function LandingPage() {
       </div>
     </section>
 
+    <section aria-label="Publicidade" className="mx-auto max-w-6xl px-4 pb-12 md:px-6">
+      <a href="https://beta.publishers.adsterra.com/referral/L8Y8skqCEG" rel="nofollow" target="_blank" className="block w-fit mx-auto">
+        <img alt="banner" src="https://landings-cdn.adsterratech.com/referralBanners/png/300%20x%20250%20px.png" loading="lazy" className="mx-auto rounded-xl shadow-[0_3px_14px_rgba(25,52,80,.08)]" />
+      </a>
+    </section>
+
     <footer className="border-t border-[#e2e9f1] bg-white px-4 py-8 md:px-6">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 sm:flex-row">
         <div className="flex items-center gap-2">
