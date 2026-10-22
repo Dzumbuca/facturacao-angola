@@ -129,6 +129,7 @@ export default function LandingPage() {
           <Link href="/privacidade" className="hover:text-[#2878d0]">Privacidade</Link>
           <Link href="/termos" className="hover:text-[#2878d0]">Termos</Link>
           <a href="mailto:machinefacturas@gmail.com" className="hover:text-[#2878d0]">Contacto</a>
+          <a href="https://beta.publishers.adsterra.com/referral/L8Y8skqCEG" rel="nofollow" className="text-xs text-[#8ba0b5] hover:text-[#2878d0]">Programa de afiliados</a>
         </div>
       </div>
     </footer>
