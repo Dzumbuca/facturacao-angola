@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { AdHtml } from '@/components/ad-html';
 
 type NavLink = { href: string; label: string; icon: string };
 const groups: { title: string; links: NavLink[] }[] = [
@@ -96,7 +97,7 @@ export function AppShell({ children, platformAdmin = false, plan = 'FREE', adHtm
         </div>
         {plan !== 'PRO' && <div className="mt-3 shrink-0 border-t border-white/10 px-3 pt-3">
           <p className="text-[10px] uppercase tracking-[.12em] text-slate-500">Anúncio</p>
-          {adHtml && <div className="mt-2 overflow-hidden rounded-lg bg-white p-2 text-[#1c2d3f]" dangerouslySetInnerHTML={{ __html: adHtml }} />}
+          {adHtml && <div className="mt-2 overflow-hidden rounded-lg bg-white p-2 text-[#1c2d3f]"><AdHtml html={adHtml} /></div>}
           <div className="mt-2 overflow-hidden rounded-lg bg-gradient-to-br from-[#2878d0] to-[#102b46] p-3 text-white">
             <p className="text-xs font-bold">Plano Pro</p>
             <p className="mt-1 text-[11px] leading-4 text-blue-100">Sem anúncios, facturas ilimitadas, SAFT-AO e equipa. Desde 9.900 Kz/mês.</p>
