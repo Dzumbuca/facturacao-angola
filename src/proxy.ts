@@ -41,9 +41,9 @@ export default async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // Sessão sem empresa (ex.: conta Google nova): onboarding.
-  if (!tenantId) return NextResponse.redirect(new URL('/onboarding', request.url));
-
+  // IMPORTANTE: o proxy NÃO valida o tenant — o token pode estar desactualizado
+  // (emitido antes da empresa existir) e isso criava loops. Os layouts leem a
+  // base de dados fresca e redireccionam para o onboarding quando necessário.
   return NextResponse.next();
 }
 
