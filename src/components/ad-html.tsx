@@ -48,5 +48,5 @@ export function AdHtml({ html }: { html: string }) {
     }
   }, [html]);
 
-  return <div ref={containerRef} />;
+  return <div ref={containerRef} className="ad-slot" />;
 }

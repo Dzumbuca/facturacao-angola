@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+/* Anúncios externos: qualquer banner (Adsterra, etc.) encaixa no espaço disponível */
+.ad-slot iframe,
+.ad-slot img,
+.ad-slot ins {
+  max-width: 100% !important;
+  height: auto !important;
+}
+
 :root {
   --background: #f5f6f8;
   --foreground: #18273c;
