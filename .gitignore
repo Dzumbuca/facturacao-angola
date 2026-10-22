@@ -1,0 +1,113 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/.next-admin-verify/
+/.next-email-build/
+/.next-email-final/
+/.next-email-verification/
+/.next-email-ship/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# Machine Facturas: secrets and local data
+/backups/
+/.env
+/.env.*
+!/.env.example
+
+# Local database files and exports
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+*.bak
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Local deployment and tooling state
+/.vercel/
+/.turbo/
+
+# Next.js temporary recovery/debug artifacts
+/.next-recovery-debug/
+
+# Local databases and backups
+/backups/
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+*.bak
+
+# Machine Facturas - ambiente e credenciais
+.env
+.env.*
+!.env.example
+
+# Backups e dados locais
+/backups/
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+*.bak
+*.jsonl
+
+# Backups do esquema Prisma
+*.prisma.backup
+
+# Ficheiros tempor�rios e artefactos gerados
+/output/node_modules/
+/output/dist/
+/output/build/
+/output/*.log
+
+# Chaves privadas
+*.pem
+*.key
+
+# Depend�ncias dentro de output
+/output/node_modules/
+
+# Aplica��o externa/artefactos n�o pertencentes ao Machine Facturas
+/output/
+.vercel
+.env*

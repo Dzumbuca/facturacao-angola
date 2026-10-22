@@ -1,0 +1,495 @@
+generator client {
+  provider = "prisma-client-js"
+  engineType = "binary"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PlatformRole {
+  NONE
+  ADMIN
+  SUPERADMIN
+  COMPANY_MANAGER
+  USER_MANAGER
+  DOCUMENT_MANAGER
+  AUDITOR
+  SUPPORT
+}
+
+enum TenantRole {
+  USER
+  COMPANY_ADMIN
+  BILLING
+  VIEWER
+}
+
+enum AccountStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum EmailActionPurpose {
+  VERIFY_EMAIL
+  PASSWORD_RESET
+}
+
+enum EmailDeliveryStatus {
+  ACCEPTED
+  FAILED
+}
+
+enum TeamInviteStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+}
+
+enum EmailCampaignStatus {
+  DRAFT
+  SENDING
+  PAUSED
+  COMPLETED
+}
+
+enum EmailCampaignRecipientStatus {
+  QUEUED
+  SENDING
+  ACCEPTED
+  FAILED
+  SUPPRESSED
+}
+
+// Core Models
+model Tenant {
+  id               String        @id @default(uuid())
+  name             String
+  nif              String?
+  address          String?
+  phone            String?
+  email            String?
+  legalName        String?
+  municipality     String?
+  province         String?
+  country          String?
+  website          String?
+  bankName         String?
+  bankAccountName  String?
+  iban             String?
+  currentLogoId    String?       @unique
+  brandColor       String?
+  invoiceFooter    String?       @db.Text
+  defaultMessage   String?       @db.Text
+  defaultCurrency  String        @default("AOA")
+  documentLanguage String        @default("pt-AO")
+  defaultPaymentDays Int?
+  defaultPaymentMethod String?
+  defaultObservations String?    @db.Text
+  customers        Customer[]
+  products         Product[]
+  invoices         Invoice[]
+  invoiceDrafts    InvoiceDraft[]
+  users            User[]
+  emailDeliveries  EmailDelivery[]
+  logos            CompanyLogo[] @relation("TenantLogoVersions")
+  currentLogo      CompanyLogo?  @relation("CurrentTenantLogo", fields: [currentLogoId], references: [id], onDelete: SetNull)
+  bankAccounts     CompanyBankAccount[]
+  payments         Payment[]
+  paymentEvents    PaymentEvent[]
+  createdAt        DateTime      @default(now())
+  status           AccountStatus @default(ACTIVE)
+  suspendedAt      DateTime?
+  suspensionReason String?       @db.Text
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  tenantId  String
+  name      String
+  nif       String?
+  address   String?
+  email     String?
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  invoices  Invoice[]
+  createdAt DateTime @default(now())
+}
+
+model Product {
+  id          String        @id @default(uuid())
+  tenantId    String
+  name        String
+  description String?
+  price       Decimal       @db.Decimal(12, 2)
+  taxRate     Decimal       @default(14.00) @db.Decimal(5, 2)
+  codigo      String?
+  stock       Int           @default(0)
+  categoria   String        @default("GERAL")
+  tenant      Tenant        @relation(fields: [tenantId], references: [id])
+  items       InvoiceItem[]
+  createdAt   DateTime      @default(now())
+}
+
+model Invoice {
+  id                 String        @id @default(uuid())
+  tenantId           String
+  customerId         String
+  number             String
+  type               String        @default("FT")
+  status             String        @default("ISSUED")
+  total              Decimal       @db.Decimal(12, 2)
+  subTotal           Decimal       @db.Decimal(12, 2)
+  taxTotal           Decimal       @db.Decimal(12, 2)
+  discountAmount     Decimal       @default(0) @db.Decimal(12, 2)
+  discountType       String        @default("amount")
+  discountValue      Decimal       @default(0) @db.Decimal(12, 2)
+  applyVat           Boolean       @default(true)
+  observations       String?       @db.Text
+  includeCompanyProfile Boolean    @default(false)
+  companyProfileSnapshot Json?
+  companyLogoId      String?
+  hash               String?
+  previousHash       String?
+  signature          String?
+  refInvoiceNumber   String?
+  cancelReason       String?
+  issuedAt           DateTime      @default(now())
+  dueAt              DateTime?
+  currency           String        @default("AOA")
+  sourceDraftId      String?       @unique
+
+  tenant             Tenant        @relation(fields: [tenantId], references: [id])
+  customer           Customer      @relation(fields: [customerId], references: [id])
+  items              InvoiceItem[]
+  companyLogo        CompanyLogo?  @relation("InvoiceCompanyLogo", fields: [companyLogoId], references: [id], onDelete: Restrict)
+  payments           Payment[]
+  emailDeliveries    EmailDelivery[]
+  sourceDraft        InvoiceDraft? @relation("DraftConversion", fields: [sourceDraftId], references: [id], onDelete: SetNull)
+  createdAt          DateTime      @default(now())
+}
+
+model CompanyBankAccount {
+  id            String   @id @default(uuid())
+  tenantId      String
+  bankName      String
+  accountHolder String?
+  iban          String?
+  currency      String   @default("AOA")
+  label         String?
+  isActive      Boolean  @default(true)
+  isPrimary     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  invoiceDrafts InvoiceDraft[]
+
+  @@index([tenantId, isActive])
+}
+
+model Payment {
+  id              String         @id @default(uuid())
+  tenantId        String
+  invoiceId       String
+  amount          Decimal        @db.Decimal(12, 2)
+  currency        String         @default("AOA")
+  method          String
+  status          String         @default("PENDING")
+  paymentDate     DateTime
+  reference       String?
+  notes           String?        @db.Text
+  idempotencyKey  String
+  createdByUserId String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  tenant          Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  invoice         Invoice        @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
+  createdBy       User?          @relation("PaymentCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  events          PaymentEvent[]
+
+  @@unique([tenantId, idempotencyKey])
+  @@unique([invoiceId, method, reference])
+  @@index([tenantId, paymentDate])
+  @@index([tenantId, status])
+  @@index([invoiceId, status])
+}
+
+model InvoiceDraft {
+  id                  String             @id @default(uuid())
+  tenantId            String
+  customerName        String             @default("")
+  customerNif         String?
+  items               Json               @default("[]")
+  applyVat            Boolean            @default(true)
+  discountType        String             @default("amount")
+  discountValue       Decimal            @default(0) @db.Decimal(12, 2)
+  observations        String?            @db.Text
+  includeCompanyProfile Boolean          @default(true)
+  status              String             @default("DRAFT")
+  currency            String             @default("AOA")
+  dueAt               DateTime?
+  companyBankAccountId String?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  tenant              Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  companyBankAccount  CompanyBankAccount? @relation(fields: [companyBankAccountId], references: [id], onDelete: SetNull)
+  issuedInvoice       Invoice?           @relation("DraftConversion")
+
+  @@index([tenantId, updatedAt])
+}
+
+model PaymentEvent {
+  id             String   @id @default(uuid())
+  tenantId       String
+  paymentId      String
+  eventType      String
+  previousStatus String?
+  nextStatus     String?
+  actorUserId    String?
+  snapshot       Json?
+  createdAt      DateTime @default(now())
+  tenant         Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  payment        Payment  @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+  actorUser      User?    @relation("PaymentEventActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, createdAt])
+  @@index([paymentId, createdAt])
+}
+
+model CompanyLogo {
+  id              String    @id @default(uuid())
+  tenantId        String
+  mimeType        String
+  content         Bytes     @db.ByteA
+  createdAt       DateTime  @default(now())
+  tenant          Tenant    @relation("TenantLogoVersions", fields: [tenantId], references: [id], onDelete: Cascade)
+  currentForTenant Tenant?  @relation("CurrentTenantLogo")
+  invoices        Invoice[] @relation("InvoiceCompanyLogo")
+
+  @@index([tenantId])
+}
+model User {
+  id            String    @id @default(uuid())
+  name          String?
+  email         String?   @unique
+  password      String?
+  tenantId      String?
+  tenant        Tenant?   @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  platformRole  PlatformRole @default(NONE)
+  platformPermissions String[] @default([])
+  tenantRole    TenantRole   @default(USER)
+  status        AccountStatus @default(ACTIVE)
+  emailVerified DateTime?
+  image         String?
+  emailVerificationRequired Boolean @default(false)
+  sessionVersion Int @default(0)
+  suspendedAt   DateTime?
+  suspensionReason String? @db.Text
+  createdAt     DateTime  @default(now())
+  accounts      Account[]
+  sessions      Session[]
+  createdPayments Payment[] @relation("PaymentCreatedBy")
+  paymentEvents PaymentEvent[] @relation("PaymentEventActor")
+  adminAuditLogs AdminAuditLog[] @relation("AdminAuditActor")
+  platformConfigs PlatformConfig[] @relation("PlatformConfigUpdatedBy")
+  emailActionTokens EmailActionToken[]
+  sentEmailDeliveries EmailDelivery[] @relation("EmailDeliverySender")
+  platformInvitesCreated PlatformTeamInvite[] @relation("PlatformInviteCreator")
+  marketingPreference MarketingPreference?
+  emailCampaignsCreated EmailCampaign[] @relation("EmailCampaignCreator")
+}
+
+model PlatformConfig {
+  id              String   @id @default("global")
+  platformName    String   @default("Machine Facturas")
+  supportEmail    String?
+  supportPhone    String?
+  platformDescription String?
+  responsibleEntity String?
+  supportWebsite String?
+  updatedAt       DateTime @default(now()) @updatedAt
+  updatedByUserId String?
+  updatedBy       User?    @relation("PlatformConfigUpdatedBy", fields: [updatedByUserId], references: [id], onDelete: SetNull)
+}
+
+model AdminAuditLog {
+  id           String   @id @default(uuid())
+  actorUserId  String?
+  actorType    String   @default("ADMIN")
+  action       String
+  resourceType String
+  resourceId   String?
+  reason       String?  @db.Text
+  result       String   @default("SUCCESS")
+  metadata     Json?
+  createdAt    DateTime @default(now())
+  actorUser    User?    @relation("AdminAuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([actorUserId, createdAt])
+  @@index([resourceType, resourceId, createdAt])
+}
+
+model EmailActionToken {
+  id        String @id @default(uuid())
+  userId    String
+  purpose   EmailActionPurpose
+  tokenHash String @unique
+  expiresAt DateTime
+  consumedAt DateTime?
+  createdAt DateTime @default(now())
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose, expiresAt])
+}
+
+model EmailRequestLimit {
+  keyHash        String @id
+  windowStartedAt DateTime
+  requestCount   Int @default(0)
+  updatedAt      DateTime @updatedAt
+}
+
+model EmailDelivery {
+  id           String @id @default(uuid())
+  purpose      String
+  recipient    String
+  subject      String
+  status       EmailDeliveryStatus
+  errorCode    String?
+  userId       String?
+  tenantId     String?
+  invoiceId    String?
+  sentByUserId String?
+  createdAt    DateTime @default(now())
+  tenant       Tenant? @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  invoice      Invoice? @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  sentBy       User? @relation("EmailDeliverySender", fields: [sentByUserId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, createdAt])
+  @@index([invoiceId, createdAt])
+  @@index([status, createdAt])
+  @@index([purpose, createdAt])
+}
+
+model PlatformTeamInvite {
+  id          String @id @default(uuid())
+  name        String
+  email       String
+  platformRole PlatformRole
+  permissions String[] @default([])
+  tokenHash   String @unique
+  status      TeamInviteStatus @default(PENDING)
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  revokedAt   DateTime?
+  createdAt   DateTime @default(now())
+  createdById String
+  createdBy   User @relation("PlatformInviteCreator", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([email, status])
+  @@index([status, expiresAt])
+}
+
+model MarketingPreference {
+  id                    String @id @default(uuid())
+  userId                String @unique
+  email                 String
+  subscribed            Boolean @default(false)
+  consentAt             DateTime?
+  consentSource         String?
+  consentVersion        String?
+  unsubscribedAt        DateTime?
+  unsubscribeTokenHash  String? @unique
+  updatedAt             DateTime @updatedAt
+  user                  User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  campaignRecipients    EmailCampaignRecipient[]
+
+  @@index([subscribed, updatedAt])
+}
+
+model EmailCampaign {
+  id          String @id @default(uuid())
+  name        String
+  subject     String
+  htmlContent String @db.Text
+  textContent String @db.Text
+  status      EmailCampaignStatus @default(DRAFT)
+  scheduledAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String
+  createdBy   User @relation("EmailCampaignCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  recipients  EmailCampaignRecipient[]
+
+  @@index([status, scheduledAt])
+}
+
+model EmailCampaignRecipient {
+  id             String @id @default(uuid())
+  campaignId     String
+  preferenceId   String
+  email          String
+  status         EmailCampaignRecipientStatus @default(QUEUED)
+  attempts       Int @default(0)
+  errorCode      String?
+  lastAttemptAt  DateTime?
+  acceptedAt     DateTime?
+  createdAt      DateTime @default(now())
+  campaign       EmailCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  preference     MarketingPreference @relation(fields: [preferenceId], references: [id], onDelete: Restrict)
+
+  @@unique([campaignId, preferenceId])
+  @@index([campaignId, status, createdAt])
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String? @db.Text
+  access_token       String? @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String? @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model InvoiceItem {
+  id          String   @id @default(uuid())
+  invoiceId   String
+  productId   String?
+  description String
+  quantity    Decimal  @db.Decimal(10, 2)
+  unitPrice   Decimal  @db.Decimal(12, 2)
+  taxRate     Decimal  @db.Decimal(5, 2)
+  total       Decimal  @db.Decimal(12, 2)
+
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  product     Product? @relation(fields: [productId], references: [id])
+}
+

@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f5f6f8;
+  --foreground: #18273c;
+  --navy: #071936;
+  --blue: #021f87;
+  --cyan: #248468;
+  --muted: #718095;
+  --line: #dce2e9;
+  --danger: #ad4444;
+  --success: #248468;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: Inter, "Segoe UI", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+html { min-height: 100%; }
+body {
+  min-height: 100vh;
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .chart-reveal { animation: chart-reveal .45s ease-out both; }
+  @keyframes chart-reveal { from { opacity: .72; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+}
+button, input { font: inherit; }
+button, a { -webkit-tap-highlight-color: transparent; }
+::selection { background: #cce5f4; color: var(--navy); }
+:focus-visible { outline: 3px solid #73c7d1; outline-offset: 2px; }
+
+.tabular-nums { font-variant-numeric: tabular-nums; }
+.app-input {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid #d8e1eb;
+  border-radius: 9px;
+  background: #fff;
+  padding: 10px 12px;
+  color: var(--foreground);
+  transition: border-color .15s, box-shadow .15s;
+}
+.app-input::placeholder { color: #9aa8b7; }
+.app-input:focus { border-color: var(--blue); outline: 0; box-shadow: 0 0 0 3px rgb(40 120 208 / 13%); }
+.app-label { display: block; margin-bottom: 7px; color: #46596d; font-size: .82rem; font-weight: 650; }
+.data-table { width: 100%; border-collapse: collapse; text-align: left; }
+.data-table th { background: #f6f8fb; color: #64768a; font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.data-table th, .data-table td { border-bottom: 1px solid var(--line); padding: 14px 16px; }
+.data-table tbody tr:last-child td { border-bottom: 0; }
+.company-profile-section {
+  overflow: visible;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  padding-top: 1.2rem;
+  box-shadow: none;
+}
+.company-profile-section > div:first-child { border: 0; padding: 0 0 .9rem; }
+.company-profile-section > div:last-child { padding: 0; }
+@media (max-width: 640px) {
+  .data-table th, .data-table td { padding: 11px 12px; }
+}

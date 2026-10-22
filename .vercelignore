@@ -1,0 +1,14 @@
+# Heavy local artifacts never needed for the Vercel remote build
+node_modules
+.git
+.next
+.next-*
+output
+backups
+coverage
+.turbo
+.vercel
+
+# Local env files (values are configured as Vercel env vars)
+.env
+.env.*

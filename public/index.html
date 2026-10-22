@@ -1,0 +1,139 @@
+﻿<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>POS Profissional - Angola</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-blue-900 text-white p-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="font-bold text-lg">POS PROFISSIONAL</h1>
+            <div class="space-x-4">
+                <button onclick="showSection('vendas')" class="bg-blue-800 px-3 py-1 rounded hover:bg-blue-700">Vendas</button>
+                <button onclick="showSection('produtos')" class="bg-blue-800 px-3 py-1 rounded hover:bg-blue-700">Produtos</button>
+            </div>
+        </div>
+    </nav>
+    <main class="container mx-auto p-6">
+        <!-- Secção Vendas -->
+        <section id="vendas" class="section">
+            <h2 class="text-2xl font-bold mb-4">Ponto de Venda</h2>
+            <div class="bg-white p-6 rounded shadow-md max-w-xl">
+                <label class="block mb-2 font-semibold">Escolher Produto:</label>
+                <select id="select-produto" class="w-full p-2 border rounded mb-4">
+                    <option value="">A carregar produtos...</option>
+                </select>
+                <button onclick="adicionarAoCarrinho()" class="bg-blue-600 text-white px-4 py-2 rounded font-bold hover:bg-blue-700">Adicionar ao Carrinho</button>
+                
+                <table class="w-full mt-6 border-collapse">
+                    <thead>
+                        <tr class="bg-gray-200 text-left">
+                            <th class="p-2 border">Produto</th>
+                            <th class="p-2 border">Qtd</th>
+                            <th class="p-2 border">Preço (Kz)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="carrinho-body">
+                        <tr><td colspan="3" class="p-4 text-center text-gray-500">Carrinho vazio</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Secção Produtos -->
+        <section id="produtos" class="section hidden">
+            <h2 class="text-2xl font-bold mb-4">Gestão de Produtos</h2>
+            <div class="bg-white p-6 rounded shadow-md max-w-xl space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold">Nome do Produto</label>
+                    <input id="prod-nome" type="text" placeholder="Ex: Arroz 25kg" class="w-full p-2 border rounded">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold">Preço (Kz)</label>
+                    <input id="prod-preco" type="number" placeholder="Ex: 15000" class="w-full p-2 border rounded">
+                </div>
+                <button onclick="salvarProduto()" class="bg-green-600 text-white px-6 py-2 rounded font-bold hover:bg-green-700">Salvar Produto</button>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        async function carregarProdutos() {
+            try {
+                const res = await fetch('/api/produtos');
+                const prods = await res.json();
+                const select = document.getElementById('select-produto');
+                select.innerHTML = '<option value="">Selecione um produto...</option>';
+                
+                if (prods.length === 0) {
+                    select.innerHTML = '<option value="">Nenhum produto cadastrado</option>';
+                    return;
+                }
+
+                prods.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = JSON.stringify(p);
+                    opt.textContent = p.nome + ' - ' + p.preco.toLocaleString() + ' Kz';
+                    select.appendChild(opt);
+                });
+            } catch (e) {
+                console.error("Erro ao carregar produtos:", e);
+            }
+        }
+
+        function adicionarAoCarrinho() {
+            const val = document.getElementById('select-produto').value;
+            if (!val) {
+                alert('Selecione um produto primeiro!');
+                return;
+            }
+            const prod = JSON.parse(val);
+            const body = document.getElementById('carrinho-body');
+            
+            // Limpar mensagem de carrinho vazio se for o primeiro item
+            if (body.querySelector('td[colspan]')) {
+                body.innerHTML = '';
+            }
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = '<td class="p-2 border">' + prod.nome + '</td><td class="p-2 border">1</td><td class="p-2 border">' + prod.preco.toLocaleString() + ' Kz</td>';
+            body.appendChild(tr);
+        }
+
+        async function salvarProduto() {
+            const nome = document.getElementById('prod-nome').value;
+            const preco = document.getElementById('prod-preco').value;
+
+            if (!nome || !preco) {
+                alert('Preencha o nome e o preço!');
+                return;
+            }
+
+            const res = await fetch('/api/produtos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nome, preco: parseFloat(preco), stock: 10 })
+            });
+
+            if (res.ok) {
+                alert('Produto guardado com sucesso!');
+                document.getElementById('prod-nome').value = '';
+                document.getElementById('prod-preco').value = '';
+                showSection('vendas');
+                carregarProdutos();
+            } else {
+                alert('Erro ao guardar o produto.');
+            }
+        }
+
+        // Executar ao carregar
+        carregarProdutos();
+    </script>
+</body>
+</html>

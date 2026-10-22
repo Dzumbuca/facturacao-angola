@@ -1,0 +1,11 @@
+services:
+  db:
+    image: postgres:17
+    container_name: erp-postgres
+    restart: always
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: erp_user
+      POSTGRES_PASSWORD: erp_password
+      POSTGRES_DB: erp_db
