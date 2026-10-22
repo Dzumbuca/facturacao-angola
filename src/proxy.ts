@@ -21,6 +21,7 @@ export default async function proxy(request: NextRequest) {
   } catch {
     authenticated = false;
   }
+  console.log('[proxy]', pathname, '| auth:', authenticated, '| tenant:', tenantId, '| secure:', secure);
 
   // Já autenticado nas páginas de entrada: enviar para a aplicação.
   if ((pathname === '/login' || pathname === '/register') && authenticated) {
