@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getTenantWriteAccess } from '@/lib/tenant-api-access';
 import { generateInvoicePDF } from '@/lib/pdf-generator';
 import { issueInvoiceDraft, InvoiceDraftServiceError } from '@/lib/invoice-draft-service';
+import { getInvoiceQuota, quotaExceeded, quotaUpgradeMessage } from '@/lib/invoice-quota';
 
 type Context = { params: Promise<{ id: string }> };
 
@@ -9,6 +10,11 @@ export async function POST(_request: NextRequest, { params }: Context) {
   const access = await getTenantWriteAccess();
   if (!access.ok) return NextResponse.json(access.body, { status: access.status });
   const { tenantId } = access.access;
+
+  const quota = await getInvoiceQuota(tenantId);
+  if (quotaExceeded(quota)) {
+    return NextResponse.json({ error: quotaUpgradeMessage(quota), upgrade: true }, { status: 402 });
+  }
   try {
     let pdf: Buffer | undefined;
     const invoice = await issueInvoiceDraft((await params).id, tenantId, async (document) => { pdf = await generateInvoicePDF(document); });

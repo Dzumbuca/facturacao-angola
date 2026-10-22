@@ -4,12 +4,18 @@ import { validateInvoiceWithAgent } from '@/lib/agent-service';
 import { issueInvoice } from '@/lib/invoice-service';
 import { getTenantWriteAccess } from '@/lib/tenant-api-access';
 import { getInvoiceServerErrorMessage } from '@/lib/invoice-api-error';
+import { getInvoiceQuota, quotaExceeded, quotaUpgradeMessage } from '@/lib/invoice-quota';
 
 export async function POST(req: NextRequest) {
   try {
     const access = await getTenantWriteAccess();
     if (!access.ok) return NextResponse.json(access.body, { status: access.status });
     const { tenantId } = access.access;
+
+    const quota = await getInvoiceQuota(tenantId);
+    if (quotaExceeded(quota)) {
+      return NextResponse.json({ error: quotaUpgradeMessage(quota), upgrade: true }, { status: 402 });
+    }
 
     const data = await req.json();
     const compliance = await validateInvoiceWithAgent(data);
