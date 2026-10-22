@@ -16,7 +16,8 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
     if (error instanceof AuthorizationError) redirect('/onboarding');
     throw error;
   }
-  const tenantId = typeof session.user.tenantId === 'string' ? session.user.tenantId : null;
+  const sessionUser = session.user as any;
+  const tenantId = typeof sessionUser?.tenantId === 'string' ? sessionUser.tenantId : null;
   const [tenantRow, platformAd] = await Promise.all([
     tenantId ? prisma.tenant.findUnique({ where: { id: tenantId }, select: { plan: true } }) : Promise.resolve(null),
     prisma.platformConfig.findUnique({ where: { id: 'global' }, select: { adHtml: true } }),
