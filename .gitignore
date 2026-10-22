@@ -112,3 +112,6 @@ next-env.d.ts
 .vercel
 .env*
 .tmp-mint.cjs
+
+# ficheiros temporarios locais
+.tmp-*
