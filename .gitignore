@@ -111,3 +111,4 @@ next-env.d.ts
 /output/
 .vercel
 .env*
+.tmp-mint.cjs
