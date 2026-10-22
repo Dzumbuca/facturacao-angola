@@ -89,21 +89,23 @@ export function AppShell({ children, platformAdmin = false, plan = 'FREE', adHtm
             <ul className="space-y-0.5"><li><Link href="/admin" onClick={() => setMobileOpen(false)} aria-current={pathname === '/admin' || pathname.startsWith('/admin/') ? 'page' : undefined} className={`relative flex items-center gap-3 rounded-md px-3 py-2 text-[13px] transition-colors ${pathname === '/admin' || pathname.startsWith('/admin/') ? 'bg-white/10 font-semibold text-white before:absolute before:inset-y-2 before:left-0 before:w-[2px] before:bg-[#7795ff]' : 'text-slate-300 hover:bg-white/[.06] hover:text-white'}`}><NavIcon name="building"/>Administração da plataforma</Link></li></ul>
           </section>}
         </nav>
-        <div className="mt-3 shrink-0 border-t border-white/10 px-3 pt-3">
-          <p className="text-[10px] uppercase tracking-[.12em] text-slate-500">Moeda da conta</p>
-          <p className="mt-1 text-xs font-medium text-slate-300">Kwanza · AOA</p>
-          <p className="mt-2 text-[10px] uppercase tracking-[.12em] text-slate-500">Plano</p>
-          <p className="mt-1 text-xs font-medium text-slate-300">{plan === 'PRO' ? 'Pro' : 'Grátis'}</p>
-        </div>
-        {plan !== 'PRO' && <div className="mt-3 shrink-0 border-t border-white/10 px-3 pt-3">
-          <p className="text-[10px] uppercase tracking-[.12em] text-slate-500">Anúncio</p>
-          {adHtml && <div className="mt-2 overflow-hidden rounded-lg bg-white p-2 text-[#1c2d3f]"><AdHtml html={adHtml} /></div>}
-          <div className="mt-2 overflow-hidden rounded-lg bg-gradient-to-br from-[#2878d0] to-[#102b46] p-3 text-white">
-            <p className="text-xs font-bold">Plano Pro</p>
-            <p className="mt-1 text-[11px] leading-4 text-blue-100">Sem anúncios, facturas ilimitadas, SAFT-AO e equipa. Desde 9.900 Kz/mês.</p>
-            <Link href="/inicio#precos" className="mt-2 inline-flex rounded-md bg-white px-2.5 py-1.5 text-[11px] font-bold text-[#102b46] transition hover:bg-blue-50">Ver planos</Link>
+        <div className="mt-3 max-h-[46vh] shrink-0 space-y-3 overflow-y-auto overscroll-contain border-t border-white/10 px-3 pt-3">
+          <div>
+            <p className="text-[10px] uppercase tracking-[.12em] text-slate-500">Moeda da conta</p>
+            <p className="mt-1 text-xs font-medium text-slate-300">Kwanza · AOA</p>
+            <p className="mt-2 text-[10px] uppercase tracking-[.12em] text-slate-500">Plano</p>
+            <p className="mt-1 text-xs font-medium text-slate-300">{plan === 'PRO' ? 'Pro' : 'Grátis'}</p>
           </div>
-        </div>}
+          {plan !== 'PRO' && <div>
+            <p className="text-[10px] uppercase tracking-[.12em] text-slate-500">Anúncio</p>
+            {adHtml && <div className="mt-2 overflow-hidden rounded-lg bg-white p-2 text-[#1c2d3f]"><AdHtml html={adHtml} /></div>}
+            <div className="mt-2 overflow-hidden rounded-lg bg-gradient-to-br from-[#2878d0] to-[#102b46] p-3 text-white">
+              <p className="text-xs font-bold">Plano Pro</p>
+              <p className="mt-1 text-[11px] leading-4 text-blue-100">Sem anúncios, facturas ilimitadas, SAFT-AO e equipa. Desde 9.900 Kz/mês.</p>
+              <Link href="/inicio#precos" className="mt-2 inline-flex rounded-md bg-white px-2.5 py-1.5 text-[11px] font-bold text-[#102b46] transition hover:bg-blue-50">Ver planos</Link>
+            </div>
+          </div>}
+        </div>
       </aside>
       <div className="min-w-0 md:ml-[220px] lg:ml-[252px]">
         <header className="border-b border-[#e1e8f0] bg-white px-4 py-3 md:px-8 md:py-4">
