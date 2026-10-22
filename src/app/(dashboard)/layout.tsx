@@ -10,7 +10,9 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
   try {
     access = await getTenantAccess();
   } catch (error) {
-    if (error instanceof AuthorizationError) redirect('/login');
+    // Sem empresa (ex.: conta criada com Google): seguir para o onboarding
+    // em vez de voltar ao login.
+    if (error instanceof AuthorizationError) redirect('/onboarding');
     throw error;
   }
   return <AppShell platformAdmin={access.platformRole === 'ADMIN'}>

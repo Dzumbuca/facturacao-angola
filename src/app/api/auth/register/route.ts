@@ -4,8 +4,11 @@ import bcrypt from 'bcrypt';
 import { validateRegistration } from '@/lib/registration-validation';
 import { sendEmailActionToken } from '@/lib/email-actions';
 import { createUnsubscribeToken, hashEmailToken } from '@/lib/email-actions';
+import { clientIp, rateLimit, tooManyRequestsResponse } from '@/lib/rate-limit';
 
 export async function POST(req: Request) {
+  const limiter = rateLimit(`register:${clientIp(req)}`, 5, 60_000);
+  if (!limiter.ok) return tooManyRequestsResponse(limiter.retryAfterSeconds);
   try {
     const body = await req.json();
     const validationError = validateRegistration(body ?? {});

@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
 import { resetPasswordWithToken } from '@/lib/email-actions';
+import { clientIp, rateLimit, tooManyRequestsResponse } from '@/lib/rate-limit';
 
 export async function POST(request: Request) {
+  const limiter = rateLimit(`reset-password:${clientIp(request)}`, 10, 60_000);
+  if (!limiter.ok) return tooManyRequestsResponse(limiter.retryAfterSeconds);
   try {
     const body = await request.json();
     const token = typeof body?.token === 'string' ? body.token : '';

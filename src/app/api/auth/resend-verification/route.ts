@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { allowEmailRequest, sendEmailActionToken } from '@/lib/email-actions';
+import { clientIp, rateLimit, tooManyRequestsResponse } from '@/lib/rate-limit';
 
 const response = { success: true, message: 'Se existir uma conta pendente para esse endereço, receberá instruções.' };
 export async function POST(request: Request) {
+  const limiter = rateLimit(`resend-verification:${clientIp(request)}`, 5, 60_000);
+  if (!limiter.ok) return tooManyRequestsResponse(limiter.retryAfterSeconds);
   try {
     const body = await request.json();
     const email = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : '';
