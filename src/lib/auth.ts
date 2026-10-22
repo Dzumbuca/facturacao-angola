@@ -64,9 +64,12 @@ const nextAuth = NextAuth({
       }
       if (isAdminPagePath(pathname)) return Boolean(auth?.user?.id);
       if (!isProtectedPagePath(pathname)) return true;
-      // Sessão sem empresa (ex.: conta criada com Google): enviar para o
-      // onboarding em vez de bloquear no login.
-      if (!auth?.user?.id) return false;
+      // Visitante sem sessão no endereço principal: mostrar a página de venda
+      // em vez do login. Restantes páginas protegidas continuam para o login.
+      if (!auth?.user?.id) {
+        if (pathname === '/') return NextResponse.redirect(new URL('/inicio', request.url));
+        return false;
+      }
       if (!auth?.user?.tenantId) return NextResponse.redirect(new URL('/onboarding', request.url));
       return true;
     },
