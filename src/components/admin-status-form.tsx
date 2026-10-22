@@ -1,6 +1,6 @@
 'use client';
 import { useActionState } from 'react';
-import { setTenantStatus, setUserStatus, setTenantRole, setPlatformRole } from '@/lib/admin-actions';
+import { setTenantStatus, setUserStatus, setTenantRole, setPlatformRole, setTenantPlan } from '@/lib/admin-actions';
 
 type State = { ok: boolean; message: string };
 const initial: State = { ok: false, message: '' };
@@ -29,4 +29,10 @@ export function AdminRoleForm({ target, id, current }: { target: 'tenant' | 'pla
     : setPlatformRole(String(data.get('id')), data.get('value') as 'NONE' | 'ADMIN' | 'SUPERADMIN' | 'COMPANY_MANAGER' | 'USER_MANAGER' | 'DOCUMENT_MANAGER' | 'AUDITOR' | 'SUPPORT', String(data.get('reason')));
   const options = target === 'tenant' ? [['USER', 'Utilizador'], ['COMPANY_ADMIN', 'Administrador da empresa'], ['BILLING', 'Facturação'], ['VIEWER', 'Consulta']] : [['NONE', 'Sem papel global'], ['ADMIN', 'Superadministrador (papel legado)'], ['COMPANY_MANAGER', 'Gestor de empresas'], ['USER_MANAGER', 'Gestor de utilizadores'], ['DOCUMENT_MANAGER', 'Gestor documental'], ['AUDITOR', 'Auditor'], ['SUPPORT', 'Suporte'], ['SUPERADMIN', 'Superadministrador']];
   return <StatusForm key={`${target}-${current}`} action={action} id={id} title={target === 'tenant' ? 'Papel na empresa' : 'Papel na plataforma'} options={options as [string, string][]} />;
+}
+
+export function AdminPlanForm({ id, current }: { id: string; current: string }) {
+  const action = async (_: State, data: FormData) => setTenantPlan(String(data.get('id')), data.get('value') as 'FREE' | 'PRO', String(data.get('reason')));
+  const options: [string, string][] = [[current, `Manter: ${current === 'PRO' ? 'Pro (sem anúncios)' : 'Grátis (com anúncios)'}`], ['FREE', 'Grátis — vê anúncios'], ['PRO', 'Pro — sem anúncios']];
+  return <StatusForm key={`plan-${current}`} action={action} id={id} title="Plano comercial" options={options} />;
 }

@@ -126,7 +126,7 @@ export async function getAdminSystemStatus() {
 
 export async function getAdminTenantDetail(id: string) {
   await requirePlatformPermission('companies.read');
-  return db.tenant.findUnique({ where: { id }, select: { id: true, name: true, nif: true, email: true, phone: true, status: true, suspendedAt: true, suspensionReason: true, createdAt: true, _count: { select: { users: true, invoices: true, customers: true, products: true } } } });
+  return db.tenant.findUnique({ where: { id }, select: { id: true, name: true, nif: true, email: true, phone: true, status: true, plan: true, suspendedAt: true, suspensionReason: true, createdAt: true, _count: { select: { users: true, invoices: true, customers: true, products: true } } } });
 }
 
 export async function getAdminUserDetail(id: string) {

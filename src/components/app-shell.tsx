@@ -33,7 +33,7 @@ function NavIcon({ name }: { name: string }) {
   return <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="h-[19px] w-[19px]">{paths[name]}</svg>;
 }
 
-export function AppShell({ children, platformAdmin = false }: { children: ReactNode; platformAdmin?: boolean }) {
+export function AppShell({ children, platformAdmin = false, plan = 'FREE', adHtml = null }: { children: ReactNode; platformAdmin?: boolean; plan?: string; adHtml?: string | null }) {
   const pathname = usePathname();
   const title = titles[pathname] ?? 'Facturação Angola';
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -91,7 +91,14 @@ export function AppShell({ children, platformAdmin = false }: { children: ReactN
         <div className="mt-3 shrink-0 border-t border-white/10 px-3 pt-3">
           <p className="text-[10px] uppercase tracking-[.12em] text-slate-500">Moeda da conta</p>
           <p className="mt-1 text-xs font-medium text-slate-300">Kwanza · AOA</p>
+          <p className="mt-2 text-[10px] uppercase tracking-[.12em] text-slate-500">Plano</p>
+          <p className="mt-1 text-xs font-medium text-slate-300">{plan === 'PRO' ? 'Pro' : 'Grátis'}</p>
         </div>
+        {adHtml && <div className="mt-3 shrink-0 border-t border-white/10 px-3 pt-3">
+          <p className="text-[10px] uppercase tracking-[.12em] text-slate-500">Anúncio</p>
+          <div className="mt-2 overflow-hidden rounded-lg bg-white p-2 text-[#1c2d3f]" dangerouslySetInnerHTML={{ __html: adHtml }} />
+          <Link href="/inicio#precos" className="mt-2 block text-[10px] text-slate-400 hover:text-slate-200">Eliminar anúncios com o plano Pro →</Link>
+        </div>}
       </aside>
       <div className="min-w-0 md:ml-[220px] lg:ml-[252px]">
         <header className="border-b border-[#e1e8f0] bg-white px-4 py-3 md:px-8 md:py-4">

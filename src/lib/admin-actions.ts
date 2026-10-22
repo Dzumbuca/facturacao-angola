@@ -32,6 +32,24 @@ export async function setTenantStatus(id: string, status: 'ACTIVE' | 'SUSPENDED'
   } catch { return failure; }
 }
 
+// Altera o plano comercial de uma empresa (FREE vê anúncios; PRO não vê).
+export async function setTenantPlan(id: string, plan: 'FREE' | 'PRO', rawReason: string): Promise<ActionResult> {
+  const currentActor = await actor('companies.suspend');
+  const reason = validateAdminReason(rawReason);
+  if (!currentActor || !validId(id) || !['FREE', 'PRO'].includes(plan) || !reason) return failure;
+  try {
+    await db.$transaction(async (tx: any) => {
+      const tenant = await tx.tenant.findUnique({ where: { id }, select: { id: true, plan: true } });
+      if (!tenant) throw new Error('not-found');
+      if (tenant.plan === plan) return;
+      await tx.tenant.update({ where: { id }, data: { plan } });
+      await tx.adminAuditLog.create({ data: { actorUserId: currentActor.id, action: 'TENANT_PLAN_CHANGED', resourceType: 'TENANT', resourceId: id, reason, metadata: { previousPlan: tenant.plan, nextPlan: plan } } });
+    }, { isolationLevel: 'Serializable' });
+    revalidatePath('/admin'); revalidatePath('/admin/empresas'); revalidatePath(`/admin/empresas/${id}`);
+    return success;
+  } catch { return failure; }
+}
+
 export async function setUserStatus(id: string, status: 'ACTIVE' | 'SUSPENDED', rawReason: string): Promise<ActionResult> {
   const currentActor = await actor('users.suspend');
   const reason = validateAdminReason(rawReason);
@@ -86,7 +104,7 @@ export async function setPlatformRole(id: string, role: 'NONE' | 'ADMIN' | 'SUPE
   } catch { return failure; }
 }
 
-export async function updatePlatformConfig(input: { platformName?: unknown; supportEmail?: unknown; supportPhone?: unknown; supportWebsite?: unknown; platformDescription?: unknown; responsibleEntity?: unknown }, rawReason: string): Promise<ActionResult> {
+export async function updatePlatformConfig(input: { platformName?: unknown; supportEmail?: unknown; supportPhone?: unknown; supportWebsite?: unknown; platformDescription?: unknown; responsibleEntity?: unknown; adHtml?: unknown }, rawReason: string): Promise<ActionResult> {
   const currentActor = await actor('settings.update');
   const reason = validateAdminReason(rawReason);
   const platformName = typeof input?.platformName === 'string' ? input.platformName.trim() : '';
@@ -95,14 +113,15 @@ export async function updatePlatformConfig(input: { platformName?: unknown; supp
   const supportWebsite = typeof input?.supportWebsite === 'string' ? input.supportWebsite.trim() : '';
   const platformDescription = typeof input?.platformDescription === 'string' ? input.platformDescription.trim() : '';
   const responsibleEntity = typeof input?.responsibleEntity === 'string' ? input.responsibleEntity.trim() : '';
+  const adHtml = typeof input?.adHtml === 'string' ? input.adHtml.trim() : '';
   let validWebsite = true;
   if (supportWebsite) { try { const url = new URL(supportWebsite); validWebsite = url.protocol === 'https:' || url.protocol === 'http:'; } catch { validWebsite = false; } }
-  if (!currentActor || !reason || platformName.length < 2 || platformName.length > 80 || supportEmail.length > 254 || (supportEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(supportEmail)) || supportPhone.length > 40 || !validWebsite || supportWebsite.length > 200 || platformDescription.length > 500 || responsibleEntity.length > 160) return failure;
+  if (!currentActor || !reason || platformName.length < 2 || platformName.length > 80 || supportEmail.length > 254 || (supportEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(supportEmail)) || supportPhone.length > 40 || !validWebsite || supportWebsite.length > 200 || platformDescription.length > 500 || responsibleEntity.length > 160 || adHtml.length > 4000) return failure;
   try {
     await db.$transaction(async (tx: any) => {
-      const select = { platformName: true, supportEmail: true, supportPhone: true, supportWebsite: true, platformDescription: true, responsibleEntity: true };
+      const select = { platformName: true, supportEmail: true, supportPhone: true, supportWebsite: true, platformDescription: true, responsibleEntity: true, adHtml: true };
       const previous = await tx.platformConfig.upsert({ where: { id: 'global' }, create: { id: 'global' }, update: {}, select });
-      const next = { platformName, supportEmail: supportEmail || null, supportPhone: supportPhone || null, supportWebsite: supportWebsite || null, platformDescription: platformDescription || null, responsibleEntity: responsibleEntity || null };
+      const next = { platformName, supportEmail: supportEmail || null, supportPhone: supportPhone || null, supportWebsite: supportWebsite || null, platformDescription: platformDescription || null, responsibleEntity: responsibleEntity || null, adHtml: adHtml || null };
       await tx.platformConfig.update({ where: { id: 'global' }, data: { ...next, updatedByUserId: currentActor.id } });
       await tx.adminAuditLog.create({ data: { actorUserId: currentActor.id, action: 'PLATFORM_CONFIG_UPDATED', resourceType: 'PLATFORM_CONFIG', resourceId: 'global', reason, metadata: { previous, next } } });
     }, { isolationLevel: 'Serializable' });
