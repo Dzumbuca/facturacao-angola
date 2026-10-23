@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -12,12 +11,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="pt-AO" className="h-full antialiased">
       <body className="min-h-full flex flex-col">
         {children}
-        {/* Google AdSense — verificação e veiculação de anúncios no site */}
-        <Script
+        {/* Google AdSense — script directo no HTML (o rastreador do AdSense lê o HTML bruto) */}
+        <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9283668518139905"
           crossOrigin="anonymous"
-          strategy="afterInteractive"
         />
       </body>
     </html>
