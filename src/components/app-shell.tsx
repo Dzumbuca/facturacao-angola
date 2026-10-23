@@ -88,8 +88,15 @@ export function AppShell({ children, platformAdmin = false, plan = 'FREE', adHtm
             <h2 className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-[.16em] text-slate-500">Plataforma</h2>
             <ul className="space-y-0.5"><li><Link href="/admin" onClick={() => setMobileOpen(false)} aria-current={pathname === '/admin' || pathname.startsWith('/admin/') ? 'page' : undefined} className={`relative flex items-center gap-3 rounded-md px-3 py-2 text-[13px] transition-colors ${pathname === '/admin' || pathname.startsWith('/admin/') ? 'bg-white/10 font-semibold text-white before:absolute before:inset-y-2 before:left-0 before:w-[2px] before:bg-[#7795ff]' : 'text-slate-300 hover:bg-white/[.06] hover:text-white'}`}><NavIcon name="building"/>Administração da plataforma</Link></li></ul>
           </section>}
+          {/* Telemóvel: moeda, plano e upsell Pro dentro da área rolável do menu */}
+          <section aria-label="Conta" className="border-t border-white/10 px-3 pt-3 md:hidden">
+            <p className="text-[10px] uppercase tracking-[.12em] text-slate-500">Kwanza · AOA · Plano {plan === 'PRO' ? 'Pro' : 'Grátis'}</p>
+            {plan !== 'PRO' && <Link href="/inicio#precos" onClick={() => setMobileOpen(false)} className="mt-2 flex items-center justify-between gap-2 rounded-lg bg-gradient-to-br from-[#2878d0] to-[#102b46] px-3 py-2.5 text-[11px] font-bold text-white">
+              <span>⭐ Plano Pro — sem anúncios</span><span>→</span>
+            </Link>}
+          </section>
         </nav>
-        <div className="mt-3 max-h-[46vh] shrink-0 space-y-3 overflow-y-auto overscroll-contain border-t border-white/10 px-3 pt-3">
+        <div className="mt-3 hidden max-h-[46vh] shrink-0 space-y-3 overflow-y-auto overscroll-contain border-t border-white/10 px-3 pt-3 md:block">
           <div>
             <p className="text-[10px] uppercase tracking-[.12em] text-slate-500">Moeda da conta</p>
             <p className="mt-1 text-xs font-medium text-slate-300">Kwanza · AOA</p>
