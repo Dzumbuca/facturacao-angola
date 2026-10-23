@@ -11,5 +11,14 @@ export const GET = handlers.GET;
 export const POST: typeof handlers.POST = async (request: NextRequest) => {
   const limiter = rateLimit(`auth-post:${clientIp(request)}`, MAX_AUTH_POSTS_PER_MINUTE, 60_000);
   if (!limiter.ok) return tooManyRequestsResponse(limiter.retryAfterSeconds);
-  return handlers.POST(request);
+  const response = await handlers.POST(request);
+  try {
+    const cookies = response.headers.getSetCookie().map((c) => {
+      const [pair] = c.split(';');
+      const [name] = pair.split('=');
+      return `${name}(${pair.length})`;
+    });
+    if (cookies.length) console.log('[auth-cookies emitidas]', cookies.join(', '));
+  } catch { /* log apenas */ }
+  return response;
 };

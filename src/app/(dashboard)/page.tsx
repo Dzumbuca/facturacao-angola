@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
 import { getSessionTenantId } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
@@ -17,7 +18,7 @@ const periodOptions = [['today', 'Hoje'], ['last7days', '7 dias'], ['last30days'
 
 export default async function DashboardPage({ searchParams }: Props) {
   const tenantId = getSessionTenantId(await auth());
-  if (!tenantId) return <p>Empresa não configurada.</p>;
+  if (!tenantId) redirect('/onboarding');
   const query = await searchParams;
   const periodQuery: ReportPeriodQuery = { period: query.period ?? 'thisMonth', from: query.from, to: query.to };
   let period;

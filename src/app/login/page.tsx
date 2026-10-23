@@ -43,7 +43,8 @@ export default function LoginPage() {
         <div className="relative max-w-sm"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#78c8d0]">Gestão financeira</p><h2 className="mt-4 text-4xl font-bold leading-tight">A sua facturação, organizada.</h2><p className="mt-4 leading-7 text-blue-100/75">Aceda ao espaço da sua empresa para gerir documentos, clientes e produtos.</p></div>
         <p className="relative text-xs text-blue-100/55">Plataforma de facturação · Angola</p>
       </aside>
-      <section className="flex w-full flex-col justify-center px-6 py-12 sm:px-12 md:w-[58%] md:px-14 lg:px-20">
+      <section className="relative flex w-full flex-col justify-center px-6 py-12 sm:px-12 md:w-[58%] md:px-14 lg:px-20">
+        <Link href="/inicio#precos" className="absolute top-5 right-6 hidden text-xs font-semibold text-[#48627a] hover:text-[#2878d0] md:inline">Ver planos e preços →</Link>
         <Link href="/login" className="mb-10 flex items-center gap-2 text-xs font-bold uppercase tracking-[.14em] text-[#2878d0] md:hidden"><img src="/logo.png" alt="Facturas" className="h-8 w-auto max-w-[84px] rounded-lg bg-white object-contain px-1.5 py-1" /> Facturação Angola</Link>
         <div className="mb-8">
           <p className="text-xs font-bold uppercase tracking-[.16em] text-[#2878d0]">Bem-vindo de volta</p>
