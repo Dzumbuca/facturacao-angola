@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { adminSignOut } from '@/lib/admin-signout';
 
 const links = [
-  ['/admin', 'Visão geral', 'dashboard.read'], ['/admin/empresas', 'Empresas', 'companies.read'], ['/admin/utilizadores', 'Utilizadores', 'users.read'],
+  ['/admin', 'Visão geral', 'dashboard.read'], ['/admin/empresas', 'Empresas', 'companies.read'], ['/admin/pagamentos', 'Pagamentos de planos', 'companies.read'], ['/admin/utilizadores', 'Utilizadores', 'users.read'],
   ['/admin/equipa', 'Equipa de gestão', 'team.read'], ['/admin/documentos', 'Documentos', 'documents.read'], ['/admin/emails', 'Emails', 'emails.read'], ['/admin/auditoria', 'Auditoria', 'audit.read'], ['/admin/sistema', 'Sistema', 'system.read'], ['/admin/configuracoes', 'Configurações', 'settings.read'],
 ];
 

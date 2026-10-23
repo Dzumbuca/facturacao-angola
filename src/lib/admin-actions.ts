@@ -129,3 +129,22 @@ export async function updatePlatformConfig(input: { platformName?: unknown; supp
     return success;
   } catch { return failure; }
 }
+
+// Revisa um comprovativo de pagamento de plano. CONFIRMADO activa o plano Pro da empresa.
+export async function reviewPlanPayment(id: string, decision: 'CONFIRMADO' | 'REJEITADO', rawReason: string): Promise<ActionResult> {
+  const currentActor = await actor('companies.suspend');
+  const reason = validateAdminReason(rawReason);
+  if (!currentActor || !validId(id) || !['CONFIRMADO', 'REJEITADO'].includes(decision) || !reason) return failure;
+  try {
+    await db.$transaction(async (tx: any) => {
+      const payment = await tx.planPayment.findUnique({ where: { id }, select: { id: true, status: true, tenantId: true, months: true } });
+      if (!payment) throw new Error('not-found');
+      if (payment.status !== 'PENDENTE') return;
+      await tx.planPayment.update({ where: { id }, data: { status: decision, adminNote: reason, reviewedAt: new Date() } });
+      if (decision === 'CONFIRMADO') await tx.tenant.update({ where: { id: payment.tenantId }, data: { plan: 'PRO' } });
+      await tx.adminAuditLog.create({ data: { actorUserId: currentActor.id, action: 'PLAN_PAYMENT_REVIEWED', resourceType: 'PLAN_PAYMENT', resourceId: id, reason, metadata: { decision, previousStatus: payment.status, months: payment.months } } });
+    }, { isolationLevel: 'Serializable' });
+    revalidatePath('/admin/pagamentos'); revalidatePath('/admin');
+    return decision === 'CONFIRMADO' ? { ok: true, message: 'Pagamento confirmado e plano Pro activado.' } : { ok: true, message: 'Pagamento rejeitado.' };
+  } catch { return failure; }
+}

@@ -135,3 +135,14 @@ export async function getAdminUserDetail(id: string) {
   if (actor.platformRole === 'USER_MANAGER' && user?.tenantId !== actor.tenantId) return null;
   return user;
 }
+
+// Fila de comprovativos de pagamento de planos (Multicaixa Express)
+export async function getAdminPlanPayments(status?: string) {
+  await requirePlatformPermission('companies.read');
+  return db.planPayment.findMany({
+    where: status ? { status } : undefined,
+    orderBy: { createdAt: 'desc' },
+    take: 100,
+    select: { id: true, amountKz: true, months: true, status: true, adminNote: true, createdAt: true, reviewedAt: true, payerName: true, payerPhone: true, tenant: { select: { name: true } } },
+  });
+}

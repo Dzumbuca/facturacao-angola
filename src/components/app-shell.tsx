@@ -109,7 +109,7 @@ export function AppShell({ children, platformAdmin = false, plan = 'FREE', adHtm
             <div className="mt-2 overflow-hidden rounded-lg bg-gradient-to-br from-[#2878d0] to-[#102b46] p-3 text-white">
               <p className="text-xs font-bold">Plano Pro</p>
               <p className="mt-1 text-[11px] leading-4 text-blue-100">Sem anúncios, facturas ilimitadas, SAFT-AO e equipa. Desde 9.900 Kz/mês.</p>
-              <Link href="/inicio#precos" className="mt-2 inline-flex rounded-md bg-white px-2.5 py-1.5 text-[11px] font-bold text-[#102b46] transition hover:bg-blue-50">Ver planos</Link>
+              <Link href="/pagamento" onClick={() => setMobileOpen(false)} className="mt-2 inline-flex rounded-md bg-white px-2.5 py-1.5 text-[11px] font-bold text-[#102b46] transition hover:bg-blue-50">Subir de plano</Link>
             </div>
           </div>}
         </div>
