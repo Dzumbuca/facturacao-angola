@@ -5,7 +5,7 @@ import { AdHtml } from '@/components/ad-html';
 import { IvaCalculator } from './calculator';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://facturacao-angola.vercel.app'),
+  metadataBase: new URL('https://machinefaturas.shop'),
   title: 'Calculadora de IVA 14% — Angola | Machine Facturas',
   description: 'Calculadora de IVA grátis para Angola: acrescente ou retire o IVA de 14%, 7% ou 2% em Kwanzas. Resultados instantâneos, sem registo.',
   keywords: ['calculadora IVA Angola', 'calcular IVA 14', 'IVA Angola', 'imposto sobre o valor acrescentado', 'calculadora de impostos Angola'],

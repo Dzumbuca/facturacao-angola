@@ -5,7 +5,7 @@ import { AdHtml } from '@/components/ad-html';
 import { SalaryCalculator } from './calculator';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://facturacao-angola.vercel.app'),
+  metadataBase: new URL('https://machinefaturas.shop'),
   title: 'Calculadora de Salário Líquido e IRT — Angola | Machine Facturas',
   description: 'Calculadora de salário líquido grátis para Angola: INSS (3%), IRT por escalões e salário que cai na conta. Tabela do IRT em vigor, resultados instantâneos.',
   keywords: ['calcular salario liquido Angola', 'calculadora IRT', 'IRT Angola 2026', 'INSS 3%', 'salario liquido Angola', 'tabela IRT'],

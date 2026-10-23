@@ -2,14 +2,14 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://facturacao-angola.vercel.app'),
+  metadataBase: new URL('https://machinefaturas.shop'),
   title: 'Machine Facturas — Facturação online para empresas em Angola',
   description: 'Crie e emita facturas com assinatura digital (padrão AGT), exportação SAFT-AO, relatórios e gestão de clientes. Grátis para começar, do telemóvel ou computador.',
   keywords: ['facturação Angola', 'software de facturas Angola', 'facturas online', 'SAFT Angola', 'AGT', 'Multicaixa Express', 'facturação electronica', 'emissão de facturas Luanda'],
   openGraph: {
     title: 'Machine Facturas — Facturação online para empresas em Angola',
     description: 'Facturas com assinatura digital, SAFT-AO e relatórios. Grátis para começar.',
-    url: 'https://facturacao-angola.vercel.app',
+    url: 'https://machinefaturas.shop',
     siteName: 'Machine Facturas',
     locale: 'pt_AO',
     type: 'website',
@@ -71,7 +71,7 @@ export default function LandingPage() {
     applicationCategory: 'BusinessApplication',
     operatingSystem: 'Web',
     description: 'Facturação online para empresas em Angola com assinatura digital, SAFT-AO e relatórios.',
-    url: 'https://facturacao-angola.vercel.app',
+    url: 'https://machinefaturas.shop',
     offers: [
       { '@type': 'Offer', name: 'Grátis', price: '0', priceCurrency: 'AOA' },
       { '@type': 'Offer', name: 'Básico', price: '9900', priceCurrency: 'AOA' },

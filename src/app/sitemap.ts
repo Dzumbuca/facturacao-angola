@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-const BASE_URL = 'https://facturacao-angola.vercel.app';
+const BASE_URL = 'https://machinefaturas.shop';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
