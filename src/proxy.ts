@@ -21,7 +21,7 @@ export default async function proxy(request: NextRequest) {
   } catch {
     authenticated = false;
   }
-  console.log('[proxy]', pathname, '| auth:', authenticated, '| tenant:', tenantId, '| secure:', secure);
+  console.log('[proxy]', pathname, '| auth:', authenticated, '| tenant:', tenantId, '| secure:', secure, '| cookieS:', request.cookies.get('__Secure-authjs.session-token')?.value?.length ?? 0, '| cookie:', request.cookies.get('authjs.session-token')?.value?.length ?? 0);
 
   // Já autenticado nas páginas de entrada: enviar para a aplicação.
   if ((pathname === '/login' || pathname === '/register') && authenticated) {
