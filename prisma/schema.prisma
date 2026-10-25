@@ -101,6 +101,7 @@ model Tenant {
   createdAt        DateTime      @default(now())
   status           AccountStatus @default(ACTIVE)
   plan             String        @default("FREE")
+  planExpiry       DateTime?
   suspendedAt      DateTime?
   suspensionReason String?       @db.Text
   planPayments     PlanPayment[]

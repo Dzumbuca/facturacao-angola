@@ -34,7 +34,7 @@ function NavIcon({ name }: { name: string }) {
   return <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="h-[19px] w-[19px]">{paths[name]}</svg>;
 }
 
-export function AppShell({ children, platformAdmin = false, plan = 'FREE', adHtml = null }: { children: ReactNode; platformAdmin?: boolean; plan?: string; adHtml?: string | null }) {
+export function AppShell({ children, platformAdmin = false, plan = 'FREE', adHtml = null, planDaysLeft = null, planExpired = false }: { children: ReactNode; platformAdmin?: boolean; plan?: string; adHtml?: string | null; planDaysLeft?: number | null; planExpired?: boolean }) {
   const pathname = usePathname();
   const title = titles[pathname] ?? 'Facturação Angola';
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -90,8 +90,10 @@ export function AppShell({ children, platformAdmin = false, plan = 'FREE', adHtm
           </section>}
           {/* Telemóvel: moeda, plano e upsell Pro dentro da área rolável do menu */}
           <section aria-label="Conta" className="border-t border-white/10 px-3 pt-3 md:hidden">
-            <p className="text-[10px] uppercase tracking-[.12em] text-slate-500">Kwanza · AOA · Plano {plan === 'PRO' ? 'Pro' : 'Grátis'}</p>
-            {plan !== 'PRO' && <Link href="/inicio#precos" onClick={() => setMobileOpen(false)} className="mt-2 flex items-center justify-between gap-2 rounded-lg bg-gradient-to-br from-[#2878d0] to-[#102b46] px-3 py-2.5 text-[11px] font-bold text-white">
+            <p className="text-[10px] uppercase tracking-[.12em] text-slate-500">Kwanza · AOA · Plano {planExpired ? 'expirou' : plan === 'PRO' ? 'Pro' : 'Grátis'}</p>
+            {planExpired && <Link href="/pagamento" onClick={() => setMobileOpen(false)} className="mt-2 block rounded-lg border border-amber-400/40 bg-amber-500/10 px-3 py-2 text-[11px] font-semibold text-amber-300">Plano expirou — Renovar →</Link>}
+            {plan === 'PRO' && planDaysLeft !== null && planDaysLeft <= 14 && <Link href="/pagamento" onClick={() => setMobileOpen(false)} className="mt-2 block rounded-lg border border-amber-400/40 bg-amber-500/10 px-3 py-2 text-[11px] font-semibold text-amber-300">Expira em {planDaysLeft} {planDaysLeft === 1 ? 'dia' : 'dias'} — Renovar →</Link>}
+            {plan !== 'PRO' && <Link href="/pagamento" onClick={() => setMobileOpen(false)} className="mt-2 flex items-center justify-between gap-2 rounded-lg bg-gradient-to-br from-[#2878d0] to-[#102b46] px-3 py-2.5 text-[11px] font-bold text-white">
               <span>⭐ Plano Pro — sem anúncios</span><span>→</span>
             </Link>}
           </section>
@@ -101,8 +103,10 @@ export function AppShell({ children, platformAdmin = false, plan = 'FREE', adHtm
             <p className="text-[10px] uppercase tracking-[.12em] text-slate-500">Moeda da conta</p>
             <p className="mt-1 text-xs font-medium text-slate-300">Kwanza · AOA</p>
             <p className="mt-2 text-[10px] uppercase tracking-[.12em] text-slate-500">Plano</p>
-            <p className="mt-1 text-xs font-medium text-slate-300">{plan === 'PRO' ? 'Pro' : 'Grátis'}</p>
+            <p className="mt-1 text-xs font-medium text-slate-300">{planExpired ? 'Pro expirou' : plan === 'PRO' ? 'Pro' : 'Grátis'}</p>
           </div>
+          {planExpired && <Link href="/pagamento" className="block rounded-lg border border-amber-400/40 bg-amber-500/10 px-3 py-2 text-[11px] font-semibold text-amber-300 transition hover:bg-amber-500/20">Plano expirou — Renovar →</Link>}
+          {plan === 'PRO' && planDaysLeft !== null && planDaysLeft <= 14 && <Link href="/pagamento" className="block rounded-lg border border-amber-400/40 bg-amber-500/10 px-3 py-2 text-[11px] font-semibold text-amber-300 transition hover:bg-amber-500/20">Expira em {planDaysLeft} {planDaysLeft === 1 ? 'dia' : 'dias'} — Renovar →</Link>}
           {plan !== 'PRO' && <div>
             <p className="text-[10px] uppercase tracking-[.12em] text-slate-500">Anúncio</p>
             {adHtml && <div className="mt-2 overflow-hidden rounded-lg bg-white p-2 text-[#1c2d3f]"><AdHtml html={adHtml} /></div>}

@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { requirePlatformPermission, isSuperAdminRole, type PlatformPermission } from '@/lib/admin-auth';
 import { isLastActivePlatformAdminChange, validateAdminReason } from './admin-actions-core';
+import { nextPlanExpiry } from './plan';
 
 const db = prisma as any;
 type ActionResult = { ok: boolean; message: string };
@@ -141,7 +142,11 @@ export async function reviewPlanPayment(id: string, decision: 'CONFIRMADO' | 'RE
       if (!payment) throw new Error('not-found');
       if (payment.status !== 'PENDENTE') return;
       await tx.planPayment.update({ where: { id }, data: { status: decision, adminNote: reason, reviewedAt: new Date() } });
-      if (decision === 'CONFIRMADO') await tx.tenant.update({ where: { id: payment.tenantId }, data: { plan: 'PRO' } });
+      if (decision === 'CONFIRMADO') {
+        const tenant = await tx.tenant.findUnique({ where: { id: payment.tenantId }, select: { planExpiry: true } });
+        const expiry = nextPlanExpiry(tenant?.planExpiry, payment.months);
+        await tx.tenant.update({ where: { id: payment.tenantId }, data: { plan: 'PRO', planExpiry: expiry } });
+      }
       await tx.adminAuditLog.create({ data: { actorUserId: currentActor.id, action: 'PLAN_PAYMENT_REVIEWED', resourceType: 'PLAN_PAYMENT', resourceId: id, reason, metadata: { decision, previousStatus: payment.status, months: payment.months } } });
     }, { isolationLevel: 'Serializable' });
     revalidatePath('/admin/pagamentos'); revalidatePath('/admin');

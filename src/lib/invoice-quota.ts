@@ -1,4 +1,5 @@
 import { prisma } from './prisma';
+import { computeEffectivePlan } from './plan';
 
 export const FREE_MONTHLY_INVOICE_LIMIT = 20;
 
@@ -10,10 +11,10 @@ export type InvoiceQuota = {
 };
 
 // Conta facturas emitidas no mês civil corrente (excepto anuladas)
-// e aplica o limite do plano Grátis. Pro é ilimitado.
+// e aplica o limite do plano Grátis. Pro (dentro da validade) é ilimitado.
 export async function getInvoiceQuota(tenantId: string): Promise<InvoiceQuota> {
-  const tenant = await prisma.tenant.findUnique({ where: { id: tenantId }, select: { plan: true } });
-  const plan = tenant?.plan ?? 'FREE';
+  const tenant = await prisma.tenant.findUnique({ where: { id: tenantId }, select: { plan: true, planExpiry: true } });
+  const plan = computeEffectivePlan(tenant?.plan, tenant?.planExpiry).effectivePlan;
   if (plan === 'PRO') return { plan, issuedThisMonth: 0, limit: null, remaining: null };
 
   const start = new Date();
