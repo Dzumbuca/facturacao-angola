@@ -228,12 +228,6 @@ export default function LandingPage() {
       </div>
     </section>
 
-    <section aria-label="Publicidade" className="mx-auto max-w-6xl px-4 pb-14 md:px-6">
-      <a href="https://beta.publishers.adsterra.com/referral/L8Y8skqCEG" rel="nofollow" target="_blank" className="mx-auto block w-fit">
-        <img alt="banner" src="https://landings-cdn.adsterratech.com/referralBanners/png/300%20x%20250%20px.png" loading="lazy" className="mx-auto rounded-xl shadow-[0_3px_14px_rgba(25,52,80,.08)]" />
-      </a>
-    </section>
-
     <SiteFooter />
   </main>;
 }
