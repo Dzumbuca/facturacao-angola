@@ -6,6 +6,9 @@ import { SiteFooter } from '@/components/site-footer';
 import { AdHtml } from '@/components/ad-html';
 import { SalaryCalculator } from './calculator';
 
+// Anúncios actualizam a cada 60s sem novo deploy
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   metadataBase: new URL('https://machinefaturas.shop'),
   title: 'Calculadora de Salário Líquido e IRT — Angola | Machine Facturas',

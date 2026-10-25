@@ -5,6 +5,9 @@ import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
 import { AdHtml } from '@/components/ad-html';
 
+// Anúncios actualizam a cada 60s sem novo deploy
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   metadataBase: new URL('https://machinefaturas.shop'),
   title: 'Como emitir facturas em Angola (guia 2026) | Machine Facturas',
