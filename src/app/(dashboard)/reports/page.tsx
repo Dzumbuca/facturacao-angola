@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { parseReportPeriod } from '@/lib/report-period';
 import { getReportDataset, parseReportKind } from '@/lib/report-service';
 import { ReportBreakdownChart } from '@/components/report-breakdown-chart';
+import { SaftExport } from '@/components/saft-export';
 
 type Props = { searchParams: Promise<{ period?: string; from?: string; to?: string; kind?: string; customerId?: string; state?: string }> };
 
@@ -34,6 +35,16 @@ export default async function ReportsPage({ searchParams }: Props) {
       <div><p className="text-[11px] font-bold uppercase tracking-[.16em] text-[#67768a]">Análise financeira</p><h2 className="mt-2 text-[30px] font-semibold tracking-[-.035em] text-[#152236] md:text-[36px]">Relatórios</h2><p className="mt-2 text-sm text-[#65758a]">{dataset.title} · {periodLabel}</p></div>
       <div className="flex flex-wrap gap-2">{(['pdf', 'xlsx', 'csv'] as const).map((format) => <a key={format} href={exportHref(format)} className="inline-flex min-h-10 items-center rounded-md border border-[#cbd3de] bg-white px-3 text-xs font-semibold uppercase tracking-wide text-[#344256] transition-colors hover:border-[#021F87] hover:text-[#021F87]">Descarregar {format}</a>)}</div>
     </header>
+
+    <section className="rounded-2xl border border-[#e2e9f1] bg-white p-5 md:p-6" aria-label="Exportação SAFT-AO">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="max-w-md">
+          <h3 className="font-bold text-[#1c2d3f]">Exportação SAFT-AO</h3>
+          <p className="mt-1 text-sm leading-6 text-[#5b6f85]">Ficheiro XML oficial (Standard Audit File) com as facturas do mês escolhido — pronto para o contabilista ou para a AGT.</p>
+        </div>
+        <SaftExport />
+      </div>
+    </section>
 
     <section className="grid gap-5 border-b border-[#dce2e9] pb-6 sm:grid-cols-[1fr_auto] sm:items-end" aria-label="Resumo do relatório filtrado">
       <div><p className="text-[11px] font-bold uppercase tracking-[.13em] text-[#6f7e91]">{financialIndex >= 0 ? dataset.headers[financialIndex] : 'Registos encontrados'}</p><p className="mt-2 tabular-nums text-3xl font-semibold tracking-[-.035em] text-[#18273c]">{reportTotal === null ? dataset.rows.length : new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', maximumFractionDigits: 0 }).format(reportTotal)}</p></div>
