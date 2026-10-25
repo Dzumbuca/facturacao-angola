@@ -48,6 +48,8 @@ export function InvoiceForm({ initialCustomers, initialProducts, hasCompanyProfi
   }, [customerName, customers]);
 
   const addItem = () => setItems((current) => [...current, { desc: '', qty: 1, rate: 0, productId: null }]);
+  const removeItem = (index: number) => setItems((current) => (current.length > 1 ? current.filter((_, i) => i !== index) : current));
+  const validItems = items.filter((item) => item.desc.trim() !== '');
 
   function selectCustomer(customer: Customer) {
     setCustomerName(customer.name);
@@ -132,11 +134,16 @@ export function InvoiceForm({ initialCustomers, initialProducts, hasCompanyProfi
   const handleGeneratePDF = async () => {
     setError('');
     setIsGenerating(true);
+    if (!validItems.length) {
+      setError('Adiciona pelo menos um artigo com descrição antes de emitir.');
+      setIsGenerating(false);
+      return;
+    }
     try {
       const response = await fetch('/api/invoices/generate-pdf', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customerName, customerNif, items, total, applyVat, discountType, discountValue, observations, includeCompanyProfile, dueAt: dueAt || null, companyBankAccountId: companyBankAccountId || null }),
+        body: JSON.stringify({ customerName, customerNif, items: validItems, total, applyVat, discountType, discountValue, observations, includeCompanyProfile, dueAt: dueAt || null, companyBankAccountId: companyBankAccountId || null }),
       });
 
       if (!response.ok) {
@@ -166,7 +173,7 @@ export function InvoiceForm({ initialCustomers, initialProducts, hasCompanyProfi
     try {
       const response = await fetch(draftId ? `/api/invoices/drafts/${draftId}` : '/api/invoices/drafts', {
         method: draftId ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customerName, customerNif, items, applyVat, discountType, discountValue, observations, includeCompanyProfile, dueAt: dueAt || null, companyBankAccountId: companyBankAccountId || null, currency: 'AOA' }),
+        body: JSON.stringify({ customerName, customerNif, items: validItems, applyVat, discountType, discountValue, observations, includeCompanyProfile, dueAt: dueAt || null, companyBankAccountId: companyBankAccountId || null, currency: 'AOA' }),
       });
       const data = await response.json().catch(() => null);
       if (!response.ok || !data?.draft?.id) { setError(data?.error ?? 'Não foi possível guardar o rascunho.'); return; }
@@ -201,7 +208,7 @@ export function InvoiceForm({ initialCustomers, initialProducts, hasCompanyProfi
         {items.map((item, index) => {
           const query = item.desc.trim().toLocaleLowerCase();
           const suggestions = products.filter((product) => !query || product.name.toLocaleLowerCase().includes(query) || (product.codigo ?? '').toLocaleLowerCase().includes(query)).slice(0, 6);
-          return <div key={index} className="grid gap-3 rounded-xl border border-[#e7edf3] bg-[#fbfcfe] p-4 lg:grid-cols-[minmax(240px,1fr)_110px_160px_140px] lg:items-end">
+          return <div key={index} className="grid gap-3 rounded-xl border border-[#e7edf3] bg-[#fbfcfe] p-4 lg:grid-cols-[minmax(220px,1fr)_100px_150px_130px_44px] lg:items-end">
             <div className="relative" onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null) && activeProductIndex === index) setActiveProductIndex(null); }}>
               <label htmlFor={`item-description-${index}`} className="app-label">Descrição</label>
               <input id={`item-description-${index}`} role="combobox" aria-autocomplete="list" aria-expanded={activeProductIndex === index} aria-controls={`product-options-${index}`} className="app-input" value={item.desc} onFocus={() => setActiveProductIndex(index)} onChange={(event) => { updateItem(index, { desc: event.target.value, productId: null }); setActiveProductIndex(index); }} placeholder="Nome do produto ou serviço" autoComplete="off" />
@@ -213,6 +220,7 @@ export function InvoiceForm({ initialCustomers, initialProducts, hasCompanyProfi
             <div><label htmlFor={`item-quantity-${index}`} className="app-label">Quantidade</label><input id={`item-quantity-${index}`} type="number" min="0.01" step="0.01" className="app-input tabular-nums" value={item.qty} onChange={(event) => updateItem(index, { qty: Number(event.target.value) })} /></div>
             <div><label htmlFor={`item-rate-${index}`} className="app-label">Preço unit. (AOA)</label><input id={`item-rate-${index}`} type="number" min="0" step="0.01" className="app-input tabular-nums" value={item.rate} onChange={(event) => updateItem(index, { rate: Number(event.target.value) })} /></div>
             <div className="lg:pb-2"><span className="app-label">Total (AOA)</span><p className="tabular-nums py-2 text-sm font-bold text-[#31475d]">{(item.qty * item.rate).toFixed(2)} AOA</p></div>
+            <div className="flex items-end justify-end lg:pb-1.5">{items.length > 1 && <button type="button" onClick={() => removeItem(index)} aria-label={`Remover linha ${index + 1}`} title="Remover linha" className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[#f0c9c9] bg-white text-base font-bold text-[#a83939] transition hover:bg-red-50">✕</button>}</div>
           </div>;
         })}
       </div>
