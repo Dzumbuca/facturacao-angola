@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
+import { SiteHeader } from '@/components/site-header';
+import { SiteFooter } from '@/components/site-footer';
 import { AdHtml } from '@/components/ad-html';
 
 export const metadata: Metadata = {
@@ -19,19 +21,9 @@ export default async function GuiaEmitirFacturasPage() {
   } catch { adHtml = null; }
 
   return <main className="min-h-screen bg-[#f3f6fa] text-[#1c2d3f]">
-    <header className="border-b border-[#e2e9f1] bg-white">
-      <div className="mx-auto flex max-w-4xl items-center justify-between gap-3 px-4 py-3 md:px-6">
-        <Link href="/inicio" className="flex items-center gap-2">
-          <img src="/logo.png" alt="Facturas" className="h-9 w-auto rounded-lg bg-white object-contain px-1.5 py-1" />
-          <span className="text-sm font-extrabold tracking-[.08em] text-[#102b46]">MACHINE FACTURAS</span>
-        </Link>
-        <Link href="/register" className="rounded-lg bg-[#2878d0] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#216bbd]">Criar conta grátis</Link>
-      </div>
-    </header>
-
     {adHtml && <div className="mx-auto max-w-4xl px-4 pt-5 md:px-6"><div className="overflow-hidden rounded-xl border border-[#e2e9f1] bg-white p-2"><AdHtml html={adHtml} /></div></div>}
 
-    <article className="mx-auto max-w-4xl px-4 py-10 md:px-6">
+    <article className="prose-machine mx-auto max-w-3xl px-4 py-12 md:px-6">
       <p className="text-xs font-bold uppercase tracking-[.16em] text-[#2878d0]">Guia prático · 2026</p>
       <h1 className="mt-2 text-3xl font-bold tracking-tight md:text-4xl">Como emitir facturas em Angola</h1>
       <p className="mt-3 leading-7 text-[#4a5f76]">Se tens uma empresa em Angola, emitir facturas em conformidade fiscal não é opcional — e desde a introdução do IVA e das exigências da AGT, o processo tem regras claras. Este guia resume o essencial para emitir facturas correctas, em minutos.</p>
@@ -79,15 +71,6 @@ export default async function GuiaEmitirFacturasPage() {
       </div>
     </article>
 
-    <footer className="border-t border-[#e2e9f1] bg-white px-4 py-8 md:px-6">
-      <div className="mx-auto flex max-w-4xl flex-col items-center justify-between gap-3 sm:flex-row">
-        <span className="text-xs text-[#708195]">© 2026 Machine Facturas · Angola</span>
-        <div className="flex gap-5 text-sm font-medium text-[#48627a]">
-          <Link href="/ferramentas/iva" className="hover:text-[#2878d0]">Calculadora de IVA</Link>
-          <Link href="/ferramentas/salario" className="hover:text-[#2878d0]">Salário líquido</Link>
-          <Link href="/inicio" className="hover:text-[#2878d0]">Início</Link>
-        </div>
-      </div>
-    </footer>
+    <SiteFooter />
   </main>;
 }

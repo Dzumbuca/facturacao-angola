@@ -1,13 +1,5 @@
 @import "tailwindcss";
 
-/* Anúncios externos: qualquer banner (Adsterra, etc.) encaixa no espaço disponível */
-.ad-slot iframe,
-.ad-slot img,
-.ad-slot ins {
-  max-width: 100% !important;
-  height: auto !important;
-}
-
 :root {
   --background: #f5f6f8;
   --foreground: #18273c;
@@ -45,6 +37,29 @@ button, input { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
 ::selection { background: #cce5f4; color: var(--navy); }
 :focus-visible { outline: 3px solid #73c7d1; outline-offset: 2px; }
+
+/* Movimento discreto: respeita a preferência do sistema */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
+
+/* Anúncios externos: qualquer banner (Adsterra, etc.) encaixa no espaço disponível */
+.ad-slot iframe,
+.ad-slot img,
+.ad-slot ins {
+  max-width: 100% !important;
+  height: auto !important;
+}
+
+/* Prosa editorial (guias, páginas institucionais) */
+.prose-machine h2 { margin-top: 2.5rem; padding-top: 1.25rem; border-top: 1px solid var(--line); font-size: 1.35rem; font-weight: 750; letter-spacing: -.01em; color: var(--navy); }
+.prose-machine p { margin-top: .8rem; line-height: 1.75; color: #46586c; }
+.prose-machine ul, .prose-machine ol { margin-top: .8rem; padding-left: 1.2rem; line-height: 1.75; color: #46586c; }
+.prose-machine li { margin-top: .45rem; }
+.prose-machine a { color: var(--blue); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.prose-machine summary { cursor: pointer; font-weight: 700; color: var(--navy); padding: .65rem 0; }
+.prose-machine details { border-bottom: 1px solid var(--line); }
+
 
 .tabular-nums { font-variant-numeric: tabular-nums; }
 .app-input {
