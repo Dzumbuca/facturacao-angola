@@ -156,6 +156,7 @@ model Product {
 model Invoice {
   shareToken      String?   @unique
   shareExpiresAt  DateTime?
+  lastReminderAt  DateTime?
   id                 String        @id @default(uuid())
   tenantId           String
   customerId         String
