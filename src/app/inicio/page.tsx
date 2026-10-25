@@ -146,6 +146,20 @@ export default function LandingPage() {
       </div>
     </section>
 
+    <section aria-label="Divulgar" className="mx-auto max-w-6xl px-4 pb-12 md:px-6">
+      <div className="flex flex-col items-center gap-8 rounded-3xl border border-[#e2e9f1] bg-white p-8 md:flex-row md:justify-between md:p-10">
+        <div className="max-w-md text-center md:text-left">
+          <h2 className="text-2xl font-bold tracking-tight text-[#1c2d3f]">Conheces uma empresa que precisa?</h2>
+          <p className="mt-3 leading-7 text-[#4a5f76]">Partilha o Machine Facturas no WhatsApp — facturação com assinatura digital, grátis para começar.</p>
+          <a href={"https://wa.me/?text=" + encodeURIComponent('Conhece o Machine Facturas — facturação online para empresas em Angola, com assinatura digital e SAFT. Grátis para começar: https://machinefaturas.shop')} target="_blank" rel="noopener" className="mt-5 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#25d366] px-7 text-base font-bold text-white transition hover:bg-[#1fb855]">Partilhar no WhatsApp</a>
+        </div>
+        <div className="text-center">
+          <img src="/qr-machinefaturas.png" alt="QR code para machinefaturas.shop" className="h-44 w-44 rounded-xl border border-[#e2e9f1] shadow-sm" />
+          <p className="mt-2 text-xs text-[#708195]">Aponta a câmara do telemóvel</p>
+        </div>
+      </div>
+    </section>
+
     <section aria-label="Publicidade" className="mx-auto max-w-6xl px-4 pb-12 md:px-6">
       <a href="https://beta.publishers.adsterra.com/referral/L8Y8skqCEG" rel="nofollow" target="_blank" className="block w-fit mx-auto">
         <img alt="banner" src="https://landings-cdn.adsterratech.com/referralBanners/png/300%20x%20250%20px.png" loading="lazy" className="mx-auto rounded-xl shadow-[0_3px_14px_rgba(25,52,80,.08)]" />
