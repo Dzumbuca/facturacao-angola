@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { ensureReceiptForPaymentTx } from './receipt-service';
 import { prisma } from './prisma';
 import { canRecordPayment, getAllowedPaymentTransition, getInvoicePaymentTotals as calculateInvoicePaymentTotals, getReservedPaymentAmount } from './payment-rules';
 import type { PaymentInput } from './payment-validation';
@@ -60,6 +61,7 @@ export async function transitionPayment(paymentId: string, nextStatus: 'CONFIRME
       tenantId, paymentId: payment.id, eventType: nextStatus, previousStatus: payment.status, nextStatus, actorUserId: actorId,
       snapshot: { amount: Number(payment.amount), invoiceNumber: payment.invoice.number, reference: payment.reference },
     } });
+    if (nextStatus === 'CONFIRMED') await ensureReceiptForPaymentTx(tx, tenantId, payment.id);
     return result;
   }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
 }
