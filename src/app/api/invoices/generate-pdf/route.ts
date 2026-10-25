@@ -29,13 +29,16 @@ export async function POST(req: NextRequest) {
     });
     if (!pdfBuffer) throw new Error('O PDF não foi gerado.');
 
-    return new NextResponse(pdfBuffer as any, {
+    const response = new NextResponse(pdfBuffer as any, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': 'attachment; filename="fatura_selada_' + finalizedInvoice.hash.substring(0,8) + '.pdf"',
+        'X-Invoice-Id': finalizedInvoice.id,
+        'X-Invoice-Number': finalizedInvoice.number ?? '',
       },
     });
+    return response;
   } catch (error) {
     console.error('Erro ao emitir fatura:', error);
     const message = getInvoiceServerErrorMessage(error);

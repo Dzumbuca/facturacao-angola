@@ -1,7 +1,10 @@
 'use client';
 
-import { useMemo, useState, type FormEvent } from 'react';
+import { useMemo, useTransition, useRef, useState, type FormEvent } from 'react';
+import Link from 'next/link';
 import { getInvoiceApiErrorMessage } from '@/lib/invoice-api-error';
+import { createInvoiceShare } from '@/lib/invoice-share';
+import { CheckIcon, WhatsappIcon } from '@/components/icons';
 
 type Customer = { id: string; name: string; nif: string | null };
 type Product = { id: string; codigo: string | null; name: string; price: number; stock: number; categoria: string };
@@ -26,6 +29,10 @@ export function InvoiceForm({ initialCustomers, initialProducts, hasCompanyProfi
   const [companyBankAccountId, setCompanyBankAccountId] = useState(initialDraft?.companyBankAccountId ?? '');
   const [draftId, setDraftId] = useState(initialDraft?.id ?? null);
   const [draftSaved, setDraftSaved] = useState('');
+  const [emitted, setEmitted] = useState<{ id: string; number: string } | null>(null);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [shareCopied, setShareCopied] = useState(false);
+  const successRef = useRef<HTMLDivElement>(null);
   const [activeProductIndex, setActiveProductIndex] = useState<number | null>(null);
   const [creatingCustomer, setCreatingCustomer] = useState(false);
   const [creatingProductFor, setCreatingProductFor] = useState<number | null>(null);
@@ -131,6 +138,18 @@ export function InvoiceForm({ initialCustomers, initialProducts, hasCompanyProfi
     }
   }
 
+  const [pendingShare, startShareTransition] = useTransition();
+  const startShare = () => startShareTransition(async () => {
+    if (!emitted) return;
+    const result = await createInvoiceShare(emitted.id);
+    if (result.ok && result.url) {
+      setShareUrl(result.url);
+      window.open(`https://wa.me/?text=${encodeURIComponent(`Aqui está a tua factura ${emitted.number}: ${result.url}`)}`, '_blank');
+    } else {
+      setError(result.error ?? 'Não foi possível criar o link de partilha.');
+    }
+  });
+
   const handleGeneratePDF = async () => {
     setError('');
     setIsGenerating(true);
@@ -153,6 +172,14 @@ export function InvoiceForm({ initialCustomers, initialProducts, hasCompanyProfi
       }
 
       const blob = await response.blob();
+      const invoiceId = response.headers.get('X-Invoice-Id') ?? '';
+      const invoiceNumber = response.headers.get('X-Invoice-Number') ?? '';
+      if (invoiceId) {
+        setEmitted({ id: invoiceId, number: invoiceNumber });
+        setShareUrl(null);
+        setShareCopied(false);
+        setTimeout(() => successRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+      }
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -185,6 +212,20 @@ export function InvoiceForm({ initialCustomers, initialProducts, hasCompanyProfi
   };
 
   return <div className="space-y-6">
+    {emitted && <div ref={successRef} className="rounded-2xl border-2 border-[#cbe8dc] bg-[#eff9f4] p-5 md:p-6">
+      <p className="flex items-center gap-2 font-bold text-[#227958]"><CheckIcon className="h-5 w-5" /> Factura {emitted.number} emitida e assinada digitalmente! O PDF foi descarregado.</p>
+      <p className="mt-1 text-sm text-[#4a5f76]">Envia agora ao teu cliente:</p>
+      <div className="mt-3 grid gap-2 sm:grid-cols-3">
+        <button type="button" onClick={() => { if (shareUrl) { window.open(`https://wa.me/?text=${encodeURIComponent(`Aqui está a tua factura ${emitted.number}: ${shareUrl}`)}`, '_blank'); return; } startShare(); }} disabled={pendingShare} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#25d366] px-4 text-sm font-bold text-white transition hover:bg-[#1fb855] disabled:cursor-wait disabled:opacity-60"><WhatsappIcon className="h-4 w-4" /> {pendingShare ? 'A criar link…' : shareUrl ? 'Abrir WhatsApp' : 'Enviar por WhatsApp'}</button>
+        <Link href={`/invoices/${emitted.id}`} className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[#cdddeb] bg-white px-4 text-sm font-semibold text-[#1c2d3f] transition hover:bg-[#f6f9fc]">Abrir a factura (email, pagamentos)</Link>
+        <button type="button" onClick={() => { setEmitted(null); setShareUrl(null); }} className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[#cdddeb] bg-white px-4 text-sm font-semibold text-[#1c2d3f] transition hover:bg-[#f6f9fc]">Emitir outra</button>
+      </div>
+      {shareUrl && <div className="mt-3 rounded-lg border border-[#cbe8dc] bg-white p-3 text-xs">
+        <p className="font-semibold text-[#227958]">Link público da factura (30 dias):</p>
+        <p className="mt-1 break-all rounded bg-[#f7f9fc] px-2 py-1.5 font-mono text-[11px] text-[#263c52]">{shareUrl}</p>
+        <button type="button" onClick={() => { navigator.clipboard?.writeText(shareUrl).then(() => { setShareCopied(true); setTimeout(() => setShareCopied(false), 2500); }).catch(() => null); }} className="mt-2 inline-flex min-h-8 items-center rounded-lg border border-[#cdddeb] bg-white px-3 py-1.5 text-xs font-semibold text-[#2878d0] transition hover:bg-[#f0f6fc]">{shareCopied ? 'Copiado ✓' : 'Copiar link'}</button>
+      </div>}
+    </div>}
     <div><p className="text-sm text-[#708195]">Documentos de venda</p><h2 className="mt-1 text-2xl font-bold tracking-tight">{initialDraft ? 'Editar rascunho' : 'Nova fatura'}</h2><p className="mt-2 text-sm text-[#708195]">Indique o adquirente e os artigos a incluir no documento.</p></div>
 
     <section className="rounded-2xl border border-[#e2e9f1] bg-white shadow-[0_3px_14px_rgba(25,52,80,.035)]">
