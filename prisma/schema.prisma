@@ -170,7 +170,6 @@ model Invoice {
   shareToken      String?   @unique
   shareExpiresAt  DateTime?
   lastReminderAt  DateTime?
-  receipt         PaymentReceipt?
   id                 String        @id @default(uuid())
   tenantId           String
   customerId         String
@@ -241,6 +240,7 @@ model Payment {
   createdByUserId String?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
+  receipt         PaymentReceipt?
   tenant          Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   invoice         Invoice        @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
   createdBy       User?          @relation("PaymentCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
