@@ -46,7 +46,7 @@ export default async function CalculadoraIvaPage() {
 
       <div className="mt-10 rounded-3xl bg-[#102b46] px-6 py-10 text-center text-white md:px-12">
         <h2 className="text-2xl font-bold md:text-3xl">Cansado de calcular à mão?</h2>
-        <p className="mx-auto mt-3 max-w-xl leading-7 text-blue-100/80">O Machine Facturas calcula o IVA, assina e numera as suas facturas automaticamente. Grátis para começar — sem cartão.</p>
+        <p className="mx-auto mt-3 max-w-xl leading-7 text-blue-100">O Machine Facturas calcula o IVA, assina e numera as suas facturas automaticamente. Grátis para começar — sem cartão.</p>
         <Link href="/register" className="mt-6 inline-flex min-h-12 items-center justify-center rounded-xl bg-[#38a7b8] px-8 text-base font-bold text-[#102b46] transition hover:bg-[#4fbccb]">Criar conta grátis</Link>
       </div>
     </article>

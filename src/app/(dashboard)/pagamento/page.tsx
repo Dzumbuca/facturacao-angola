@@ -38,9 +38,9 @@ export default async function PagamentoPage() {
         Abre o <strong>Multicaixa Express</strong> → Transferir → usa o número abaixo. O valor depende do plano e da duração que escolheres no formulário.
       </p>
       <div className="mt-4 rounded-xl bg-gradient-to-br from-[#2878d0] to-[#102b46] p-5 text-white">
-        <p className="text-xs font-semibold uppercase tracking-wide text-blue-100/80">Multicaixa Express · número de destino</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-blue-100">Multicaixa Express · número de destino</p>
         <p className="mt-1 text-3xl font-black tabular-nums">937 555 618</p>
-        <p className="mt-2 text-xs text-blue-100/80">Beneficiário: Machine Facturas (Essência & Luz)</p>
+        <p className="mt-2 text-xs text-blue-100">Beneficiário: Machine Facturas (Essência & Luz)</p>
       </div>
     </section>
 

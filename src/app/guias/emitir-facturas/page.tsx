@@ -59,7 +59,7 @@ export default async function GuiaEmitirFacturasPage() {
       </ol>
       <div className="mt-6 rounded-2xl bg-[#102b46] p-6 text-center text-white">
         <p className="text-lg font-bold">Experimenta grátis — sem cartão</p>
-        <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-blue-100/80">O Machine Facturas trata do IVA, da assinatura digital, da numeração e do SAFT por ti. Começa no plano Grátis.</p>
+        <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-blue-100">O Machine Facturas trata do IVA, da assinatura digital, da numeração e do SAFT por ti. Começa no plano Grátis.</p>
         <Link href="/register" className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#38a7b8] px-7 text-sm font-bold text-[#102b46] transition hover:bg-[#4fbccb]">Criar conta grátis</Link>
       </div>
 

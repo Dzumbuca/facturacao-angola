@@ -44,7 +44,7 @@ export default async function ValidadorNifPage() {
 
       <div className="mt-10 rounded-3xl bg-[#102b46] px-6 py-10 text-center text-white md:px-12">
         <h2 className="text-2xl font-bold md:text-3xl">Facturas com os NIFs sempre certos</h2>
-        <p className="mx-auto mt-3 max-w-xl leading-7 text-blue-100/80">No Machine Facturas os NIFs dos clientes ficam guardados e entram automaticamente em cada factura. Grátis para começar — sem cartão.</p>
+        <p className="mx-auto mt-3 max-w-xl leading-7 text-blue-100">No Machine Facturas os NIFs dos clientes ficam guardados e entram automaticamente em cada factura. Grátis para começar — sem cartão.</p>
         <Link href="/register" className="mt-6 inline-flex min-h-12 items-center justify-center rounded-xl bg-[#38a7b8] px-8 text-base font-bold text-[#102b46] transition hover:bg-[#4fbccb]">Criar conta grátis</Link>
       </div>
     </article>
