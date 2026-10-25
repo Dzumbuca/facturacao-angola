@@ -75,7 +75,7 @@ export default function TermosPage() {
     <SiteHeader />
     <div className="prose-machine mx-auto max-w-3xl px-4 py-12 md:px-6">
       <article className="mx-auto w-full max-w-3xl rounded-3xl border border-[#e2e9f1] bg-white p-8 shadow-[0_20px_60px_rgba(25,52,80,.09)] sm:p-12">
-        <img src="/logo.png" alt="Facturas" className="h-10 w-auto rounded-xl bg-white object-contain" />
+        <img src="/logo.png" width="800" height="600" alt="Facturas" className="h-10 w-auto rounded-xl bg-white object-contain" />
         <p className="mt-5 text-xs font-bold uppercase tracking-[.16em] text-[#2878d0]">Machine Facturas</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight">Termos de Serviço</h1>
         <p className="mt-2 text-sm text-[#708195]">Última actualização: Outubro de 2026</p>

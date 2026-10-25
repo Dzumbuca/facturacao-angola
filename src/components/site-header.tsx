@@ -5,7 +5,7 @@ export function SiteHeader() {
   return <header className="sticky top-0 z-40 border-b border-[#e2e9f1] bg-white/95 backdrop-blur">
     <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 md:px-6">
       <Link href="/inicio" className="flex items-center gap-2">
-        <img src="/logo.png" alt="Machine Facturas" className="h-9 w-auto rounded-lg bg-white object-contain px-1.5 py-1" />
+        <img src="/logo.png" width="800" height="600" alt="Machine Facturas" className="h-9 w-auto rounded-lg bg-white object-contain px-1.5 py-1" />
         <span className="text-sm font-extrabold tracking-[.08em] text-[#102b46]">MACHINE FACTURAS</span>
       </Link>
       <nav aria-label="Navegação principal" className="flex items-center gap-1 sm:gap-2">

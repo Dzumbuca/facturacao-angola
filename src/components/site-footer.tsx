@@ -6,7 +6,7 @@ export function SiteFooter() {
     <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
       <div>
         <div className="flex items-center gap-2">
-          <img src="/logo.png" alt="Machine Facturas" className="h-9 w-auto rounded-lg bg-white object-contain px-1.5 py-1" />
+          <img src="/logo.png" width="800" height="600" alt="Machine Facturas" className="h-9 w-auto rounded-lg bg-white object-contain px-1.5 py-1" />
           <span className="text-sm font-extrabold tracking-[.08em] text-white">MACHINE FACTURAS</span>
         </div>
         <p className="mt-3 max-w-xs text-sm leading-6 text-slate-400">Facturação online para empresas angolanas — assinatura digital padrão AGT, SAFT-AO e relatórios, do telemóvel ou computador.</p>
@@ -42,5 +42,11 @@ export function SiteFooter() {
       <p className="text-xs text-slate-500">© 2026 Machine Facturas · Angola</p>
       <a href="https://beta.publishers.adsterra.com/referral/L8Y8skqCEG" rel="nofollow" className="text-xs text-slate-500 transition hover:text-slate-300">Programa de afiliados</a>
     </div>
+    {/* Google AdSense — carregado APENAS nas páginas públicas (com anúncios),
+        nunca no login/registar/dashboard. A verificação do AdSense continua
+        a encontrar o código porque estas páginas são as apresentadas na conta. */}
+    <link rel="preconnect" href="https://pagead2.googlesyndication.com" />
+    <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9283668518139905" crossOrigin="anonymous" />
   </footer>;
 }

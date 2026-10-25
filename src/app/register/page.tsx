@@ -49,12 +49,12 @@ export default function RegisterPage() {
       <div className="mx-auto flex w-full max-w-6xl overflow-hidden bg-white md:min-h-[min(760px,calc(100vh-3rem))] md:rounded-3xl md:border md:border-[#e2e9f1] md:shadow-[0_20px_60px_rgba(25,52,80,.09)]">
       <aside className="relative hidden w-[42%] flex-col justify-between overflow-hidden bg-[#102b46] p-10 text-white md:flex lg:p-14">
         <div className="absolute -right-24 -top-20 h-72 w-72 rounded-full border border-white/10"/><div className="absolute -bottom-24 -left-24 h-80 w-80 rounded-full border border-white/10"/>
-        <Link href="/register" className="relative flex items-center gap-3"><img src="/logo.png" alt="Facturas" className="h-11 w-auto max-w-[120px] rounded-xl bg-white object-contain px-2 py-1.5" /><span className="text-sm font-extrabold tracking-[.12em]">FACTURAÇÃO<br/><span className="text-xs font-medium tracking-[.2em] text-blue-200">ANGOLA</span></span></Link>
+        <Link href="/register" className="relative flex items-center gap-3"><img src="/logo.png" width="800" height="600" alt="Facturas" className="h-11 w-auto max-w-[120px] rounded-xl bg-white object-contain px-2 py-1.5" /><span className="text-sm font-extrabold tracking-[.12em]">FACTURAÇÃO<br/><span className="text-xs font-medium tracking-[.2em] text-blue-200">ANGOLA</span></span></Link>
         <div className="relative max-w-sm"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#78c8d0]">Comece por aqui</p><h2 className="mt-4 text-4xl font-bold leading-tight">Uma base simples para o seu negócio.</h2><p className="mt-4 leading-7 text-blue-100/75">Crie o espaço da sua empresa e comece a organizar a sua facturação.</p></div>
-        <p className="relative text-xs text-blue-100/55">Plataforma de facturação · Angola</p>
+        <p className="relative text-xs text-blue-100/85">Plataforma de facturação · Angola</p>
       </aside>
       <section className="flex w-full flex-col justify-center px-6 py-10 sm:px-12 md:w-[58%] md:px-14 lg:px-20">
-        <Link href="/register" className="mb-7 flex items-center gap-2 text-xs font-bold uppercase tracking-[.14em] text-[#2878d0] md:hidden"><img src="/logo.png" alt="Facturas" className="h-8 w-auto max-w-[84px] rounded-lg bg-white object-contain px-1.5 py-1" /> Facturação Angola</Link>
+        <Link href="/register" className="mb-7 flex items-center gap-2 text-xs font-bold uppercase tracking-[.14em] text-[#2878d0] md:hidden"><img src="/logo.png" width="800" height="600" alt="Facturas" className="h-8 w-auto max-w-[84px] rounded-lg bg-white object-contain px-1.5 py-1" /> Facturação Angola</Link>
         {submitted ? <p role="status" className="mb-6 rounded-lg bg-emerald-50 p-4 text-sm text-emerald-800">Se o registo puder ser concluído, enviaremos instruções para o endereço indicado.</p> : <div className="mb-6">
           <p className="text-xs font-bold uppercase tracking-[.16em] text-[#2878d0]">Novo espaço de trabalho</p>
           <h1 className="mt-2 text-3xl font-bold tracking-tight">Criar a sua conta</h1>

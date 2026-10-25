@@ -35,6 +35,9 @@ export function AdHtml({ html }: { html: string }) {
           for (const attribute of Array.from(element.attributes ?? [])) {
             script.setAttribute(attribute.name, attribute.value);
           }
+          // Evita carregar o loader do AdSense duas vezes na mesma página
+          const src = script.getAttribute('src') ?? '';
+          if (src.includes('adsbygoogle.js') && document.querySelector('script[src*="adsbygoogle.js"]')) continue;
           script.text = (node as HTMLScriptElement).text;
           container.appendChild(script);
         } else {

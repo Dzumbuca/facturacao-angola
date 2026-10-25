@@ -39,13 +39,13 @@ export default function LoginPage() {
       <div className="mx-auto flex w-full max-w-6xl overflow-hidden bg-white md:min-h-[min(760px,calc(100vh-3rem))] md:rounded-3xl md:border md:border-[#e2e9f1] md:shadow-[0_20px_60px_rgba(25,52,80,.09)]">
       <aside className="relative hidden w-[42%] flex-col justify-between overflow-hidden bg-[#102b46] p-10 text-white md:flex lg:p-14">
         <div className="absolute -right-24 -top-20 h-72 w-72 rounded-full border border-white/10"/><div className="absolute -bottom-24 -left-24 h-80 w-80 rounded-full border border-white/10"/>
-        <Link href="/login" className="relative flex items-center gap-3"><img src="/logo.png" alt="Facturas" className="h-11 w-auto max-w-[120px] rounded-xl bg-white object-contain px-2 py-1.5" /><span className="text-sm font-extrabold tracking-[.12em]">FACTURAÇÃO<br/><span className="text-xs font-medium tracking-[.2em] text-blue-200">ANGOLA</span></span></Link>
+        <Link href="/login" className="relative flex items-center gap-3"><img src="/logo.png" width="800" height="600" alt="Facturas" className="h-11 w-auto max-w-[120px] rounded-xl bg-white object-contain px-2 py-1.5" /><span className="text-sm font-extrabold tracking-[.12em]">FACTURAÇÃO<br/><span className="text-xs font-medium tracking-[.2em] text-blue-200">ANGOLA</span></span></Link>
         <div className="relative max-w-sm"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#78c8d0]">Gestão financeira</p><h2 className="mt-4 text-4xl font-bold leading-tight">A sua facturação, organizada.</h2><p className="mt-4 leading-7 text-blue-100/75">Aceda ao espaço da sua empresa para gerir documentos, clientes e produtos.</p></div>
-        <p className="relative text-xs text-blue-100/55">Plataforma de facturação · Angola</p>
+        <p className="relative text-xs text-blue-100/85">Plataforma de facturação · Angola</p>
       </aside>
       <section className="relative flex w-full flex-col justify-center px-6 py-12 sm:px-12 md:w-[58%] md:px-14 lg:px-20">
         <Link href="/inicio#precos" className="absolute top-5 right-6 hidden text-xs font-semibold text-[#48627a] hover:text-[#2878d0] md:inline">Ver planos e preços →</Link>
-        <Link href="/login" className="mb-10 flex items-center gap-2 text-xs font-bold uppercase tracking-[.14em] text-[#2878d0] md:hidden"><img src="/logo.png" alt="Facturas" className="h-8 w-auto max-w-[84px] rounded-lg bg-white object-contain px-1.5 py-1" /> Facturação Angola</Link>
+        <Link href="/login" className="mb-10 flex items-center gap-2 text-xs font-bold uppercase tracking-[.14em] text-[#2878d0] md:hidden"><img src="/logo.png" width="800" height="600" alt="Facturas" className="h-8 w-auto max-w-[84px] rounded-lg bg-white object-contain px-1.5 py-1" /> Facturação Angola</Link>
         <div className="mb-8">
           <p className="text-xs font-bold uppercase tracking-[.16em] text-[#2878d0]">Bem-vindo de volta</p>
           <h1 className="mt-2 text-3xl font-bold tracking-tight">Iniciar sessão</h1>
