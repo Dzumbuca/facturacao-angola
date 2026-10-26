@@ -57,8 +57,8 @@ export default async function GuiaRegistarEmpresaPage() {
 
       <div className="mt-10 rounded-3xl bg-[#102b46] px-6 py-10 text-center text-white md:px-12">
         <h2 className="text-2xl font-bold md:text-3xl">Empresa registada? Factura em minutos.</h2>
-        <p className="mx-auto mt-3 max-w-xl leading-7 text-blue-100/90">O Machine Facturas acompanha a tua empresa desde a primeira venda: facturas assinadas, SAFT-AO, relatórios e lembretes de cobrança. Grátis para começar.</p>
-        <Link href="/register" className="mt-6 inline-flex min-h-12 items-center justify-center rounded-xl bg-[#38a7b8] px-8 text-base font-bold text-[#102b46] transition hover:bg-[#4fbccb]">Criar conta grátis</Link>
+        <p className="mx-auto mt-3 max-w-xl leading-7 text-blue-100">O Machine Facturas acompanha a tua empresa desde a primeira venda: facturas assinadas, SAFT-AO, relatórios e lembretes de cobrança. Grátis para começar.</p>
+        <Link href="/register" className="mt-6 inline-flex min-h-12 items-center justify-center rounded-xl bg-[#2878d0] px-8 text-base font-bold text-white transition hover:bg-[#216bbd]">Criar conta grátis</Link>
       </div>
     </article>
 

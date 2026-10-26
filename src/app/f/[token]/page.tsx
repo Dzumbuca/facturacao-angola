@@ -68,11 +68,11 @@ export default async function SharedInvoicePage({ params }: Props) {
             <img src="/logo.png" alt="" width="800" height="600" className="h-12 w-auto max-w-[96px] rounded-lg bg-white object-contain px-2 py-1.5" />
             <div>
               <p className="text-base font-extrabold">{invoice.tenant.legalName || invoice.tenant.name}</p>
-              <p className="text-xs text-blue-100/90">NIF {invoice.tenant.nif || '—'}{invoice.tenant.phone ? ` · ${invoice.tenant.phone}` : ''}</p>
+              <p className="text-xs text-blue-100">NIF {invoice.tenant.nif || '—'}{invoice.tenant.phone ? ` · ${invoice.tenant.phone}` : ''}</p>
             </div>
           </div>
           <div className="text-right">
-            <p className="text-xs uppercase tracking-[.16em] text-blue-100/90">{invoice.type} · Documento comercial</p>
+            <p className="text-xs uppercase tracking-[.16em] text-blue-100">{invoice.type} · Documento comercial</p>
             <p className="mt-1 text-2xl font-black tabular-nums">{invoice.number}</p>
             <span className={`mt-2 inline-flex rounded-full border px-3 py-1 text-xs font-bold ${stateStyles[state] ?? ''}`}>{stateLabels[state] ?? state}</span>
           </div>

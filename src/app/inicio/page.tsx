@@ -210,7 +210,7 @@ export default function LandingPage() {
       <div className="rounded-3xl bg-[#102b46] px-6 py-14 text-center text-white md:px-12">
         <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Comece a facturar hoje.</h2>
         <p className="mx-auto mt-4 max-w-xl leading-7 text-blue-100">Registo em 1 minuto com a sua conta Google, sem instalação e sem cartão. A sua primeira factura pode estar emitida antes do seu próximo café.</p>
-        <Link href="/register" className="mt-8 inline-flex min-h-12 items-center justify-center rounded-xl bg-[#38a7b8] px-8 text-base font-bold text-[#102b46] transition hover:bg-[#4fbccb]">Criar conta grátis</Link>
+        <Link href="/register" className="mt-8 inline-flex min-h-12 items-center justify-center rounded-xl bg-[#2878d0] px-8 text-base font-bold text-white transition hover:bg-[#216bbd]">Criar conta grátis</Link>
       </div>
     </section>
 
