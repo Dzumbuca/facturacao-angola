@@ -115,3 +115,11 @@ next-env.d.ts
 
 # ficheiros temporarios locais
 .tmp-*
+
+# ficheiros auxiliares do ambiente
+dsh-*.cjs
+dsh-*.py
+.tmp-*.cjs
+.tmp-*.py
+.tmp-*.html
+.tmp-*.txt
