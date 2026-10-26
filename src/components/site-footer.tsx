@@ -23,7 +23,11 @@ export function SiteFooter() {
       <nav aria-label="Ferramentas grátis">
         <p className="text-xs font-bold uppercase tracking-[.14em] text-slate-500">Ferramentas grátis</p>
         <ul className="mt-3 space-y-2 text-sm">
+          <li><Link href="/ferramentas" className="text-slate-300 transition hover:text-white">Centro de Ferramentas</Link></li>
           <li><Link href="/ferramentas/iva" className="text-slate-300 transition hover:text-white">Calculadora de IVA</Link></li>
+          <li><Link href="/ferramentas/conversor-iva" className="text-slate-300 transition hover:text-white">Conversor de IVA</Link></li>
+          <li><Link href="/ferramentas/lucro" className="text-slate-300 transition hover:text-white">Lucro e margem</Link></li>
+          <li><Link href="/ferramentas/preco-venda" className="text-slate-300 transition hover:text-white">Preço de venda</Link></li>
           <li><Link href="/ferramentas/salario" className="text-slate-300 transition hover:text-white">Salário líquido e IRT</Link></li>
           <li><Link href="/ferramentas/nif" className="text-slate-300 transition hover:text-white">Validador de NIF</Link></li>
         </ul>

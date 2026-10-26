@@ -60,6 +60,19 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .prose-machine summary { cursor: pointer; font-weight: 700; color: var(--navy); padding: .65rem 0; }
 .prose-machine details { border-bottom: 1px solid var(--line); }
 
+/* Cartão CTA escuro: .prose-machine pinta h2/p/a com cores escuras (regras
+   fora de @layer vencem os utilitários Tailwind), ficando ilegível sobre o
+   fundo #102b46. Estas sobreposições restauram o esquema claro do cartão. */
+.prose-machine .prose-cta h2 { color: #ffffff; margin-top: 0; padding-top: 0; border-top: 0; }
+.prose-machine .prose-cta p { color: #dbeafe; }
+.prose-machine .prose-cta a { color: #ffffff; text-decoration: none; }
+
+/* Navegação interna das ferramentas dentro da prosa editorial */
+.prose-machine a.prose-nav { color: #48627a; text-decoration: none; }
+.prose-machine a.prose-nav:hover { color: #2878d0; }
+.prose-machine a.prose-chip { color: #2878d0; text-decoration: none; }
+.prose-machine a.prose-chip:hover { background-color: #f0f6fc; }
+
 
 .tabular-nums { font-variant-numeric: tabular-nums; }
 .app-input {

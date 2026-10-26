@@ -1,2 +1,0 @@
-const c=require("crypto");try{const k=c.createPrivateKey(process.env.KEY_SL.replace(/\n/g,"
-"));console.log("PARSE OK:",k.asymmetricKeyType, k.asymmetricKeyType==="rsa"?"":"NAO-RSA")}catch(e){console.error("PARSE FAIL:",e.message);process.exit(1)}

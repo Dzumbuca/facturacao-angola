@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
 import { AdHtml } from '@/components/ad-html';
+import { BackToHub, RelatedTools } from '../tool-links';
 import { NifValidator } from './validator';
 
 // Anúncios actualizam a cada 60s sem novo deploy
@@ -33,6 +34,7 @@ export default async function ValidadorNifPage() {
     {adHtml && <div className="mx-auto max-w-4xl px-4 pt-5 md:px-6"><div className="overflow-hidden rounded-xl border border-[#e2e9f1] bg-white p-2"><AdHtml html={adHtml} /></div></div>}
 
     <article className="prose-machine mx-auto max-w-3xl px-4 py-12 md:px-6">
+      <BackToHub />
       <p className="text-xs font-bold uppercase tracking-[.16em] text-[#2878d0]">Ferramenta grátis</p>
       <h1 className="mt-2 text-3xl font-bold tracking-tight md:text-4xl">Validador de NIF — Angola</h1>
       <p className="mt-3 leading-7 text-[#4a5f76]">Verifica se um NIF angolano tem o formato correcto — de empresas e de particulares — antes de o usares numa factura.</p>
@@ -45,7 +47,9 @@ export default async function ValidadorNifPage() {
         <strong className="text-[#1c2d3f]">Nota:</strong> este validador confirma a <strong>estrutura</strong> do NIF, não a sua existência nem o nome do titular. A confirmação oficial junto da AGT é feita através dos serviços da Administração Geral Tributária.
       </div>
 
-      <div className="mt-10 rounded-3xl bg-[#102b46] px-6 py-10 text-center text-white md:px-12">
+      <RelatedTools actualId="nif" categoria="Fiscalidade" />
+
+      <div className="prose-cta mt-10 rounded-3xl bg-[#102b46] px-6 py-10 text-center text-white md:px-12">
         <h2 className="text-2xl font-bold md:text-3xl">Facturas com os NIFs sempre certos</h2>
         <p className="mx-auto mt-3 max-w-xl leading-7 text-blue-100">No Machine Facturas os NIFs dos clientes ficam guardados e entram automaticamente em cada factura. Grátis para começar — sem cartão.</p>
         <Link href="/register" className="mt-6 inline-flex min-h-12 items-center justify-center rounded-xl bg-[#2878d0] px-8 text-base font-bold text-white transition hover:bg-[#216bbd]">Criar conta grátis</Link>

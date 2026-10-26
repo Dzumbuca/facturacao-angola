@@ -10,7 +10,7 @@ export function SiteHeader() {
       </Link>
       <nav aria-label="Navegação principal" className="flex items-center gap-1 sm:gap-2">
         <Link href="/inicio#funcionalidades" className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-[#48627a] transition hover:bg-[#f0f6fc] hover:text-[#2878d0] md:inline">Funcionalidades</Link>
-        <Link href="/ferramentas/iva" className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-[#48627a] transition hover:bg-[#f0f6fc] hover:text-[#2878d0] md:inline">Ferramentas</Link>
+        <Link href="/ferramentas" className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-[#48627a] transition hover:bg-[#f0f6fc] hover:text-[#2878d0] md:inline">Ferramentas</Link>
         <Link href="/guias/emitir-facturas" className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-[#48627a] transition hover:bg-[#f0f6fc] hover:text-[#2878d0] md:inline">Guia</Link>
         <Link href="/inicio#precos" className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-[#48627a] transition hover:bg-[#f0f6fc] hover:text-[#2878d0] md:inline">Preços</Link>
         <Link href="/login" className="rounded-lg px-3 py-2 text-sm font-semibold text-[#2878d0] transition hover:bg-[#f0f6fc]">Entrar</Link>

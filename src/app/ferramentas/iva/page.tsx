@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
 import { AdHtml } from '@/components/ad-html';
+import { BackToHub, RelatedTools } from '../tool-links';
 import { IvaCalculator } from './calculator';
 
 // Anúncios actualizam a cada 60s sem novo deploy
@@ -33,6 +34,7 @@ export default async function CalculadoraIvaPage() {
     {adHtml && <div className="mx-auto max-w-4xl px-4 pt-5 md:px-6"><div className="overflow-hidden rounded-xl border border-[#e2e9f1] bg-white p-2"><AdHtml html={adHtml} /></div></div>}
 
     <article className="prose-machine mx-auto max-w-3xl px-4 py-12 md:px-6">
+      <BackToHub />
       <p className="text-xs font-bold uppercase tracking-[.16em] text-[#2878d0]">Ferramenta grátis</p>
       <h1 className="mt-2 text-3xl font-bold tracking-tight md:text-4xl">Calculadora de IVA — Angola</h1>
       <p className="mt-3 leading-7 text-[#4a5f76]">Acrescente ou retire o IVA em Kwanzas, com a taxa geral de 14% ou as taxas reduzidas. Resultados instantâneos, sem registo.</p>
@@ -47,7 +49,9 @@ export default async function CalculadoraIvaPage() {
         <div className="rounded-2xl border border-[#e2e9f1] bg-white p-5"><h2 className="font-bold">Emissão automática</h2><p className="mt-2 text-sm leading-6 text-[#5b6f85]">No Machine Facturas, o IVA é calculado e destacado automaticamente em cada factura, com assinatura digital.</p></div>
       </div>
 
-      <div className="mt-10 rounded-3xl bg-[#102b46] px-6 py-10 text-center text-white md:px-12">
+      <RelatedTools actualId="iva" categoria="Fiscalidade" />
+
+      <div className="prose-cta mt-10 rounded-3xl bg-[#102b46] px-6 py-10 text-center text-white md:px-12">
         <h2 className="text-2xl font-bold md:text-3xl">Cansado de calcular à mão?</h2>
         <p className="mx-auto mt-3 max-w-xl leading-7 text-blue-100">O Machine Facturas calcula o IVA, assina e numera as suas facturas automaticamente. Grátis para começar — sem cartão.</p>
         <Link href="/register" className="mt-6 inline-flex min-h-12 items-center justify-center rounded-xl bg-[#2878d0] px-8 text-base font-bold text-white transition hover:bg-[#216bbd]">Criar conta grátis</Link>
