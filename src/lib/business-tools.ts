@@ -9,9 +9,10 @@ export type IvaTaxa = { valor: number; etiqueta: string };
 // Taxas de IVA em vigor em Angola, tal como na calculadora de IVA existente.
 export const IVA_TAXAS: IvaTaxa[] = [
   { valor: 14, etiqueta: '14% — taxa geral (Angola)' },
-  { valor: 7, etiqueta: '7% — taxa reduzida' },
-  { valor: 2, etiqueta: '2% — taxa especial' },
-  { valor: 0, etiqueta: '0% — isento' },
+  { valor: 7, etiqueta: '7% — regime simplificado / hotelaria e restauração' },
+  { valor: 5, etiqueta: '5% — bens alimentares e insumos abrangidos' },
+  { valor: 1, etiqueta: '1% — regime especial de Cabinda' },
+  { valor: 0, etiqueta: 'Sem IVA — simulação de operação isenta' },
 ];
 
 /**
@@ -22,6 +23,9 @@ export const IVA_TAXAS: IvaTaxa[] = [
 export function parseValor(input: string): number {
   const limpo = input.trim().replace(/\s/g, '');
   if (limpo === '') return Number.NaN;
+  // Terminação em separador = introdução incompleta ("12.5," não é um número).
+  // Sem isto, "12.5," seria lido como 125 — um erro de 10× sem aviso.
+  if (/[.,]$/.test(limpo)) return Number.NaN;
   let normalizado = limpo;
   if (limpo.includes(',') && limpo.includes('.')) {
     // Ambos os separadores: o ponto é de milhares, a vírgula é decimal (pt-AO).
@@ -162,7 +166,7 @@ export type FerramentaResumo = {
   /** Rota da ferramenta; null quando ainda não está disponível ("Em breve"). */
   href: string | null;
   estado: FerramentaEstado;
-  /** Identificador do ícone desenhado no cartão (ver tools-icon.tsx). */
+  /** Identificador do ícone desenhado no cartão (ver tool-icon.tsx). */
   icone: string;
 };
 

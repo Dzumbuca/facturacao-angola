@@ -101,11 +101,11 @@ export default function LandingPage() {
       { '@type': 'Offer', name: 'Pro', price: '19900', priceCurrency: 'AOA' },
     ],
   };
-  return <main className="min-h-screen bg-[#f3f6fa] text-[#1c2d3f]">
+  return <main className="landing-page min-h-screen bg-[#f3f6fa] text-[#1c2d3f]">
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
     <SiteHeader />
 
-    <section className="relative overflow-hidden border-b border-[#e2e9f1] bg-white">
+    <section className="landing-hero relative overflow-hidden border-b border-[#e2e9f1] bg-white">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_0%,rgba(40,120,208,.10),transparent_70%)]" />
       <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-14 text-center md:px-6 md:pt-20">
         <p className="mx-auto inline-flex items-center gap-2 rounded-full border border-[#d8e6f5] bg-white px-4 py-1.5 text-xs font-bold uppercase tracking-[.12em] text-[#2878d0]">
@@ -130,7 +130,7 @@ export default function LandingPage() {
       <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {features.map((feature, index) => {
           const Icon = featureIcons[index % featureIcons.length];
-          return <div key={feature.title} className="rounded-2xl border border-[#e2e9f1] bg-white p-6 shadow-[0_3px_14px_rgba(25,52,80,.035)] transition hover:border-[#c9def2] hover:shadow-[0_8px_28px_rgba(25,52,80,.07)]">
+          return <div key={feature.title} className="landing-feature rounded-2xl border border-[#e2e9f1] bg-white p-6 shadow-[0_3px_14px_rgba(25,52,80,.035)] transition hover:border-[#c9def2] hover:shadow-[0_8px_28px_rgba(25,52,80,.07)]">
             <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#eef6ff] text-[#2878d0]"><Icon /></span>
             <h3 className="mt-4 font-bold text-[#1c2d3f]">{feature.title}</h3>
             <p className="mt-2 text-sm leading-6 text-[#5b6f85]">{feature.body}</p>

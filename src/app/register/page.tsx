@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export default function RegisterPage() {
   const [error, setError] = useState('');
@@ -45,7 +46,8 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-stretch bg-[#f3f6fa] text-[#1c2d3f] md:p-6">
+    <main className="relative flex min-h-screen items-stretch bg-[#f3f6fa] text-[#1c2d3f] md:p-6">
+      <div className="auth-theme-control"><ThemeToggle compact /></div>
       <div className="mx-auto flex w-full max-w-6xl overflow-hidden bg-white md:min-h-[min(760px,calc(100vh-3rem))] md:rounded-3xl md:border md:border-[#e2e9f1] md:shadow-[0_20px_60px_rgba(25,52,80,.09)]">
       <aside className="relative hidden w-[42%] flex-col justify-between overflow-hidden bg-[#102b46] p-10 text-white md:flex lg:p-14">
         <div className="absolute -right-24 -top-20 h-72 w-72 rounded-full border border-white/10"/><div className="absolute -bottom-24 -left-24 h-80 w-80 rounded-full border border-white/10"/>

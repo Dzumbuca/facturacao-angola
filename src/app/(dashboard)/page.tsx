@@ -55,9 +55,18 @@ export default async function DashboardPage({ searchParams }: Props) {
   const totalStates = Math.max(1, stateRows.reduce((sum, row) => sum + row.count, 0));
   const rangeLabel = `${new Intl.DateTimeFormat('pt-AO', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Africa/Luanda' }).format(period.start)} — ${new Intl.DateTimeFormat('pt-AO', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Africa/Luanda' }).format(new Date(period.endExclusive.getTime() - 1))}`;
 
-  return <div className="space-y-8 pb-8">
-    <section className="flex flex-col justify-between gap-5 border-b border-[#dce2e9] pb-6 lg:flex-row lg:items-end">
-      <div><p className="text-[11px] font-bold uppercase tracking-[.16em] text-[#67768a]">{tenant.legalName || tenant.name}</p><h2 className="mt-2 text-[30px] font-semibold leading-tight tracking-[-.035em] text-[#152236] md:text-[36px]">Resumo da actividade</h2><p className="mt-2 text-sm text-[#65758a]">Visão financeira · {rangeLabel}</p></div>
+  const pendingCount = metrics.stateCounts.ISSUED + metrics.stateCounts.PARTIALLY_PAID;
+  const invoiceCountLabel = metrics.invoiceCount.toLocaleString('pt-AO');
+  const dashboardIndicators = [
+    { label: 'Facturas emitidas', value: invoiceCountLabel, detail: 'No período seleccionado', tone: 'text-[#021F87]' },
+    { label: 'Pagas', value: metrics.stateCounts.PAID.toLocaleString('pt-AO'), detail: 'Facturas liquidadas', tone: 'text-[#227958]' },
+    { label: 'Pendentes', value: pendingCount.toLocaleString('pt-AO'), detail: 'Emitidas ou parciais', tone: 'text-[#b16d15]' },
+    { label: 'Vencidas', value: metrics.stateCounts.OVERDUE.toLocaleString('pt-AO'), detail: 'Acompanhe os atrasos', tone: 'text-[#ad4444]' },
+  ];
+
+  return <div className="dashboard-view space-y-7 pb-8">
+    <section className="dashboard-hero flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
+      <div><p className="text-[11px] font-bold uppercase tracking-[.16em] text-[#67768a]">Olá, {tenant.name}</p><h2 className="mt-2 text-[30px] font-semibold leading-tight tracking-[-.035em] text-[#152236] md:text-[36px]">Resumo da actividade</h2><p className="mt-2 text-sm text-[#65758a]">Visão financeira · {rangeLabel}</p></div>
       <Link href="/invoices/new" className="inline-flex min-h-11 items-center justify-center gap-2 self-start rounded-md bg-[#021F87] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#061965] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#021F87] lg:self-auto"><span aria-hidden="true">＋</span> Emitir factura</Link>
     </section>
 
@@ -70,8 +79,16 @@ export default async function DashboardPage({ searchParams }: Props) {
       <span className="col-span-2 text-xs text-[#7b8796] sm:col-span-4 sm:text-right">Datas no fuso Africa/Luanda · valores em AOA</span>
     </form>
 
+    <section aria-label="Indicadores de facturação" className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+      {dashboardIndicators.map((indicator) => <article key={indicator.label} className="dashboard-kpi">
+        <p className="text-xs font-semibold text-[#69788c]">{indicator.label}</p>
+        <p className={`mt-2 tabular-nums text-2xl font-semibold tracking-tight ${indicator.tone}`}>{indicator.value}</p>
+        <p className="mt-1 text-xs text-[#788596]">{indicator.detail}</p>
+      </article>)}
+    </section>
+
     <section aria-label="Desempenho financeiro" className="grid gap-7 xl:grid-cols-[minmax(0,1.8fr)_minmax(250px,.72fr)]">
-      <article className="min-w-0 border-y border-[#dce2e9] bg-white px-4 py-6 sm:px-7 sm:py-7">
+      <article className="dashboard-panel min-w-0 px-4 py-6 sm:px-7 sm:py-7">
         <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
           <div><p className="text-[11px] font-bold uppercase tracking-[.15em] text-[#69788c]">Total facturado</p><p className="mt-3 tabular-nums text-[36px] font-semibold leading-none tracking-[-.045em] text-[#142238] sm:text-[44px]">{money(metrics.invoiced)}</p><div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
             {metrics.invoicedChangePercent === null ? <span className="text-[#778496]">Sem base para comparar com o período anterior</span> : <><span className={`font-bold ${metrics.invoicedChangePercent >= 0 ? 'text-[#227958]' : 'text-[#ad4444]'}`}>{metrics.invoicedChangePercent >= 0 ? '↑' : '↓'} {Math.abs(metrics.invoicedChangePercent).toLocaleString('pt-AO', { maximumFractionDigits: 1 })}%</span><span className="text-[#778496]">face ao período anterior · {money(metrics.invoicedPrevious)}</span></>}
@@ -85,7 +102,7 @@ export default async function DashboardPage({ searchParams }: Props) {
         <div className="mt-3"><FinancialLineChart points={chart} label={metricLabel} color={metricColor} /></div>
       </article>
 
-      <div className="flex flex-col divide-y divide-[#e5e9ef] border-y border-[#dce2e9] bg-white px-5 sm:px-6">
+      <div className="dashboard-panel flex flex-col divide-y divide-[#e5e9ef] px-5 sm:px-6">
         <article className="py-5"><p className="text-[11px] font-bold uppercase tracking-[.14em] text-[#69788c]">Recebido</p><p className="mt-2 tabular-nums text-[25px] font-semibold tracking-[-.03em] text-[#227958]">{money(metrics.received)}</p><p className="mt-1 text-xs text-[#788596]">Pagamentos confirmados no período</p></article>
         <article className="py-5"><p className="text-[11px] font-bold uppercase tracking-[.14em] text-[#69788c]">Por receber</p><p className="mt-2 tabular-nums text-[25px] font-semibold tracking-[-.03em] text-[#26354a]">{money(metrics.outstanding)}</p><p className="mt-1 text-xs text-[#788596]">Saldo das facturas do período</p></article>
         <article className="py-5"><p className="text-[11px] font-bold uppercase tracking-[.14em] text-[#69788c]">Em atraso</p><p className={`mt-2 tabular-nums text-[25px] font-semibold tracking-[-.03em] ${metrics.overdue > 0 ? 'text-[#ad4444]' : 'text-[#26354a]'}`}>{money(metrics.overdue)}</p><p className="mt-1 text-xs text-[#788596]">{metrics.dueSoon > 0 ? `${money(metrics.dueSoon)} vence nos próximos 7 dias` : 'Saldo com vencimento ultrapassado'}</p></article>

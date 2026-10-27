@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { PrintButton } from './print-button';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 type Props = { params: Promise<{ token: string }> };
 
@@ -52,7 +53,7 @@ export default async function SharedReceiptPage({ params }: Props) {
     <div className="mx-auto max-w-2xl">
       <div className="mb-4 flex items-center justify-between print:hidden">
         <Link href="/inicio" className="text-xs font-semibold text-[#708195] hover:text-[#2878d0]">← machinefaturas.shop</Link>
-        <PrintButton />
+        <div className="flex items-center gap-2"><ThemeToggle compact /><PrintButton /></div>
       </div>
 
       <article className="overflow-hidden rounded-2xl border border-[#e2e9f1] bg-white shadow-[0_8px_30px_rgba(25,52,80,.06)]">

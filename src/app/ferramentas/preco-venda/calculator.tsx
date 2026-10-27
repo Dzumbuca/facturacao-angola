@@ -38,26 +38,26 @@ export function PrecoVendaCalculator() {
 
   const limpar = () => { setCustoAquisicao(''); setOutrosCustos(''); setMargemPretendida(''); setQuantidade(''); setArredondamento('0'); };
 
-  return <div className="space-y-5">
+  return <div className="app-calculator space-y-5">
     <div className="grid gap-4 sm:grid-cols-2">
       <div>
         <label htmlFor="preco-custo" className="app-label">Custo de aquisição (Kz) <span className="text-[#c44747]">*</span></label>
-        <input id="preco-custo" inputMode="decimal" className="app-input tabular-nums" placeholder="Ex.: 500" value={custoAquisicao} onChange={(event) => setCustoAquisicao(event.target.value)} aria-invalid={erroCusto || undefined} />
+        <input id="preco-custo" inputMode="decimal" className="app-input tabular-nums" placeholder="Ex.: 500" value={custoAquisicao} onChange={(event) => setCustoAquisicao(event.target.value)} aria-invalid={custoAquisicao.trim() !== '' && erroCusto ? true : undefined} />
         {erroCusto && custoAquisicao.trim() !== '' && <p className="mt-1 text-xs font-semibold text-[#c44747]">{ERRO_CAMPO}</p>}
       </div>
       <div>
         <label htmlFor="preco-outros" className="app-label">Outros custos por unidade (Kz) — opcional</label>
-        <input id="preco-outros" inputMode="decimal" className="app-input tabular-nums" placeholder="Ex.: 100 (transporte, embalagem…)" value={outrosCustos} onChange={(event) => setOutrosCustos(event.target.value)} aria-invalid={erroOutros || undefined} />
+        <input id="preco-outros" inputMode="decimal" className="app-input tabular-nums" placeholder="Ex.: 100 (transporte, embalagem…)" value={outrosCustos} onChange={(event) => setOutrosCustos(event.target.value)} aria-invalid={outrosCustos.trim() !== '' && erroOutros ? true : undefined} />
         {erroOutros && outrosCustos.trim() !== '' && <p className="mt-1 text-xs font-semibold text-[#c44747]">{ERRO_CAMPO}</p>}
       </div>
       <div>
         <label htmlFor="preco-margem" className="app-label">Margem de lucro pretendida (%) <span className="text-[#c44747]">*</span></label>
-        <input id="preco-margem" inputMode="decimal" className="app-input tabular-nums" placeholder="Ex.: 25" value={margemPretendida} onChange={(event) => setMargemPretendida(event.target.value)} aria-invalid={erroMargem || undefined} />
+        <input id="preco-margem" inputMode="decimal" className="app-input tabular-nums" placeholder="Ex.: 25" value={margemPretendida} onChange={(event) => setMargemPretendida(event.target.value)} aria-invalid={margemPretendida.trim() !== '' && erroMargem ? true : undefined} />
         {erroMargem && margemPretendida.trim() !== '' && <p className="mt-1 text-xs font-semibold text-[#c44747]">{ERRO_MARGEM}</p>}
       </div>
       <div>
         <label htmlFor="preco-quantidade" className="app-label">Quantidade — opcional</label>
-        <input id="preco-quantidade" inputMode="numeric" className="app-input tabular-nums" placeholder="Ex.: 10" value={quantidade} onChange={(event) => setQuantidade(event.target.value)} aria-invalid={erroQuantidade || undefined} />
+        <input id="preco-quantidade" inputMode="numeric" className="app-input tabular-nums" placeholder="Ex.: 10" value={quantidade} onChange={(event) => setQuantidade(event.target.value)} aria-invalid={quantidade.trim() !== '' && erroQuantidade ? true : undefined} />
         {erroQuantidade && quantidade.trim() !== '' && <p className="mt-1 text-xs font-semibold text-[#c44747]">{ERRO_CAMPO}</p>}
       </div>
     </div>
@@ -108,6 +108,7 @@ export function PrecoVendaCalculator() {
         </div>}
       </div>
 
+      {resultado && <p className="sr-only" aria-live="polite">{`Preço recomendado ${formatKz(resultado.precoAjustado ?? 0)}, lucro estimado por unidade ${formatKz(resultado.lucroUnitario ?? 0)}.`}</p>}
       <p className="rounded-xl bg-[#f7f9fc] p-4 text-sm leading-6 text-[#46586c]">
         <strong className="text-[#1c2d3f]">Nota:</strong> o preço recomendado é uma simulação baseada nos custos e na margem que introduziu — não é uma garantia de rentabilidade. Compare sempre com os preços do mercado antes de decidir.
       </p>

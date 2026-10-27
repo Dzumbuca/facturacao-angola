@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { FormEvent, useEffect, useState } from 'react';
 
 export default function LoginPage() {
@@ -35,7 +36,8 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-stretch bg-[#f3f6fa] text-[#1c2d3f] md:p-6">
+    <main className="relative flex min-h-screen items-stretch bg-[#f3f6fa] text-[#1c2d3f] md:p-6">
+      <div className="auth-theme-control"><ThemeToggle compact /></div>
       <div className="mx-auto flex w-full max-w-6xl overflow-hidden bg-white md:min-h-[min(760px,calc(100vh-3rem))] md:rounded-3xl md:border md:border-[#e2e9f1] md:shadow-[0_20px_60px_rgba(25,52,80,.09)]">
       <aside className="relative hidden w-[42%] flex-col justify-between overflow-hidden bg-[#102b46] p-10 text-white md:flex lg:p-14">
         <div className="absolute -right-24 -top-20 h-72 w-72 rounded-full border border-white/10"/><div className="absolute -bottom-24 -left-24 h-80 w-80 rounded-full border border-white/10"/>
@@ -44,7 +46,7 @@ export default function LoginPage() {
         <p className="relative text-xs text-blue-100">Plataforma de facturação · Angola</p>
       </aside>
       <section className="relative flex w-full flex-col justify-center px-6 py-12 sm:px-12 md:w-[58%] md:px-14 lg:px-20">
-        <Link href="/inicio#precos" className="absolute top-5 right-6 hidden text-xs font-semibold text-[#48627a] hover:text-[#2878d0] md:inline">Ver planos e preços →</Link>
+        <Link href="/inicio#precos" className="absolute top-5 right-20 hidden text-xs font-semibold text-[#48627a] hover:text-[#2878d0] md:inline">Ver planos e preços →</Link>
         <Link href="/login" className="mb-10 flex items-center gap-2 text-xs font-bold uppercase tracking-[.14em] text-[#2878d0] md:hidden"><img src="/logo.png" width="800" height="600" alt="Facturas" className="h-8 w-auto max-w-[84px] rounded-lg bg-white object-contain px-1.5 py-1" /> Facturação Angola</Link>
         <div className="mb-8">
           <p className="text-xs font-bold uppercase tracking-[.16em] text-[#2878d0]">Bem-vindo de volta</p>

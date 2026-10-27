@@ -11,11 +11,11 @@ export function ConversorIva() {
 
   const valorLido = parseValor(valor);
   const taxaValor = Number(taxa) || 0;
-  const valido = Number.isFinite(valorLido) && valorLido > 0 && taxaValor >= 0 && taxaValor <= 100;
+  const valido = Number.isFinite(valorLido) && valorLido >= 0 && taxaValor >= 0 && taxaValor <= 100;
 
   const resultado = valido ? converterIva(valorLido, taxaValor, modo) : null;
 
-  return <div className="space-y-5">
+  return <div className="app-calculator space-y-5">
     <div className="grid gap-4 sm:grid-cols-2">
       <div>
         <span className="app-label" id="conversor-modo-label">Modo de conversão</span>
@@ -86,5 +86,13 @@ export function ConversorIva() {
         <p className="mt-1 text-lg font-bold tabular-nums text-[#227958]">{formatKz(resultado.totalComIva)}</p>
       </div>
     </div>}
+
+    {resultado && <p className="sr-only" aria-live="polite">{`Sem IVA ${formatKz(resultado.valorSemIva)}, IVA ${formatKz(resultado.iva)}, total com IVA ${formatKz(resultado.totalComIva)}.`}</p>}
+
+    <div className="flex justify-end">
+      <button type="button" onClick={() => { setValor(''); setTaxa('14'); }} className="rounded-lg border border-[#d5dfea] bg-white px-4 py-2 text-sm font-bold text-[#48627a] transition hover:border-[#c9def2] hover:text-[#2878d0] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2878d0]">
+        Limpar campos
+      </button>
+    </div>
   </div>;
 }

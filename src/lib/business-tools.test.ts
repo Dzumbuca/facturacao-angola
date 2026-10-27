@@ -29,6 +29,16 @@ describe('parseValor', () => {
     expect(Number.isNaN(parseValor('12,3,4'))).toBe(true);
   });
 
+  it('rejeita valores terminados em separador (introdução incompleta)', () => {
+    expect(Number.isNaN(parseValor('12.5,'))).toBe(true);
+    expect(Number.isNaN(parseValor('12,'))).toBe(true);
+    expect(Number.isNaN(parseValor('12.'))).toBe(true);
+  });
+
+  it('ambiguidade documentada: "1,234" lê-se como vírgula decimal (padrão pt-AO)', () => {
+    expect(parseValor('1,234')).toBe(1.234);
+  });
+
   it('mantém negativos e zero (a validação de intervalo é dos componentes)', () => {
     expect(parseValor('-5')).toBe(-5);
     expect(parseValor('0')).toBe(0);
@@ -154,8 +164,14 @@ describe('converterIva', () => {
     expect(rem.iva).toBe(0);
   });
 
-  it('taxas disponíveis são as configuradas no projecto: 14, 7, 2 e 0', () => {
-    expect(IVA_TAXAS.map((t) => t.valor)).toEqual([14, 7, 2, 0]);
+  it('configura as taxas do Código do IVA e identifica a simulação sem IVA', () => {
+    expect(IVA_TAXAS.map((t) => t.valor)).toEqual([14, 7, 5, 1, 0]);
+    expect(IVA_TAXAS.at(-1)?.etiqueta).toMatch(/simulação.*isenta/i);
+  });
+
+  it('aceita valor zero nos dois modos', () => {
+    expect(converterIva(0, 14, 'acrescentar')).toEqual({ valorSemIva: 0, iva: 0, totalComIva: 0 });
+    expect(converterIva(0, 14, 'retirar')).toEqual({ valorSemIva: 0, iva: 0, totalComIva: 0 });
   });
 });
 
@@ -170,6 +186,17 @@ describe('formatação pt-AO', () => {
     expect(formatPercent(40)).toBe('40%');
     expect(formatPercent(12.5)).toBe('12,5%');
     expect(formatPercent(null)).toBe('—');
+  });
+
+  it('fronteira do arredondamento: 81 Kz com incremento 25 → 100 Kz (sem salto por vírgula flutuante)', () => {
+    const r = calcularPrecoVenda({ custoAquisicao: 81, outrosCustos: 0, margemPretendida: 0, quantidade: 0, arredondamento: 25 });
+    expect(r.precoAjustado).toBe(100);
+    expect(r.margemEfetivaPercent).toBeCloseTo(19, 6);
+  });
+
+  it('formatKz trata valores não finitos como zero', () => {
+    expect(formatKz(Number.NaN)).toMatch(/0,00/);
+    expect(formatKz(Number.POSITIVE_INFINITY)).toMatch(/0,00/);
   });
 });
 
@@ -194,5 +221,11 @@ describe('filtrarFerramentas', () => {
 
   it('pesquisa vazia com todas as categorias devolve o catálogo completo', () => {
     expect(filtrarFerramentas(FERRAMENTAS, '', 'Todas')).toHaveLength(FERRAMENTAS.length);
+  });
+
+  it('pesquisa e categoria combinam-se (intersecção)', () => {
+    const r = filtrarFerramentas(FERRAMENTAS, 'iva', 'Fiscalidade');
+    expect(r.every((f) => f.categoria === 'Fiscalidade')).toBe(true);
+    expect(r.map((f) => f.id).sort()).toEqual(['conversor-iva', 'iva']);
   });
 });

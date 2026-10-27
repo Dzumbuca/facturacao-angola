@@ -17,7 +17,7 @@ export function IvaCalculator() {
   const iva = mode === 'add' ? base * (rateValue / 100) : base - withoutIva;
   const total = mode === 'add' ? base : base;
 
-  return <div className="space-y-5">
+  return <div className="app-calculator space-y-5">
     <div className="grid gap-4 sm:grid-cols-2">
       <div>
         <label htmlFor="iva-mode" className="app-label">O valor que tens já inclui IVA?</label>
@@ -30,9 +30,10 @@ export function IvaCalculator() {
         <label htmlFor="iva-rate" className="app-label">Taxa de IVA</label>
         <select id="iva-rate" className="app-input" value={rate} onChange={(event) => setRate(event.target.value)}>
           <option value="14">14% — taxa geral (Angola)</option>
-          <option value="7">7% — taxa reduzida</option>
-          <option value="2">2% — taxa especial</option>
-          <option value="0">0% — isento</option>
+          <option value="7">7% — regime simplificado / hotelaria e restauração</option>
+          <option value="5">5% — bens alimentares e insumos abrangidos</option>
+          <option value="1">1% — regime especial de Cabinda</option>
+          <option value="0">Sem IVA — simulação de operação isenta</option>
         </select>
       </div>
     </div>

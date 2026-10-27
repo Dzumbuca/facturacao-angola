@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { AdHtml } from '@/components/ad-html';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 type NavLink = { href: string; label: string; icon: string };
 const groups: { title: string; links: NavLink[] }[] = [
@@ -74,7 +75,7 @@ export function AppShell({ children, platformAdmin = false, plan = 'FREE', adHtm
       <aside id="primary-sidebar" aria-label="Menu principal" aria-hidden={isMobile && !mobileOpen} inert={isMobile && !mobileOpen} className={`fixed inset-y-0 left-0 z-50 flex h-screen h-dvh w-[min(84vw,280px)] flex-col overflow-hidden border-r border-white/10 bg-[#071936] px-4 py-5 text-white transition-transform duration-200 md:w-[220px] md:translate-x-0 md:px-4 md:py-6 lg:w-[252px] lg:px-5 ${mobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'}`}>
         <Link href="/" className="mb-5 flex shrink-0 items-center gap-3 rounded-md px-2" aria-label="BlackMachine, início" onClick={() => setMobileOpen(false)}>
           <img src="/logo.png" width="800" height="600" alt="Facturas" className="h-9 w-auto max-w-[92px] rounded-md bg-white object-contain px-1.5 py-1" />
-          <span className="leading-tight"><strong className="block text-[14px] tracking-[.12em]">BLACKMACHINE</strong><span className="text-[10px] uppercase tracking-[.1em] text-slate-400">Gestão financeira</span></span>
+          <span className="leading-tight"><strong className="block text-[14px] tracking-[.12em]">MACHINE FACTURAS</strong><span className="text-[10px] uppercase tracking-[.1em] text-slate-400">Gestão financeira</span></span>
         </Link>
         <nav aria-label="Navegação principal" className="min-h-0 flex-1 space-y-4 overflow-x-hidden overflow-y-auto overscroll-contain py-1">
           {groups.map((group) => <section key={group.title} aria-label={group.title}>
@@ -126,7 +127,7 @@ export function AppShell({ children, platformAdmin = false, plan = 'FREE', adHtm
               <img src="/logo.png" width="800" height="600" alt="Facturas" className="h-8 w-auto max-w-[80px] rounded-md bg-white object-contain px-1.5 py-1 md:hidden" />
               <div><p className="text-[10px] font-bold uppercase tracking-[.14em] text-[#708195] md:hidden">Facturação Angola</p><h1 className="text-base font-bold text-[#1c2d3f] md:text-lg">{title}</h1></div>
             </div>
-            <span className="hidden rounded-full border border-[#e1e8f0] bg-[#f7f9fc] px-3 py-1.5 text-xs font-medium text-[#607286] sm:inline-flex">Área de gestão</span>
+            <div className="flex items-center gap-2"><span className="hidden rounded-full border border-[#e1e8f0] bg-[#f7f9fc] px-3 py-1.5 text-xs font-medium text-[#607286] sm:inline-flex">Área de gestão</span><ThemeToggle compact /></div>
           </div>
         </header>
         <main className="mx-auto w-full max-w-[1440px] px-4 py-6 md:px-8 md:py-8">{children}</main>

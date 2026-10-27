@@ -46,7 +46,7 @@ export default async function CentroFerramentasPage() {
       <div className="mt-10 grid gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-[#e2e9f1] bg-white p-5"><h2 className="font-bold">Fiscalidade</h2><p className="mt-2 text-sm leading-6 text-[#5b6f85]">IVA, salário líquido com IRT e validação de NIF, com as taxas em vigor em Angola.</p></div>
         <div className="rounded-2xl border border-[#e2e9f1] bg-white p-5"><h2 className="font-bold">Gestão financeira</h2><p className="mt-2 text-sm leading-6 text-[#5b6f85]">Lucro, margem, markup, preço de venda e indicadores para decidir melhor.</p></div>
-        <div className="rounded-2xl border border-[#e2e9f1] bg-white p-5"><h2 className="font-bold">Documentos</h2><p className="mt-2 text-sm leading-6 text-[#5b6f85]">Orçamentos, facturas proforma, recibos e mapas de despesas — em preparação.</p></div>
+        <div className="rounded-2xl border border-[#e2e9f1] bg-white p-5"><h2 className="font-bold">Documentos</h2><p className="mt-2 text-sm leading-6 text-[#5b6f85]">Orçamentos, facturas proforma, recibos e mapas de despesas em PDF — prontos a enviar.</p></div>
       </div>
 
       <div className="prose-cta mt-10 rounded-3xl bg-[#102b46] px-6 py-10 text-center text-white md:px-12">

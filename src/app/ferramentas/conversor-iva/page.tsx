@@ -13,7 +13,7 @@ export const revalidate = 60;
 export const metadata: Metadata = {
   metadataBase: new URL('https://machinefaturas.shop'),
   title: 'Conversor de IVA em Angola | Machine Facturas',
-  description: 'Converta grátis valores com IVA incluído ou excluído: adicione ou retire o IVA de 14%, 7%, 2% ou 0% em kwanzas, nos dois sentidos. Sem registo.',
+  description: 'Converta valores com IVA incluído ou excluído em kwanzas. Simule as taxas legais e confirme qual se aplica à sua operação.',
   keywords: ['conversor IVA Angola', 'retirar IVA de um valor', 'acrescentar IVA', 'IVA incluído', 'calcular IVA 14%'],
   openGraph: {
     title: 'Conversor de IVA — Angola',
@@ -46,7 +46,7 @@ export default async function ConversorIvaPage() {
       <div className="mt-10 grid gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-[#e2e9f1] bg-white p-5"><h2 className="font-bold">Modo A — adicionar</h2><p className="mt-2 text-sm leading-6 text-[#5b6f85]">Parte de um valor sem IVA e mostra o IVA a cobrar e o total com IVA. Ideal para preparar facturas.</p></div>
         <div className="rounded-2xl border border-[#e2e9f1] bg-white p-5"><h2 className="font-bold">Modo B — retirar</h2><p className="mt-2 text-sm leading-6 text-[#5b6f85]">Parte de um valor total e separa a parte que é IVA. Cuidado: o IVA não se tira multiplicando — divide-se.</p></div>
-        <div className="rounded-2xl border border-[#e2e9f1] bg-white p-5"><h2 className="font-bold">Taxas legais</h2><p className="mt-2 text-sm leading-6 text-[#5b6f85]">14% (taxa geral), 7% (reduzida), 2% (especial) e 0% (isento). Confirme sempre a lista vigente junto da AGT.</p></div>
+        <div className="rounded-2xl border border-[#e2e9f1] bg-white p-5"><h2 className="font-bold">Taxas e enquadramento</h2><p className="mt-2 text-sm leading-6 text-[#5b6f85]">A lei prevê 14%, 7%, 5% e 1% para regimes e operações específicos. A opção sem IVA serve apenas para simular uma operação isenta; isenção não é uma taxa geral.</p></div>
       </div>
 
       <h2 className="mt-10 text-2xl font-bold">Fórmulas utilizadas</h2>
@@ -54,6 +54,8 @@ export default async function ConversorIvaPage() {
         <li>Modo A — Valor do IVA = valor sem IVA × taxa ÷ 100 · Total = valor sem IVA + IVA</li>
         <li>Modo B — Valor sem IVA = total com IVA ÷ (1 + taxa ÷ 100) · IVA incluído = total − valor sem IVA</li>
       </ul>
+      <p>Este conversor faz uma simulação matemática e não determina o enquadramento fiscal. A taxa depende do regime do contribuinte, do tipo de bem ou serviço e, em certos casos, da localização. Confirme a taxa aplicável com a AGT ou com o seu contabilista.</p>
+      <p className="mt-4 text-sm leading-6 text-[#5b6f85]">Referência legal: <a className="font-semibold text-[#2878d0] underline" href="https://www.ucm.minfin.gov.ao/cs/groups/public/documents/document/aw4z/nzu5/~edisp/minfin3759673.pdf" target="_blank" rel="noreferrer">Código do IVA republicado pela Lei n.º 14/23, de 28 de Dezembro</a>.</p>
       <p>No modo B, dividir é essencial: retirar 14% multiplicando por 0,14 dá um resultado errado, porque a taxa incide sobre o valor sem IVA e não sobre o total.</p>
 
       <h2 className="mt-10 text-2xl font-bold">Exemplo de cálculo</h2>

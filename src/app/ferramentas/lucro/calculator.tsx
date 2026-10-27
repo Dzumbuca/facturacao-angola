@@ -37,7 +37,7 @@ export function LucroCalculator() {
 
   const limpar = () => { setNome(''); setCustoAquisicao(''); setOutrosCustos(''); setPrecoVenda(''); setQuantidade(''); };
 
-  return <div className="space-y-5">
+  return <div className="app-calculator space-y-5">
     <div>
       <label htmlFor="lucro-nome" className="app-label">Nome do produto ou serviço (opcional)</label>
       <input id="lucro-nome" className="app-input" placeholder="Ex.: Sacos de arroz 25 kg" value={nome} onChange={(event) => setNome(event.target.value)} />
@@ -46,22 +46,22 @@ export function LucroCalculator() {
     <div className="grid gap-4 sm:grid-cols-2">
       <div>
         <label htmlFor="lucro-custo" className="app-label">Custo de aquisição (Kz) <span className="text-[#c44747]">*</span></label>
-        <input id="lucro-custo" inputMode="decimal" className="app-input tabular-nums" placeholder="Ex.: 500" value={custoAquisicao} onChange={(event) => setCustoAquisicao(event.target.value)} aria-invalid={erroCusto || undefined} />
+        <input id="lucro-custo" inputMode="decimal" className="app-input tabular-nums" placeholder="Ex.: 500" value={custoAquisicao} onChange={(event) => setCustoAquisicao(event.target.value)} aria-invalid={custoAquisicao.trim() !== '' && erroCusto ? true : undefined} />
         {erroCusto && custoAquisicao.trim() !== '' && <p className="mt-1 text-xs font-semibold text-[#c44747]">{ERRO_CAMPO}</p>}
       </div>
       <div>
         <label htmlFor="lucro-outros" className="app-label">Outros custos por unidade (Kz) — opcional</label>
-        <input id="lucro-outros" inputMode="decimal" className="app-input tabular-nums" placeholder="Ex.: 100 (transporte, embalagem…)" value={outrosCustos} onChange={(event) => setOutrosCustos(event.target.value)} aria-invalid={erroOutros || undefined} />
+        <input id="lucro-outros" inputMode="decimal" className="app-input tabular-nums" placeholder="Ex.: 100 (transporte, embalagem…)" value={outrosCustos} onChange={(event) => setOutrosCustos(event.target.value)} aria-invalid={outrosCustos.trim() !== '' && erroOutros ? true : undefined} />
         {erroOutros && outrosCustos.trim() !== '' && <p className="mt-1 text-xs font-semibold text-[#c44747]">{ERRO_CAMPO}</p>}
       </div>
       <div>
         <label htmlFor="lucro-preco" className="app-label">Preço de venda (Kz) <span className="text-[#c44747]">*</span></label>
-        <input id="lucro-preco" inputMode="decimal" className="app-input tabular-nums" placeholder="Ex.: 1000" value={precoVenda} onChange={(event) => setPrecoVenda(event.target.value)} aria-invalid={erroPreco || undefined} />
+        <input id="lucro-preco" inputMode="decimal" className="app-input tabular-nums" placeholder="Ex.: 1000" value={precoVenda} onChange={(event) => setPrecoVenda(event.target.value)} aria-invalid={precoVenda.trim() !== '' && erroPreco ? true : undefined} />
         {erroPreco && precoVenda.trim() !== '' && <p className="mt-1 text-xs font-semibold text-[#c44747]">{ERRO_CAMPO}</p>}
       </div>
       <div>
         <label htmlFor="lucro-quantidade" className="app-label">Quantidade vendida — opcional</label>
-        <input id="lucro-quantidade" inputMode="numeric" className="app-input tabular-nums" placeholder="Ex.: 10" value={quantidade} onChange={(event) => setQuantidade(event.target.value)} aria-invalid={erroQuantidade || undefined} />
+        <input id="lucro-quantidade" inputMode="numeric" className="app-input tabular-nums" placeholder="Ex.: 10" value={quantidade} onChange={(event) => setQuantidade(event.target.value)} aria-invalid={quantidade.trim() !== '' && erroQuantidade ? true : undefined} />
         {erroQuantidade && quantidade.trim() !== '' && <p className="mt-1 text-xs font-semibold text-[#c44747]">{ERRO_CAMPO}</p>}
       </div>
     </div>
@@ -103,7 +103,7 @@ export function LucroCalculator() {
         </div>}
       </div>
 
-      <p className="rounded-xl bg-[#f7f9fc] p-4 text-sm leading-6 text-[#46586c]">
+      <p className="rounded-xl bg-[#f7f9fc] p-4 text-sm leading-6 text-[#46586c]" aria-live="polite">
         <strong className="text-[#1c2d3f]">Em palavras simples:</strong> cada unidade {nome.trim() !== '' ? `de «${nome.trim()}» ` : ''}custa-lhe <strong className="tabular-nums">{formatKz(resultado.custoTotalUnitario)}</strong> (compra + outros custos) e é vendida por <strong className="tabular-nums">{formatKz(preco)}</strong>. Fica com <strong className="tabular-nums">{formatKz(resultado.lucroUnitario)}</strong> por unidade — {formatPercent(resultado.margemPercent)} do preço de venda.{resultado.lucroTotal !== null ? ` Vendendo ${quantidade.replace('.', ',')} unidades, o resultado total é ${formatKz(resultado.lucroTotal)}.` : ''}
       </p>
     </>}

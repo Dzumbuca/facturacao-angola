@@ -13,7 +13,7 @@ export const revalidate = 60;
 export const metadata: Metadata = {
   metadataBase: new URL('https://machinefaturas.shop'),
   title: 'Calculadora de IVA 14% — Angola | Machine Facturas',
-  description: 'Calculadora de IVA grátis para Angola: acrescente ou retire o IVA de 14%, 7% ou 2% em Kwanzas. Resultados instantâneos, sem registo.',
+  description: 'Calculadora de IVA para Angola: simule o acréscimo ou a separação do imposto em kwanzas e confirme a taxa aplicável à sua operação.',
   keywords: ['calculadora IVA Angola', 'calcular IVA 14', 'IVA Angola', 'imposto sobre o valor acrescentado', 'calculadora de impostos Angola'],
   openGraph: {
     title: 'Calculadora de IVA 14% — Angola',
@@ -45,9 +45,10 @@ export default async function CalculadoraIvaPage() {
 
       <div className="mt-10 grid gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-[#e2e9f1] bg-white p-5"><h2 className="font-bold">Taxa geral: 14%</h2><p className="mt-2 text-sm leading-6 text-[#5b6f85]">Aplica-se à maioria dos bens e serviços em Angola, desde a entrada em vigor do IVA em 2023 (que substituiu o consumo).</p></div>
-        <div className="rounded-2xl border border-[#e2e9f1] bg-white p-5"><h2 className="font-bold">Taxa reduzida: 7%</h2><p className="mt-2 text-sm leading-6 text-[#5b6f85]">Para bens e serviços essenciais previstos na lei do IVA — confirme sempre a lista vigente junto da AGT.</p></div>
+        <div className="rounded-2xl border border-[#e2e9f1] bg-white p-5"><h2 className="font-bold">Taxas por enquadramento</h2><p className="mt-2 text-sm leading-6 text-[#5b6f85]">A lei prevê também 7%, 5% e 1% para regimes e operações específicos. Confirme a taxa aplicável ao bem, serviço e localização junto da AGT.</p></div>
         <div className="rounded-2xl border border-[#e2e9f1] bg-white p-5"><h2 className="font-bold">Emissão automática</h2><p className="mt-2 text-sm leading-6 text-[#5b6f85]">No Machine Facturas, o IVA é calculado e destacado automaticamente em cada factura, com assinatura digital.</p></div>
       </div>
+      <p className="mt-4 text-sm leading-6 text-[#5b6f85]">Referência legal: <a className="font-semibold text-[#2878d0] underline" href="https://www.ucm.minfin.gov.ao/cs/groups/public/documents/document/aw4z/nzu5/~edisp/minfin3759673.pdf" target="_blank" rel="noreferrer">Código do IVA republicado pela Lei n.º 14/23, de 28 de Dezembro</a>. A calculadora não determina o enquadramento fiscal da operação.</p>
 
       <RelatedTools actualId="iva" categoria="Fiscalidade" />
 

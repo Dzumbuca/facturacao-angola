@@ -24,7 +24,7 @@ export function NifValidator() {
   const [value, setValue] = useState('');
   const resultado = value.trim() ? validarNif(value) : null;
 
-  return <div className="space-y-5">
+  return <div className="app-calculator space-y-5">
     <div>
       <label htmlFor="nif-input" className="app-label">NIF a validar</label>
       <input

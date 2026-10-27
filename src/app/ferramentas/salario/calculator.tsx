@@ -30,7 +30,7 @@ export function SalaryCalculator() {
   const irt = valid ? Math.max(0, taxable * bracket.rate - bracket.deduct) : 0;
   const net = grossValue - inss - irt;
 
-  return <div className="space-y-5">
+  return <div className="app-calculator space-y-5">
     <div>
       <label htmlFor="salary-gross" className="app-label">Salário bruto mensal (Kz) <span className="text-[#c44747]">*</span></label>
       <input id="salary-gross" inputMode="decimal" className="app-input tabular-nums text-lg" placeholder="Ex.: 350000" value={gross} onChange={(event) => setGross(event.target.value)} />
