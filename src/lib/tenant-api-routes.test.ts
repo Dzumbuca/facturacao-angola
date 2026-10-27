@@ -18,6 +18,13 @@ const routes: [string, string[]][] = [
   ['src/app/api/invoices/[id]/pdf/route.ts', ['getTenantReadAccess']],
   ['src/app/api/payments/[id]/status/route.ts', ['getTenantWriteAccess()']],
   ['src/app/api/reports/export/route.ts', ['getTenantReadAccess']],
+  ['src/app/api/business-documents/route.ts', ['getTenantReadAccess', 'getTenantWriteAccess']],
+  ['src/app/api/business-documents/[id]/route.ts', ['getTenantReadAccess', 'getTenantWriteAccess']],
+  ['src/app/api/business-documents/[id]/status/route.ts', ['getTenantWriteAccess']],
+  ['src/app/api/business-documents/[id]/convert-to-invoice/route.ts', ['getTenantWriteAccess']],
+  ['src/app/api/business-documents/[id]/pdf/route.ts', ['getTenantReadAccess']],
+  ['src/app/api/customers/[id]/route.ts', ['getTenantWriteAccess']],
+  ['src/app/api/produtos/[id]/route.ts', ['getTenantWriteAccess']],
 ];
 
 describe('tenant API route security coverage', () => {

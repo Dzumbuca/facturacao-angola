@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { decode, encode } from 'next-auth/jwt';
 import { prisma } from '@/lib/prisma';
+import { canRefreshAuthSession } from '@/lib/session-refresh-security';
 
 // Reemite o token de sessão com os dados frescos da base de dados.
 // Usado depois do onboarding (empresa criada) para que o proxy, que lê
@@ -18,9 +19,9 @@ export async function POST(request: NextRequest) {
 
     const user = await (prisma.user as any).findUnique({
       where: { id: token.sub },
-      select: { status: true, tenantId: true, sessionVersion: true },
+      select: { status: true, tenantId: true, sessionVersion: true, emailVerified: true, emailVerificationRequired: true },
     });
-    if (!user || user.status !== 'ACTIVE') return NextResponse.json({ error: 'Sessão inválida.' }, { status: 401 });
+    if (!canRefreshAuthSession(token, user)) return NextResponse.json({ error: 'Sessão inválida.' }, { status: 401 });
 
     const refreshed = await encode({
       token: { ...token, tenantId: user.tenantId, sessionVersion: user.sessionVersion },
