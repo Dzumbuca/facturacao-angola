@@ -9,6 +9,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 type NavLink = { href: string; label: string; icon: string };
 const groups: { title: string; links: NavLink[] }[] = [
   { title: 'Principal', links: [{ href: '/', label: 'Dashboard', icon: 'grid' }] },
+  { title: 'Documentos Empresariais', links: [{ href: '/documentos', label: 'Documentos', icon: 'file' }] },
   { title: 'Ferramentas', links: [{ href: '/ferramentas', label: 'Centro de ferramentas', icon: 'tools' }] },
   { title: 'Operações', links: [{ href: '/invoices', label: 'Facturas', icon: 'file' }, { href: '/customers', label: 'Clientes', icon: 'users' }, { href: '/produtos', label: 'Produtos e serviços', icon: 'box' }] },
   { title: 'Análise', links: [{ href: '/reports', label: 'Relatórios', icon: 'chart' }] },
@@ -19,6 +20,7 @@ const titles: Record<string, string> = {
   '/invoices': 'Facturas',
   '/invoices/new': 'Emitir fatura',
   '/ferramentas': 'Centro de ferramentas',
+  '/documentos': 'Documentos Empresariais',
   '/reports': 'Relatórios',
   '/customers': 'Clientes',
   '/produtos': 'Produtos',
