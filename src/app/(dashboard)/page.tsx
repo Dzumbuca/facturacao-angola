@@ -70,6 +70,18 @@ export default async function DashboardPage({ searchParams }: Props) {
       <Link href="/invoices/new" className="inline-flex min-h-11 items-center justify-center gap-2 self-start rounded-md bg-[#021F87] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#061965] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#021F87] lg:self-auto"><span aria-hidden="true">＋</span> Emitir factura</Link>
     </section>
 
+    <section aria-label="Atalhos para ferramentas empresariais" className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      {[
+        { href: '/ferramentas/factura-proforma', title: 'Criar proforma', detail: 'Antes da factura definitiva' },
+        { href: '/ferramentas/orcamento-pdf', title: 'Fazer orçamento', detail: 'Preparar uma proposta' },
+        { href: '/ferramentas/recibos', title: 'Emitir recibo', detail: 'Registar um pagamento' },
+        { href: '/ferramentas/mapa-despesas', title: 'Organizar despesas', detail: 'Consultar o mapa mensal' },
+      ].map((shortcut) => <Link key={shortcut.href} href={shortcut.href} className="dashboard-shortcut rounded-xl border border-[#e2e9f1] bg-white p-3 transition hover:border-[#2878d0] hover:bg-[#f7f9fc] sm:p-4">
+        <span className="block text-sm font-semibold text-[#26354a]">{shortcut.title}</span>
+        <span className="mt-1 block text-xs leading-5 text-[#708195]">{shortcut.detail}</span>
+      </Link>)}
+    </section>
+
     <form action="/" method="get" className="grid grid-cols-2 items-end gap-3 sm:grid-cols-[minmax(130px,1fr)_minmax(130px,1fr)_minmax(130px,1fr)_auto]">
       <div><label className="app-label" htmlFor="period">Período</label><select id="period" name="period" defaultValue={query.period || 'thisMonth'} className="app-input">{periodOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
       <div><label className="app-label" htmlFor="from">De</label><input id="from" name="from" type="date" defaultValue={query.from} className="app-input" /></div>

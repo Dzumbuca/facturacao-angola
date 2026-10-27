@@ -9,6 +9,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 type NavLink = { href: string; label: string; icon: string };
 const groups: { title: string; links: NavLink[] }[] = [
   { title: 'Principal', links: [{ href: '/', label: 'Dashboard', icon: 'grid' }] },
+  { title: 'Ferramentas', links: [{ href: '/ferramentas', label: 'Centro de ferramentas', icon: 'tools' }] },
   { title: 'Operações', links: [{ href: '/invoices', label: 'Facturas', icon: 'file' }, { href: '/customers', label: 'Clientes', icon: 'users' }, { href: '/produtos', label: 'Produtos e serviços', icon: 'box' }] },
   { title: 'Análise', links: [{ href: '/reports', label: 'Relatórios', icon: 'chart' }] },
   { title: 'Empresa', links: [{ href: '/empresa', label: 'Perfil da empresa', icon: 'building' }] },
@@ -17,6 +18,7 @@ const titles: Record<string, string> = {
   '/': 'Dashboard',
   '/invoices': 'Facturas',
   '/invoices/new': 'Emitir fatura',
+  '/ferramentas': 'Centro de ferramentas',
   '/reports': 'Relatórios',
   '/customers': 'Clientes',
   '/produtos': 'Produtos',
@@ -31,6 +33,7 @@ function NavIcon({ name }: { name: string }) {
     users: <><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></>,
     box: <><path d="m12 2 9 5-9 5-9-5 9-5Z"/><path d="m3 7v10l9 5 9-5V7M12 12v10"/></>,
     building: <><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/><path d="M9 9v.01M9 12v.01M9 15v.01M9 18v.01M16 13v.01M16 16v.01M16 19v.01"/></>,
+    tools: <><path d="M14.7 6.3a4.5 4.5 0 0 0-5.8 5.8L3 18a2.1 2.1 0 0 0 3 3l5.9-5.9a4.5 4.5 0 0 0 5.8-5.8l-2.8 2.8-3-3 2.8-2.8Z"/><path d="m17 3 4 4"/></>,
   };
   return <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="h-[19px] w-[19px]">{paths[name]}</svg>;
 }

@@ -228,6 +228,14 @@ export function InvoiceForm({ initialCustomers, initialProducts, hasCompanyProfi
     </div>}
     <div><p className="text-sm text-[#708195]">Documentos de venda</p><h2 className="mt-1 text-2xl font-bold tracking-tight">{initialDraft ? 'Editar rascunho' : 'Nova fatura'}</h2><p className="mt-2 text-sm text-[#708195]">Indique o adquirente e os artigos a incluir no documento.</p></div>
 
+    <aside aria-label="Outros documentos de venda" className="rounded-xl border border-[#d8e1eb] bg-[#f7f9fc] p-4 sm:flex sm:items-center sm:justify-between sm:gap-4">
+      <div><p className="text-sm font-semibold text-[#26354a]">Ainda não vai emitir a factura?</p><p className="mt-1 text-xs leading-5 text-[#708195]">Prepare primeiro um orçamento ou uma factura proforma em PDF.</p></div>
+      <div className="mt-3 flex flex-wrap gap-2 sm:mt-0">
+        <Link href="/ferramentas/orcamento-pdf" className="inline-flex min-h-10 items-center rounded-lg border border-[#cdddeb] bg-white px-3 text-xs font-semibold text-[#2878d0] transition hover:bg-[#f0f6fc]">Criar orçamento</Link>
+        <Link href="/ferramentas/factura-proforma" className="inline-flex min-h-10 items-center rounded-lg bg-[#021F87] px-3 text-xs font-semibold text-white transition hover:bg-[#061965]">Criar proforma</Link>
+      </div>
+    </aside>
+
     <section className="rounded-2xl border border-[#e2e9f1] bg-white shadow-[0_3px_14px_rgba(25,52,80,.035)]">
       <div className="border-b border-[#e7edf3] px-5 py-4 md:px-6"><h3 className="font-bold text-[#1c2d3f]">Dados do adquirente</h3><p className="mt-1 text-xs text-[#708195]">Escolha um cliente existente ou introduza um novo nome.</p></div>
       <div className="grid gap-4 p-5 md:grid-cols-2 md:p-6">
