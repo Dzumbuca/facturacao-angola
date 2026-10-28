@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
+import { ToolPage } from '@/components/tool-page';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
 import { AdHtml } from '@/components/ad-html';
@@ -30,7 +31,7 @@ export default async function ConversorIvaPage() {
     adHtml = config?.adHtml ?? null;
   } catch { adHtml = null; }
 
-  return <main className="min-h-screen bg-[#f3f6fa] text-[#1c2d3f]">
+  return <ToolPage><main className="min-h-screen bg-[#f3f6fa] text-[#1c2d3f]">
     {adHtml && <div className="mx-auto max-w-4xl px-4 pt-5 md:px-6"><div className="overflow-hidden rounded-xl border border-[#e2e9f1] bg-white p-2"><AdHtml html={adHtml} /></div></div>}
 
     <article className="prose-machine mx-auto max-w-3xl px-4 py-12 md:px-6">
@@ -76,5 +77,5 @@ export default async function ConversorIvaPage() {
     </article>
 
     <SiteFooter />
-  </main>;
+  </main></ToolPage>;
 }

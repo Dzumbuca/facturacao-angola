@@ -6,6 +6,17 @@ describe('protected dashboard paths', () => {
     expect(isProtectedPagePath('/')).toBe(true);
     expect(isProtectedPagePath('/customers')).toBe(true);
     expect(isProtectedPagePath('/invoices/new')).toBe(true);
+    expect(isProtectedPagePath('/documentos')).toBe(true);
+    expect(isProtectedPagePath('/documentos/novo')).toBe(true);
+    expect(isProtectedPagePath('/documentos/doc-1')).toBe(true);
+    expect(isProtectedPagePath('/documentos/doc-1/editar')).toBe(true);
+    expect(isProtectedPagePath('/pagamento')).toBe(true);
+  });
+
+  it('keeps the public tools centre and marketing pages outside the dashboard', () => {
+    expect(isProtectedPagePath('/ferramentas')).toBe(false);
+    expect(isProtectedPagePath('/ferramentas/iva')).toBe(false);
+    expect(isProtectedPagePath('/inicio')).toBe(false);
   });
 
   it('does not treat auth APIs or unrelated static pages as dashboard pages', () => {

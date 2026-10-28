@@ -3,6 +3,8 @@ export const isAdminPagePath = (pathname: string) =>
 
 export const isProtectedPagePath = (pathname: string) =>
   pathname === '/' ||
+  pathname === '/documentos' || pathname.startsWith('/documentos/') ||
+  pathname === '/pagamento' ||
   pathname.startsWith('/reports/') || pathname === '/reports' ||
   pathname === '/produtos' || pathname.startsWith('/produtos/') ||
   pathname === '/empresa' || pathname.startsWith('/empresa/') ||

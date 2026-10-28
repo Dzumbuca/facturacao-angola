@@ -324,3 +324,11 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .theme-toggle { min-height: 42px; min-width: 42px; }
   .dashboard-view .dashboard-kpi { padding: .85rem; }
 }
+
+/* Ferramentas abertas por clientes autenticados: o conteúdo útil mantém-se,
+   o chrome de marketing público (CTA de registo, header/footer do site e
+   anúncio do topo) é escondido — a área autenticada já fornece menu, plano
+   e anúncio lateral. Ver src/components/tool-page.tsx. */
+.tool-authenticated .prose-cta { display: none; }
+.tool-authenticated header, .tool-authenticated footer { display: none; }
+.tool-authenticated div:has(> div > .ad-slot) { display: none; }

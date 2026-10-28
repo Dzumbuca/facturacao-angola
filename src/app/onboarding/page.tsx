@@ -18,7 +18,7 @@ export default async function OnboardingPage() {
           Olá{user?.name ? `, ${user.name}` : ''}! A sua conta foi criada.
           Falta apenas indicar o nome da empresa para começar a emitir facturas.
         </p>
-        <OnboardingForm />
+        <OnboardingForm userName={user?.name ?? null} userEmail={user?.email ?? null} />
       </div>
     </main>
   );

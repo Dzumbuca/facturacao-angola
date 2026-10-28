@@ -1,4 +1,5 @@
 import { calculateInvoiceTotals } from './tax';
+import { isValidNif } from './nif';
 
 type InvoiceLineInput = { desc?: unknown; qty?: unknown; rate?: unknown; taxRate?: unknown };
 type InvoiceInput = {
@@ -12,8 +13,6 @@ type InvoiceInput = {
   observations?: unknown;
   includeCompanyProfile?: unknown;
 };
-
-const isValidNif = (nif: string) => /^\d{10}$/.test(nif) || /^\d{9}[A-Z]{2}\d{3}$/.test(nif);
 
 export const validateInvoiceRequest = (data: InvoiceInput) => {
   const warnings: string[] = [];
