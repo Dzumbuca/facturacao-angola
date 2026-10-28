@@ -1,7 +1,14 @@
 import Link from 'next/link';
+import { auth } from '@/lib/auth';
 
 // Rodapé partilhado de todas as páginas públicas — coerência entre páginas.
-export function SiteFooter() {
+// Consciente da sessão (NextAuth), tal como o SiteHeader: um visitante vê
+// «Criar conta grátis» e «Entrar»; um cliente autenticado passa a ver o acesso
+// à sua área — as duas opções de autenticação não se mostram a quem já entrou.
+export async function SiteFooter() {
+  const session = await auth();
+  const authenticated = Boolean(session?.user?.id);
+
   return <footer className="border-t border-[#e2e9f1] bg-[#0b1d33] px-4 py-12 text-slate-300 md:px-6">
     <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
       <div>
@@ -16,8 +23,14 @@ export function SiteFooter() {
         <ul className="mt-3 space-y-2 text-sm">
           <li><Link href="/inicio#funcionalidades" className="text-slate-300 transition hover:text-white">Funcionalidades</Link></li>
           <li><Link href="/inicio#precos" className="text-slate-300 transition hover:text-white">Preços</Link></li>
-          <li><Link href="/register" className="text-slate-300 transition hover:text-white">Criar conta grátis</Link></li>
-          <li><Link href="/login" className="text-slate-300 transition hover:text-white">Entrar</Link></li>
+          {authenticated ? (
+            <li><Link href="/" className="text-slate-300 transition hover:text-white">Minha área</Link></li>
+          ) : (
+            <>
+              <li><Link href="/register" className="text-slate-300 transition hover:text-white">Criar conta grátis</Link></li>
+              <li><Link href="/login" className="text-slate-300 transition hover:text-white">Entrar</Link></li>
+            </>
+          )}
         </ul>
       </nav>
       <nav aria-label="Ferramentas grátis">
