@@ -6,30 +6,52 @@ export class InvoiceDraftServiceError extends Error {
   constructor(message: string, public status = 400) { super(message); }
 }
 
-export async function createInvoiceDraft(input: InvoiceDraftInput, tenantId: string) {
+export async function createInvoiceDraft(input: InvoiceDraftInput, tenantId: string, id?: string) {
   await assertBankAccount(input.companyBankAccountId, tenantId);
-  return prisma.invoiceDraft.create({ data: {
+  const data = {
     tenantId, customerName: input.customerName, customerNif: input.customerNif,
     items: input.items as any, applyVat: input.applyVat,
     discountType: input.discountType, discountValue: input.discountValue,
     observations: input.observations, includeCompanyProfile: input.includeCompanyProfile,
     currency: input.currency, dueAt: input.dueAt, companyBankAccountId: input.companyBankAccountId,
-  } });
+  };
+  if (!id) return prisma.invoiceDraft.create({ data });
+  try {
+    return await prisma.invoiceDraft.create({ data: { ...data, id } });
+  } catch (error) {
+    if (!(error && typeof error === 'object' && 'code' in error && error.code === 'P2002')) throw error;
+    const existing = await prisma.invoiceDraft.findUnique({ where: { id } });
+    if (!existing || existing.tenantId !== tenantId) throw new InvoiceDraftServiceError('Este identificador de rascunho já existe.', 409);
+    const samePayload = existing.status === 'DRAFT'
+      && existing.customerName === input.customerName && existing.customerNif === input.customerNif
+      && JSON.stringify(existing.items) === JSON.stringify(input.items)
+      && existing.applyVat === input.applyVat && existing.discountType === input.discountType
+      && Number(existing.discountValue) === input.discountValue && existing.observations === input.observations
+      && existing.includeCompanyProfile === input.includeCompanyProfile && existing.currency === input.currency
+      && (existing.dueAt?.getTime() ?? null) === (input.dueAt?.getTime() ?? null)
+      && existing.companyBankAccountId === input.companyBankAccountId;
+    if (!samePayload) throw new InvoiceDraftServiceError('O rascunho foi alterado no servidor.', 409);
+    return existing;
+  }
 }
 
-export async function updateInvoiceDraft(id: string, input: InvoiceDraftInput, tenantId: string) {
+export async function updateInvoiceDraft(id: string, input: InvoiceDraftInput, tenantId: string, expectedUpdatedAt?: Date) {
   await assertBankAccount(input.companyBankAccountId, tenantId);
   const updated = await prisma.invoiceDraft.updateMany({
-    where: { id, tenantId, status: 'DRAFT' },
+    where: { id, tenantId, status: 'DRAFT', ...(expectedUpdatedAt ? { updatedAt: expectedUpdatedAt } : {}) },
     data: {
       customerName: input.customerName, customerNif: input.customerNif,
       items: input.items as any, applyVat: input.applyVat,
       discountType: input.discountType, discountValue: input.discountValue,
       observations: input.observations, includeCompanyProfile: input.includeCompanyProfile,
       currency: input.currency, dueAt: input.dueAt, companyBankAccountId: input.companyBankAccountId,
+      ...(expectedUpdatedAt ? { updatedAt: new Date(Math.max(Date.now(), expectedUpdatedAt.getTime() + 1)) } : {}),
     },
   });
-  if (!updated.count) throw new InvoiceDraftServiceError('Rascunho não encontrado ou já emitido.', 404);
+  if (!updated.count) {
+    const exists = await prisma.invoiceDraft.findFirst({ where: { id, tenantId }, select: { id: true } });
+    throw new InvoiceDraftServiceError(exists ? 'O rascunho foi alterado no servidor.' : 'Rascunho não encontrado ou já emitido.', exists ? 409 : 404);
+  }
   return prisma.invoiceDraft.findFirst({ where: { id, tenantId } });
 }
 

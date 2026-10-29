@@ -3,6 +3,7 @@ import Script from 'next/script';
 import { auth } from '@/lib/auth';
 import { ADSENSE_CLIENT_ID } from '@/lib/adsense';
 import { AdSenseSlot } from '@/components/adsense-slot';
+import { getDesktopDownloadUrl } from '@/lib/desktop-download-url';
 
 // Rodapé partilhado de todas as páginas públicas — coerente entre páginas.
 // Consciente da sessão (NextAuth), tal como o SiteHeader: um visitante vê
@@ -11,6 +12,7 @@ import { AdSenseSlot } from '@/components/adsense-slot';
 export async function SiteFooter() {
   const session = await auth();
   const authenticated = Boolean(session?.user?.id);
+  const desktopDownloadUrl = getDesktopDownloadUrl(process.env.NEXT_PUBLIC_DESKTOP_DOWNLOAD_URL);
 
   return <>
     {/* Google AdSense — apenas para visitantes: o loader nunca corre na
@@ -46,6 +48,7 @@ export async function SiteFooter() {
         <ul className="mt-3 space-y-2 text-sm">
           <li><Link href="/inicio#funcionalidades" className="text-slate-300 transition hover:text-white">Funcionalidades</Link></li>
           <li><Link href="/inicio#precos" className="text-slate-300 transition hover:text-white">Preços</Link></li>
+          {desktopDownloadUrl && <li><a href={desktopDownloadUrl} target="_blank" rel="nofollow noreferrer" className="text-slate-300 transition hover:text-white">Aplicação para Windows</a></li>}
           {authenticated ? (
             <li><Link href="/" className="text-slate-300 transition hover:text-white">Minha área</Link></li>
           ) : (
