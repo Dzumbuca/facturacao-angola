@@ -10,6 +10,7 @@
     "test": "vitest run",
     "desktop:dev": "npm run desktop:build && electron .",
     "desktop:build": "node scripts/build-desktop.cjs",
+    "desktop:smoke": "node scripts/desktop-startup-smoke.cjs",
     "desktop:test": "vitest run electron desktop/offline scripts/desktop-build-config.test.ts src/lib/offline-grant-core.test.ts src/lib/desktop-sync-core.test.ts src/lib/desktop-download-url.test.ts",
     "desktop:recovery-test": "npm run desktop:build && electron dist-electron/recovery-test-main.cjs",
     "desktop:dist": "npm run desktop:build && electron-builder --config electron-builder.config.cjs --win nsis",
