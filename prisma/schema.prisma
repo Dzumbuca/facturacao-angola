@@ -138,6 +138,7 @@ model Tenant {
   businessDocuments BusinessDocument[]
   businessDocumentCounters BusinessDocumentCounter[]
   businessDocumentEvents BusinessDocumentEvent[]
+  adUnlocks              AdUnlock[]
 }
 
 model PlanPayment {
@@ -199,6 +200,25 @@ model Product {
   items       InvoiceItem[]
   businessDocumentItems BusinessDocumentItem[]
   createdAt   DateTime      @default(now())
+}
+
+// Desbloqueio por anúncio: PENDING (visualização iniciada) → GRANTED (disponível)
+// → CONSUMED (gasto por exactamente uma factura). Gerido por SQL parametrizado
+// (src/lib/ad-unlock-service.ts); os índices únicos parciais (1 PENDING por
+// empresa; 1 factura por desbloqueio) vivem na migração 20261029000000_ad_unlock.
+model AdUnlock {
+  id                  String    @id @default(uuid())
+  tenantId            String    @map("tenant_id")
+  status              String    @default("PENDING")
+  startedAt           DateTime  @default(now()) @map("started_at") @db.Timestamptz(3)
+  grantedAt           DateTime? @map("granted_at") @db.Timestamptz(3)
+  consumedAt          DateTime? @map("consumed_at") @db.Timestamptz(3)
+  consumedByInvoiceId String?   @map("consumed_by_invoice_id")
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, status])
 }
 
 model Invoice {

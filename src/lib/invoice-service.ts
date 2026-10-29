@@ -3,6 +3,9 @@ import crypto from 'crypto';
 import { Prisma } from '@prisma/client';
 import { prisma } from './prisma';
 import { calculateInvoiceTotals } from './tax';
+import { computeEffectivePlan } from './plan';
+import { FREE_INVOICE_LIMIT, AdUnlockRequiredError } from './invoice-quota';
+import { claimUnlockForEmission, linkUnlockToInvoice } from './ad-unlock-service';
 
 export const issueInvoice = async (
   invoiceData: any,
@@ -198,20 +201,48 @@ export const issueInvoice = async (
       tenant: true
     }
   };
-  const savedInvoice = invoiceData.sourceDraftId
-    ? await prisma.$transaction(async (transaction: any) => {
-      const saved = await transaction.invoice.create(invoiceCreateData);
+  // 8. Persistir na Base de Dados PostgreSQL — com a porta de quota/desbloqueio
+  //    validada no servidor e atómica por empresa: o lock no Tenant serializa
+  //    emissões concorrentes (mesmo em várias sessões), o claim do desbloqueio
+  //    é um UPDATE condicional dentro da MESMA transacção (se a emissão falhar,
+  //    o claim reverte com ela) e o contador inclui apenas facturas FT
+  //    efectivamente emitidas — rascunhos e falhas de PDF não consomem quota.
+  const savedInvoice = await prisma.$transaction(async (transaction: any) => {
+    // Serializa emissões da empresa: fecha a janela de corrida no limite.
+    await transaction.$queryRaw`SELECT id FROM "Tenant" WHERE id = ${tenant.id} FOR UPDATE`;
+    const planInfo = computeEffectivePlan(tenant.plan, tenant.planExpiry);
+    // Conta TODAS as FT efectivamente emitidas (rascunhos vivem em InvoiceDraft
+    // e nunca contam; falhas de PDF ocorrem antes da transacção). Anuladas
+    // (ANULADA) mantêm o consumo: o número fiscal já foi gasto e excluí-las
+    // abriria uma porta de contorno do limite. O estado 'CANCELLED' não existe
+    // em facturas — só nos documentos empresariais.
+    const usedInvoices = await transaction.invoice.count({
+      where: { tenantId: tenant.id, type: 'FT' },
+    });
+    let claimedUnlockId: string | null = null;
+    if (planInfo.effectivePlan !== 'PRO' && usedInvoices >= FREE_INVOICE_LIMIT) {
+      claimedUnlockId = await claimUnlockForEmission(tenant.id, transaction);
+      if (!claimedUnlockId) throw new AdUnlockRequiredError(usedInvoices, FREE_INVOICE_LIMIT);
+    }
+    const saved = await transaction.invoice.create(invoiceCreateData);
+    if (invoiceData.sourceDraftId) {
       const updatedDraft = await transaction.invoiceDraft.updateMany({
         where: { id: invoiceData.sourceDraftId, tenantId: tenant.id, status: 'ISSUING' },
         data: { status: 'ISSUED' },
       });
       if (updatedDraft.count !== 1) throw new Error('O rascunho foi alterado durante a emissão.');
-      return saved;
-    }, { isolationLevel: 'Serializable' })
-    : await prisma.invoice.create(invoiceCreateData);
+    }
+    return { saved, claimedUnlockId };
+  }, invoiceData.sourceDraftId ? { isolationLevel: 'Serializable' } : undefined);
+
+  // Auditoria do desbloqueio (best-effort, após commit): liga o desbloqueio à
+  // factura emitida. Se falhar, o desbloqueio continua CONSUMED — nunca reutilizável.
+  if (savedInvoice.claimedUnlockId) {
+    await linkUnlockToInvoice(tenant.id, savedInvoice.claimedUnlockId, savedInvoice.saved.id).catch(() => undefined);
+  }
 
   return {
-    ...savedInvoice,
+    ...savedInvoice.saved,
     customerName: customer.name,
     customerNif: customer.nif,
     shortHash,

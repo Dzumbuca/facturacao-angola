@@ -1,7 +1,10 @@
 import Link from 'next/link';
+import Script from 'next/script';
 import { auth } from '@/lib/auth';
+import { ADSENSE_CLIENT_ID } from '@/lib/adsense';
+import { AdSenseSlot } from '@/components/adsense-slot';
 
-// Rodapé partilhado de todas as páginas públicas — coerência entre páginas.
+// Rodapé partilhado de todas as páginas públicas — coerente entre páginas.
 // Consciente da sessão (NextAuth), tal como o SiteHeader: um visitante vê
 // «Criar conta grátis» e «Entrar»; um cliente autenticado passa a ver o acesso
 // à sua área — as duas opções de autenticação não se mostram a quem já entrou.
@@ -9,7 +12,27 @@ export async function SiteFooter() {
   const session = await auth();
   const authenticated = Boolean(session?.user?.id);
 
-  return <footer className="border-t border-[#e2e9f1] bg-[#0b1d33] px-4 py-12 text-slate-300 md:px-6">
+  return <>
+    {/* Google AdSense — apenas para visitantes: o loader nunca corre na
+        experiência autenticada (nas ferramentas o rodapé é escondido por CSS,
+        mas antes o script continuava a ser transferido). next/script com id
+        fixo evita scripts duplicados e carrega sem bloquear a página. */}
+    {!authenticated && <>
+      <link rel="preconnect" href="https://pagead2.googlesyndication.com" />
+      <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+      <Script
+        id="adsense-loader"
+        strategy="afterInteractive"
+        src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT_ID}`}
+        crossOrigin="anonymous"
+      />
+    </>}
+    {/* Espaço publicitário acima do rodapé (todas as páginas públicas com
+        rodapé). Só é renderizado com um ID de bloco oficial em
+        NEXT_PUBLIC_ADSENSE_SLOT_INPAGE; para clientes autenticados nunca
+        aparece. */}
+    {!authenticated && <AdSenseSlot placement="inpage-footer" authenticated={false} wrapperClassName="border-t border-[#e2e9f1] bg-white" minHeight={110} />}
+    <footer className="border-t border-[#e2e9f1] bg-[#0b1d33] px-4 py-12 text-slate-300 md:px-6">
     <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
       <div>
         <div className="flex items-center gap-2">
@@ -59,11 +82,6 @@ export async function SiteFooter() {
       <p className="text-xs text-slate-500">© 2026 Machine Facturas · Angola</p>
       <a href="https://beta.publishers.adsterra.com/referral/L8Y8skqCEG" rel="nofollow" className="text-xs text-slate-500 transition hover:text-slate-300">Programa de afiliados</a>
     </div>
-    {/* Google AdSense — carregado APENAS nas páginas públicas (com anúncios),
-        nunca no login/registar/dashboard. A verificação do AdSense continua
-        a encontrar o código porque estas páginas são as apresentadas na conta. */}
-    <link rel="preconnect" href="https://pagead2.googlesyndication.com" />
-    <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9283668518139905" crossOrigin="anonymous" />
-  </footer>;
+    </footer>
+  </>;
 }

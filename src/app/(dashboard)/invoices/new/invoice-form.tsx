@@ -4,6 +4,7 @@ import { useMemo, useTransition, useRef, useState, type FormEvent } from 'react'
 import Link from 'next/link';
 import { getInvoiceApiErrorMessage } from '@/lib/invoice-api-error';
 import { createInvoiceShare } from '@/lib/invoice-share';
+import { AdUnlockModal } from '@/components/ad-unlock-modal';
 import { CheckIcon, WhatsappIcon } from '@/components/icons';
 
 type Customer = { id: string; name: string; nif: string | null };
@@ -13,7 +14,7 @@ type DraftItem = InvoiceItem;
 type InitialDraft = { id?: string; customerName: string; customerNif: string | null; items: DraftItem[]; applyVat: boolean; discountType: string; discountValue: number; observations: string | null; includeCompanyProfile: boolean; dueAt: string; companyBankAccountId: string | null };
 type BankAccount = { id: string; bankName: string; label: string | null };
 
-export function InvoiceForm({ initialCustomers, initialProducts, hasCompanyProfile, bankAccounts = [], initialDraft, initialDueAt = '', defaultObservations = '' }: { initialCustomers: Customer[]; initialProducts: Product[]; hasCompanyProfile: boolean; bankAccounts?: BankAccount[]; initialDraft?: InitialDraft; initialDueAt?: string; defaultObservations?: string }) {
+export function InvoiceForm({ initialCustomers, initialProducts, hasCompanyProfile, bankAccounts = [], initialDraft, initialDueAt = '', defaultObservations = '', quota = null, adHtml = null }: { initialCustomers: Customer[]; initialProducts: Product[]; hasCompanyProfile: boolean; bankAccounts?: BankAccount[]; initialDraft?: InitialDraft; initialDueAt?: string; defaultObservations?: string; quota?: { used: number; limit: number | null; remaining: number | null; hasUnlock: boolean } | null; adHtml?: string | null }) {
   const [customers, setCustomers] = useState(initialCustomers);
   const [products, setProducts] = useState(initialProducts);
   const [customerName, setCustomerName] = useState(initialDraft?.customerName ?? '');
@@ -43,6 +44,8 @@ export function InvoiceForm({ initialCustomers, initialProducts, hasCompanyProfi
   const [isCreatingProduct, setIsCreatingProduct] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [unlockOpen, setUnlockOpen] = useState(false);
+  const [unlockNotice, setUnlockNotice] = useState('');
 
   const subtotal = items.reduce((acc, item) => acc + item.qty * item.rate, 0);
   const discountAmount = Math.min(subtotal, discountType === 'percent' ? subtotal * Math.min(100, Math.max(0, discountValue)) / 100 : Math.max(0, discountValue));
@@ -167,6 +170,13 @@ export function InvoiceForm({ initialCustomers, initialProducts, hasCompanyProfi
 
       if (!response.ok) {
         const payload = await response.json().catch(() => null);
+        // Limite de facturas gratuitas atingido sem desbloqueio: abrir a janela
+        // de desbloqueio por anúncio. A validação real continua no servidor.
+        if (payload?.reason === 'AD_UNLOCK_REQUIRED') {
+          setUnlockNotice('');
+          setUnlockOpen(true);
+          return;
+        }
         setError(getInvoiceApiErrorMessage(payload));
         return;
       }
@@ -212,6 +222,9 @@ export function InvoiceForm({ initialCustomers, initialProducts, hasCompanyProfi
   };
 
   return <div className="space-y-6">
+    {quota && quota.remaining !== null && quota.remaining <= 0 && !quota.hasUnlock && <div className="rounded-xl border border-[#f0c9c9] bg-red-50 px-4 py-3 text-sm leading-6 text-[#a83939]"><strong>Limite de {quota.limit} facturas gratuitas atingido ({quota.used}/{quota.limit}).</strong> A emissão seguinte desbloqueia vendo o anúncio de patrocínio — ou <Link href="/pagamento" className="font-semibold underline">suba para o plano Pro</Link>.</div>}
+    {quota && quota.remaining !== null && quota.remaining > 0 && <p className="text-sm text-[#708195]">Facturas gratuitas: <strong>{quota.used}/{quota.limit}</strong> utilizadas.</p>}
+    {unlockNotice && <p role="status" className="rounded-xl border border-[#cbe8dc] bg-[#eff9f4] px-4 py-3 text-sm font-semibold text-[#227958]">{unlockNotice}</p>}
     {emitted && <div ref={successRef} className="rounded-2xl border-2 border-[#cbe8dc] bg-[#eff9f4] p-5 md:p-6">
       <p className="flex items-center gap-2 font-bold text-[#227958]"><CheckIcon className="h-5 w-5" /> Factura {emitted.number} emitida e assinada digitalmente! O PDF foi descarregado.</p>
       <p className="mt-1 text-sm text-[#4a5f76]">Envia agora ao teu cliente:</p>
@@ -342,5 +355,13 @@ export function InvoiceForm({ initialCustomers, initialProducts, hasCompanyProfi
         </form>
       </section>
     </div>}
+
+    {unlockOpen && <AdUnlockModal
+      adHtml={adHtml}
+      used={quota?.used ?? 0}
+      limit={quota?.limit ?? 20}
+      onUnlocked={() => { setUnlockOpen(false); setUnlockNotice('Desbloqueio concluído — clique novamente em «Emitir factura PDF» para emitir a sua factura.'); }}
+      onClose={() => setUnlockOpen(false)}
+    />}
   </div>;
 }

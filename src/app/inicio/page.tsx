@@ -2,6 +2,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
+import { AdSenseSlot } from '@/components/adsense-slot';
+import { AdHtml } from '@/components/ad-html';
+import { prisma } from '@/lib/prisma';
 import { CheckIcon, featureIcons, SparkIcon, WhatsappIcon } from '@/components/icons';
 
 export const metadata: Metadata = {
@@ -86,7 +89,15 @@ const faq: { q: string; a: string }[] = [
   { q: 'Os meus dados estão seguros?', a: 'Cada empresa só acede aos seus próprios dados, as facturas levam assinatura digital e a plataforma mantém cópias de segurança diárias.' },
 ];
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  // Anúncio de plataforma (HTML configurado em /admin/configuracoes — ex.: banner
+  // Adsterra), igual ao topo das páginas de ferramentas/guias. Falha de base de
+  // dados nunca quebra a página: fica simplesmente sem anúncio.
+  let adHtml: string | null = null;
+  try {
+    const config = await prisma.platformConfig.findUnique({ where: { id: 'global' }, select: { adHtml: true } });
+    adHtml = config?.adHtml ?? null;
+  } catch { adHtml = null; }
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
@@ -104,6 +115,7 @@ export default function LandingPage() {
   return <main className="landing-page min-h-screen bg-[#f3f6fa] text-[#1c2d3f]">
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
     <SiteHeader />
+    {adHtml && <div className="mx-auto max-w-4xl px-4 pt-5 md:px-6"><div className="overflow-hidden rounded-xl border border-[#e2e9f1] bg-white p-2"><AdHtml html={adHtml} /></div></div>}
 
     <section className="landing-hero relative overflow-hidden border-b border-[#e2e9f1] bg-white">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_0%,rgba(40,120,208,.10),transparent_70%)]" />
@@ -138,6 +150,11 @@ export default function LandingPage() {
         })}
       </div>
     </section>
+
+    {/* Espaço publicitário (visitantes) — só renderiza com um ID de bloco
+        oficial em NEXT_PUBLIC_ADSENSE_SLOT_INICIO_MID (ver docs/adsense.md);
+        clientes autenticados nunca o veem. */}
+    <AdSenseSlot placement="inicio-mid" minHeight={110} />
 
     <section id="precos" className="border-y border-[#e2e9f1] bg-white px-4 py-20 md:px-6">
       <div className="mx-auto max-w-6xl">
