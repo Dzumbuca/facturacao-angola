@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "name": "machine-facturas",
-  "description": "Sistema de facturação e gestão empresarial para Angola",
+  "description": "Sistema de facturaÃ§Ã£o e gestÃ£o empresarial para Angola",
   "main": "dist-electron/main.cjs",
   "scripts": {
     "start": "next start",
@@ -9,11 +9,11 @@
     "dev": "next dev --webpack -p 3002",
     "test": "vitest run",
     "desktop:dev": "npm run desktop:build && electron .",
-    "desktop:build": "node scripts/build-desktop.cjs",
+    "desktop:build": "node scripts/generate-desktop-icon.cjs && node scripts/build-desktop.cjs",
     "desktop:smoke": "node scripts/desktop-startup-smoke.cjs",
     "desktop:test": "vitest run electron desktop/offline scripts/desktop-build-config.test.ts src/lib/offline-grant-core.test.ts src/lib/desktop-sync-core.test.ts src/lib/desktop-download-url.test.ts",
     "desktop:recovery-test": "npm run desktop:build && electron dist-electron/recovery-test-main.cjs",
-    "desktop:dist": "npm run desktop:build && electron-builder --config electron-builder.config.cjs --win nsis",
+    "desktop:dist": "node scripts/generate-desktop-icon.cjs && npm run desktop:build && electron-builder --config electron-builder.config.cjs --win nsis",
     "admin:bootstrap": "node scripts/bootstrap-platform-admin.cjs"
   },
   "dependencies": {
@@ -58,3 +58,4 @@
     "uuid": "^11.1.1"
   }
 }
+
