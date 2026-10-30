@@ -14,9 +14,9 @@ export default async function StockPage() {
   const warehouses = await prisma.warehouse.findMany({ where: { tenantId, isActive: true }, orderBy: { name: 'asc' } });
 
   const totalProducts = products.length;
-  const totalStock = products.reduce((s, p) => s + (p.stock || 0), 0);
-  const lowStock = products.filter((p) => (p.stock || 0) <= (p.minStock || 0));
-  const outOfStock = products.filter((p) => (p.stock || 0) <= 0);
+  const totalStock = products.reduce((s: number, p: any) => s + (p.stock || 0), 0);
+  const lowStock = products.filter((p: any) => (p.stock || 0) <= (p.minStock || 0));
+  const outOfStock = products.filter((p: any) => (p.stock || 0) <= 0);
 
   return (
     <div className="p-6 space-y-6">
@@ -41,11 +41,11 @@ export default async function StockPage() {
         </div>
       </div>
 
-      <StockClient products={products.map((p) => ({ id: p.id, name: p.name, stock: p.stock }))} />
+      <StockClient products={products.map((p: any) => ({ id: p.id, name: p.name, stock: p.stock }))} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <WarehouseManager warehouses={warehouses.map((w) => ({ id: w.id, name: w.name, location: w.location }))} />
-        <TransferForm products={products.map((p) => ({ id: p.id, name: p.name }))} warehouses={warehouses.map((w) => ({ id: w.id, name: w.name }))} onSuccess={() => {}} />
+        <WarehouseManager warehouses={warehouses.map((w: any) => ({ id: w.id, name: w.name, location: w.location }))} />
+        <TransferForm products={products.map((p: any) => ({ id: p.id, name: p.name }))} warehouses={warehouses.map((w: any) => ({ id: w.id, name: w.name }))} onSuccess={() => {}} />
       </div>
 
       <div className="border rounded-lg overflow-x-auto">
@@ -61,7 +61,7 @@ export default async function StockPage() {
             </tr>
           </thead>
           <tbody>
-            {products.map((p) => {
+            {products.map((p: any) => {
               const low = (p.stock || 0) <= (p.minStock || 0);
               return (
                 <tr key={p.id} className="border-t">
