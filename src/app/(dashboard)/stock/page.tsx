@@ -3,12 +3,15 @@ import { auth } from '@/lib/auth';
 import { getSessionTenantId } from '@/lib/session';
 import { StockClient } from './stock-client';
 import { StockHistory } from './stock-history';
+import { TransferForm } from './transfer-form';
+import { WarehouseManager } from './warehouse-manager';
 
 export default async function StockPage() {
   const tenantId = getSessionTenantId(await auth());
   if (!tenantId) return <p>Empresa não configurada.</p>;
 
   const products = await prisma.product.findMany({ where: { tenantId }, orderBy: { name: 'asc' } });
+  const warehouses = await prisma.warehouse.findMany({ where: { tenantId, isActive: true }, orderBy: { name: 'asc' } });
 
   const totalProducts = products.length;
   const totalStock = products.reduce((s, p) => s + (p.stock || 0), 0);
@@ -39,6 +42,11 @@ export default async function StockPage() {
       </div>
 
       <StockClient products={products.map((p) => ({ id: p.id, name: p.name, stock: p.stock }))} />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <WarehouseManager warehouses={warehouses.map((w) => ({ id: w.id, name: w.name, location: w.location }))} />
+        <TransferForm products={products.map((p) => ({ id: p.id, name: p.name }))} warehouses={warehouses.map((w) => ({ id: w.id, name: w.name }))} onSuccess={() => {}} />
+      </div>
 
       <div className="border rounded-lg overflow-x-auto">
         <table className="w-full text-sm">
