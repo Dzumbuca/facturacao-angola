@@ -199,6 +199,7 @@ model Product {
   taxRate     Decimal       @default(14.00) @db.Decimal(5, 2)
   codigo      String?
   stock       Int           @default(0)
+  minStock    Int           @default(0)
   categoria   String        @default("GERAL")
   tenant      Tenant        @relation(fields: [tenantId], references: [id])
   items       InvoiceItem[]
