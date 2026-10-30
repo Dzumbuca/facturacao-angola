@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { generateKeyPairSync } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import builderConfig from '../electron-builder.config.cjs';
 import { getDesktopBuildConfig } from './desktop-build-config.cjs';
 
 describe('desktop build configuration', () => {
@@ -19,4 +22,5 @@ describe('desktop build configuration', () => {
     expect(() => getDesktopBuildConfig({ DESKTOP_APP_ORIGIN: 'http://machinefaturas.shop' })).toThrow(/HTTPS/i);
     expect(() => getDesktopBuildConfig({ DESKTOP_APP_ORIGIN: 'https://machinefaturas.shop/login' })).toThrow(/origin/i);
   });
+
 });

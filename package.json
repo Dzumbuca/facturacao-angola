@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "name": "machine-facturas",
-  "description": "Sistema de facturaÃ§Ã£o e gestÃ£o empresarial para Angola",
+  "description": "Sistema de facturaÃƒÂ§ÃƒÂ£o e gestÃƒÂ£o empresarial para Angola",
   "main": "dist-electron/main.cjs",
   "scripts": {
     "start": "next start",
@@ -46,7 +46,7 @@
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "@types/sql.js": "1.4.11",
-    "electron": "45.1.0",
+    "electron": "44.10.0",
     "electron-builder": "26.18.0",
     "esbuild": "0.28.2",
     "prisma": "^5.22.0",
@@ -58,4 +58,5 @@
     "uuid": "^11.1.1"
   }
 }
+
 
