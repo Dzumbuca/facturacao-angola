@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { getSessionTenantId } from '@/lib/session';
+import { StockClient } from './stock-client';
 
 export default async function StockPage() {
   const tenantId = getSessionTenantId(await auth());
@@ -35,6 +36,8 @@ export default async function StockPage() {
           <div className="text-2xl font-bold text-red-600">{outOfStock.length}</div>
         </div>
       </div>
+
+      <StockClient products={products.map((p) => ({ id: p.id, name: p.name, stock: p.stock }))} />
 
       <div className="border rounded-lg overflow-x-auto">
         <table className="w-full text-sm">
