@@ -1,8 +1,17 @@
-import { prisma } from './prisma';
+﻿import { prisma } from './prisma';
 
 export async function isApplicationEnabled(tenantId: string, slug: string): Promise<boolean> {
   const app = await prisma.platformApplication.findUnique({ where: { slug } });
   if (!app || app.status !== 'ACTIVE') return false;
+  // Aplicacoes core (ex.: Machine Facturas) preservam o acesso existente
+  // mesmo antes de existir registo TenantApplication.
+  if (app.isCore) {
+    const ta = await prisma.tenantApplication.findUnique({
+      where: { tenantId_applicationId: { tenantId, applicationId: app.id } },
+    });
+    if (!ta) return true;
+    return !!ta.enabled;
+  }
   const ta = await prisma.tenantApplication.findUnique({
     where: { tenantId_applicationId: { tenantId, applicationId: app.id } },
   });
@@ -20,6 +29,7 @@ export async function listTenantApplications(tenantId: string) {
     icon: a.icon,
     status: a.status,
     isCore: a.isCore,
-    enabled: !!(map.get(a.id) as any)?.enabled,
+    enabled: a.isCore ? (map.has(a.id) ? !!(map.get(a.id) as any)?.enabled : true) : !!(map.get(a.id) as any)?.enabled,
   }));
 }
+

@@ -1,6 +1,8 @@
 // Backfill idempotente para a Machine Platform (Fase 1).
-// Regista a aplicacao "Machine Facturas" e activa-a para todos os tenants existentes.
-// Nao altera planos, subscrições nem direitos de acesso.
+// Regista apenas o catalogo da aplicacao "Machine Facturas" (core).
+// Nao cria planos comerciais, nao altera subscrições/pagamentos/datas de validade,
+// e nao activa aplicações indiscriminadamente: a activacao so ocorre para tenants
+// que ja possuem acesso implicito a Machine Facturas (core => acesso preservado).
 import { prisma } from './prisma';
 
 export async function backfillMachinePlatform() {
@@ -17,33 +19,10 @@ export async function backfillMachinePlatform() {
     },
   });
 
+  // Transaccao idempotente: apenas regista o catalogo; nao altera direitos existentes.
+  // TenantApplication nao e criado aqui — isApplicationEnabled trata core apps como
+  // activas por defeito, preservando o acesso actual sem escrita indiscriminada.
   const tenants = await prisma.tenant.findMany({ select: { id: true } });
-  for (const t of tenants) {
-    await prisma.tenantApplication.upsert({
-      where: { tenantId_applicationId: { tenantId: t.id, applicationId: app.id } },
-      update: { enabled: true, enabledAt: new Date() },
-      create: { tenantId: t.id, applicationId: app.id, enabled: true, enabledAt: new Date() },
-    });
-  }
 
-  // Plano starter apenas se nao existir; nao sobrescreve subscrições existentes.
-  const plan = await prisma.subscriptionPlan.upsert({
-    where: { slug: 'starter' },
-    update: {},
-    create: {
-      slug: 'starter',
-      name: 'Starter',
-      description: 'Plano inicial com Machine Facturas',
-      priceKz: 0,
-      isBundle: false,
-    },
-  });
-
-  await prisma.planApplication.upsert({
-    where: { planId_applicationId: { planId: plan.id, applicationId: app.id } },
-    update: {},
-    create: { planId: plan.id, applicationId: app.id },
-  });
-
-  return { app: app.slug, tenants: tenants.length, plan: plan.slug };
+  return { app: app.slug, tenants: tenants.length, plansCreated: 0 };
 }
