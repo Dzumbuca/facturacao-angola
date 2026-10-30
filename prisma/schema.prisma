@@ -140,6 +140,8 @@ model Tenant {
   businessDocumentCounters BusinessDocumentCounter[]
   businessDocumentEvents BusinessDocumentEvent[]
   stockMovements StockMovement[]
+  warehouses Warehouse[]
+
 
   tenantApplications TenantApplication[]
   tenantSubscriptions TenantSubscription[]
@@ -772,6 +774,22 @@ model TenantSubscription {
   updatedAt DateTime           @updatedAt
 
   tenant Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+// MACHINE STOCK — armazens
+model Warehouse {
+  id        String   @id @default(uuid())
+  tenantId  String
+  name      String
+  location  String?
+  isDefault Boolean  @default(false)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+}
+
   plan   SubscriptionPlan @relation(fields: [planId], references: [id])
 
   @@index([tenantId])
@@ -791,6 +809,7 @@ model StockMovement {
   quantity  Int
   reason    String?
   reference String?
+  createdByUserId String?
   createdAt DateTime          @default(now())
 
   tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)

@@ -41,7 +41,7 @@ export async function POST(req: Request) {
 
   const [movement] = await prisma.$transaction([
     prisma.stockMovement.create({
-      data: { tenantId, productId, type, quantity, reason, reference },
+      data: { tenantId, productId, type, quantity, reason, reference, createdByUserId: (session?.user as any)?.id },
     }),
     prisma.product.update({
       where: { id: productId },
