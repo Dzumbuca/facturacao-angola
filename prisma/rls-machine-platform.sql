@@ -1,4 +1,4 @@
-﻿-- RLS policies for Machine Platform (Fase 1) new tables.
+-- RLS policies for Machine Platform (Fase 1) new tables.
 -- Idempotent: DROP + CREATE. Apply manually after review.
 -- Requires: app.tenant_id set via set_config('app.tenant_id', <tenantId>, true) per request.
 
