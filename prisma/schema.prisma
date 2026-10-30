@@ -138,6 +138,9 @@ model Tenant {
   businessDocuments BusinessDocument[]
   businessDocumentCounters BusinessDocumentCounter[]
   businessDocumentEvents BusinessDocumentEvent[]
+  tenantApplications TenantApplication[]
+  tenantSubscriptions TenantSubscription[]
+
   adUnlocks              AdUnlock[]
 }
 
@@ -672,5 +675,99 @@ model InvoiceItem {
 
   invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   product     Product? @relation(fields: [productId], references: [id])
+}
+
+// MACHINE PLATFORM — fundação (Fase 1)
+enum ApplicationStatus {
+  ACTIVE
+  DISABLED
+  COMING_SOON
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  TRIAL
+}
+
+model PlatformApplication {
+  id          String             @id @default(uuid())
+  slug        String             @unique
+  name        String
+  description String?            @db.Text
+  icon        String?
+  version     String             @default("1.0.0")
+  status      ApplicationStatus  @default(ACTIVE)
+  isCore      Boolean            @default(false)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  tenantApplications TenantApplication[]
+  planApplications   PlanApplication[]
+
+  @@index([slug])
+}
+
+model SubscriptionPlan {
+  id           String            @id @default(uuid())
+  slug         String            @unique
+  name         String
+  description  String?           @db.Text
+  priceKz      Decimal           @default(0) @db.Decimal(12, 2)
+  billingCycle String            @default("MONTHLY")
+  isBundle     Boolean           @default(false)
+  isActive     Boolean           @default(true)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  planApplications PlanApplication[]
+  subscriptions    TenantSubscription[]
+
+  @@index([slug])
+}
+
+model PlanApplication {
+  planId        String
+  applicationId String
+  plan          SubscriptionPlan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  application   PlatformApplication  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@id([planId, applicationId])
+}
+
+model TenantApplication {
+  id            String              @id @default(uuid())
+  tenantId      String
+  applicationId String
+  enabled       Boolean             @default(false)
+  enabledAt     DateTime?
+  disabledAt    DateTime?
+  config        Json?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  tenant        Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  application   PlatformApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, applicationId])
+  @@index([tenantId])
+}
+
+model TenantSubscription {
+  id        String             @id @default(uuid())
+  tenantId  String
+  planId    String
+  status    SubscriptionStatus @default(ACTIVE)
+  startsAt  DateTime           @default(now())
+  endsAt    DateTime?
+  autoRenew Boolean            @default(false)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  tenant Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  plan   SubscriptionPlan @relation(fields: [planId], references: [id])
+
+  @@index([tenantId])
 }
 
