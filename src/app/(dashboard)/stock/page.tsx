@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { getSessionTenantId } from '@/lib/session';
 import { StockClient } from './stock-client';
+import { StockHistory } from './stock-history';
 
 export default async function StockPage() {
   const tenantId = getSessionTenantId(await auth());
@@ -83,6 +84,8 @@ export default async function StockPage() {
           </tbody>
         </table>
       </div>
+      <h2 className="text-xl font-semibold mt-6">Histórico de movimentos</h2>
+      <StockHistory />
     </div>
   );
 }
