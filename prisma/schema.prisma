@@ -139,6 +139,8 @@ model Tenant {
   businessDocuments BusinessDocument[]
   businessDocumentCounters BusinessDocumentCounter[]
   businessDocumentEvents BusinessDocumentEvent[]
+  stockMovements StockMovement[]
+
   tenantApplications TenantApplication[]
   tenantSubscriptions TenantSubscription[]
 
@@ -204,6 +206,8 @@ model Product {
   tenant      Tenant        @relation(fields: [tenantId], references: [id])
   items       InvoiceItem[]
   businessDocumentItems BusinessDocumentItem[]
+  stockMovements StockMovement[]
+
   createdAt   DateTime      @default(now())
 }
 
@@ -772,4 +776,28 @@ model TenantSubscription {
 
   @@index([tenantId])
 }
+// MACHINE STOCK — movimentos de stock
+enum StockMovementType {
+  IN
+  OUT
+  ADJUSTMENT
+}
+
+model StockMovement {
+  id        String            @id @default(uuid())
+  tenantId  String
+  productId String
+  type      StockMovementType
+  quantity  Int
+  reason    String?
+  reference String?
+  createdAt DateTime          @default(now())
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([productId])
+}
+
 
