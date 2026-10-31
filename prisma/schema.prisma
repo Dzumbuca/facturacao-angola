@@ -203,6 +203,8 @@ model Product {
   items       InvoiceItem[]
   businessDocumentItems BusinessDocumentItem[]
   createdAt   DateTime      @default(now())
+
+  @@unique([tenantId, id])
 }
 
 // Desbloqueio por anúncio: PENDING (visualização iniciada) → GRANTED (disponível)
