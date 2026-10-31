@@ -33,12 +33,14 @@ export async function POST(req: Request) {
 
   const userId = (session?.user as any)?.id;
 
+  const transferRef = `TRF-${crypto.randomUUID()}`;
+
   const [outMov, inMov] = await prisma.$transaction([
     prisma.stockMovement.create({
-      data: { tenantId, productId, type: 'OUT', quantity, reason: reason || `Transferência para ${toWh.name}`, reference: `TRF-${fromWh.id}->${toWh.id}`, createdByUserId: userId },
+      data: { tenantId, productId, type: 'OUT', quantity, reason: reason || `Transferência para ${toWh.name}`, reference: transferRef, createdByUserId: userId },
     }),
     prisma.stockMovement.create({
-      data: { tenantId, productId, type: 'IN', quantity, reason: reason || `Transferência de ${fromWh.name}`, reference: `TRF-${fromWh.id}->${toWh.id}`, createdByUserId: userId },
+      data: { tenantId, productId, type: 'IN', quantity, reason: reason || `Transferência de ${fromWh.name}`, reference: transferRef, createdByUserId: userId },
     }),
   ]);
 

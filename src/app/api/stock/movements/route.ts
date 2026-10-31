@@ -28,26 +28,39 @@ export async function POST(req: Request) {
   if (!productId || !type || !quantity || quantity <= 0) {
     return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 });
   }
-
-  const product = await prisma.product.findFirst({ where: { id: productId, tenantId } });
-  if (!product) return NextResponse.json({ error: 'Produto não encontrado' }, { status: 404 });
-
-  // Prevent negative stock on OUT
-  if (type === 'OUT' && product.stock < quantity) {
-    return NextResponse.json({ error: 'Stock insuficiente' }, { status: 400 });
+  if (!['IN', 'OUT', 'ADJUSTMENT'].includes(type)) {
+    return NextResponse.json({ error: 'Tipo inválido' }, { status: 400 });
   }
 
-  const delta = type === 'IN' ? quantity : type === 'OUT' ? -quantity : quantity;
+  const userId = (session?.user as any)?.id;
 
-  const [movement] = await prisma.$transaction([
-    prisma.stockMovement.create({
-      data: { tenantId, productId, type, quantity, reason, reference, createdByUserId: (session?.user as any)?.id },
-    }),
-    prisma.product.update({
-      where: { id: productId },
-      data: { stock: { increment: delta } },
-    }),
-  ]);
+  try {
+    const movement = await prisma.$transaction(async (tx: any) => {
+      const product = await tx.product.findFirst({ where: { id: productId, tenantId } });
+      if (!product) throw new Error('NOT_FOUND');
 
-  return NextResponse.json(movement, { status: 201 });
+      if (type === 'OUT') {
+        const updated = await tx.product.updateMany({
+          where: { id: productId, tenantId, stock: { gte: quantity } },
+          data: { stock: { decrement: quantity } },
+        });
+        if (updated.count === 0) throw new Error('INSUFFICIENT');
+      } else {
+        await tx.product.update({
+          where: { id: productId },
+          data: { stock: { increment: quantity } },
+        });
+      }
+
+      return tx.stockMovement.create({
+        data: { tenantId, productId, type, quantity, reason, reference, createdByUserId: userId },
+      });
+    });
+
+    return NextResponse.json(movement, { status: 201 });
+  } catch (e: any) {
+    if (e?.message === 'NOT_FOUND') return NextResponse.json({ error: 'Produto não encontrado' }, { status: 404 });
+    if (e?.message === 'INSUFFICIENT') return NextResponse.json({ error: 'Stock insuficiente' }, { status: 400 });
+    return NextResponse.json({ error: 'Erro interno' }, { status: 500 });
+  }
 }
