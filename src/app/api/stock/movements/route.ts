@@ -2,17 +2,20 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { getSessionTenantId } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
+import { runWithTenant } from '@/lib/tenant-db';
 
 export async function GET() {
   const session = await auth();
   const tenantId = getSessionTenantId(session);
   if (!tenantId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const movements = await prisma.stockMovement.findMany({
-    where: { tenantId },
-    include: { product: { select: { name: true, codigo: true } } },
-    orderBy: { createdAt: 'desc' },
-    take: 100,
+  const movements = await runWithTenant(tenantId, async (tx) => {
+    return tx.stockMovement.findMany({
+      where: { tenantId },
+      include: { product: { select: { name: true, codigo: true } } },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
   });
   return NextResponse.json(movements);
 }
@@ -35,7 +38,7 @@ export async function POST(req: Request) {
   const userId = (session?.user as any)?.id;
 
   try {
-    const movement = await prisma.$transaction(async (tx: any) => {
+    const movement = await runWithTenant(tenantId, async (tx) => {
       const product = await tx.product.findFirst({ where: { id: productId, tenantId } });
       if (!product) throw new Error('NOT_FOUND');
 
