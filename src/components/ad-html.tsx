@@ -2,53 +2,84 @@
 
 import { useEffect, useRef } from 'react';
 
-// Renderiza HTML de anúncios externos (Adsterra, A-ADS, AdSense, etc.).
-// Dois problemas resolvidos aqui:
-// 1) Scripts inseridos via innerHTML não executam — recriamos os <script>.
-// 2) Redes como a Adsterra usam document.write, que apagaria a página —
-//    interceptamos document.write/writeln e redireccionamos para o contentor.
+// Ad network snippets are stored in platformConfig.adHtml. Scripts added with
+// innerHTML do not run. Adsterra scripts also use document.write to emit more
+// scripts or an iframe, so capture that output and activate each nested script
+// before restoring the document methods.
 export function AdHtml({ html }: { html: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
+    let cancelled = false;
     container.innerHTML = '';
 
-    const template = document.createElement('div');
-    template.innerHTML = html;
+    const originalWrite = document.write;
+    const originalWriteln = document.writeln;
+    let written = '';
+    document.write = (...parts: string[]) => { written += parts.join(''); };
+    document.writeln = (...parts: string[]) => { written += `${parts.join('')}\n`; };
 
-    const originalWrite = document.write.bind(document);
-    const originalWriteln = document.writeln.bind(document);
-    const buffer = document.createElement('div');
-    const bufferedWrite = (...parts: string[]) => { buffer.innerHTML += parts.join(''); };
-    const bufferedWriteln = (...parts: string[]) => { buffer.innerHTML += parts.join('') + '\n'; };
-
-    (document as unknown as { write: (...p: string[]) => void }).write = bufferedWrite;
-    (document as unknown as { writeln: (...p: string[]) => void }).writeln = bufferedWriteln;
-
-    try {
-      for (const node of Array.from(template.childNodes)) {
-        if (node.nodeName === 'SCRIPT') {
-          const script = document.createElement('script');
-          const element = node as HTMLElement;
-          for (const attribute of Array.from(element.attributes ?? [])) {
-            script.setAttribute(attribute.name, attribute.value);
-          }
-          // Evita carregar o loader do AdSense duas vezes na mesma página
-          const src = script.getAttribute('src') ?? '';
-          if (src.includes('adsbygoogle.js') && document.querySelector('script[src*="adsbygoogle.js"]')) continue;
-          script.text = (node as HTMLScriptElement).text;
-          container.appendChild(script);
-        } else {
-          container.appendChild(node.cloneNode(true));
-        }
+    const flushWritten = async (): Promise<void> => {
+      while (written && !cancelled) {
+        const markup = written;
+        written = '';
+        const parsed = document.createElement('template');
+        parsed.innerHTML = markup;
+        await processNodes(Array.from(parsed.content.childNodes));
       }
-    } finally {
-      while (buffer.firstChild) container.appendChild(buffer.firstChild);
+    };
+
+    const processNodes = async (nodes: ChildNode[]): Promise<void> => {
+      for (const node of nodes) {
+        if (cancelled) return;
+        if (node.nodeName !== 'SCRIPT') {
+          container.appendChild(node.cloneNode(true));
+          continue;
+        }
+
+        const source = node as HTMLScriptElement;
+        const src = source.getAttribute('src') ?? '';
+        if (src.includes('adsbygoogle.js') && document.querySelector('script[src*="adsbygoogle.js"]')) continue;
+
+        const script = document.createElement('script');
+        for (const attribute of Array.from(source.attributes)) script.setAttribute(attribute.name, attribute.value);
+        script.text = source.text;
+
+        if (src) {
+          // Keep document.write redirected until the external script has run;
+          // otherwise a late write can replace the entire application page.
+          await new Promise<void>((resolve) => {
+            const timeout = window.setTimeout(resolve, 15000);
+            script.onload = () => { window.clearTimeout(timeout); resolve(); };
+            script.onerror = () => { window.clearTimeout(timeout); resolve(); };
+            container.appendChild(script);
+          });
+        } else {
+          container.appendChild(script);
+        }
+        await flushWritten();
+      }
+    };
+
+    void (async () => {
+      try {
+        const parsed = document.createElement('template');
+        parsed.innerHTML = html;
+        await processNodes(Array.from(parsed.content.childNodes));
+        await flushWritten();
+      } finally {
+        document.write = originalWrite;
+        document.writeln = originalWriteln;
+      }
+    })();
+
+    return () => {
+      cancelled = true;
       document.write = originalWrite;
       document.writeln = originalWriteln;
-    }
+    };
   }, [html]);
 
   return <div ref={containerRef} className="ad-slot" />;

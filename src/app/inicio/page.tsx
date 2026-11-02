@@ -115,7 +115,6 @@ export default async function LandingPage() {
   return <main className="landing-page min-h-screen bg-[#f3f6fa] text-[#1c2d3f]">
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
     <SiteHeader />
-    {adHtml && <div className="mx-auto max-w-4xl px-4 pt-5 md:px-6"><div className="overflow-hidden rounded-xl border border-[#e2e9f1] bg-white p-2"><AdHtml html={adHtml} /></div></div>}
 
     <section className="landing-hero relative overflow-hidden border-b border-[#e2e9f1] bg-white">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_0%,rgba(40,120,208,.10),transparent_70%)]" />
@@ -158,6 +157,7 @@ export default async function LandingPage() {
 
     <section id="precos" className="border-y border-[#e2e9f1] bg-white px-4 py-20 md:px-6">
       <div className="mx-auto max-w-6xl">
+        {adHtml && <div className="mx-auto mb-12 max-w-4xl overflow-hidden rounded-xl border border-[#e2e9f1] bg-white p-2"><AdHtml html={adHtml} /></div>}
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-xs font-bold uppercase tracking-[.14em] text-[#2878d0]">Preços</p>
           <h2 className="mt-2 text-3xl font-bold tracking-tight md:text-4xl">Preços simples, em Kwanzas</h2>

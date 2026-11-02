@@ -156,7 +156,8 @@ export async function getStockValuationReport(tenantId: string) {
   });
 
   const totalValue = products.reduce(
-    (sum, p) => sum + (p.stock || 0) * Number(p.price),
+    (sum: number, p: { stock: number; price: string | number }) =>
+      sum + (p.stock || 0) * Number(p.price),
     0
   );
 
@@ -192,25 +193,33 @@ export async function getStockRotationReport(
     orderBy: { createdAt: 'desc' },
   });
 
-  const rotationByProduct = movements.reduce<Map<string, { name: string; codigo: string | null; totalQuantity: number; movements: number }>>(
-    (acc, m) => {
-      const key = m.productId;
-      const existing = acc.get(key);
-      if (existing) {
-        existing.totalQuantity += m.quantity;
-        existing.movements += 1;
-      } else {
-        acc.set(key, {
-          name: m.product.name,
-          codigo: m.product.codigo,
-          totalQuantity: m.quantity,
-          movements: 1,
-        });
-      }
-      return acc;
-    },
-    new Map()
-  );
+  const rotationByProduct = movements.reduce<
+  Map<string, { name: string; codigo: string | null; totalQuantity: number; movements: number }>
+>(
+  (
+    acc: Map<
+      string,
+      { name: string; codigo: string | null; totalQuantity: number; movements: number }
+    >,
+    m
+  ) => {
+    const key = m.productId;
+    const existing = acc.get(key);
+    if (existing) {
+      existing.totalQuantity += m.quantity;
+      existing.movements += 1;
+    } else {
+      acc.set(key, {
+        name: m.product.name,
+        codigo: m.product.codigo,
+        totalQuantity: m.quantity,
+        movements: 1,
+      });
+    }
+    return acc;
+  },
+  new Map()
+);
 
   return Array.from(rotationByProduct.entries())
     .map(([productId, data]) => ({ productId, ...data }))

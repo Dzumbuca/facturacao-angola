@@ -24,6 +24,7 @@ export default async function GuiaEmitirFacturasPage() {
   } catch { adHtml = null; }
 
   return <main className="min-h-screen bg-[#f3f6fa] text-[#1c2d3f]">
+    <SiteHeader />
     {adHtml && <div className="mx-auto max-w-4xl px-4 pt-5 md:px-6"><div className="overflow-hidden rounded-xl border border-[#e2e9f1] bg-white p-2"><AdHtml html={adHtml} /></div></div>}
 
     <article className="prose-machine mx-auto max-w-3xl px-4 py-12 md:px-6">

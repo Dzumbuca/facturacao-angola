@@ -14,6 +14,7 @@ export default async function ProdutosPage() {
     name: product.name,
     price: Number(product.price),
     stock: product.stock,
+    minStock: product.minStock ?? 0,
     categoria: product.categoria,
   }));
   return <ProductManagement initialProducts={initialProducts} />;

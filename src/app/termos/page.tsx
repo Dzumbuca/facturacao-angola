@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
+import { PlatformAd } from '@/components/platform-ad';
 
 export const metadata = {
   title: 'Termos de Serviço · Machine Facturas',
@@ -73,6 +74,7 @@ export default function TermosPage() {
   return (
     <main className="min-h-screen bg-[#f3f6fa] text-[#1c2d3f]">
     <SiteHeader />
+    <PlatformAd />
     <div className="prose-machine mx-auto max-w-3xl px-4 py-12 md:px-6">
       <article className="mx-auto w-full max-w-3xl rounded-3xl border border-[#e2e9f1] bg-white p-8 shadow-[0_20px_60px_rgba(25,52,80,.09)] sm:p-12">
         <img src="/logo.png" width="800" height="600" alt="Facturas" className="h-10 w-auto rounded-xl bg-white object-contain" />
