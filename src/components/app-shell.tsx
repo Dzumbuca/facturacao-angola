@@ -11,7 +11,7 @@ const groups: { title: string; links: NavLink[] }[] = [
   { title: 'Principal', links: [{ href: '/', label: 'Dashboard', icon: 'grid' }] },
   { title: 'Documentos Empresariais', links: [{ href: '/documentos', label: 'Documentos', icon: 'file' }] },
   { title: 'Ferramentas', links: [{ href: '/ferramentas', label: 'Centro de ferramentas', icon: 'tools' }] },
-  { title: 'Operações', links: [{ href: '/invoices', label: 'Facturas', icon: 'file' }, { href: '/customers', label: 'Clientes', icon: 'users' }, { href: '/produtos', label: 'Produtos e serviços', icon: 'box' }] },
+  { title: 'Operações', links: [{ href: '/invoices', label: 'Facturas', icon: 'file' }, { href: '/customers', label: 'Clientes', icon: 'users' }, { href: '/produtos', label: 'Produtos e serviços', icon: 'box' }, { href: '/warehouses', label: 'Armazéns', icon: 'building' }] },
   { title: 'Análise', links: [{ href: '/reports', label: 'Relatórios', icon: 'chart' }] },
   { title: 'Empresa', links: [{ href: '/empresa', label: 'Perfil da empresa', icon: 'building' }] },
 ] ;
