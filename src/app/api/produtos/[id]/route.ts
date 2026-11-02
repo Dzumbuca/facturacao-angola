@@ -32,6 +32,10 @@ export async function PATCH(request: NextRequest, { params }: Context) {
     }
     const codigo = typeof body.codigo === 'string' ? body.codigo.trim().slice(0, 40) || 'SEM-COD' : undefined;
     const categoria = typeof body.categoria === 'string' ? body.categoria.trim().slice(0, 60) || 'GERAL' : undefined;
+    const minStock = body.minStock !== undefined ? Number(body.minStock) : undefined;
+    if (minStock !== undefined && (!Number.isInteger(minStock) || minStock < 0)) {
+      return NextResponse.json({ error: 'Stock minimo invalido' }, { status: 400 });
+    }
 
     const produto = await prisma.product.update({
       where: { id },
@@ -39,6 +43,7 @@ export async function PATCH(request: NextRequest, { params }: Context) {
         ...(nome !== undefined ? { name: nome } : {}),
         ...(preco !== undefined ? { price: preco } : {}),
         ...(stock !== undefined ? { stock } : {}),
+        ...(minStock !== undefined ? { minStock } : {}),
         ...(codigo !== undefined ? { codigo } : {}),
         ...(categoria !== undefined ? { categoria } : {}),
       },

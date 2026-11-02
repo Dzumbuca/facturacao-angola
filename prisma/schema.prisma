@@ -128,6 +128,8 @@ model Tenant {
   bankAccounts     CompanyBankAccount[]
   payments         Payment[]
   paymentEvents    PaymentEvent[]
+  warehouses       Warehouse[]
+  stockMovements   StockMovement[]
   createdAt        DateTime      @default(now())
   status           AccountStatus @default(ACTIVE)
   plan             String        @default("FREE")
@@ -198,13 +200,54 @@ model Product {
   taxRate     Decimal       @default(14.00) @db.Decimal(5, 2)
   codigo      String?
   stock       Int           @default(0)
+  minStock    Int           @default(0)
   categoria   String        @default("GERAL")
   tenant      Tenant        @relation(fields: [tenantId], references: [id])
   items       InvoiceItem[]
   businessDocumentItems BusinessDocumentItem[]
+  stockMovements StockMovement[]
   createdAt   DateTime      @default(now())
 
   @@unique([tenantId, id])
+}
+
+model Warehouse {
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
+  location    String?
+  isDefault   Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, isActive])
+}
+
+model StockMovement {
+  id             String              @id @default(uuid())
+  tenantId       String
+  productId      String
+  type           StockMovementType
+  quantity       Int
+  reason         String?
+  reference      String?
+  createdByUserId String?
+  createdAt      DateTime           @default(now())
+  product        Product            @relation(fields: [productId], references: [id], onDelete: Restrict)
+  tenant         Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, productId])
+  @@index([productId])
+}
+
+enum StockMovementType {
+  IN
+  OUT
+  ADJUSTMENT
 }
 
 // Desbloqueio por anúncio: PENDING (visualização iniciada) → GRANTED (disponível)

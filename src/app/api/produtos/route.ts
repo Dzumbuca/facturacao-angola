@@ -22,7 +22,7 @@ export async function POST(req: Request) {
     const access = await getTenantWriteAccess();
     if (!access.ok) return NextResponse.json(access.body, { status: access.status });
     const { tenantId } = access.access;
-    const { codigo, nome, preco, stock, categoria } = await req.json();
+    const { codigo, nome, preco, stock, minStock, categoria } = await req.json();
     if (typeof nome !== 'string' || !nome.trim() || !Number.isFinite(Number(preco)) || Number(preco) < 0) {
       return NextResponse.json({ error: 'Nome e preço válidos são obrigatórios' }, { status: 400 });
     }
@@ -34,6 +34,7 @@ export async function POST(req: Request) {
         codigo: codigo || 'SEM-COD',
         price: Number(preco),
         stock: Number.isInteger(Number(stock)) && Number(stock) >= 0 ? Number(stock) : 0,
+        minStock: Number.isInteger(Number(minStock)) && Number(minStock) >= 0 ? Number(minStock) : 0,
         categoria: categoria || 'GERAL',
       },
     });

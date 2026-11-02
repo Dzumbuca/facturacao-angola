@@ -1,0 +1,50 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { getTenantWriteAccess } from '@/lib/tenant-api-access';
+import { prisma } from '@/lib/prisma';
+import { runWithTenant } from '@/lib/tenant-db';
+
+type Context = { params: Promise<{ id: string }> };
+
+// Actualizar um armazem
+export async function PATCH(request: NextRequest, { params }: Context) {
+  const access = await getTenantWriteAccess();
+  if (!access.ok) return NextResponse.json(access.body, { status: access.status });
+  const { tenantId } = access.access;
+  const { id } = await params;
+
+  const existing = await prisma.warehouse.findFirst({ where: { id, tenantId }, select: { id: true } });
+  if (!existing) return NextResponse.json({ error: 'Armazem nao encontrado.' }, { status: 404 });
+
+  const body = await request.json().catch(() => null);
+  if (!body) return NextResponse.json({ error: 'Dados invalidos.' }, { status: 400 });
+
+  const warehouse = await runWithTenant(tenantId, async (tx) => {
+    return tx.warehouse.update({
+      where: { id },
+      data: {
+        ...(typeof body.name === 'string' ? { name: body.name.trim() } : {}),
+        ...(typeof body.location === 'string' ? { location: body.location.trim() } : {}),
+        ...(typeof body.isDefault === 'boolean' ? { isDefault: body.isDefault } : {}),
+        ...(typeof body.isActive === 'boolean' ? { isActive: body.isActive } : {}),
+      },
+    });
+  });
+
+  return NextResponse.json(warehouse);
+}
+
+// Apagar um armazem (so se nao houver movimentos de stock associados)
+export async function DELETE(_request: NextRequest, { params }: Context) {
+  const access = await getTenantWriteAccess();
+  if (!access.ok) return NextResponse.json(access.body, { status: access.status });
+  const { tenantId } = access.access;
+  const { id } = await params;
+
+  const movements = await prisma.stockMovement.count({ where: { tenantId } });
+  // Verificar se o armazem e usado em alguma transferencia ou movimento
+  const warehouse = await prisma.warehouse.findFirst({ where: { id, tenantId }, select: { id: true } });
+  if (!warehouse) return NextResponse.json({ error: 'Armazem nao encontrado.' }, { status: 404 });
+
+  await prisma.warehouse.delete({ where: { id } });
+  return NextResponse.json({ success: true });
+}

@@ -10,6 +10,7 @@ type Product = {
   name: string;
   price: number;
   stock: number;
+  minStock: number;
   categoria: string;
 };
 
@@ -65,6 +66,7 @@ export function ProductManagement({ initialProducts }: { initialProducts: Produc
       nome: String(form.get('nome') ?? '').trim(),
       preco: String(form.get('preco') ?? ''),
       stock: String(form.get('stock') ?? ''),
+      minStock: String(form.get('minStock') ?? ''),
       categoria: String(form.get('categoria') ?? '').trim() || 'GERAL',
     };
 
@@ -147,6 +149,7 @@ export function ProductManagement({ initialProducts }: { initialProducts: Produc
             <div className="grid gap-4 sm:grid-cols-2">
               <div><label htmlFor="product-price" className="app-label">Preço (Kz) <span className="text-[#c44747]">*</span></label><input id="product-price" name="preco" type="number" className="app-input tabular-nums" min="0" step="0.01" required defaultValue={editing?.price ?? ''} /></div>
               <div><label htmlFor="product-stock" className="app-label">Stock <span className="font-normal text-[#708195]">(opcional)</span></label><input id="product-stock" name="stock" type="number" className="app-input tabular-nums" min="0" step="1" placeholder="0" defaultValue={editing?.stock ?? ''} /></div>
+              <div><label htmlFor="product-minstock" className="app-label">Stock minimo <span className="font-normal text-[#708195]">(opcional)</span></label><input id="product-minstock" name="minStock" type="number" className="app-input tabular-nums" min="0" step="1" placeholder="0" defaultValue={editing?.minStock ?? ''} /></div>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div><label htmlFor="product-code" className="app-label">Código <span className="font-normal text-[#708195]">(opcional)</span></label><input id="product-code" name="codigo" className="app-input" defaultValue={editing?.codigo ?? ''} /></div>

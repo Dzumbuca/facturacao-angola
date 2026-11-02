@@ -6,6 +6,7 @@ import { calculateInvoiceTotals } from './tax';
 import { computeEffectivePlan } from './plan';
 import { FREE_INVOICE_LIMIT, AdUnlockRequiredError } from './invoice-quota';
 import { claimUnlockForEmission, linkUnlockToInvoice } from './ad-unlock-service';
+import { decrementStockForInvoice, restoreStockForCancelledInvoice } from './stock-service';
 
 export const issueInvoice = async (
   invoiceData: any,
@@ -225,6 +226,23 @@ export const issueInvoice = async (
       if (!claimedUnlockId) throw new AdUnlockRequiredError(usedInvoices, FREE_INVOICE_LIMIT);
     }
     const saved = await transaction.invoice.create(invoiceCreateData);
+
+    // Baixa automatica de estoque para cada item da fatura que tenha produto associado
+    const invoiceItems = (invoiceData.items || []).filter(
+      (item: any) => item.productId && item.qty > 0
+    );
+    if (invoiceItems.length > 0) {
+      await decrementStockForInvoice(
+        tenant.id,
+        saved.id,
+        invoiceItems.map((item: any) => ({
+          productId: item.productId,
+          quantity: item.qty,
+        })),
+        transaction
+      );
+    }
+
     if (invoiceData.sourceDraftId) {
       const updatedDraft = await transaction.invoiceDraft.updateMany({
         where: { id: invoiceData.sourceDraftId, tenantId: tenant.id, status: 'ISSUING' },
@@ -362,6 +380,20 @@ export const issueCreditNote = async (params: {
     where: { id: originalInvoice.id },
     data: { status: 'ANULADA' }
   });
+
+  // 8. Restaurar estoque dos itens da fatura anulada
+  const creditItems = originalInvoice.items.map((item: any) => ({
+    productId: item.productId || null,
+    quantity: item.quantity,
+  }));
+  const itemsToRestore = creditItems.filter((i) => i.productId && i.quantity > 0);
+  if (itemsToRestore.length > 0) {
+    await restoreStockForCancelledInvoice(
+      originalInvoice.tenantId,
+      originalInvoice.id,
+      itemsToRestore
+    );
+  }
 
   return {
     ...creditNote,
