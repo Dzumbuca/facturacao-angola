@@ -399,7 +399,7 @@ export function WarehouseManagement({
   }
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="space-y-6">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
         <div>
           <p className="text-sm text-[#708195]">Controlo de inventário</p>
@@ -457,14 +457,18 @@ export function WarehouseManagement({
 
           <div className="mt-6">
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-lg border bg-white p-6 shadow-sm">
-                <p className="text-sm font-medium text-muted-foreground">Total de armazéns</p>
-                <p className="mt-1 text-2xl font-bold text-[#1c2d3f]">{warehouses.length}</p>
-              </div>
-              <div className="rounded-lg border bg-white p-6 shadow-sm">
-                <p className="text-sm font-medium text-muted-foreground">Armazéns activos</p>
-                <p className="mt-1 text-2xl font-bold text-[#248468]">{warehouses.filter((w) => w.isActive).length}</p>
-              </div>
+              <Card>
+                <CardContent className="p-5">
+                  <p className="text-sm font-medium text-[#708195]">Total de armazéns</p>
+                  <p className="mt-1 text-2xl font-bold text-[#1c2d3f]">{warehouses.length}</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-5">
+                  <p className="text-sm font-medium text-[#708195]">Armazéns activos</p>
+                  <p className="mt-1 text-2xl font-bold text-[#248468]">{warehouses.filter((w) => w.isActive).length}</p>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </section>

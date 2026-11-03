@@ -1,5 +1,7 @@
 'use client';
 
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
 type Product = {
   id: string;
   name: string;
@@ -54,11 +56,11 @@ export function ProductStockGrid({
   const categories = Array.from(new Set(products.map((p) => p.categoria).filter(Boolean))).sort();
 
   return (
-    <div className="rounded-lg border bg-white shadow-sm">
-      <div className="border-b px-5 py-4 md:px-6">
-        <h2 className="text-base font-bold text-[#1c2d3f]">Produtos em stock</h2>
-      </div>
-      <div className="p-5 md:p-6">
+    <Card>
+      <CardHeader>
+        <CardTitle>Produtos em stock</CardTitle>
+      </CardHeader>
+      <CardContent>
         <div className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="relative">
@@ -127,7 +129,7 @@ export function ProductStockGrid({
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

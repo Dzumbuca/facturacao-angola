@@ -1,6 +1,7 @@
 'use client';
 
 import { TrashIcon, EditIcon } from '@/components/icons';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 type Warehouse = {
   id: string;
@@ -26,11 +27,11 @@ export function WarehouseList({
   deletingId,
 }: Props) {
   return (
-    <div className="rounded-lg border bg-white shadow-sm">
-      <div className="border-b px-5 py-4 md:px-6">
-        <h2 className="text-base font-bold text-[#1c2d3f]">Armazéns</h2>
-      </div>
-      <div className="p-5 md:p-6">
+    <Card>
+      <CardHeader>
+        <CardTitle>Armazéns</CardTitle>
+      </CardHeader>
+      <CardContent>
         {warehouses.length === 0 ? (
           <div className="rounded-xl border border-dashed border-[#d7e1eb] bg-[#f8fafc] px-5 py-12 text-center">
             <p className="font-semibold text-[#344a60]">Nenhum armazém registado.</p>
@@ -109,7 +110,7 @@ export function WarehouseList({
             </table>
           </div>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

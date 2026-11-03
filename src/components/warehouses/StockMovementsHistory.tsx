@@ -1,5 +1,7 @@
 'use client';
 
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
 type Movement = {
   id: string;
   type: 'IN' | 'OUT' | 'ADJUSTMENT';
@@ -26,11 +28,11 @@ function getMovementTypeInfo(type: string) {
 
 export function StockMovementsHistory({ movements }: Props) {
   return (
-    <div className="rounded-lg border bg-white shadow-sm">
-      <div className="border-b px-5 py-4 md:px-6">
-        <h2 className="text-base font-bold text-[#1c2d3f]">Histórico de movimentações</h2>
-      </div>
-      <div className="p-5 md:p-6">
+    <Card>
+      <CardHeader>
+        <CardTitle>Histórico de movimentações</CardTitle>
+      </CardHeader>
+      <CardContent>
         {movements.length === 0 ? (
           <div className="rounded-xl border border-dashed border-[#d7e1eb] bg-[#f8fafc] px-5 py-12 text-center">
             <p className="font-semibold text-[#344a60]">Nenhuma movimentação registada.</p>
@@ -71,7 +73,7 @@ export function StockMovementsHistory({ movements }: Props) {
             </table>
           </div>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
