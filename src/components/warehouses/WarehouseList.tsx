@@ -1,5 +1,7 @@
 'use client';
 
+import { TrashIcon, EditIcon } from '@/components/icons';
+
 type Warehouse = {
   id: string;
   name: string;
@@ -10,55 +12,99 @@ type Warehouse = {
 
 type Props = {
   warehouses: Warehouse[];
+  onEdit?: (warehouse: Warehouse) => void;
+  onToggle?: (warehouse: Warehouse) => void;
+  onDelete?: (warehouse: Warehouse) => void;
+  deletingId?: string | null;
 };
 
-export function WarehouseList({ warehouses }: Props) {
+export function WarehouseList({
+  warehouses,
+  onEdit,
+  onToggle,
+  onDelete,
+  deletingId,
+}: Props) {
   return (
-    <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
-      <div className="flex flex-col space-y-1.5 p-6">
-        <h3 className="text-lg font-semibold leading-none tracking-tight">Armazéns</h3>
+    <div className="rounded-lg border bg-white shadow-sm">
+      <div className="border-b px-5 py-4 md:px-6">
+        <h2 className="text-base font-bold text-[#1c2d3f]">Armazéns</h2>
       </div>
-      <div className="p-6 pt-0">
+      <div className="p-5 md:p-6">
         {warehouses.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Nenhum armazém registado.</p>
+          <div className="rounded-xl border border-dashed border-[#d7e1eb] bg-[#f8fafc] px-5 py-12 text-center">
+            <p className="font-semibold text-[#344a60]">Nenhum armazém registado.</p>
+            <p className="mt-1 text-sm text-[#708195]">Crie o primeiro armazém para começar a gerir o inventário.</p>
+          </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="data-table min-w-[640px]">
               <thead>
-                <tr className="border-b">
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Nome</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Localização</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Estado</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Predefinido</th>
+                <tr>
+                  <th>Nome</th>
+                  <th>Localização</th>
+                  <th>Estado</th>
+                  <th>Predefinido</th>
+                  <th className="text-center">Acções</th>
                 </tr>
               </thead>
               <tbody>
-                {warehouses.map((warehouse) => (
-                  <tr key={warehouse.id} className="border-b transition-colors hover:bg-muted/50">
-                    <td className="p-4 align-middle font-medium">{warehouse.name}</td>
-                    <td className="p-4 align-middle">{warehouse.location || '-'}</td>
-                    <td className="p-4 align-middle">
-                      {warehouse.isActive ? (
-                        <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors border-transparent bg-primary text-primary-foreground">
-                          Activo
+                {warehouses.map((warehouse) => {
+                  const statusBadge = warehouse.isActive
+                    ? 'bg-[#eff9f4] text-[#267256] border border-[#cbe8dc]'
+                    : 'bg-[#fdf3f3] text-[#a83939] border border-red-100';
+                  const defaultBadge = warehouse.isDefault
+                    ? 'bg-[#eff4f8] text-[#2878d0] border border-[#cdddeb]'
+                    : 'bg-[#f0f4f8] text-[#64768a] border border-[#e7edf3]';
+                  return (
+                    <tr key={warehouse.id} className="transition hover:bg-[#f8fafc]">
+                      <td className="font-semibold text-[#263c52]">{warehouse.name}</td>
+                      <td className="text-[#607286]">{warehouse.location || '-'}</td>
+                      <td>
+                        <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors border-transparent ${statusBadge}`}>
+                          {warehouse.isActive ? 'Activo' : 'Inactivo'}
                         </span>
-                      ) : (
-                        <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors border-transparent bg-secondary text-secondary-foreground">
-                          Inactivo
+                      </td>
+                      <td>
+                        <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors border-transparent ${defaultBadge}`}>
+                          {warehouse.isDefault ? 'Sim' : 'Não'}
                         </span>
-                      )}
-                    </td>
-                    <td className="p-4 align-middle">
-                      {warehouse.isDefault ? (
-                        <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors">
-                          Predefinido
-                        </span>
-                      ) : (
-                        '-'
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="text-center">
+                        <div className="flex gap-2 justify-center">
+                          {onEdit && (
+                            <button
+                              type="button"
+                              onClick={() => onEdit(warehouse)}
+                              className="rounded-lg border border-[#cdddeb] px-3 py-1.5 text-sm font-semibold text-[#2878d0] transition hover:bg-[#f0f6fc]"
+                            >
+                              <EditIcon className="h-3.5 w-3.5 mr-1" /> Editar
+                            </button>
+                          )}
+                          {onToggle && (
+                            <button
+                              type="button"
+                              onClick={() => onToggle(warehouse)}
+                              className="rounded-lg border border-[#cdddeb] px-3 py-1.5 text-sm font-semibold text-[#64768a] transition hover:bg-[#f0f4f8]"
+                            >
+                              {warehouse.isActive ? 'Desactivar' : 'Activar'}
+                            </button>
+                          )}
+                          {onDelete && (
+                            <button
+                              type="button"
+                              onClick={() => onDelete(warehouse)}
+                              disabled={deletingId === warehouse.id}
+                              className="rounded-lg border border-[#f0d3d3] px-3 py-1.5 text-sm font-semibold text-[#a83939] transition hover:bg-[#fdf3f3] disabled:opacity-50"
+                            >
+                              <TrashIcon className="h-3.5 w-3.5 mr-1" /> Apagar
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

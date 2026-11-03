@@ -10,7 +10,7 @@ export async function GET() {
   if (!tenantId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const warehouses = await runWithTenant(tenantId, async (tx) => {
-    return tx.warehouse.findMany({ where: { tenantId, isActive: true }, orderBy: { name: 'asc' } });
+    return tx.warehouse.findMany({ where: { tenantId }, orderBy: { name: 'asc' } });
   });
   return NextResponse.json(warehouses);
 }

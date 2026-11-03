@@ -1,131 +1,55 @@
-'use client';
+import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+import { getSessionTenantId } from "@/lib/session";
+import { WarehouseManagement } from "@/components/warehouses/warehouse-management";
 
-import { useEffect, useState } from 'react';
-import { WarehouseIndicators } from '@/components/warehouses/WarehouseIndicators';
-import { WarehouseList } from '@/components/warehouses/WarehouseList';
-import { ProductStockGrid } from '@/components/warehouses/ProductStockGrid';
-import { StockMovementsHistory } from '@/components/warehouses/StockMovementsHistory';
-import { NewMovementDialog } from '@/components/warehouses/NewMovementDialog';
-import { NewWarehouseDialog } from '@/components/warehouses/NewWarehouseDialog';
+export default async function WarehousesPage() {
+  const tenantId = getSessionTenantId(await auth());
+  if (!tenantId) return <p>Empresa não configurada.</p>;
 
-type Warehouse = {
-  id: string;
-  name: string;
-  location: string | null;
-  isDefault: boolean;
-  isActive: boolean;
-  createdAt: string;
-};
+  const [warehouses, products, movements] = await Promise.all([
+    prisma.warehouse.findMany({ where: { tenantId }, orderBy: { name: 'asc' } }),
+    prisma.product.findMany({ where: { tenantId }, orderBy: { name: 'asc' } }),
+    prisma.stockMovement.findMany({
+      where: { tenantId },
+      include: { product: { select: { name: true, codigo: true } } },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    }),
+  ]);
 
-type Product = {
-  id: string;
-  name: string;
-  codigo: string | null;
-  price: number | string;
-  stock: number;
-  minStock: number;
-  categoria: string;
-};
+  const initialWarehouses = warehouses.map((w: any) => ({
+    id: w.id,
+    name: w.name,
+    location: w.location,
+    isDefault: w.isDefault,
+    isActive: w.isActive,
+    createdAt: w.createdAt.toISOString(),
+  }));
 
-type Movement = {
-  id: string;
-  type: 'IN' | 'OUT' | 'ADJUSTMENT';
-  quantity: number;
-  reason: string | null;
-  reference: string | null;
-  createdAt: string;
-  product: { name: string; codigo: string | null } | null;
-};
+  const initialProducts = products.map((p: any) => ({
+    id: p.id,
+    codigo: p.codigo,
+    name: p.name,
+    price: Number(p.price),
+    stock: p.stock,
+    minStock: p.minStock ?? 0,
+    categoria: p.categoria,
+  }));
 
-export default function WarehousesPage() {
-  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [movements, setMovements] = useState<Movement[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const initialMovements = movements.map((m: any) => ({
+    id: m.id,
+    type: m.type,
+    quantity: m.quantity,
+    reason: m.reason,
+    reference: m.reference,
+    createdAt: m.createdAt.toISOString(),
+    product: m.product ? { name: m.product.name, codigo: m.product.codigo } : null,
+  }));
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      const [warehousesRes, productsRes, movementsRes] = await Promise.all([
-        fetch('/api/stock/warehouses'),
-        fetch('/api/produtos'),
-        fetch('/api/stock/movements'),
-      ]);
-
-      if (warehousesRes.ok) {
-        const data = await warehousesRes.json();
-        setWarehouses(Array.isArray(data) ? data : []);
-      }
-
-      if (productsRes.ok) {
-        const data = await productsRes.json();
-        setProducts(Array.isArray(data) ? data : []);
-      }
-
-      if (movementsRes.ok) {
-        const data = await movementsRes.json();
-        setMovements(Array.isArray(data) ? data : []);
-      }
-    } catch (err) {
-      setError('Erro ao carregar dados de armazéns e stock.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const totalProducts = products.length;
-  const totalStock = products.reduce((sum, p) => sum + (Number(p.stock) || 0), 0);
-  const lowStockProducts = products.filter((p) => Number(p.stock) > 0 && Number(p.stock) <= Number(p.minStock)).length;
-  const outOfStockProducts = products.filter((p) => Number(p.stock) <= 0).length;
-  const totalValue = products.reduce((sum, p) => {
-    const price = typeof p.price === 'string' ? parseFloat(p.price) : p.price;
-    const stock = Number(p.stock) || 0;
-    return sum + price * stock;
-  }, 0);
-
-  if (loading) {
-    return (
-      <div className="container mx-auto py-6">
-        <p className="text-muted-foreground">A carregar...</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Armazéns</h1>
-          <p className="text-muted-foreground">Gestão de armazéns e controlo de stock</p>
-        </div>
-        <div className="flex gap-2">
-          <NewWarehouseDialog onSuccess={loadData} />
-          <NewMovementDialog products={products.map((p) => ({ id: p.id, name: p.name, stock: p.stock }))} onSuccess={loadData} />
-        </div>
-      </div>
-
-      {error && <p className="text-sm text-red-600">{error}</p>}
-
-      <WarehouseIndicators
-        totalProducts={totalProducts}
-        totalStock={totalStock}
-        lowStockProducts={lowStockProducts}
-        outOfStockProducts={outOfStockProducts}
-        totalValue={totalValue}
-      />
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <WarehouseList warehouses={warehouses} />
-        <ProductStockGrid products={products} />
-      </div>
-
-      <StockMovementsHistory movements={movements} />
-    </div>
-  );
+  return <WarehouseManagement
+    initialWarehouses={initialWarehouses}
+    initialProducts={initialProducts}
+    initialMovements={initialMovements}
+  />;
 }

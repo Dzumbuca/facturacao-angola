@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 
 type Product = {
   id: string;
@@ -64,31 +65,25 @@ export function NewMovementDialog({ products, onSuccess }: Props) {
 
   return (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
-      >
+      <Button type="button" onClick={() => setOpen(true)} disabled={loading || products.length === 0}>
         Novo movimento
-      </button>
+      </Button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-md rounded-lg border bg-background p-6 shadow-lg">
-            <div className="flex flex-col space-y-1.5 mb-4">
-              <h2 className="text-lg font-semibold leading-none tracking-tight">Registar movimento de stock</h2>
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#102b46]/50 p-0 backdrop-blur-[2px] sm:items-center sm:p-5" onMouseDown={(event) => { if (event.target === event.currentTarget && !loading) setOpen(false); }}>
+          <section role="dialog" aria-modal="true" aria-labelledby="movement-form-title" className="max-h-[92vh] w-full overflow-y-auto rounded-t-2xl bg-white p-5 shadow-2xl sm:max-w-lg sm:rounded-2xl sm:p-7">
+            <div className="mb-6 flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[.14em] text-[#2878d0]">Controlo de inventário</p>
+                <h3 id="movement-form-title" className="mt-1 text-xl font-bold text-[#1c2d3f]">Registar movimento de stock</h3>
+                <p className="mt-1 text-sm text-[#708195]">Registe uma entrada, saída ou ajuste de stock.</p>
+              </div>
+              <button type="button" aria-label="Fechar" disabled={loading} onClick={() => setOpen(false)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xl text-[#708195] hover:bg-[#f0f4f8] disabled:opacity-50">×</button>
             </div>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <label htmlFor="product" className="text-sm font-medium leading-none">
-                  Produto
-                </label>
-                <select
-                  id="product"
-                  value={productId}
-                  onChange={(e) => setProductId(e.target.value)}
-                  required
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                >
+            <form className="space-y-4" onSubmit={handleSubmit}>
+              <div>
+                <label htmlFor="movement-product" className="app-label">Produto <span className="text-[#c44747]">*</span></label>
+                <select id="movement-product" value={productId} onChange={(e) => setProductId(e.target.value)} required className="app-input">
                   <option value="">Seleccionar produto</option>
                   {products.map((product) => (
                     <option key={product.id} value={product.id}>
@@ -97,85 +92,35 @@ export function NewMovementDialog({ products, onSuccess }: Props) {
                   ))}
                 </select>
               </div>
-
-              <div className="space-y-2">
-                <label htmlFor="type" className="text-sm font-medium leading-none">
-                  Tipo de movimento
-                </label>
-                <select
-                  id="type"
-                  value={type}
-                  onChange={(e) => setType(e.target.value as 'IN' | 'OUT' | 'ADJUSTMENT')}
-                  required
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                >
-                  <option value="IN">Entrada</option>
-                  <option value="OUT">Saída</option>
-                  <option value="ADJUSTMENT">Ajuste</option>
-                </select>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="movement-type" className="app-label">Tipo de movimento <span className="text-[#c44747]">*</span></label>
+                  <select id="movement-type" value={type} onChange={(e) => setType(e.target.value as 'IN' | 'OUT' | 'ADJUSTMENT')} required className="app-input">
+                    <option value="IN">Entrada</option>
+                    <option value="OUT">Saída</option>
+                    <option value="ADJUSTMENT">Ajuste</option>
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="movement-quantity" className="app-label">Quantidade <span className="text-[#c44747]">*</span></label>
+                  <input id="movement-quantity" type="number" min={1} value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} required className="app-input tabular-nums" />
+                </div>
               </div>
-
-              <div className="space-y-2">
-                <label htmlFor="quantity" className="text-sm font-medium leading-none">
-                  Quantidade
-                </label>
-                <input
-                  id="quantity"
-                  type="number"
-                  min={1}
-                  value={quantity}
-                  onChange={(e) => setQuantity(Number(e.target.value))}
-                  required
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                />
+              <div>
+                <label htmlFor="movement-reason" className="app-label">Motivo</label>
+                <input id="movement-reason" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Motivo do movimento" className="app-input" />
               </div>
-
-              <div className="space-y-2">
-                <label htmlFor="reason" className="text-sm font-medium leading-none">
-                  Motivo
-                </label>
-                <input
-                  id="reason"
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  placeholder="Motivo do movimento"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                />
+              <div>
+                <label htmlFor="movement-reference" className="app-label">Referência <span className="font-normal text-[#708195]">(opcional)</span></label>
+                <input id="movement-reference" value={reference} onChange={(e) => setReference(e.target.value)} placeholder="Referência (opcional)" className="app-input" />
               </div>
-
-              <div className="space-y-2">
-                <label htmlFor="reference" className="text-sm font-medium leading-none">
-                  Referência
-                </label>
-                <input
-                  id="reference"
-                  value={reference}
-                  onChange={(e) => setReference(e.target.value)}
-                  placeholder="Referência (opcional)"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                />
-              </div>
-
-              {error && <p className="text-sm text-red-600">{error}</p>}
-
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  className="flex-1 inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading || !productId}
-                  className="flex-1 inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
-                >
-                  {loading ? 'A registar...' : 'Registar'}
-                </button>
+              {error && <p role="alert" className="rounded-lg border border-red-100 bg-red-50 px-3 py-2.5 text-sm text-[#a83939]">{error}</p>}
+              <div className="flex flex-col-reverse gap-2 border-t border-[#e7edf3] pt-4 sm:flex-row sm:justify-end">
+                <Button type="button" variant="secondary" onClick={() => setOpen(false)} disabled={loading}>Cancelar</Button>
+                <Button type="submit" disabled={loading || !productId}>{loading ? 'A registar…' : 'Registar'}</Button>
               </div>
             </form>
-          </div>
+          </section>
         </div>
       )}
     </>

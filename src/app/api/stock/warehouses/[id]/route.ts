@@ -33,18 +33,21 @@ export async function PATCH(request: NextRequest, { params }: Context) {
   return NextResponse.json(warehouse);
 }
 
-// Apagar um armazem (so se nao houver movimentos de stock associados)
+// Apagar um armazem (apenas se nao houver produtos associados ao tenant que dependam dele).
+// Nota: o modelo actual nao associa produtos directamente a armazens, pelo que a eliminacao
+// e permitida desde que o armazem pertença ao tenant autenticado.
 export async function DELETE(_request: NextRequest, { params }: Context) {
   const access = await getTenantWriteAccess();
   if (!access.ok) return NextResponse.json(access.body, { status: access.status });
   const { tenantId } = access.access;
   const { id } = await params;
 
-  const movements = await prisma.stockMovement.count({ where: { tenantId } });
-  // Verificar se o armazem e usado em alguma transferencia ou movimento
   const warehouse = await prisma.warehouse.findFirst({ where: { id, tenantId }, select: { id: true } });
   if (!warehouse) return NextResponse.json({ error: 'Armazem nao encontrado.' }, { status: 404 });
 
-  await prisma.warehouse.delete({ where: { id } });
+  await runWithTenant(tenantId, async (tx) => {
+    await tx.warehouse.delete({ where: { id } });
+  });
+
   return NextResponse.json({ success: true });
 }

@@ -18,56 +18,52 @@ function formatDateTime(date: string) {
   return new Date(date).toLocaleString('pt-PT');
 }
 
-function getTypeInfo(type: string) {
-  if (type === 'IN') return { label: 'Entrada', className: 'bg-primary text-primary-foreground' };
-  if (type === 'OUT') return { label: 'Saída', className: 'bg-destructive text-destructive-foreground' };
-  return { label: 'Ajuste', className: 'bg-secondary text-secondary-foreground' };
+function getMovementTypeInfo(type: string) {
+  if (type === 'IN') return { label: 'Entrada', className: 'bg-[#eff4f8] text-[#2878d0] border border-[#cdddeb]' };
+  if (type === 'OUT') return { label: 'Saída', className: 'bg-[#fdf3f3] text-[#a83939] border border-red-100' };
+  return { label: 'Ajuste', className: 'bg-[#f0f4f8] text-[#64768a] border border-[#e7edf3]' };
 }
 
 export function StockMovementsHistory({ movements }: Props) {
   return (
-    <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
-      <div className="flex flex-col space-y-1.5 p-6">
-        <h3 className="text-lg font-semibold leading-none tracking-tight">Histórico de movimentações</h3>
+    <div className="rounded-lg border bg-white shadow-sm">
+      <div className="border-b px-5 py-4 md:px-6">
+        <h2 className="text-base font-bold text-[#1c2d3f]">Histórico de movimentações</h2>
       </div>
-      <div className="p-6 pt-0">
+      <div className="p-5 md:p-6">
         {movements.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Nenhuma movimentação registada.</p>
+          <div className="rounded-xl border border-dashed border-[#d7e1eb] bg-[#f8fafc] px-5 py-12 text-center">
+            <p className="font-semibold text-[#344a60]">Nenhuma movimentação registada.</p>
+            <p className="mt-1 text-sm text-[#708195]">Registe entradas, saídas ou ajustes de stock para começar o histórico.</p>
+          </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="data-table min-w-[760px]">
               <thead>
-                <tr className="border-b">
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Data</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Produto</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Tipo</th>
-                  <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">Quantidade</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Motivo</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Referência</th>
+                <tr>
+                  <th>Data</th>
+                  <th>Produto</th>
+                  <th>Tipo</th>
+                  <th className="text-right">Quantidade</th>
+                  <th>Motivo</th>
+                  <th>Referência</th>
                 </tr>
               </thead>
               <tbody>
                 {movements.map((movement) => {
-                  const typeInfo = getTypeInfo(movement.type);
+                  const typeInfo = getMovementTypeInfo(movement.type);
                   return (
-                    <tr key={movement.id} className="border-b transition-colors hover:bg-muted/50">
-                      <td className="p-4 align-middle">{formatDateTime(movement.createdAt)}</td>
-                      <td className="p-4 align-middle">
-                        <div>
-                          <p className="font-medium">{movement.product?.name || '-'}</p>
-                          {movement.product?.codigo && (
-                            <p className="text-xs text-muted-foreground">{movement.product.codigo}</p>
-                          )}
-                        </div>
-                      </td>
-                      <td className="p-4 align-middle">
+                    <tr key={movement.id} className="transition hover:bg-[#f8fafc]">
+                      <td className="text-sm text-[#607286]">{formatDateTime(movement.createdAt)}</td>
+                      <td className="text-sm font-medium text-[#263c52]">{movement.product?.name || '-'}</td>
+                      <td className="text-sm">
                         <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors border-transparent ${typeInfo.className}`}>
                           {typeInfo.label}
                         </span>
                       </td>
-                      <td className="p-4 align-middle text-right">{movement.quantity}</td>
-                      <td className="p-4 align-middle">{movement.reason || '-'}</td>
-                      <td className="p-4 align-middle">{movement.reference || '-'}</td>
+                      <td className="text-sm tabular-nums text-right font-medium">{movement.quantity}</td>
+                      <td className="text-sm text-[#607286]">{movement.reason || '-'}</td>
+                      <td className="text-sm text-[#607286]">{movement.reference || '-'}</td>
                     </tr>
                   );
                 })}
