@@ -12,6 +12,9 @@ export const metadata: Metadata = {
   title: 'Machine Facturas — Facturação online para empresas em Angola',
   description: 'Crie e emita facturas com assinatura digital (padrão AGT), exportação SAFT-AO, relatórios e gestão de clientes. Grátis para começar, do telemóvel ou computador.',
   keywords: ['facturação Angola', 'software de facturas Angola', 'facturas online', 'SAFT Angola', 'AGT', 'Multicaixa Express', 'facturação electronica', 'emissão de facturas Luanda'],
+  alternates: {
+    canonical: 'https://machinefaturas.shop/inicio',
+  },
   openGraph: {
     title: 'Machine Facturas — Facturação online para empresas em Angola',
     description: 'Facturas com assinatura digital, SAFT-AO e relatórios. Grátis para começar.',
@@ -132,23 +135,52 @@ export default async function LandingPage() {
       </div>
     </section>
 
-    <section id="funcionalidades" className="mx-auto max-w-6xl px-4 py-20 md:px-6">
-      <div className="max-w-2xl">
-        <p className="text-xs font-bold uppercase tracking-[.14em] text-[#2878d0]">Funcionalidades</p>
-        <h2 className="mt-2 text-3xl font-bold tracking-tight md:text-4xl">Tudo o que a sua empresa precisa para facturar</h2>
-        <p className="mt-3 leading-7 text-[#4a5f76]">Do primeiro orçamento ao ficheiro SAFT — sem instalar nada.</p>
-      </div>
-      <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {features.map((feature, index) => {
-          const Icon = featureIcons[index % featureIcons.length];
-          return <div key={feature.title} className="landing-feature rounded-2xl border border-[#e2e9f1] bg-white p-6 shadow-[0_3px_14px_rgba(25,52,80,.035)] transition hover:border-[#c9def2] hover:shadow-[0_8px_28px_rgba(25,52,80,.07)]">
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#eef6ff] text-[#2878d0]"><Icon /></span>
-            <h3 className="mt-4 font-bold text-[#1c2d3f]">{feature.title}</h3>
-            <p className="mt-2 text-sm leading-6 text-[#5b6f85]">{feature.body}</p>
-          </div>;
-        })}
-      </div>
-    </section>
+      <section id="funcionalidades" className="mx-auto max-w-6xl px-4 py-20 md:px-6">
+        <div className="max-w-2xl">
+          <p className="text-xs font-bold uppercase tracking-[.14em] text-[#2878d0]">Funcionalidades</p>
+          <h2 className="mt-2 text-3xl font-bold tracking-tight md:text-4xl">Tudo o que a sua empresa precisa para facturar</h2>
+          <p className="mt-3 leading-7 text-[#4a5f76]">Do primeiro orçamento ao ficheiro SAFT — sem instalar nada.</p>
+        </div>
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {features.map((feature, index) => {
+            const Icon = featureIcons[index % featureIcons.length];
+            return <div key={feature.title} className="landing-feature rounded-2xl border border-[#e2e9f1] bg-white p-6 shadow-[0_3px_14px_rgba(25,52,80,.035)] transition hover:border-[#c9def2] hover:shadow-[0_8px_28px_rgba(25,52,80,.07)]">
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#eef6ff] text-[#2878d0]"><Icon /></span>
+              <h3 className="mt-4 font-bold text-[#1c2d3f]">{feature.title}</h3>
+              <p className="mt-2 text-sm leading-6 text-[#5b6f85]">{feature.body}</p>
+            </div>;
+          })}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 pb-4 md:px-6">
+        <div className="rounded-3xl border border-[#e2e9f1] bg-white p-6 shadow-[0_3px_14px_rgba(25,52,80,.035)] md:p-8">
+          <div className="max-w-2xl">
+            <p className="text-xs font-bold uppercase tracking-[.14em] text-[#2878d0]">Aprende</p>
+            <h2 className="mt-2 text-2xl font-bold tracking-tight md:text-3xl">Aprende sobre facturação em Angola</h2>
+            <p className="mt-3 leading-7 text-[#4a5f76]">
+              Conhecimento prático para saber quando usar orçamento, proforma ou factura, evitar erros comuns e organizar melhor o teu negócio.
+            </p>
+          </div>
+          <div className="mt-6 grid gap-3 md:grid-cols-3">
+            <Link href="/guias/emitir-facturas" className="rounded-2xl border border-[#e2e9f1] p-5 transition hover:border-[#c9def2] hover:shadow-[0_6px_20px_rgba(25,52,80,.06)]">
+              <h3 className="font-bold">Como emitir facturas em Angola</h3>
+              <p className="mt-2 text-sm leading-6 text-[#5b6f85]">Guia prático com o essencial sobre facturação, IVA e organização.</p>
+              <span className="mt-3 inline-flex text-sm font-semibold text-[#2878d0]">Ler guia →</span>
+            </Link>
+            <Link href="/guias/saft" className="rounded-2xl border border-[#e2e9f1] p-5 transition hover:border-[#c9def2] hover:shadow-[0_6px_20px_rgba(25,52,80,.06)]">
+              <h3 className="font-bold">SAFT-AO: o que é e como gerar</h3>
+              <p className="mt-2 text-sm leading-6 text-[#5b6f85]">Entende o ficheiro que muitos contabilistas pedem e como o preparar.</p>
+              <span className="mt-3 inline-flex text-sm font-semibold text-[#2878d0]">Ler guia →</span>
+            </Link>
+            <Link href="/academia" className="rounded-2xl border border-[#e2e9f1] p-5 transition hover:border-[#c9def2] hover:shadow-[0_6px_20px_rgba(25,52,80,.06)]">
+              <h3 className="font-bold">Academia Machine</h3>
+              <p className="mt-2 text-sm leading-6 text-[#5b6f85]">Artigos práticos sobre documentos, erros comuns e boas práticas.</p>
+              <span className="mt-3 inline-flex text-sm font-semibold text-[#2878d0]">Ver artigos →</span>
+            </Link>
+          </div>
+        </div>
+      </section>
 
     {/* Espaço publicitário (visitantes) — só renderiza com um ID de bloco
         oficial em NEXT_PUBLIC_ADSENSE_SLOT_INICIO_MID (ver docs/adsense.md);

@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   title: 'Calculadora de IVA 14% — Angola | Machine Facturas',
   description: 'Calculadora de IVA para Angola: simule o acréscimo ou a separação do imposto em kwanzas e confirme a taxa aplicável à sua operação.',
   keywords: ['calculadora IVA Angola', 'calcular IVA 14', 'IVA Angola', 'imposto sobre o valor acrescentado', 'calculadora de impostos Angola'],
+  alternates: {
+    canonical: 'https://machinefaturas.shop/ferramentas/iva',
+  },
   openGraph: {
     title: 'Calculadora de IVA 14% — Angola',
     description: 'Acrescente ou retire o IVA em Kwanzas. Grátis e instantâneo.',
@@ -50,6 +53,25 @@ export default async function CalculadoraIvaPage() {
         <div className="rounded-2xl border border-[#e2e9f1] bg-white p-5"><h2 className="font-bold">Emissão automática</h2><p className="mt-2 text-sm leading-6 text-[#5b6f85]">No Machine Facturas, o IVA é calculado e destacado automaticamente em cada factura, com assinatura digital.</p></div>
       </div>
       <p className="mt-4 text-sm leading-6 text-[#5b6f85]">Referência legal: <a className="font-semibold text-[#2878d0] underline" href="https://www.ucm.minfin.gov.ao/cs/groups/public/documents/document/aw4z/nzu5/~edisp/minfin3759673.pdf" target="_blank" rel="noreferrer">Código do IVA republicado pela Lei n.º 14/23, de 28 de Dezembro</a>. A calculadora não determina o enquadramento fiscal da operação.</p>
+
+      <section className="mt-10 rounded-2xl border border-[#e2e9f1] bg-white p-6 md:p-8">
+        <h2 className="text-xl font-bold">O que é esta ferramenta?</h2>
+        <p className="mt-2 leading-7 text-[#4a5f76]">A calculadora de IVA para Angola permite acrescentar ou retirar o IVA de 14% (ou outras taxas) de um valor em kwanzas, mostrando o valor do imposto e o total.</p>
+        <h3 className="mt-6 font-bold">Como usar</h3>
+        <ol className="mt-2 space-y-1 leading-7 text-[#4a5f76]">
+          <li>1. Escolhe o modo: "Acrescentar IVA" ou "Retirar IVA".</li>
+          <li>2. Introduz o valor em kwanzas.</li>
+          <li>3. Seleciona a taxa aplicável (14% ou outra).</li>
+          <li>4. Vê o resultado instantâneo: IVA e total.</li>
+        </ol>
+        <h3 className="mt-6 font-bold">Exemplo prático para Angola</h3>
+        <p className="mt-2 leading-7 text-[#4a5f76]">Queres acrescentar 14% a 100.000 Kz: o IVA será 14.000 Kz e o total 114.000 Kz.</p>
+        <h3 className="mt-6 font-bold">Limitações</h3>
+        <ul className="mt-2 space-y-1 leading-7 text-[#4a5f76]">
+          <li>• Cálculo indicativo, não determina o enquadramento fiscal.</li>
+          <li>• Nem todas as operações seguem a taxa geral — confirma junto da AGT ou do teu contabilista.</li>
+        </ul>
+      </section>
 
       <RelatedTools actualId="iva" categoria="Fiscalidade" />
 

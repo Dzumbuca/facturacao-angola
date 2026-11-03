@@ -54,6 +54,21 @@ export default async function CalculadoraSalarioPage() {
         <strong className="text-[#1c2d3f]">Nota:</strong> cálculo indicativo com a tabela do IRT em vigor desde Janeiro de 2024 (rendimento do trabalho, descontando apenas o INSS do trabalhador). Deduções adicionais (dependentes, pensões, etc.) e casos especiais podem alterar o resultado — confirme sempre junto da AGT ou do seu contabilista.
       </div>
 
+      <section className="mt-10 rounded-2xl border border-[#e2e9f1] bg-white p-6 md:p-8">
+        <h2 className="text-xl font-bold">O que é esta ferramenta?</h2>
+        <p className="mt-2 leading-7 text-[#4a5f76]">Calcula o salário líquido aproximado em Angola: desconta INSS (3%) e aplica IRT por escalões ao rendimento tributável.</p>
+        <h3 className="mt-6 font-bold">Como usar</h3>
+        <ol className="mt-2 space-y-1 leading-7 text-[#4a5f76]">
+          <li>1. Introduz o salário bruto em kwanzas.</li>
+          <li>2. Vê os descontos e o salário líquido estimado.</li>
+        </ol>
+        <h3 className="mt-6 font-bold">Limitações</h3>
+        <ul className="mt-2 space-y-1 leading-7 text-[#4a5f76]">
+          <li>• Resultado indicativo — nem todas as situações são cobertas.</li>
+          <li>• Pode não incluir deduções específicas; confirma com o teu contabilista.</li>
+        </ul>
+      </section>
+
       <RelatedTools actualId="salario" categoria="Fiscalidade" />
 
       <div className="prose-cta mt-10 rounded-3xl bg-[#102b46] px-6 py-10 text-center text-white md:px-12">

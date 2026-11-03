@@ -61,6 +61,24 @@ export default async function GeradorRecibosPage() {
       <h2 className="mt-10 text-2xl font-bold">Exemplo</h2>
       <p>Recibo REC-004, de 27/10/2026: recebido de Joana Mwangolé o valor de <strong>25.000 Kz</strong> por Multicaixa, referente ao pagamento da factura FT 2026/018. O PDF destaca o valor, identifica as partes e reserva o espaço de assinatura.</p>
 
+      <section className="mt-10 rounded-2xl border border-[#e2e9f1] bg-white p-6 md:p-8">
+        <h2 className="text-xl font-bold">O que é esta ferramenta?</h2>
+        <p className="mt-2 leading-7 text-[#4a5f76]">Gera recibos de pagamento em PDF para comprovar que foi recebido um valor, com forma de pagamento e referência.</p>
+        <h3 className="mt-6 font-bold">Como usar</h3>
+        <ol className="mt-2 space-y-1 leading-7 text-[#4a5f76]">
+          <li>1. Preenche quem recebeu e quem pagou.</li>
+          <li>2. Indica valor, forma de pagamento e data.</li>
+          <li>3. Adiciona referência (nº factura, etc.).</li>
+          <li>4. Gera e descarrega o recibo em PDF.</li>
+        </ol>
+        <h3 className="mt-6 font-bold">Limitações</h3>
+        <ul className="mt-2 space-y-1 leading-7 text-[#4a5f76]">
+          <li>• Comprova pagamento, mas não substitui factura fiscal.</li>
+          <li>• Os dados não ficam guardados.</li>
+        </ul>
+        <p className="mt-4 text-sm text-[#4a5f76]">Vê também <Link href="/academia/erros-comuns-ao-emitir-facturas-em-angola" className="font-semibold text-[#2878d0] hover:underline">erros comuns ao emitir facturas</Link> na Academia.</p>
+      </section>
+
       <RelatedTools actualId="recibos" categoria="Documentos Empresariais" />
 
       <div className="prose-cta mt-10 rounded-3xl bg-[#102b46] px-6 py-10 text-center text-white md:px-12">

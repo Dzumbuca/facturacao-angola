@@ -6,6 +6,9 @@ import { PlatformAd } from '@/components/platform-ad';
 export const metadata = {
   title: 'Política de Privacidade · Machine Facturas',
   description: 'Como a Machine Facturas recolhe, usa e protege os seus dados.',
+  alternates: {
+    canonical: 'https://machinefaturas.shop/privacidade',
+  },
 };
 
 const sections: { title: string; body: string[] }[] = [

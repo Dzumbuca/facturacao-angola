@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   title: 'Conversor de IVA em Angola | Machine Facturas',
   description: 'Converta valores com IVA incluído ou excluído em kwanzas. Simule as taxas legais e confirme qual se aplica à sua operação.',
   keywords: ['conversor IVA Angola', 'retirar IVA de um valor', 'acrescentar IVA', 'IVA incluído', 'calcular IVA 14%'],
+  alternates: {
+    canonical: 'https://machinefaturas.shop/ferramentas/conversor-iva',
+  },
   openGraph: {
     title: 'Conversor de IVA — Angola',
     description: 'Adicione ou retire o IVA em kwanzas, nos dois sentidos. Grátis e instantâneo.',
@@ -66,6 +69,30 @@ export default async function ConversorIvaPage() {
         <li>IVA incluído no total: 114.000 − 100.000 = <strong>14.000 Kz</strong></li>
       </ul>
       <p>No sentido inverso (modo A), 100.000 Kz a 14% dá 14.000 Kz de IVA e um total de 114.000 Kz.</p>
+
+      <section className="mt-10 rounded-2xl border border-[#e2e9f1] bg-white p-6 md:p-8">
+        <h2 className="text-xl font-bold">O que é esta ferramenta?</h2>
+        <p className="mt-2 leading-7 text-[#4a5f76]">Permite converter entre valor com IVA incluído e valor sem IVA, nos dois sentidos, com taxas habituais em Angola. Ideal para preparar preços, comparar valores ou verificar facturas.</p>
+        <h3 className="mt-6 font-bold">Como usar passo a passo</h3>
+        <ol className="mt-2 space-y-1 leading-7 text-[#4a5f76]">
+          <li>1. Escolhe o modo: "Acrescentar IVA" (valor sem IVA) ou "Retirar IVA" (valor com IVA incluído).</li>
+          <li>2. Introduz o valor em kwanzas.</li>
+          <li>3. Seleciona a taxa aplicável.</li>
+          <li>4. Consulta o resultado: valor sem IVA, valor do IVA e total.</li>
+        </ol>
+        <h3 className="mt-6 font-bold">Exemplo prático para Angola</h3>
+        <p className="mt-2 leading-7 text-[#4a5f76]"><strong>Caso 1 - Acrescentar IVA:</strong> Pretendes vender por 100.000 Kz sem IVA a 14%. IVA = 14.000 Kz | Total = 114.000 Kz.</p>
+        <p className="mt-2 leading-7 text-[#4a5f76]"><strong>Caso 2 - Retirar IVA:</strong> Recebes uma proposta de 114.000 Kz com IVA de 14% incluído. Valor sem IVA = 100.000 Kz | IVA incluído = 14.000 Kz.</p>
+        <h3 className="mt-6 font-bold">Dica prática</h3>
+        <p className="mt-2 leading-7 text-[#4a5f76]">Para retirar IVA de um valor total, usa sempre a divisão por (1 + taxa/100), não a multiplicação direta. É o erro mais comum neste cálculo.</p>
+        <h3 className="mt-6 font-bold">Limitações</h3>
+        <ul className="mt-2 space-y-1 leading-7 text-[#4a5f76]">
+          <li>• Simulação matemática — não determina o enquadramento fiscal da operação.</li>
+          <li>• Nem todas as operações seguem a taxa geral. Confirma a taxa aplicável junto da AGT ou do teu contabilista.</li>
+          <li>• Destinado a apoio prático, não substitui aconselhamento fiscal ou contabilístico.</li>
+        </ul>
+        <p className="mt-4 text-sm text-[#4a5f76]">Ver também: <Link href="/ferramentas/iva" className="font-semibold text-[#2878d0] hover:underline">Calculadora de IVA</Link> | <Link href="/guias/emitir-facturas" className="font-semibold text-[#2878d0] hover:underline">Guia: Como emitir facturas em Angola</Link></p>
+      </section>
 
       <RelatedTools actualId="conversor-iva" categoria="Fiscalidade" />
 

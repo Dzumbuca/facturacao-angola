@@ -21,7 +21,8 @@ export async function SiteHeader() {
       <nav aria-label="Navegação principal" className="flex items-center gap-1 sm:gap-2">
         <Link href="/inicio#funcionalidades" className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-[#48627a] transition hover:bg-[#f0f6fc] hover:text-[#2878d0] md:inline">Funcionalidades</Link>
         <Link href="/ferramentas" className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-[#48627a] transition hover:bg-[#f0f6fc] hover:text-[#2878d0] md:inline">Ferramentas</Link>
-        <Link href="/guias/emitir-facturas" className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-[#48627a] transition hover:bg-[#f0f6fc] hover:text-[#2878d0] md:inline">Guia</Link>
+        <Link href="/guias/emitir-facturas" className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-[#48627a] transition hover:bg-[#f0f6fc] hover:text-[#2878d0] md:inline">Guias</Link>
+        <Link href="/academia" className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-[#48627a] transition hover:bg-[#f0f6fc] hover:text-[#2878d0] md:inline">Academia</Link>
         <Link href="/inicio#precos" className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-[#48627a] transition hover:bg-[#f0f6fc] hover:text-[#2878d0] md:inline">Preços</Link>
         {authenticated ? (
           <Link href="/" className="rounded-lg bg-[#2878d0] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#216bbd] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2878d0]">Minha área</Link>

@@ -386,7 +386,7 @@ export const issueCreditNote = async (params: {
     productId: item.productId || null,
     quantity: item.quantity,
   }));
-  const itemsToRestore = creditItems.filter((i) => i.productId && i.quantity > 0);
+  const itemsToRestore = creditItems.filter((i: { productId: string | null; quantity: number }) => i.productId && i.quantity > 0);
   if (itemsToRestore.length > 0) {
     await restoreStockForCancelledInvoice(
       originalInvoice.tenantId,

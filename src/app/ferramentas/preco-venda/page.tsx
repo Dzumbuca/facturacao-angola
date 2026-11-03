@@ -70,6 +70,23 @@ export default async function CalculadoraPrecoVendaPage() {
       </ul>
       <p>O preço recomendado é uma simulação baseada nos custos e na margem introduzidos — não é uma garantia de rentabilidade. Valide sempre com os preços praticados no seu mercado.</p>
 
+      <section className="mt-10 rounded-2xl border border-[#e2e9f1] bg-white p-6 md:p-8">
+        <h2 className="text-xl font-bold">O que é esta ferramenta?</h2>
+        <p className="mt-2 leading-7 text-[#4a5f76]">Ajuda a definir o preço de venda ideal a partir do custo total unitário e da margem pretendida.</p>
+        <h3 className="mt-6 font-bold">Como usar</h3>
+        <ol className="mt-2 space-y-1 leading-7 text-[#4a5f76]">
+          <li>1. Introduz custo de aquisição e outros custos por unidade.</li>
+          <li>2. Define a margem pretendida (%).</li>
+          <li>3. Usa arredondamento comercial se quiseres preços mais prontos.</li>
+          <li>4. Vê o preço recomendado, lucro e margem efectiva.</li>
+        </ol>
+        <h3 className="mt-6 font-bold">Limitações</h3>
+        <ul className="mt-2 space-y-1 leading-7 text-[#4a5f76]">
+          <li>• Margem tem de ser inferior a 100%.</li>
+          <li>• Não considera impostos ou outros fatores de mercado.</li>
+        </ul>
+      </section>
+
       <RelatedTools actualId="preco-venda" categoria="Gestão Financeira" />
 
       <div className="prose-cta mt-10 rounded-3xl bg-[#102b46] px-6 py-10 text-center text-white md:px-12">

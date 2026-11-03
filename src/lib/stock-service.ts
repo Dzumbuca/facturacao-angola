@@ -162,7 +162,7 @@ export async function getStockValuationReport(tenantId: string) {
   );
 
   return {
-    products: products.map((p) => ({
+    products: products.map((p: { stock: number; price: string | number; name: string; codigo: string; categoria: string | null }) => ({
       ...p,
       stockValue: (p.stock || 0) * Number(p.price),
     })),
@@ -193,16 +193,12 @@ export async function getStockRotationReport(
     orderBy: { createdAt: 'desc' },
   });
 
-  const rotationByProduct = movements.reduce<
-  Map<string, { name: string; codigo: string | null; totalQuantity: number; movements: number }>
->(
+  const rotationByProduct = movements.reduce(
   (
-    acc: Map<
-      string,
-      { name: string; codigo: string | null; totalQuantity: number; movements: number }
-    >,
-    m
+    acc: Map<string, { name: string; codigo: string | null; totalQuantity: number; movements: number }>,
+    m: { productId: string; quantity: number; product: { name: string; codigo: string | null } | null }
   ) => {
+    if (!m.product) return acc;
     const key = m.productId;
     const existing = acc.get(key);
     if (existing) {
@@ -218,10 +214,11 @@ export async function getStockRotationReport(
     }
     return acc;
   },
-  new Map()
+  new Map<string, { name: string; codigo: string | null; totalQuantity: number; movements: number }>()
 );
 
-  return Array.from(rotationByProduct.entries())
+  const entries = Array.from(rotationByProduct.entries()) as [string, { name: string; codigo: string | null; totalQuantity: number; movements: number }][];
+  return entries
     .map(([productId, data]) => ({ productId, ...data }))
     .sort((a, b) => b.totalQuantity - a.totalQuantity);
 }

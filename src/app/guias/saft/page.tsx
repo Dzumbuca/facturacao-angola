@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   title: 'SAFT-AO em Angola — guia passo a passo | Machine Facturas',
   description: 'O que é o ficheiro SAFT-AO, quem deve entregar, o que contém e como gerar o SAFT das tuas facturas em minutos. Guia prático para empresas angolanas.',
   keywords: ['SAFT Angola', 'SAFT-AO', 'ficheiro SAFT', 'AGT SAFT', 'como gerar SAFT', 'SAFT passo a passo'],
+  alternates: {
+    canonical: 'https://machinefaturas.shop/guias/saft',
+  },
   openGraph: { title: 'SAFT-AO em Angola — guia passo a passo', description: 'O que é, quem entrega e como gerar o ficheiro SAFT. Grátis.', locale: 'pt_AO', type: 'article' },
 };
 
@@ -64,6 +67,20 @@ export default async function GuiaSaftPage() {
       <details><summary>O SAFT substitui as facturas?</summary><p>Não. O SAFT é um ficheiro de comunicação/auditoria — as facturas continuam a existir como documentos individuais, assinados digitalmente.</p></details>
       <details><summary>Preciso de um programa instalado?</summary><p>Não. O Machine Facturas gera o SAFT-AO online, a partir de qualquer dispositivo, no plano Pro.</p></details>
       <details><summary>Com que frequência se gera?</summary><p>Conforme o teu regime e as instruções da AGT — muitos contabilistas pedem o ficheiro mensal para conciliação.</p></details>
+
+      <section className="mt-10 rounded-2xl border border-[#e2e9f1] bg-white p-6 md:p-8">
+        <h2 className="text-xl font-bold">Ver também</h2>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <Link href="/guias/emitir-facturas" className="rounded-xl border border-[#e2e9f1] p-4 transition hover:border-[#c9def2] hover:shadow-[0_6px_20px_rgba(25,52,80,.06)]">
+            <p className="font-bold">Como emitir facturas em Angola</p>
+            <p className="mt-1 text-sm text-[#4a5f76]">Elementos, IVA e boas práticas.</p>
+          </Link>
+          <Link href="/academia/erros-comuns-ao-emitir-facturas-em-angola" className="rounded-xl border border-[#e2e9f1] p-4 transition hover:border-[#c9def2] hover:shadow-[0_6px_20px_rgba(25,52,80,.06)]">
+            <p className="font-bold">Erros comuns ao emitir facturas</p>
+            <p className="mt-1 text-sm text-[#4a5f76]">Checklist para evitar correções.</p>
+          </Link>
+        </div>
+      </section>
     </article>
 
     <section className="mx-auto -mt-4 mb-12 max-w-3xl px-4 md:px-6">

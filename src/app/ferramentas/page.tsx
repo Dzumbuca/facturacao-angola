@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   title: 'Centro de Ferramentas Empresariais — Grátis | Machine Facturas',
   description: 'Ferramentas grátis para empresas angolanas: calculadoras de IVA, salário líquido e IRT, lucro e margem, preço de venda, validador de NIF e geradores de documentos.',
   keywords: ['ferramentas para empresas Angola', 'calculadora IVA', 'calculadora salário Angola', 'lucro e margem', 'preço de venda', 'validador NIF', 'ferramentas grátis'],
+  alternates: {
+    canonical: 'https://machinefaturas.shop/ferramentas',
+  },
   openGraph: {
     title: 'Centro de Ferramentas Empresariais — Machine Facturas',
     description: 'Calculadoras fiscais e financeiras grátis para o seu negócio em Angola.',
@@ -49,6 +52,32 @@ export default async function CentroFerramentasPage() {
         <div className="rounded-2xl border border-[#e2e9f1] bg-white p-5"><h2 className="font-bold">Gestão financeira</h2><p className="mt-2 text-sm leading-6 text-[#5b6f85]">Lucro, margem, markup, preço de venda e indicadores para decidir melhor.</p></div>
         <div className="rounded-2xl border border-[#e2e9f1] bg-white p-5"><h2 className="font-bold">Documentos</h2><p className="mt-2 text-sm leading-6 text-[#5b6f85]">Orçamentos, facturas proforma, recibos e mapas de despesas em PDF — prontos a enviar.</p></div>
       </div>
+
+      <section className="mt-10 rounded-2xl border border-[#e2e9f1] bg-white p-6 md:p-8">
+        <h2 className="text-xl font-bold">Sobre o Centro de Ferramentas</h2>
+        <p className="mt-2 leading-7 text-[#4a5f76]">
+          O Centro de Ferramentas do Machine Facturas reúne calculadoras e geradores gratuitos para empresas angolanas. São pensados para uso rápido, sem registo,
+          com explicações práticas e ligações aos guias e à <Link href="/academia" className="font-semibold text-[#2878d0] hover:underline">Academia Machine</Link>.
+        </p>
+        <h3 className="mt-6 font-bold">Como usar</h3>
+        <ol className="mt-2 space-y-1 leading-7 text-[#4a5f76]">
+          <li>1. Escolhe a ferramenta que precisares.</li>
+          <li>2. Preenche os dados e obtém o resultado ou documento PDF.</li>
+          <li>3. Usa as explicações e exemplos para aplicar ao teu negócio.</li>
+        </ol>
+        <h3 className="mt-6 font-bold">Categorias</h3>
+        <p className="mt-2 leading-7 text-[#4a5f76]"><strong>Fiscalidade:</strong> IVA, salário líquido/IRT, validador de NIF. <strong>Gestão financeira:</strong> lucro/margem, preço de venda. <strong>Documentos empresariais:</strong> orçamentos, facturas proforma, recibos, mapa de despesas.</p>
+      </section>
+
+      <section className="mt-10 rounded-2xl border border-[#e2e9f1] bg-white p-6 md:p-8">
+        <h2 className="text-xl font-bold">Aprende e pratica</h2>
+        <p className="mt-2 leading-7 text-[#4a5f76]">Junta as ferramentas com os guias e artigos da Academia para facturar com mais confiança.</p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Link href="/guias/emitir-facturas" className="rounded-lg bg-[#eef6ff] px-3 py-1.5 text-sm font-semibold text-[#2878d0] hover:bg-[#e6f2ff]">Guia: Como emitir facturas</Link>
+          <Link href="/guias/saft" className="rounded-lg bg-[#eef6ff] px-3 py-1.5 text-sm font-semibold text-[#2878d0] hover:bg-[#e6f2ff]">Guia: SAFT-AO</Link>
+          <Link href="/academia" className="rounded-lg bg-[#eef6ff] px-3 py-1.5 text-sm font-semibold text-[#2878d0] hover:bg-[#e6f2ff]">Academia Machine</Link>
+        </div>
+      </section>
 
       <div className="prose-cta mt-10 rounded-3xl bg-[#102b46] px-6 py-10 text-center text-white md:px-12">
         <h2 className="text-2xl font-bold md:text-3xl">Quer isto tudo dentro do seu negócio?</h2>

@@ -75,6 +75,8 @@ export async function SiteFooter() {
         <p className="text-xs font-bold uppercase tracking-[.14em] text-slate-500">Recursos</p>
         <ul className="mt-3 space-y-2 text-sm">
           <li><Link href="/guias/emitir-facturas" className="text-slate-300 transition hover:text-white">Como emitir facturas</Link></li>
+          <li><Link href="/guias/saft" className="text-slate-300 transition hover:text-white">Guia SAFT-AO</Link></li>
+          <li><Link href="/academia" className="text-slate-300 transition hover:text-white">Academia Machine</Link></li>
           <li><Link href="/privacidade" className="text-slate-300 transition hover:text-white">Privacidade</Link></li>
           <li><Link href="/termos" className="text-slate-300 transition hover:text-white">Termos</Link></li>
           <li><a href="mailto:machinefacturas@gmail.com" className="text-slate-300 transition hover:text-white">Contacto</a></li>

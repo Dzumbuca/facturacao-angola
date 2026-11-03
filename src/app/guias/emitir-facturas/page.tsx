@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   title: 'Como emitir facturas em Angola (guia 2026) | Machine Facturas',
   description: 'Guia prático: o que uma factura precisa em Angola, IVA de 14%, certificação AGT, SAFT e como emitir facturas certificadas online em minutos.',
   keywords: ['como emitir facturas Angola', 'facturação Angola', 'AGT', 'SAFT', 'IVA facturas', 'factura certificada'],
+  alternates: {
+    canonical: 'https://machinefaturas.shop/guias/emitir-facturas',
+  },
   openGraph: { title: 'Como emitir facturas em Angola — guia prático', description: 'Tudo o que uma factura precisa em Angola: IVA, AGT, SAFT e assinatura digital.', locale: 'pt_AO', type: 'article' },
 };
 
@@ -73,6 +76,20 @@ export default async function GuiaEmitirFacturasPage() {
         <div><h3 className="font-bold">Posso emitir facturas pelo telemóvel?</h3><p className="mt-1 leading-7 text-[#4a5f76]">Sim. Sistemas online como o Machine Facturas funcionam no navegador do telemóvel — emissão, PDF e pagamentos em qualquer lugar.</p></div>
         <div><h3 className="font-bold">Quanto custa o IVA em Angola?</h3><p className="mt-1 leading-7 text-[#4a5f76]">A taxa geral é de 14%. Existem taxas reduzidas de 7% e 2% para bens essenciais, e operações isentas listadas na lei. Usa a <Link href="/ferramentas/iva" className="font-semibold text-[#2878d0] hover:underline">calculadora de IVA</Link> para valores rápidos.</p></div>
       </div>
+
+      <section className="mt-10 rounded-2xl border border-[#e2e9f1] bg-white p-6 md:p-8">
+        <h2 className="text-xl font-bold">Ver também na Academia</h2>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <Link href="/academia/diferenca-entre-orcamento-factura-proforma-e-factura" className="rounded-xl border border-[#e2e9f1] p-4 transition hover:border-[#c9def2] hover:shadow-[0_6px_20px_rgba(25,52,80,.06)]">
+            <p className="font-bold">Orçamento vs Proforma vs Factura</p>
+            <p className="mt-1 text-sm text-[#4a5f76]">Quando usar cada um no dia-a-dia.</p>
+          </Link>
+          <Link href="/academia/erros-comuns-ao-emitir-facturas-em-angola" className="rounded-xl border border-[#e2e9f1] p-4 transition hover:border-[#c9def2] hover:shadow-[0_6px_20px_rgba(25,52,80,.06)]">
+            <p className="font-bold">Erros comuns e como evitá-los</p>
+            <p className="mt-1 text-sm text-[#4a5f76]">Checklist prático para evitar correções.</p>
+          </Link>
+        </div>
+      </section>
     </article>
 
     <SiteFooter />

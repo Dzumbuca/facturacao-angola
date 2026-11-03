@@ -66,6 +66,23 @@ export default async function GeradorDespesasPage() {
         <li>Total geral: <strong>50.000 Kz</strong></li>
       </ul>
 
+      <section className="mt-10 rounded-2xl border border-[#e2e9f1] bg-white p-6 md:p-8">
+        <h2 className="text-xl font-bold">O que é esta ferramenta?</h2>
+        <p className="mt-2 leading-7 text-[#4a5f76]">Organiza as despesas por categoria e gera um mapa em PDF com totais por categoria e total geral — útil para entregar ao contabilista.</p>
+        <h3 className="mt-6 font-bold">Como usar</h3>
+        <ol className="mt-2 space-y-1 leading-7 text-[#4a5f76]">
+          <li>1. Indica o período (mês/ano).</li>
+          <li>2. Adiciona despesas com data, categoria, descrição e valor.</li>
+          <li>3. Gera e descarrega o mapa em PDF.</li>
+        </ol>
+        <h3 className="mt-6 font-bold">Dicas</h3>
+        <ul className="mt-2 space-y-1 leading-7 text-[#4a5f76]">
+          <li>• Usa categorias consistentes para ver bem os totais.</li>
+          <li>• Guarda os comprovativos correspondentes.</li>
+          <li>• Os dados não ficam guardados.</li>
+        </ul>
+      </section>
+
       <RelatedTools actualId="mapa-despesas" categoria="Documentos Empresariais" />
 
       <div className="prose-cta mt-10 rounded-3xl bg-[#102b46] px-6 py-10 text-center text-white md:px-12">

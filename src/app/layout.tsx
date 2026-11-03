@@ -3,9 +3,32 @@ import Script from "next/script";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Machine Facturas | Facturacao e gestao empresarial",
-  description: "Gestao de facturacao para a sua empresa em Angola",
-  manifest: "/manifest.json",
+  metadataBase: new URL('https://machinefaturas.shop'),
+  title: {
+    default: 'Machine Facturas | Facturação e gestão empresarial para Angola',
+    template: '%s | Machine Facturas',
+  },
+  description: 'Facturação online para empresas angolanas. Crie, emite e organize facturas, com ferramentas gratuitas e conteúdos práticos para Angola.',
+  keywords: ['facturação Angola', 'software de facturas Angola', 'facturação online', 'SAFT Angola', 'gestão empresarial Angola'],
+  manifest: '/manifest.json',
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'pt_AO',
+    siteName: 'Machine Facturas',
+    title: 'Machine Facturas | Facturação e gestão empresarial para Angola',
+    description: 'Facturação online para empresas angolanas. Ferramentas gratuitas e conhecimento prático para o dia-a-dia.',
+    url: 'https://machinefaturas.shop',
+    images: [{ url: '/logo.png', width: 800, height: 600 }],
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Machine Facturas | Facturação e gestão empresarial para Angola',
+    description: 'Facturação online para empresas angolanas — grátis para começar.',
+    images: ['/logo.png'],
+  },
 };
 
 export const viewport: Viewport = {

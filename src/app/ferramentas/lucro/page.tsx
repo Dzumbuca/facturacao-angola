@@ -70,6 +70,19 @@ export default async function CalculadoraLucroPage() {
         <li>Vendendo 40 sacos: 1.250 × 40 = <strong>50.000 Kz</strong> de lucro total</li>
       </ul>
 
+      <section className="mt-10 rounded-2xl border border-[#e2e9f1] bg-white p-6 md:p-8">
+        <h2 className="text-xl font-bold">O que é esta ferramenta?</h2>
+        <p className="mt-2 leading-7 text-[#4a5f76]">Calcula lucro unitário, margem e markup por produto, em kwanzas. Ajuda a perceber se estás a vender com lucro ou prejuízo.</p>
+        <h3 className="mt-6 font-bold">Como usar</h3>
+        <ol className="mt-2 space-y-1 leading-7 text-[#4a5f76]">
+          <li>1. Introduz custo de compra e outros custos por unidade.</li>
+          <li>2. Introduz preço de venda e quantidade (opcional).</li>
+          <li>3. Vê lucro, margem e markup instantaneamente.</li>
+        </ol>
+        <h3 className="mt-6 font-bold">Dica</h3>
+        <p className="mt-2 leading-7 text-[#4a5f76]">Inclui sempre transporte, embalagem ou outros custos por unidade para ter uma margem mais realista.</p>
+      </section>
+
       <RelatedTools actualId="lucro" categoria="Gestão Financeira" />
 
       <div className="prose-cta mt-10 rounded-3xl bg-[#102b46] px-6 py-10 text-center text-white md:px-12">

@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   title: 'Validador de NIF Angola — Verifica o formato do NIF | Machine Facturas',
   description: 'Validador de NIF angolano grátis: verifica o formato do NIF de empresas (10 dígitos) e particulares (9+2 letras+3). Instantâneo, sem registo.',
   keywords: ['validador NIF Angola', 'verificar NIF', 'NIF Angola formato', 'NIF AGT', 'validar NIF online'],
+  alternates: {
+    canonical: 'https://machinefaturas.shop/ferramentas/nif',
+  },
   openGraph: {
     title: 'Validador de NIF — Angola',
     description: 'Verifica o formato do NIF angolano. Grátis e instantâneo.',
@@ -47,6 +50,30 @@ export default async function ValidadorNifPage() {
       <div className="mt-8 rounded-2xl border border-[#e2e9f1] bg-[#f7f9fc] p-5 text-sm leading-6 text-[#5b6f85]">
         <strong className="text-[#1c2d3f]">Nota:</strong> este validador confirma a <strong>estrutura</strong> do NIF, não a sua existência nem o nome do titular. A confirmação oficial junto da AGT é feita através dos serviços da Administração Geral Tributária.
       </div>
+
+      <section className="mt-10 rounded-2xl border border-[#e2e9f1] bg-white p-6 md:p-8">
+        <h2 className="text-xl font-bold">O que é esta ferramenta?</h2>
+        <p className="mt-2 leading-7 text-[#4a5f76]">Validador de NIF angolano gratuito para verificar rapidamente o formato do NIF antes de o registar numa factura, orçamento ou ficha de cliente.</p>
+        <h3 className="mt-6 font-bold">Como usar passo a passo</h3>
+        <ol className="mt-2 space-y-1 leading-7 text-[#4a5f76]">
+          <li>1. Introduz o NIF angolano no campo.</li>
+          <li>2. Clica para validar ou observa o resultado imediato.</li>
+          <li>3. Verifica se o formato é considerado válido pela ferramenta.</li>
+        </ol>
+        <h3 className="mt-6 font-bold">Para que serve na prática</h3>
+        <ul className="mt-2 space-y-1 leading-7 text-[#4a5f76]">
+          <li>• Evitar erros ao registar NIFs de clientes</li>
+          <li>• Ganhar tempo antes de emitir documentos</li>
+          <li>• Manter a ficha de clientes mais organizada</li>
+        </ul>
+        <h3 className="mt-6 font-bold">Limitações</h3>
+        <ul className="mt-2 space-y-1 leading-7 text-[#4a5f76]">
+          <li>• <strong>Apenas estrutura</strong>: confirma o formato, não a existência nem a titularidade do NIF.</li>
+          <li>• <strong>Não é consulta oficial</strong>: a confirmação oficial deve ser feita através dos serviços da AGT.</li>
+          <li>• <strong>Uso indicativo</strong>: destina-se a apoio prático e não substitui verificação oficial.</li>
+        </ul>
+        <p className="mt-4 text-sm text-[#4a5f76]">Ver também: <Link href="/guias/emitir-facturas" className="font-semibold text-[#2878d0] hover:underline">Guia: Como emitir facturas em Angola</Link> | <Link href="/academia/erros-comuns-ao-emitir-facturas-em-angola" className="font-semibold text-[#2878d0] hover:underline">Erros comuns ao emitir facturas</Link></p>
+      </section>
 
       <RelatedTools actualId="nif" categoria="Fiscalidade" />
 

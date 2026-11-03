@@ -66,6 +66,24 @@ export default async function GeradorOrcamentoPage() {
         <li>Total: <strong>148.200 Kz</strong></li>
       </ul>
 
+      <section className="mt-10 rounded-2xl border border-[#e2e9f1] bg-white p-6 md:p-8">
+        <h2 className="text-xl font-bold">O que é esta ferramenta?</h2>
+        <p className="mt-2 leading-7 text-[#4a5f76]">Gera orçamentos profissionais em PDF, com totais e IVA calculados automaticamente. Ideal para enviar propostas ao cliente.</p>
+        <h3 className="mt-6 font-bold">Como usar</h3>
+        <ol className="mt-2 space-y-1 leading-7 text-[#4a5f76]">
+          <li>1. Preenche dados da empresa e do cliente.</li>
+          <li>2. Adiciona itens, quantidades e preços.</li>
+          <li>3. Escolhe IVA ou sem IVA destacado.</li>
+          <li>4. Gera e descarrega o PDF.</li>
+        </ol>
+        <h3 className="mt-6 font-bold">Dicas</h3>
+        <ul className="mt-2 space-y-1 leading-7 text-[#4a5f76]">
+          <li>• Indica validade do orçamento para evitar surpresas.</li>
+          <li>• Os dados não ficam guardados — gerados na hora.</li>
+        </ul>
+        <p className="mt-4 text-sm text-[#4a5f76]">Sabe a diferença entre orçamento, proforma e factura em <Link href="/academia/diferenca-entre-orcamento-factura-proforma-e-factura" className="font-semibold text-[#2878d0] hover:underline">nossa Academia</Link>.</p>
+      </section>
+
       <RelatedTools actualId="orcamento-pdf" categoria="Documentos Empresariais" />
 
       <div className="prose-cta mt-10 rounded-3xl bg-[#102b46] px-6 py-10 text-center text-white md:px-12">

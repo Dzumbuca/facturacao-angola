@@ -6,6 +6,9 @@ import { PlatformAd } from '@/components/platform-ad';
 export const metadata = {
   title: 'Termos de Serviço · Machine Facturas',
   description: 'Condições de utilização da plataforma Machine Facturas.',
+  alternates: {
+    canonical: 'https://machinefaturas.shop/termos',
+  },
 };
 
 const sections: { title: string; body: string[] }[] = [

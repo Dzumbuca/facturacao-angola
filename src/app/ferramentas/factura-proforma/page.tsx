@@ -61,6 +61,24 @@ export default async function GeradorProformaPage() {
       <h2 className="mt-10 text-2xl font-bold">Exemplo</h2>
       <p>Uma proforma de serviço de transporte a 45.000 Kz, sem IVA destacado, com validade de 15 dias: o PDF mostra subtotal e total de <strong>45.000 Kz</strong> e a nota «Factura proforma — documento sem valor fiscal, não substitui a factura. Validade: 15 dias.»</p>
 
+      <section className="mt-10 rounded-2xl border border-[#e2e9f1] bg-white p-6 md:p-8">
+        <h2 className="text-xl font-bold">O que é esta ferramenta?</h2>
+        <p className="mt-2 leading-7 text-[#4a5f76]">Gera facturas proforma em PDF para formalizar cotações. Tem aspeto profissional mas <strong>não tem valor fiscal</strong>.</p>
+        <h3 className="mt-6 font-bold">Quando usar</h3>
+        <ul className="mt-2 space-y-1 leading-7 text-[#4a5f76]">
+          <li>• Para aprovação formal pelo cliente</li>
+          <li>• Em processos que pedem uma proposta detalhada</li>
+          <li>• Para fixar preços e condições com validade</li>
+        </ul>
+        <h3 className="mt-6 font-bold">Limitações</h3>
+        <ul className="mt-2 space-y-1 leading-7 text-[#4a5f76]">
+          <li>• Não substitui factura definitiva</li>
+          <li>• Não tem valor fiscal</li>
+          <li>• Os dados não ficam guardados</li>
+        </ul>
+        <p className="mt-4 text-sm text-[#4a5f76]">Lê mais sobre as diferenças em <Link href="/academia/diferenca-entre-orcamento-factura-proforma-e-factura" className="font-semibold text-[#2878d0] hover:underline">nossa Academia</Link>.</p>
+      </section>
+
       <RelatedTools actualId="factura-proforma" categoria="Documentos Empresariais" />
 
       <div className="prose-cta mt-10 rounded-3xl bg-[#102b46] px-6 py-10 text-center text-white md:px-12">

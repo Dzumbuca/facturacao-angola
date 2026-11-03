@@ -181,10 +181,10 @@ describe('stock-service', () => {
       const result = await getStockRotationReport(tenantId, 30);
 
       expect(result.length).toBe(2);
-      expect(result[0].totalQuantity).toBe(15);
-      expect(result[0].name).toBe('Produto X');
-      expect(result[1].totalQuantity).toBe(3);
-      expect(result[1].name).toBe('Produto Y');
+      expect((result[0] as any).totalQuantity).toBe(15);
+      expect((result[0] as any).name).toBe('Produto X');
+      expect((result[1] as any).totalQuantity).toBe(3);
+      expect((result[1] as any).name).toBe('Produto Y');
     });
   });
 });
