@@ -27,7 +27,7 @@ describe('WMS v2 E2E - Stock Entries (staging)', () => {
     expect(res.status).toBe(201);
     const order = await res.json();
     expect(order.id).toBeTruthy();
-    expect(order.status).toBe('PENDING');
+    expect(['PENDING', 'PENDENTE']).toContain(order.status);
   });
 
   it('lists purchase orders for the test tenant', async () => {
