@@ -24,6 +24,9 @@ export async function login(): Promise<AuthSession> {
   const csrfToken = await getCsrfToken();
   const csrfCookie = (global as any).__csrfCookie || '';
 
+  // Extract just name=value pairs from csrf cookie header
+  const csrfPairs = csrfCookie.split(',').map((c: string) => c.split(';')[0].trim()).filter(Boolean);
+
   const body = new URLSearchParams({
     csrfToken,
     email: TEST_USER_EMAIL,
@@ -36,14 +39,22 @@ export async function login(): Promise<AuthSession> {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
-      Cookie: csrfCookie,
+      Cookie: csrfPairs.join('; '),
     },
     body: body.toString(),
     redirect: 'manual',
   });
 
-  const setCookieHeader = res.headers.get('set-cookie') || '';
-  const allCookies = [csrfCookie, setCookieHeader].filter(Boolean).join('; ');
+  const loginSetCookie = res.headers.get('set-cookie') || '';
+  const sessionPairs = loginSetCookie.split(',').map((c: string) => c.split(';')[0].trim()).filter(Boolean);
+
+  // Merge, deduplicating by cookie name
+  const cookieMap = new Map<string, string>();
+  for (const pair of [...csrfPairs, ...sessionPairs]) {
+    const name = pair.split('=')[0];
+    cookieMap.set(name, pair);
+  }
+  const allCookies = Array.from(cookieMap.values()).join('; ');
 
   return { cookies: allCookies, csrfToken };
 }
