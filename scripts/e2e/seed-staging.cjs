@@ -51,6 +51,17 @@ async function main() {
     },
   });
 
+  // Test supplier
+  await prisma.supplier.upsert({
+    where: { id: 'e2e00000-0000-0000-0000-ssssssssssss' },
+    update: {},
+    create: {
+      id: 'e2e00000-0000-0000-0000-ssssssssssss',
+      tenantId: TEST_TENANT_ID,
+      name: 'Fornecedor E2E',
+    },
+  });
+
   // Product
   await prisma.product.upsert({
     where: { id: TEST_PRODUCT_1 },
