@@ -22,6 +22,7 @@ async function main() {
   await prisma.productWarehouseStock.deleteMany({ where: { tenantId: TEST_TENANT_ID } });
   await prisma.product.deleteMany({ where: { tenantId: TEST_TENANT_ID } });
   await prisma.warehouse.deleteMany({ where: { tenantId: TEST_TENANT_ID } });
+  await prisma.user.deleteMany({ where: { tenantId: TEST_TENANT_ID } });
   await prisma.tenant.deleteMany({ where: { id: TEST_TENANT_ID } });
 
   console.log('Cleanup E2E concluido para tenant', TEST_TENANT_ID);

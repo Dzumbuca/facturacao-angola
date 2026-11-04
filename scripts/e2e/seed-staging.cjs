@@ -34,6 +34,23 @@ async function main() {
     });
   }
 
+  // Test user (auth)
+  const bcrypt = require('bcrypt');
+  const passwordHash = bcrypt.hashSync('TestPass123!', 10);
+  await prisma.user.upsert({
+    where: { email: 'e2e-test@machinefacturas.test' },
+    update: { password: passwordHash, tenantId: TEST_TENANT_ID, status: 'ACTIVE' },
+    create: {
+      id: 'e2e00000-0000-0000-0000-uuuuuuuuuuuu',
+      email: 'e2e-test@machinefacturas.test',
+      name: 'E2E Test User',
+      password: passwordHash,
+      tenantId: TEST_TENANT_ID,
+      status: 'ACTIVE',
+      emailVerificationRequired: false,
+    },
+  });
+
   // Product
   await prisma.product.upsert({
     where: { id: TEST_PRODUCT_1 },
