@@ -1,19 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { runWithTenant } from '@/lib/tenant-db';
 import { getTenantWriteAccess } from '@/lib/tenant-api-access';
 
 type Context = { params: Promise<{ id: string }> };
 
-// Editar um produto/serviço da empresa (isolado por tenant)
 export async function PATCH(request: NextRequest, { params }: Context) {
   try {
     const access = await getTenantWriteAccess();
     if (!access.ok) return NextResponse.json(access.body, { status: access.status });
-    const { tenantId } = access.access;
+    const { tenantId, userId } = access.access;
     const { id } = await params;
-
-    const existing = await prisma.product.findFirst({ where: { id, tenantId }, select: { id: true } });
-    if (!existing) return NextResponse.json({ error: 'Produto não encontrado.' }, { status: 404 });
 
     const body = await request.json().catch(() => null);
     if (!body) return NextResponse.json({ error: 'Dados inválidos.' }, { status: 400 });
@@ -37,17 +33,22 @@ export async function PATCH(request: NextRequest, { params }: Context) {
       return NextResponse.json({ error: 'Stock minimo invalido' }, { status: 400 });
     }
 
-    const produto = await prisma.product.update({
-      where: { id },
-      data: {
-        ...(nome !== undefined ? { name: nome } : {}),
-        ...(preco !== undefined ? { price: preco } : {}),
-        ...(stock !== undefined ? { stock } : {}),
-        ...(minStock !== undefined ? { minStock } : {}),
-        ...(codigo !== undefined ? { codigo } : {}),
-        ...(categoria !== undefined ? { categoria } : {}),
-      },
-    });
+    const produto = await runWithTenant(tenantId, async (tx) => {
+      const existing = await tx.product.findFirst({ where: { id, tenantId }, select: { id: true } });
+      if (!existing) return null;
+      return tx.product.update({
+        where: { id },
+        data: {
+          ...(nome !== undefined ? { name: nome } : {}),
+          ...(preco !== undefined ? { price: preco } : {}),
+          ...(stock !== undefined ? { stock } : {}),
+          ...(minStock !== undefined ? { minStock } : {}),
+          ...(codigo !== undefined ? { codigo } : {}),
+          ...(categoria !== undefined ? { categoria } : {}),
+        },
+      });
+    }, { userId });
+    if (!produto) return NextResponse.json({ error: 'Produto não encontrado.' }, { status: 404 });
 
     return NextResponse.json({ success: true, id: produto.id, produto: { ...produto, price: Number(produto.price) } });
   } catch (error) {
@@ -55,21 +56,21 @@ export async function PATCH(request: NextRequest, { params }: Context) {
   }
 }
 
-// Apagar um produto — bloqueado quando já foi usado em facturas
 export async function DELETE(_request: NextRequest, { params }: Context) {
   try {
     const access = await getTenantWriteAccess();
     if (!access.ok) return NextResponse.json(access.body, { status: access.status });
-    const { tenantId } = access.access;
+    const { tenantId, userId } = access.access;
     const { id } = await params;
 
-    const items = await prisma.invoiceItem.count({ where: { productId: id, tenantId } });
-    if (items > 0) {
-      return NextResponse.json({ error: `Este produto já foi usado em ${items} linha(s) de factura e não pode ser apagado.` }, { status: 409 });
-    }
-
-    const deleted = await prisma.product.deleteMany({ where: { id, tenantId } });
-    if (deleted.count === 0) return NextResponse.json({ error: 'Produto não encontrado.' }, { status: 404 });
+    const result = await runWithTenant(tenantId, async (tx) => {
+      const items = await tx.invoiceItem.count({ where: { productId: id, tenantId } });
+      if (items > 0) return { conflict: items as number };
+      const deleted = await tx.product.deleteMany({ where: { id, tenantId } });
+      return { deleted: deleted.count as number };
+    }, { userId });
+    if ('conflict' in result) return NextResponse.json({ error: `Este produto já foi usado em ${result.conflict} linha(s) de factura e não pode ser apagado.` }, { status: 409 });
+    if (!result.deleted) return NextResponse.json({ error: 'Produto não encontrado.' }, { status: 404 });
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: 'Erro ao apagar o produto' }, { status: 500 });

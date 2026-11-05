@@ -9,15 +9,15 @@ type Context = { params: Promise<{ id: string }> };
 export async function POST(_request: NextRequest, { params }: Context) {
   const access = await getTenantWriteAccess();
   if (!access.ok) return NextResponse.json(access.body, { status: access.status });
-  const { tenantId } = access.access;
+  const { tenantId, userId } = access.access;
 
-  const quota = await getInvoiceQuota(tenantId);
+  const quota = await getInvoiceQuota(tenantId, userId);
   if (quotaBlocked(quota)) {
     return NextResponse.json({ error: quotaMessage(quota), reason: 'AD_UNLOCK_REQUIRED', used: quota.used, limit: quota.limit, upgrade: true }, { status: 402 });
   }
   try {
     let pdf: Buffer | undefined;
-    const invoice = await issueInvoiceDraft((await params).id, tenantId, async (document) => { pdf = await generateInvoicePDF(document); });
+    const invoice = await issueInvoiceDraft((await params).id, tenantId, async (document) => { pdf = await generateInvoicePDF(document); }, userId);
     if (!pdf) throw new Error('O PDF não foi gerado.');
     return new NextResponse(pdf as any, {
       headers: {

@@ -1,7 +1,7 @@
 import { createPrivateKey } from 'node:crypto';
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import { getTenantWriteAccess } from '@/lib/tenant-api-access';
+import { runWithTenant } from '@/lib/tenant-db';
 import { signOfflineGrant, MAX_OFFLINE_GRANT_SECONDS } from '@/lib/offline-grant-core';
 
 export const runtime = 'nodejs';
@@ -12,20 +12,23 @@ export async function POST() {
   const { userId, tenantId, tenantRole } = access.access;
   if (tenantRole === 'VIEWER') return NextResponse.json({ error: 'A sua função não permite criar rascunhos offline.' }, { status: 403, headers: { 'Cache-Control': 'no-store' } });
 
-  const [user, tenant, customers, products, drafts, bankAccounts] = await Promise.all([
-    prisma.user.findFirst({ where: { id: userId, tenantId, status: 'ACTIVE' }, select: { sessionVersion: true } }),
-    prisma.tenant.findFirst({ where: { id: tenantId, status: 'ACTIVE' }, select: {
-      id: true, name: true, legalName: true, nif: true, address: true, municipality: true, province: true,
-      country: true, phone: true, email: true, website: true, bankName: true, bankAccountName: true, iban: true,
-      brandColor: true, invoiceFooter: true, defaultCurrency: true, documentLanguage: true,
-      defaultPaymentDays: true, defaultPaymentMethod: true, defaultObservations: true,
-      currentLogo: { select: { id: true, mimeType: true, content: true } },
-    } }),
-    prisma.customer.findMany({ where: { tenantId }, select: { id: true, name: true, nif: true, address: true, email: true } }),
-    prisma.product.findMany({ where: { tenantId }, select: { id: true, name: true, description: true, price: true, taxRate: true, codigo: true, categoria: true } }),
-    prisma.invoiceDraft.findMany({ where: { tenantId, status: 'DRAFT' }, orderBy: { updatedAt: 'desc' } }),
-    prisma.companyBankAccount.findMany({ where: { tenantId, isActive: true }, select: { id: true, bankName: true, accountHolder: true, iban: true, currency: true, label: true, isPrimary: true } }),
-  ]);
+  const { user, tenant, customers, products, drafts, bankAccounts } = await runWithTenant(tenantId, async (tx) => {
+    const [user, tenant, customers, products, drafts, bankAccounts] = await Promise.all([
+      tx.user.findFirst({ where: { id: userId, tenantId, status: 'ACTIVE' }, select: { sessionVersion: true } }),
+      tx.tenant.findFirst({ where: { id: tenantId, status: 'ACTIVE' }, select: {
+        id: true, name: true, legalName: true, nif: true, address: true, municipality: true, province: true,
+        country: true, phone: true, email: true, website: true, bankName: true, bankAccountName: true, iban: true,
+        brandColor: true, invoiceFooter: true, defaultCurrency: true, documentLanguage: true,
+        defaultPaymentDays: true, defaultPaymentMethod: true, defaultObservations: true,
+        currentLogo: { select: { id: true, mimeType: true, content: true } },
+      } }),
+      tx.customer.findMany({ where: { tenantId }, select: { id: true, name: true, nif: true, address: true, email: true } }),
+      tx.product.findMany({ where: { tenantId }, select: { id: true, name: true, description: true, price: true, taxRate: true, codigo: true, categoria: true } }),
+      tx.invoiceDraft.findMany({ where: { tenantId, status: 'DRAFT' }, orderBy: { updatedAt: 'desc' } }),
+      tx.companyBankAccount.findMany({ where: { tenantId, isActive: true }, select: { id: true, bankName: true, accountHolder: true, iban: true, currency: true, label: true, isPrimary: true } }),
+    ]);
+    return { user, tenant, customers, products, drafts, bankAccounts };
+  }, { userId });
   if (!user || !tenant) return NextResponse.json({ error: 'A autorização offline não está disponível.' }, { status: 403, headers: { 'Cache-Control': 'no-store' } });
   const pem = process.env.DESKTOP_OFFLINE_GRANT_PRIVATE_KEY?.replace(/\\n/g, '\n');
   if (!pem) return NextResponse.json({ error: 'A autorização offline ainda não está configurada.' }, { status: 503, headers: { 'Cache-Control': 'no-store' } });
