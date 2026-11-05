@@ -1,0 +1,103 @@
+{
+  "db": "postgresql://postgres:testpass@127.0.0.1:5437/mf_rls_staging",
+  "role": "mf_app_nobypass (NOBYPASSRLS, NOSUPERUSER)",
+  "passed": 19,
+  "failed": 0,
+  "results": [
+    {
+      "name": "A reads own customers",
+      "ok": true,
+      "detail": "count=1"
+    },
+    {
+      "name": "A cannot read B customers",
+      "ok": true,
+      "detail": "count=0"
+    },
+    {
+      "name": "A cannot modify B customer",
+      "ok": true,
+      "detail": "Cliente B"
+    },
+    {
+      "name": "A cannot delete B customer",
+      "ok": true,
+      "detail": "remaining=1"
+    },
+    {
+      "name": "A cannot insert row with tenantId B (WITH CHECK)",
+      "ok": true,
+      "detail": "new row violates row-level security policy for table \"Customer\""
+    },
+    {
+      "name": "A cannot change tenantId of own row to B",
+      "ok": true,
+      "detail": "new row violates row-level security policy for table \"Customer\""
+    },
+    {
+      "name": "B cannot read A products",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "name": "No tenant context returns no business rows",
+      "ok": true,
+      "detail": "rows filtered"
+    },
+    {
+      "name": "No tenant context sees zero customers",
+      "ok": true,
+      "detail": "count=0"
+    },
+    {
+      "name": "Normal user cannot read AdminAuditLog",
+      "ok": true,
+      "detail": "count=0"
+    },
+    {
+      "name": "Missing context: zero invoices",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "name": "A cannot read B invoices",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "name": "A cannot read B payments",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "name": "A cannot read B stock movements",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "name": "A cannot read B warehouses",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "name": "A cannot read B business documents",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "name": "A cannot read B invoice items (via Invoice)",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "name": "A can read own invoice items (via Invoice)",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "name": "Admin context can read AdminAuditLog table",
+      "ok": true,
+      "detail": "ok"
+    }
+  ]
+}
