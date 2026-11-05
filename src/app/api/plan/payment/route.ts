@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { runWithTenant } from '@/lib/tenant-db';
 
 const PRICES: Record<string, number> = { BASICO: 9900, PRO: 19900 };
 const ALLOWED_MONTHS = [1, 3, 6, 12];
 const MAX_PROOF_BYTES = 3 * 1024 * 1024;
 const ALLOWED_PROOF_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
 
-// Envia comprovativo de pagamento do plano (Multicaixa Express) para revisão admin
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();
@@ -41,10 +40,10 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(await proof.arrayBuffer());
     const proofData = `data:${proof.type};base64,${buffer.toString('base64')}`;
 
-    const payment = await prisma.planPayment.create({
+    const payment = await runWithTenant(tenantId, (tx) => tx.planPayment.create({
       data: { tenantId, payerName, payerPhone, amountKz, months, proofName: proof.name.slice(0, 160), proofData, status: 'PENDENTE' },
       select: { id: true, status: true, createdAt: true },
-    });
+    }), { userId });
 
     return NextResponse.json({ success: true, payment });
   } catch (error) {
@@ -52,19 +51,19 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// Lista os envios desta empresa
 export async function GET() {
   try {
     const session = await auth();
     const sessionUser = session?.user as any;
     const tenantId = typeof sessionUser?.tenantId === 'string' ? sessionUser.tenantId : null;
+    const userId = typeof sessionUser?.id === 'string' ? sessionUser.id : null;
     if (!tenantId) return NextResponse.json({ error: 'Sessão inválida.' }, { status: 401 });
-    const payments = await prisma.planPayment.findMany({
+    const payments = await runWithTenant(tenantId, (tx) => tx.planPayment.findMany({
       where: { tenantId },
       orderBy: { createdAt: 'desc' },
       take: 20,
       select: { id: true, amountKz: true, months: true, status: true, adminNote: true, createdAt: true },
-    });
+    }), { userId });
     return NextResponse.json({ payments });
   } catch (error) {
     return NextResponse.json({ error: 'Erro ao carregar os pagamentos.' }, { status: 500 });

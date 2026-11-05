@@ -10,13 +10,10 @@ export async function POST(req: NextRequest) {
   try {
     const access = await getTenantWriteAccess();
     if (!access.ok) return NextResponse.json(access.body, { status: access.status });
-    const { tenantId } = access.access;
+    const { tenantId, userId } = access.access;
 
-    const quota = await getInvoiceQuota(tenantId);
+    const quota = await getInvoiceQuota(tenantId, userId);
     if (quotaBlocked(quota)) {
-      // Limite atingido sem desbloqueio disponível: o cliente abre a janela de
-      // desbloqueio por anúncio (ou sobe para Pro). Com desbloqueio pronto a
-      // emissão avança — o consumo atómico acontece dentro de issueInvoice.
       return NextResponse.json({ error: quotaMessage(quota), reason: 'AD_UNLOCK_REQUIRED', used: quota.used, limit: quota.limit, upgrade: true }, { status: 402 });
     }
 
