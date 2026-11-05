@@ -1,30 +1,26 @@
-﻿# RLS_ADMIN_INTEGRATION_REPORT
+﻿# RLS_ADMIN_INTEGRATION_REPORT.md
+**Status:** **PARTIAL / NOT EXECUTED (full matrix).**
 
-**Status:** **PARTIALLY FIXED (targeted) / NOT RUNTIME-PROVEN.**
+## Changes/evidence in scope
+- `src/lib/admin-auth.ts` (validated fix): authz user lookup now uses `runWithRlsContext` for self `User` read and own `Tenant` status read (when tenant present). Prevents RLS-hidden tenant reads from breaking tenant access checks in NOBYPASSRLS runtime.
+- `src/app/api/plan/payment/proof/[id]/route.ts` (previous commit evidence): server `auth()` + DB `platformRole` check; proof read in `runAsAdmin` with server-derived user id. **HTTP not re-executed this pass.**
+- `src/lib/admin-auth-core.ts`/guards: permissions derived server-side (`getPlatformPermissions`, `isSuperAdminRole`, tenant write guards). `tenantId` is read from DB user/tenant context in guard flow, not accepted as authorization proof.
 
-## Changes (this phase)
-- `src/app/api/plan/payment/proof/[id]/route.ts`: retains server `auth()` + DB `platformRole` authorization (`ADMIN`/`SUPERADMIN`) and executes proof read in `runAsAdmin` transaction (`app.is_admin=true`, transaction-local). No client-supplied role/admin used.
-- `src/app/api/cron/reminders/route.ts`: cross-tenant operation remains intentional; now requires `CRON_SECRET` and runs invoice scan/update in `runAsSystem` (controlled admin/system RLS context). `sendAndRecordEmail` writes delivery audit in system context.
+## Executed checks
+| Check | Result | Evidence |
+|---|---|---|
+| Admin fixture credentials login (`rls-e2e-admin@example.test`, tenant A, SUPERADMIN fixture) | **PASS** | `tmp/rls-e2e-artifacts/http-auth-admin-probe.json` |
+| Anonymous access to `/api/plan/payment` | **PASS** (401) | `http-auth-admin-probe.json` |
+| Tenant A/B normal isolation (products/warehouses/customers, cross-ID) | **PASS** | `http-isolation-ab-extended.json` |
+| Admin executor DB behavior (admin/system context where needed) | **PASS (DB subset)** | `rls-executor-integration-test.cjs` 5/5; prior 19/19, 60/60 |
 
-## 5437 Evidence
-- `AdminAuditLog` is `rls_admin_only`; baseline 19/19: normal user count 0, admin context read OK.
-- Executor integration 5/5: `EmailRequestLimit` (admin-only) blocked for non-admin, readable with admin context.
-- 19/19 + 60/60 + 5/5 all PASS after changes.
-
-## Remaining Gaps
-- `src/lib/admin-actions.ts` / admin data paths / platform dashboards not fully migrated to explicit admin executor transactions in this phase; many use global Prisma/tx patterns and need runtime validation under NOBYPASSRLS.
-- Sensitive admin reads (proof binaries) do not yet have explicit audit-log write in the proof route.
-- Cron uses secret auth (correct control) but has no dedicated operational audit record beyond existing delivery/reminder effects.
+## Not Executed (required by mission)
+- HTTP matrix for **normal user vs company admin vs platform admin vs ADMIN vs SUPERADMIN** across real admin endpoints.
+- Company listing/management, user management, permission changes, proof approve/reject actions, plan management, admin operations, cross-tenant data access attempts via admin routes, manipulated `tenantId`/payload/cookie/ID on admin endpoints, direct endpoint access checks.
+- `admin-actions.ts` runtime migration/validation completeness.
 
 ## Risks
-- Any admin/global operation outside controlled admin/system context may be blocked or leak if mis-scoped; `app.is_admin` must remain server-derived only.
-- Normal users must be denied by route/auth guards and by RLS where policies apply.
+- Admin paths not covered by HTTP evidence may still use global Prisma or incomplete context; heuristic audit classifies admin areas mostly ADMIN ONLY/NEEDS CONTEXT.
+- Any endpoint that trusts client-supplied `tenantId` or role claims would be **RISK**; exhaustive review not completed.
 
-## Required Validation (NOT EXECUTED)
-1. Non-admin user gets 403 on proof/admin actions; admin authorized.
-2. Admin actions (tenant/user/plan/config/payment review) work with NOBYPASSRLS executor strategy.
-3. Cron rejects missing/invalid secret; authorized run processes only intended overdue invoices.
-4. Audit coverage for sensitive reads/actions.
-
-## Conclusion
-**PARTIAL.** Targeted admin/cron executor wiring added and DB-level controls pass; full admin runtime compatibility is unproven.
+**Conclusion:** Administrative authorization **NOT PROVEN** for production. No global RLS bypass introduced.

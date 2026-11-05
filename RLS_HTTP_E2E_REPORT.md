@@ -1,38 +1,42 @@
 ﻿# RLS_HTTP_E2E_REPORT
 
-**Status:** **PARTIAL (minimal HTTP proof on isolated runtime) / NOT COMPLETE.**
+**Status:** **PARTIAL — DB runtime identity proven; HTTP A/B isolation proven for selected resources; full E2E NOT COMPLETE.**
 
-## Isolated runtime (5437 only, NOBYPASSRLS target)
-- **DB target (proven by Prisma-client process using same `@prisma/client` and temp env URL):** `database=mf_rls_staging`, `user=mf_app_login`, `rolsuper=false`, `rolbypassrls=false`, `host_target_port_5437=true` (`tmp/prove-prisma-5437-identity.cjs`). `server_port_internal=5432` is container-internal only.
-- **Env isolation strategy:** Node launcher reads `tmp/.env.rls-e2e-5437` (**not committed**, gitignored; local test creds) and injects into child `process.env` before spawning `node node_modules/next/dist/bin/next dev --webpack -p 3018 -H 127.0.0.1`. Probe showed `@next/env.loadEnvConfig` does **not override existing `process.env` values** (existing values kept). Risk remains because Next still reports loading `.env.local,.env`; the launcher sets required vars explicitly (DB/auth/URL/cron). Temp env corrected to `NEXTAUTH_URL/APP_URL=http://127.0.0.1:3018`.
-- **Next.js hang diagnosis (3017):** previous isolated instance (PID 34624, facturacao-angola only) compiled and became unresponsive after starting `/api/auth/[...nextauth]/route` compile; `/login` and `/api/auth/csrf` timed out. Likely causes observed: dev compilation/request blocking plus env/DB-target ambiguity from project `.env/.env.local` precedence; no evidence of unrelated project process interference. Restart via detached PS/npx launcher had `spawn EINVAL` in that shell. Controlled Node spawn with explicit env on 3018 became responsive.
-- **Runtime-process DB identity endpoint through Next:** attempted temporary `/api/rls-e2e-db-proof` route; first attempt returned 404/compile issues due to route writing/syntax and was removed. **NOT CAPTURED** as a successful Next-route response in this run. Independent Prisma process proof above is the available evidence.
+## DB/runtime identity (5437 only, NOBYPASSRLS)
+- **Temp Next runtime proof (PASS, then route removed):** `tmp/rls-e2e-artifacts/runtime-db-identity.json` (port 3024, 5437-targeted env). Anonymous `GET /api/rls-runtime-proof` = **401**. Authenticated A session = **200** with `db=mf_rls_staging`, `usr=mf_app_login`, `rolsuper=false`, `rolbypassrls=false`, `tenant_rls=true`, `tenant_rls_forced=false`, `app_user_id_matches_session=true`, `app_tenant_id_present=true`, `app_is_admin=false`, `staging_runtime_guard=true`. Temp route `src/app/api/rls-runtime-proof/route.ts` **deleted** after capture; removal verified on fresh runtime (3025 probe recorded in evidence flow; route absent in tree).
+- **Prior Prisma process proof:** `mf_rls_staging, mf_app_login, rolsuper=false, rolbypassrls=false, host_target_port_5437=true`.
+- **Isolation strategy:** Node launchers read `tmp/.env.rls-e2e-5437` (local, not committed) and inject env before spawning `next dev --webpack -p <port> -H 127.0.0.1`, refusing unless DB URL contains `:5437/` and `mf_app_login`. Next still reports `.env.local,.env` loaded (precedence risk remains). No `.env`/`.env.local` modified.
 
-## Executed minimal HTTP proof (isolated Next 3018, 5437 fixtures)
-| Test | Result | Evidence |
+## Executed HTTP evidence (synthetic fixtures only)
+| Suite | Result | Evidence |
 |---|---|---|
-| `/login` page | **PASS** | `tmp/rls-e2e-artifacts/minimal-http-proof.log` + HTTP probe 200 HTML |
-| `/api/auth/csrf` | **PASS** | status 200, csrfToken present |
-| `/api/auth/providers` URL points to 3018 | **PASS** | response includes 3018 URLs (after env fix) |
-| `/api/auth/session` unauthenticated | **PASS** | status 200 |
-| `/api/cron/reminders` without `CRON_SECRET` | **PASS** | status 401 |
-| Credentials login Tenant A (`rls-e2e-a@example.test`) | **PASS** | callback 302, session 200, user present (`tmp/minimal-http-proof.cjs`) |
-| Credentials login Tenant B (`rls-e2e-b@example.test`) | **PASS** | callback 302, session 200, user present |
+| Runtime DB identity via temp Next route | **PASS** (captured, removed) | `runtime-db-identity.json` |
+| Auth A/B credentials + session independence | **PASS** | `http-isolation-ab-extended.json`, `http-auth-admin-probe.json` |
+| Logout A invalidates session cookie context | **PASS** | `http-auth-admin-probe.json` (`signout` 302, after session has no user) |
+| Unauth `GET /api/produtos` | **PASS** (401/403, no data) | `http-isolation-ab-extended.json` |
+| Unauth `GET /api/plan/payment` | **PASS** (401) | `http-auth-admin-probe.json` |
+| `GET /api/produtos` A/B isolation | **PASS** (200 own only; no other tenant IDs) | `http-isolation-ab-extended.json` |
+| `GET /api/stock/warehouses` A/B isolation | **PASS** | same |
+| `GET /api/customers` A/B isolation | **PASS** | same |
+| Cross-tenant `GET/PATCH /api/stock/warehouses/{other}` A/B | **PASS** (401/403/404/405, no leak) | same |
+| Cross-tenant `GET/PATCH /api/produtos/{other}` A/B | **PASS** (404/405 observed, no leak) | same |
+| Cross-tenant `GET/PATCH /api/customers/{other}` A/B | **PASS** (404, no leak) | same |
+| Admin fixture login (`rls-e2e-admin@example.test`) | **PASS** | `http-auth-admin-probe.json` |
+| DB RLS regressions | **PASS** 19/19, 60/60, 5/5 | `scripts/rls-staging-two-tenant-test.cjs`, `scripts/rls-priority-tables-test.cjs`, `scripts/rls-executor-integration-test.cjs` |
+| TypeScript | **PASS** | `tsc --noEmit` |
 
-## Not Executed / Blocked
-| Scenario | Result | Blocker/notes |
+## Not Executed / Not Proven
+| Area | Status | Notes |
 |---|---|---|
-| Runtime DB identity via live Next route | **FAIL/NOT CAPTURED** (evidence gap) | temp route compile/write issues; removed; rely on Prisma process proof |
-| Register/verify/reset/change-unverified-email/logout OAuth/session refresh/onboarding HTTP | **NOT EXECUTED** | minimal proof only; PrismaAdapter/global auth complexity remains |
-| Full tenant A/B CRUD HTTP matrix | **NOT EXECUTED** | needs authenticated API calls per resource + schema-compatible fixtures |
-| Admin HTTP (normal/company admin/ADMIN/SUPERADMIN, proof/actions) | **NOT EXECUTED** | `admin-actions` runtime not fully migrated/validated |
-| Financial HTTP (draft->issue->PDF->payment->balance/history) | **NOT EXECUTED** | 5437 schema drift/fixtures/runtime scope |
-| WMS HTTP full flows | **NOT EXECUTED** | out of minimal scope; preserve WMS work |
-| Playwright full suite execution | **NOT EXECUTED** | minimal Node HTTP probes used; Playwright config/spec artifacts exist locally/uncommitted as needed |
-| PrismaAdapter compatibility under active RLS | **NOT EXECUTED/AT RISK** | adapter uses global Prisma; Account/Session/VerificationToken/EmailActionToken RLS-off prototype on 5437; credentials/JWT flows passed minimally |
-
-## Preserved DB evidence (rerun)
-- **19/19 PASS**, **60/60 PASS**, **5/5 PASS** (`tmp/rls-runtime-phase-19/60/exec.txt`).
+| Register/verify/resend/change-unverified-email/forgot/reset full HTTP | **NOT EXECUTED** | Auth routes have RLS context changes; end-to-end flows not run. |
+| OAuth/PrismaAdapter HTTP (Google linking/callback/account/session persistence) | **NOT EXECUTED / AT RISK** | External creds unavailable; adapter uses global Prisma; Account/Session/VerificationToken/EmailActionToken RLS OFF on 5437 prototype. |
+| Session refresh/onboarding HTTP | **NOT EXECUTED** | Code has explicit RLS context; no HTTP proof. |
+| Expired session / invalid session / post-logout access matrix | **PARTIAL** | Logout PASS; expired/invalid token cases NOT EXECUTED. |
+| Full admin HTTP (normal/company admin/platform ADMIN/SUPERADMIN role matrix, proof actions, plan management, user management, tenant manipulation) | **NOT EXECUTED** | Only admin fixture login + anon plan payment 401 probed. |
+| Financial cycle HTTP (customer/product CRUD beyond reads, draft->issue->PDF->payment partial/total->history/balances/receivables/reports/cancel/reversal, cross-tenant invoice/payment/doc access, PDF protection) | **NOT EXECUTED** | Payment service uses `runWithTenant`; schema/fixtures/endpoints require careful setup. |
+| WMS full HTTP flows (entries/exits/adjustments/transfers/PO/reception/movements/reversals/idempotency/history/reports/composite FKs) | **NOT EXECUTED** | Preexisting WMS work preserved; do not modify without demonstrated failure. |
+| Manipulated `tenantId` payload exhaustive checks | **PARTIAL** | Cross-tenant path ID checks PASS on tested resources; payload/body manipulation matrix NOT EXECUTED. |
+| Playwright suite | **NOT EXECUTED** | Node HTTP probes used. |
 
 ## Conclusion
-Minimal HTTP runtime/auth/cron-guard proof **PASS** on isolated 3018 with 5437-targeted NOBYPASSRLS env and synthetic fixtures. **This is not sufficient for production readiness**; full HTTP isolation, admin, financial, WMS, adapter compatibility, and Supabase pooling remain unproven.
+**PASS for proven subset:** runtime DB identity on 5437/NOBYPASSRLS + authenticated A/B isolation for products/warehouses/customers + cross-tenant ID access blocked with no leak + basic auth/session/logout/unauth guards. **NOT sufficient for production readiness.**

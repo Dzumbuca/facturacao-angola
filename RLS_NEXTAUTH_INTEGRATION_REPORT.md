@@ -1,26 +1,47 @@
-﻿# RLS_NEXTAUTH_INTEGRATION_REPORT
+﻿# RLS_NEXTAUTH_INTEGRATION_REPORT.md
+**Status:** **PARTIAL — Credentials/session/logout basics PASS on isolated 5437 runtime; PrismaAdapter/OAuth/refresh/onboarding/verify/reset NOT PROVEN.**
 
-**Status:** **PARTIALLY FIXED (minimal RLS context) / NOT E2E-VALIDATED.** Auth compatibility remains a primary RLS risk.
+## Scope audited
+- `src/lib/auth.ts` (NextAuth config, PrismaAdapter, Credentials, JWT/session callbacks)
+- `src/lib/prisma.ts` (global Prisma singleton)
+- `src/lib/tenant-db.ts` (RLS executors)
+- NextAuth callbacks/config; auth routes under `src/app/api/auth/*`
+- Session/onboarding touchpoints: `api/session/refresh`, `api/onboarding/company`
 
-## Code Changes (this phase, minimal/safe)
-- `src/lib/auth.ts`: added `runWithRlsContext`. Credentials `authorize` performs server-controlled email lookup in narrow admin/system context (required because User RLS policy allows self-by-id/tenant/admin, not arbitrary email lookup before session issuance). `session` callback reads current user by `app.user_id` (self policy). **PrismaAdapter remains global** (`PrismaAdapter(prisma)`); adapter tables (`Account/Session/VerificationToken/EmailActionToken`) remain RLS-off in 5437 prototype.
-- `src/app/api/session/refresh/route.ts`: reads self user in explicit `app.user_id` RLS context.
-- `src/app/api/onboarding/company/route.ts`: runs in authenticated user RLS context; preserves conditional tenant-link guard/idempotency.
-- Auth bootstrap routes use server-controlled system context for identity operations with preserved generic responses/rate limits: `api/auth/register`, `forgot-password`, `resend-verification`, `change-unverified-email`.
-- `src/lib/email-actions.ts`: narrow system context for `EmailRequestLimit` (admin-only table), `EmailDelivery` audit writes, email-action token issuance/verification/reset transactions, and token-gated marketing unsubscribe.
+## Observed architecture
+- `PrismaAdapter(prisma)` uses the **global Prisma client**.
+- 5437 prototype keeps adapter tables RLS OFF: `Account, Session, VerificationToken, EmailActionToken`.
+- Credentials `authorize` uses server-controlled `runWithRlsContext(... isAdmin:true, tenantId:null)` for narrow email lookup (User RLS allows self-by-id/tenant/admin, not arbitrary pre-session email lookup). Password/status/verification checked before session issuance.
+- `session` callback reads self user by `app.user_id` in explicit RLS context (self policy).
+- Auth bootstrap/email flows use narrow system/auth contexts in code (`register/forgot/resend/change-unverified-email`, `email-actions`); **HTTP not executed**.
 
-## 5437 Evidence
-- `scripts/rls-executor-integration-test.cjs` (5/5 PASS): self user lookup by `app.user_id` works; email lookup blocked under non-admin context (confirms why credentials bootstrap needs controlled server path); `EmailRequestLimit` blocked for non-admin and readable in admin context.
-- Prior DB isolation regressions preserved: 19/19 + 60/60 PASS.
+## Executed (isolated Next runtimes targeting 5437 `mf_app_login`, NOBYPASSRLS)
+| Check | Result | Evidence |
+|---|---|---|
+| Runtime DB identity | **PASS** | `tmp/rls-e2e-artifacts/runtime-db-identity.json` — `mf_rls_staging/mf_app_login`, no super/bypass, Tenant RLS true, app context matches session. |
+| Credentials login A | **PASS** | `http-isolation-ab-extended.json`, `http-auth-admin-probe.json` |
+| Credentials login B | **PASS** | same |
+| Credentials login admin fixture | **PASS** | `http-auth-admin-probe.json` |
+| Session read / tenant separation A vs B | **PASS** | independent cookies/jars, different `tenantId` values |
+| Logout invalidation | **PASS** | signout 302, subsequent session has no user |
+| Unauth guarded endpoints | **PASS** (sampled) | `/api/produtos`, `/api/plan/payment` blocked 401/403 |
 
-## Risks / Not Proven
-- **PrismaAdapter + OAuth/callbacks/linking/account/session persistence NOT E2E-validated** under RLS/NOBYPASSRLS.
-- `runWithRlsContext(... isAdmin:true)` used for credentials email lookup is narrow but privileged; acceptable only as server-controlled path until auth executor/policy design is finalized. No client input can set `app.is_admin`.
-- `User.tenantId` nullable (onboarding) remains a policy/bootstrap edge case.
-- 5437 adapter tables RLS-off by prototype: compatibility posture, not proof that adapter is safe under enforced RLS.
+## Not Executed
+| Check | Status | Reason |
+|---|---|---|
+| Register / account creation HTTP | **NOT EXECUTED** | Would create state; fixtures pre-seeded; flow not exercised. |
+| Email verify / resend / change-unverified-email HTTP | **NOT EXECUTED** | Token/email flows not exercised. |
+| Forgot/reset password HTTP | **NOT EXECUTED** | — |
+| VerificationToken / EmailActionToken lifecycle HTTP | **NOT EXECUTED** | — |
+| Session refresh HTTP | **NOT EXECUTED** | Code changed earlier; no runtime proof. |
+| Onboarding HTTP (null `tenantId`) | **NOT EXECUTED** | — |
+| OAuth Google/linking/callback/account/session persistence | **NOT EXECUTED** | External credentials unavailable; adapter/global Prisma risk remains. |
+| PrismaAdapter compatibility under enforced RLS/pooling | **NOT PROVEN** | Global adapter + adapter tables RLS OFF prototype. |
 
-## Required Validation (NOT EXECUTED)
-Isolated Next.js instance against 5437 + NOBYPASSRLS role strategy: register/verify/resend/change-unverified-email, credentials login/logout/session persistence, Google OAuth/linking (if env available), forgot/reset password, onboarding for null `tenantId`, session refresh, desktop/offline grant/sessionVersion paths.
+## Risks
+- **AT RISK:** `PrismaAdapter(prisma)` global client; adapter behavior under full RLS enforcement/transaction pooling not proven.
+- **AT RISK:** Credentials email lookup uses privileged server-controlled admin context; acceptable only as narrow bootstrap path pending auth executor/policy finalization. Client input cannot set `app.is_admin`.
+- **AT RISK:** Adapter tables RLS OFF is a compatibility prototype, not a production security posture.
+- Next dev logs `.env.local,.env` loaded; launchers inject critical 5437 vars but precedence remains a risk.
 
-## Conclusion
-**PARTIAL (code) / FAILING EVIDENCE FOR PRODUCTION READINESS.** Do not claim NextAuth compatibility under active RLS enforcement until HTTP/auth E2E passes.
+**Conclusion:** Credentials login/session basics **PASS** on 5437 NOBYPASSRLS. **Do not declare full NextAuth/adapter/OAuth compatibility.**
