@@ -6,6 +6,7 @@ import GoogleProvider from 'next-auth/providers/google';
 import bcrypt from 'bcrypt';
 import { prisma } from '@/lib/prisma';
 import { isAdminPagePath, isProtectedPagePath } from '@/lib/route-access';
+import { runWithRlsContext } from '@/lib/tenant-db';
 
 const nextAuth = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -40,10 +41,12 @@ const nextAuth = NextAuth({
         // Registration stores emails in lowercase; normalize login input the same way
         // so capitalization or accidental surrounding spaces do not hide an account.
         const email = String(credentials.email).trim().toLowerCase();
-        const user = await (prisma.user as any).findUnique({
+        // RLS: server-controlled credential lookup before user id is known. Narrow scope (single user by email, no cross-tenant data returned to client).
+        // Uses system context to satisfy User RLS in NOBYPASSRLS deployments; password/status/verification checked before issuing session.
+        const user = await runWithRlsContext((tx) => (tx.user as any).findUnique({
           where: { email },
           select: { id: true, name: true, email: true, tenantId: true, password: true, status: true, emailVerified: true, emailVerificationRequired: true, sessionVersion: true },
-        });
+        }), { userId: null, tenantId: null, isAdmin: true }) as any;
         if (!user?.password || user.status !== 'ACTIVE' || (user.emailVerificationRequired && !user.emailVerified)) return null;
 
         const isValidPassword = await bcrypt.compare(credentials.password as string, user.password);
@@ -82,8 +85,9 @@ const nextAuth = NextAuth({
     },
     async session({ session, token }: any) {
       if (session.user) {
+        // RLS: session validation reads the authenticated user by id (self policy allows app.user_id=id).
         const currentUser = typeof token.sub === 'string'
-          ? await (prisma.user as any).findUnique({ where: { id: token.sub }, select: { status: true, sessionVersion: true, emailVerified: true, emailVerificationRequired: true, tenantId: true } })
+          ? await runWithRlsContext((tx) => (tx.user as any).findUnique({ where: { id: token.sub }, select: { status: true, sessionVersion: true, emailVerified: true, emailVerificationRequired: true, tenantId: true } }), { userId: token.sub, tenantId: null, isAdmin: false }) as any
           : null;
         const valid = currentUser?.status === 'ACTIVE'
           && currentUser.sessionVersion === token.sessionVersion

@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { randomBytes } from 'node:crypto';
-import { prisma } from '@/lib/prisma';
 import { sendAndRecordEmail } from '@/lib/email-actions';
 import { escapeEmailHtml } from '@/lib/email-core';
+import { runAsSystem } from '@/lib/tenant-db';
 
 // Cron diário (Vercel): envia lembretes de cobrança para facturas emitidas em atraso.
 // Regras: no máximo 1 lembrete por factura a cada 7 dias; apenas adquirentes com email;
 // link público fresco (30 dias) incluído no email.
+// RLS: operação cross-tenant intencional; exige CRON_SECRET e executa em contexto admin/sistema controlado.
 export async function GET(request: NextRequest) {
   const secret = process.env.CRON_SECRET ?? '';
   const provided = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
@@ -17,7 +18,7 @@ export async function GET(request: NextRequest) {
   const now = new Date();
   const weekAgo = new Date(now.getTime() - 7 * 86_400_000);
 
-  const overdue = await prisma.invoice.findMany({
+  const overdue = await runAsSystem((tx) => tx.invoice.findMany({
     where: {
       type: 'FT',
       status: 'ISSUED',
@@ -32,7 +33,7 @@ export async function GET(request: NextRequest) {
     },
     orderBy: { dueAt: 'asc' },
     take: 20,
-  });
+  })) as any[];
 
   let sent = 0;
   const results: { invoice: string; to: string; status: string }[] = [];
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest) {
 
     const token = randomBytes(24).toString('base64url');
     const expires = new Date(now.getTime() + 30 * 86_400_000);
-    await prisma.invoice.update({ where: { id: invoice.id }, data: { shareToken: token, shareExpiresAt: expires, lastReminderAt: now } });
+    await runAsSystem((tx) => tx.invoice.update({ where: { id: invoice.id }, data: { shareToken: token, shareExpiresAt: expires, lastReminderAt: now } }));
 
     const base = process.env.APP_URL?.replace(/\/$/, '') ?? 'https://machinefaturas.shop';
     const link = `${base}/f/${token}`;
