@@ -1,43 +1,38 @@
 ﻿# RLS_HTTP_E2E_REPORT
 
-**Status:** **NOT EXECUTED (PARTIAL PREP / BLOCKED by safe isolated runtime).**
+**Status:** **PARTIAL (minimal HTTP proof on isolated runtime) / NOT COMPLETE.**
 
-## Environment Prep (5437 only, NOBYPASSRLS)
-- Confirmed `mf_app_login` is `NOSUPERUSER NOBYPASSRLS LOGIN` on `127.0.0.1:5437/mf_rls_staging`. Port 5436 not used.
-- Created isolated temp env file `tmp/.env.rls-e2e-5437` (**not committed**, gitignored; contains local test credentials) pointing to 5437 with `mf_app_login`, `NEXTAUTH_URL/APP_URL=http://127.0.0.1:3017`, ephemeral `NEXTAUTH_SECRET`, `CRON_SECRET`. Safe example committed: `e2e/rls-http-e2e.env.example`.
-- Additive 5437-only schema compatibility applied for Prisma/current app drift (Product/StockMovement fields/types/indexes where safe) via `tmp/rls-5437-schema-compat.cjs` — **staging 5437 only, additive, documented**.
-- Seeded synthetic fixtures on 5437 (postgres, idempotent, 5437-only): tenants `RLS E2E Tenant A/B` (`aaaaaaaa-...0001`, `bbbbbbbb-...0002`), users `rls-e2e-a/b/admin@example.test` (A/B COMPANY_ADMIN/NONE, admin SUPERADMIN), passwords hashed in DB. Script: `tmp/seed-rls-e2e-tenants.cjs` (no secrets committed).
-- NOBYPASSRLS probes via `mf_app_login`/`tmp/rls-app-login-probe.cjs`: **3/3 PASS** (missing tenant context sees 0 invoices; A context cannot read B customers/products by explicit tenant filter; self user lookup by `app.user_id` works).
+## Isolated runtime (5437 only, NOBYPASSRLS target)
+- **DB target (proven by Prisma-client process using same `@prisma/client` and temp env URL):** `database=mf_rls_staging`, `user=mf_app_login`, `rolsuper=false`, `rolbypassrls=false`, `host_target_port_5437=true` (`tmp/prove-prisma-5437-identity.cjs`). `server_port_internal=5432` is container-internal only.
+- **Env isolation strategy:** Node launcher reads `tmp/.env.rls-e2e-5437` (**not committed**, gitignored; local test creds) and injects into child `process.env` before spawning `node node_modules/next/dist/bin/next dev --webpack -p 3018 -H 127.0.0.1`. Probe showed `@next/env.loadEnvConfig` does **not override existing `process.env` values** (existing values kept). Risk remains because Next still reports loading `.env.local,.env`; the launcher sets required vars explicitly (DB/auth/URL/cron). Temp env corrected to `NEXTAUTH_URL/APP_URL=http://127.0.0.1:3018`.
+- **Next.js hang diagnosis (3017):** previous isolated instance (PID 34624, facturacao-angola only) compiled and became unresponsive after starting `/api/auth/[...nextauth]/route` compile; `/login` and `/api/auth/csrf` timed out. Likely causes observed: dev compilation/request blocking plus env/DB-target ambiguity from project `.env/.env.local` precedence; no evidence of unrelated project process interference. Restart via detached PS/npx launcher had `spawn EINVAL` in that shell. Controlled Node spawn with explicit env on 3018 became responsive.
+- **Runtime-process DB identity endpoint through Next:** attempted temporary `/api/rls-e2e-db-proof` route; first attempt returned 404/compile issues due to route writing/syntax and was removed. **NOT CAPTURED** as a successful Next-route response in this run. Independent Prisma process proof above is the available evidence.
 
-## HTTP Runtime Attempt
-- Initial isolated `next dev --webpack -p 3017` (PID 34624, `C:\...\facturacao-angola`, port 3017 only) compiled but became unresponsive/hung after starting `/api/auth/[...nextauth]/route` compile; HTTP probes timed out. Process **stopped** (only this PID). `.env`/`.env.local` exist in worktree and may be loaded by Next; env precedence/isolation needs a verified launch method (dotenv override or dedicated env strategy) before trusting HTTP results.
-- Restart attempt via detached Node launcher failed in this shell with `spawn EINVAL` (no listener left on 3017).
-
-## Playwright Assets
-- `e2e/rls-http-isolation.spec.ts` created (auth page/login attempts A/B, tenant-scoped customers API check, guessed invoice id access check, cron missing-secret 401/403 guard). **NOT EXECUTED** successfully against a stable RLS-enforced runtime.
-- Temp config: `tmp/playwright.rls.config.ts` (baseURL `127.0.0.1:3017`, artifacts in `tmp/rls-e2e-artifacts`).
-
-## Not Executed / Blocked Scenarios
-| Scenario | Result | Blocker |
+## Executed minimal HTTP proof (isolated Next 3018, 5437 fixtures)
+| Test | Result | Evidence |
 |---|---|---|
-| Auth HTTP (login/logout/register/verify/reset/OAuth/refresh/session cookie) | **NOT EXECUTED** | Stable isolated app runtime not running with verified 5437+NOBYPASSRLS env precedence; PrismaAdapter global/prototype adapter tables RLS-off |
-| Tenant A/B HTTP isolation (full CRUD/API matrix) | **NOT EXECUTED** | Runtime blocker; DB probes pass but HTTP proof missing |
-| Admin HTTP (normal/admin/SUPERADMIN, proof/actions) | **NOT EXECUTED** | Runtime blocker; admin-actions runtime not fully migrated/validated |
-| Financial HTTP (draft->issue->PDF->payment->balance/history) | **NOT EXECUTED** | Runtime blocker + 5437 schema drift for full model behavior |
-| WMS HTTP (warehouses/lots/adjustments/reservations/transfers/PO/receptions/movements) | **NOT EXECUTED** | Runtime blocker |
-| NextAuth adapter compatibility | **NOT EXECUTED** | Runtime blocker |
-| Cron authorized path | **NOT EXECUTED** | Runtime blocker; missing-secret guard present in spec but not run end-to-end |
+| `/login` page | **PASS** | `tmp/rls-e2e-artifacts/minimal-http-proof.log` + HTTP probe 200 HTML |
+| `/api/auth/csrf` | **PASS** | status 200, csrfToken present |
+| `/api/auth/providers` URL points to 3018 | **PASS** | response includes 3018 URLs (after env fix) |
+| `/api/auth/session` unauthenticated | **PASS** | status 200 |
+| `/api/cron/reminders` without `CRON_SECRET` | **PASS** | status 401 |
+| Credentials login Tenant A (`rls-e2e-a@example.test`) | **PASS** | callback 302, session 200, user present (`tmp/minimal-http-proof.cjs`) |
+| Credentials login Tenant B (`rls-e2e-b@example.test`) | **PASS** | callback 302, session 200, user present |
 
-## Evidence Available
-- DB/SQL: **19/19 PASS**, **60/60 PASS**, **5/5 executor PASS** rerun after phase (`tmp/rls-final-http-phase-*`).
-- NOBYPASSRLS app-role DB probes: **3/3 PASS**.
-- `tsc --noEmit` PASS.
+## Not Executed / Blocked
+| Scenario | Result | Blocker/notes |
+|---|---|---|
+| Runtime DB identity via live Next route | **FAIL/NOT CAPTURED** (evidence gap) | temp route compile/write issues; removed; rely on Prisma process proof |
+| Register/verify/reset/change-unverified-email/logout OAuth/session refresh/onboarding HTTP | **NOT EXECUTED** | minimal proof only; PrismaAdapter/global auth complexity remains |
+| Full tenant A/B CRUD HTTP matrix | **NOT EXECUTED** | needs authenticated API calls per resource + schema-compatible fixtures |
+| Admin HTTP (normal/company admin/ADMIN/SUPERADMIN, proof/actions) | **NOT EXECUTED** | `admin-actions` runtime not fully migrated/validated |
+| Financial HTTP (draft->issue->PDF->payment->balance/history) | **NOT EXECUTED** | 5437 schema drift/fixtures/runtime scope |
+| WMS HTTP full flows | **NOT EXECUTED** | out of minimal scope; preserve WMS work |
+| Playwright full suite execution | **NOT EXECUTED** | minimal Node HTTP probes used; Playwright config/spec artifacts exist locally/uncommitted as needed |
+| PrismaAdapter compatibility under active RLS | **NOT EXECUTED/AT RISK** | adapter uses global Prisma; Account/Session/VerificationToken/EmailActionToken RLS-off prototype on 5437; credentials/JWT flows passed minimally |
 
-## Next Safe Steps
-1. Launch isolated Next with **verified env precedence** (ensure 5437 NOBYPASSRLS `DATABASE_URL` is effective despite `.env`/`.env.local`; do not overwrite existing env files).
-2. Run Playwright against temp port with synthetic A/B/admin fixtures; capture traces.
-3. Expand spec to real create/read/update/delete across tenants, admin actions, invoice/payment/WMS flows as data/schema permits; classify failures precisely.
+## Preserved DB evidence (rerun)
+- **19/19 PASS**, **60/60 PASS**, **5/5 PASS** (`tmp/rls-runtime-phase-19/60/exec.txt`).
 
 ## Conclusion
-**NOT EXECUTED for HTTP runtime.** Preparation improved (fixtures, NOBYPASSRLS probes, spec/config, additive 5437 compat), but **no HTTP-level pass can be claimed**.
-
+Minimal HTTP runtime/auth/cron-guard proof **PASS** on isolated 3018 with 5437-targeted NOBYPASSRLS env and synthetic fixtures. **This is not sufficient for production readiness**; full HTTP isolation, admin, financial, WMS, adapter compatibility, and Supabase pooling remain unproven.
