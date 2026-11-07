@@ -54,18 +54,18 @@ async function main() {
     });
   }
 
-  // Pacotes comerciais (preços a configurar; SKUs sem limite definido).
+  // Pacotes comerciais (preços de lançamento; SKUs sem limite definido).
   const plans = [
-    { slug: 'gratis', name: 'Grátis', limits: { max_warehouses: 0 } },
-    { slug: 'basico', name: 'Básico', limits: { max_warehouses: 1 } },
-    { slug: 'profissional', name: 'Profissional', limits: { max_warehouses: 3 } },
-    { slug: 'empresarial', name: 'Empresarial', limits: {} },
+    { slug: 'gratis', name: 'Grátis', priceKz: 0, priceYearly: null, limits: { max_warehouses: 0, max_products: 30, max_clients: 30, max_invoices_per_month: 15 }, transfers: false },
+    { slug: 'basico', name: 'Básico', priceKz: 5000, priceYearly: 51000, limits: { max_warehouses: 1, max_products: 100, max_clients: 100, max_invoices_per_month: 100 }, transfers: false },
+    { slug: 'profissional', name: 'Profissional', priceKz: 12500, priceYearly: 127500, limits: { max_warehouses: 3, max_products: 500, max_clients: 500 }, transfers: true },
+    { slug: 'empresarial', name: 'Empresarial', priceKz: 25000, priceYearly: 255000, limits: { max_warehouses: 10 }, transfers: true },
   ];
   for (const planSeed of plans) {
     const plan = await prisma.subscriptionPlan.upsert({
       where: { slug: planSeed.slug },
-      update: { name: planSeed.name, isActive: true },
-      create: { slug: planSeed.slug, name: planSeed.name, description: planSeed.name, priceKz: 0, billingCycle: 'MONTHLY', isActive: true },
+      update: { name: planSeed.name, priceKz: planSeed.priceKz, priceYearly: planSeed.priceYearly, isActive: true },
+      create: { slug: planSeed.slug, name: planSeed.name, description: planSeed.name, priceKz: planSeed.priceKz, priceYearly: planSeed.priceYearly, billingCycle: 'MONTHLY', isActive: true },
     });
     for (const [metric, value] of Object.entries(planSeed.limits)) {
       await prisma.planLimit.upsert({
@@ -74,6 +74,11 @@ async function main() {
         create: { planId: plan.id, metric, value },
       });
     }
+    await prisma.planCapability.upsert({
+      where: { planId_capability: { planId: plan.id, capability: 'transfers' } },
+      update: { enabled: planSeed.transfers },
+      create: { planId: plan.id, capability: 'transfers', enabled: planSeed.transfers },
+    });
   }
 
   const upsertUser = async (email, tenantId) => prisma.user.upsert({

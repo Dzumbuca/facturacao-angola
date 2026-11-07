@@ -71,6 +71,67 @@ describe('Pacotes — catálogo gratuito sem gestão de stock', () => {
   });
 });
 
+describe('Pacotes — limites de catálogo e transferências', () => {
+  it('bloqueia criação de produtos acima do limite do plano', async () => {
+    const session = await login();
+    const used = await prisma.product.count({ where: { tenantId: TENANT_A } });
+    const plan = await prisma.subscriptionPlan.create({
+      data: {
+        slug: `teste-prod-${Date.now()}`,
+        name: 'Teste limite produtos',
+        priceKz: 0,
+        billingCycle: 'MONTHLY',
+        isActive: false,
+        limits: { create: [{ metric: 'max_products', value: used }] },
+      },
+    });
+    await prisma.tenantSubscription.create({ data: { tenantId: TENANT_A, planId: plan.id, status: 'ACTIVE', startsAt: new Date(), endsAt: null, autoRenew: false } });
+    try {
+      const blocked = await authenticatedFetch('/api/produtos', session, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome: 'E2E Acima do Limite', preco: 100 }),
+      });
+      expect(blocked.status).toBe(403);
+      expect(await blocked.json()).toMatchObject({ code: 'LIMIT_REACHED', metric: 'max_products' });
+    } finally {
+      await prisma.tenantSubscription.deleteMany({ where: { tenantId: TENANT_A } });
+      await prisma.subscriptionPlan.delete({ where: { id: plan.id } }).catch(() => {});
+    }
+  });
+
+  it('Básico não transfere entre armazéns; Profissional permite', async () => {
+    const session = await login();
+    const payload = {
+      fromWarehouseId: '00000000-0000-0000-0000-000000000000',
+      toWarehouseId: '00000000-0000-0000-0000-000000000001',
+      items: [{ productId: '00000000-0000-0000-0000-000000000002', quantity: 1 }],
+    };
+    await setPlan(TENANT_A, 'basico');
+    try {
+      const blocked = await authenticatedFetch('/api/stock/transfers', session, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      expect(blocked.status).toBe(403);
+      expect(await blocked.json()).toMatchObject({ code: 'CAPABILITY_REQUIRED', capability: 'transfers' });
+    } finally {
+      await setPlan(TENANT_A, 'profissional');
+    }
+    try {
+      const allowed = await authenticatedFetch('/api/stock/transfers', session, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      expect(allowed.status).not.toBe(403);
+    } finally {
+      await setPlan(TENANT_A, null);
+    }
+  });
+});
+
 describe('Pacotes — limite de armazéns', () => {
   it('Básico (1 armazém) bloqueia, preserva dados e grandfathering restaura', async () => {
     const session = await login();

@@ -28,7 +28,7 @@ describe('entitlements', () => {
       },
     });
     const limits = await getTenantWmsLimits('t1');
-    expect(limits).toMatchObject({ planSlug: 'profissional', maxWarehouses: 3, maxStockProducts: null });
+    expect(limits).toMatchObject({ planSlug: 'profissional', maxWarehouses: 3, maxStockProducts: null, capabilities: { transfers: false } });
     expect(isApplicationEnabled).not.toHaveBeenCalled();
   });
 
@@ -43,7 +43,7 @@ describe('entitlements', () => {
     findFirst.mockResolvedValue(null);
     isApplicationEnabled.mockResolvedValue(false);
     const limits = await getTenantWmsLimits('t1');
-    expect(limits).toMatchObject({ planSlug: 'gratis', maxWarehouses: 0, grandfathered: false });
+    expect(limits).toMatchObject({ planSlug: 'gratis', maxWarehouses: 0, maxProducts: 30, maxClients: 30, maxInvoicesPerMonth: 15, capabilities: { transfers: false }, grandfathered: false });
   });
 
   it('bloqueia criação quando o uso atinge o limite', async () => {

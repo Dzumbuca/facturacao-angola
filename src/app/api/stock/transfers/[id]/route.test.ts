@@ -7,12 +7,15 @@ import { runWithTenant } from '@/lib/tenant-db';
 vi.mock('@/lib/auth', () => ({ auth: vi.fn() }));
 vi.mock('@/lib/session', () => ({ getSessionTenantId: vi.fn(), getSessionUserId: vi.fn() }));
 vi.mock('@/lib/tenant-db', () => ({ runWithTenant: vi.fn() }));
+vi.mock('@/lib/entitlements', () => ({
+  getTenantWmsLimits: vi.fn().mockResolvedValue({ capabilities: { transfers: true }, maxWarehouses: null }),
+}));
 
 const ctx = { params: Promise.resolve({ id: 'tr1' }) };
 const mkReq = (b: any) => new Request('http://x', { method: 'PATCH', body: JSON.stringify(b) }) as any;
 
 describe('PATCH /api/stock/transfers/[id]', () => {
-  beforeEach(() => vi.resetAllMocks());
+  beforeEach(() => vi.clearAllMocks());
   it('DISPATCH move stock origem e cria movimento OUT', async () => {
     vi.mocked(auth).mockResolvedValue({} as any);
     vi.mocked(getSessionTenantId).mockReturnValue('t1');

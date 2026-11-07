@@ -41,8 +41,8 @@ export function PaymentForm() {
       <div>
         <label htmlFor="pay-plan" className="app-label">Plano</label>
         <select id="pay-plan" className="app-input" value={plan} onChange={(event) => setPlan(event.target.value as 'BASICO' | 'PRO')}>
-          <option value="BASICO">Básico — 9.900 Kz/mês (sem anúncios)</option>
-          <option value="PRO">Pro — 19.900 Kz/mês (sem anúncios, tudo incluído)</option>
+          <option value="BASICO">Básico — 5.000 Kz/mês</option>
+          <option value="PRO">Profissional — 12.500 Kz/mês</option>
         </select>
       </div>
       <div>

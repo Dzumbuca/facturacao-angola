@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth';
 import { getSessionTenantId, getSessionUserId } from '@/lib/session';
 import { runWithTenant } from '@/lib/tenant-db';
 import { upsertProductWarehouseStock } from '@/lib/stock-service';
+import { getTenantWmsLimits } from '@/lib/entitlements';
 
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -19,6 +20,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const session = await auth();
   const tenantId = getSessionTenantId(session);
   if (!tenantId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const limits = await getTenantWmsLimits(tenantId);
+  if (!limits.capabilities.transfers) {
+    return NextResponse.json(
+      { code: 'CAPABILITY_REQUIRED', capability: 'transfers', error: 'As transferências entre armazéns estão disponíveis a partir do plano Profissional.' },
+      { status: 403 },
+    );
+  }
   const { id } = await params;
   const body = await req.json();
   const { action } = body;

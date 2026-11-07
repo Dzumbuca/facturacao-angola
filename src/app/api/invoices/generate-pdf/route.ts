@@ -4,7 +4,7 @@ import { validateInvoiceWithAgent } from '@/lib/agent-service';
 import { issueInvoice } from '@/lib/invoice-service';
 import { getTenantWriteAccess } from '@/lib/tenant-api-access';
 import { getInvoiceServerErrorMessage } from '@/lib/invoice-api-error';
-import { getInvoiceQuota, quotaBlocked, quotaMessage, AdUnlockRequiredError } from '@/lib/invoice-quota';
+import { getInvoiceQuota, quotaBlocked, quotaMessage, InvoiceQuotaExceededError } from '@/lib/invoice-quota';
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
 
     const quota = await getInvoiceQuota(tenantId, userId);
     if (quotaBlocked(quota)) {
-      return NextResponse.json({ error: quotaMessage(quota), reason: 'AD_UNLOCK_REQUIRED', used: quota.used, limit: quota.limit, upgrade: true }, { status: 402 });
+      return NextResponse.json({ error: quotaMessage(quota), reason: 'INVOICE_QUOTA_EXCEEDED', used: quota.used, limit: quota.limit, upgrade: true }, { status: 402 });
     }
 
     const data = await req.json();
@@ -40,8 +40,8 @@ export async function POST(req: NextRequest) {
     });
     return response;
   } catch (error) {
-    if (error instanceof AdUnlockRequiredError) {
-      return NextResponse.json({ error: error.message, reason: 'AD_UNLOCK_REQUIRED', used: error.used, limit: error.limit, upgrade: true }, { status: 402 });
+    if (error instanceof InvoiceQuotaExceededError) {
+      return NextResponse.json({ error: error.message, reason: 'INVOICE_QUOTA_EXCEEDED', used: error.used, limit: error.limit, upgrade: true }, { status: 402 });
     }
     console.error('Erro ao emitir fatura:', error);
     const message = getInvoiceServerErrorMessage(error);

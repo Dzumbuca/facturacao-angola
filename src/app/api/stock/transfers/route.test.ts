@@ -7,9 +7,12 @@ import { runWithTenant } from '@/lib/tenant-db';
 vi.mock('@/lib/auth', () => ({ auth: vi.fn() }));
 vi.mock('@/lib/session', () => ({ getSessionTenantId: vi.fn(), getSessionUserId: vi.fn() }));
 vi.mock('@/lib/tenant-db', () => ({ runWithTenant: vi.fn() }));
+vi.mock('@/lib/entitlements', () => ({
+  getTenantWmsLimits: vi.fn().mockResolvedValue({ capabilities: { transfers: true }, maxWarehouses: null }),
+}));
 
 describe('POST /api/stock/transfers', () => {
-  beforeEach(() => vi.resetAllMocks());
+  beforeEach(() => vi.clearAllMocks());
   it('cria transferencia PENDING com items', async () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: 'u' } } as any);
     vi.mocked(getSessionTenantId).mockReturnValue('t1');

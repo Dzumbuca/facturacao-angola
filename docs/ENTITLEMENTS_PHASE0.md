@@ -265,3 +265,31 @@ Antes do motor de entitlements, foi implementado o gate binário do WMS com a in
 ### Pendente de autorização
 - Aplicar a migration em produção e fazer deploy.
 - Preços dos planos, limites de SKUs e integração com pagamentos (Fases 3–4).
+
+---
+
+## 18. Preços de lançamento e limites (2026-11-08)
+
+**Configuração inicial em BD** (alterável sem deploy):
+
+| Plano | Mensal | Anual | Produtos | Clientes | Facturas | Armazéns | Transferências |
+|---|---:|---:|---:|---:|---|---:|---|
+| Grátis | 0 | — | 30 | 30 | 15/mês | 0 | Não |
+| Básico | 5.000 Kz | 51.000 Kz | 100 | 100 | 100/mês | 1 | Não |
+| Profissional | 12.500 Kz | 127.500 Kz | 500 | 500 | Ilimitadas | 3 | Sim |
+| Empresarial | 25.000 Kz | 255.000 Kz | Ilimitados | Ilimitados | Ilimitadas | 10 | Sim |
+
+- **Desbloqueio por anúncio removido**: quota do Grátis passa a 15 facturas/mês (mês civil em Africa/Luanda).
+- **Limites no servidor** com advisory lock por tenant: produtos, clientes, armazéns e facturas/mês; acima → `403 LIMIT_REACHED` / `402 INVOICE_QUOTA_EXCEEDED`; dados existentes intactos.
+- **Transferências**: nova `PlanCapability.transfers` (Básico off; Profissional/Empresarial on).
+- **Grandfathering**: tenants legados com WMS e sem subscrição continuam sem limites; ao atribuir pacote no admin, aplicam-se.
+- **Preços**: `priceKz` + novo `priceYearly`; ecrã de pagamento actualizado. Cobrança automática/anual fora do âmbito.
+- **SKUs** sem valor (não aplicados). **RH e relatórios por nível** não vendidos até existirem.
+
+### Testes
+- **316 unitários** · **35 E2E** · **10/10 UI** · tsc 0 · lint 0 · build OK.
+- Migration `20261108010500_plan_capabilities_yearly` aplicada **apenas** na BD descartável.
+
+### Pendente de autorização
+- Aplicar migration em produção, `npm run db:seed-plans` e deploy.
+- Limites de SKUs, cobrança anual automática e pagamentos.
