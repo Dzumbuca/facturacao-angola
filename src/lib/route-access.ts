@@ -10,4 +10,6 @@ export const isProtectedPagePath = (pathname: string) =>
   pathname === '/empresa' || pathname.startsWith('/empresa/') ||
   pathname.startsWith('/customers/') || pathname === '/customers' ||
   pathname.startsWith('/invoices/') || pathname === '/invoices' ||
-  pathname.startsWith('/products/') || pathname === '/products';
+  pathname.startsWith('/products/') || pathname === '/products' ||
+  pathname.startsWith('/warehouses/') || pathname === '/warehouses' ||
+  pathname.startsWith('/stock/') || pathname === '/stock';

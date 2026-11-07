@@ -1,22 +1,26 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 import { allowEmailRequest, sendEmailActionToken } from '@/lib/email-actions';
-import { clientIp, rateLimit, tooManyRequestsResponse } from '@/lib/rate-limit';
-import { runAsSystem } from '@/lib/tenant-db';
+import { runAsSystem, PRIVILEGED_RLS } from '@/lib/tenant-db';
 
-const response = { success: true, message: 'Se existir uma conta pendente para esse endereço, receberá instruções.' };
-export async function POST(request: Request) {
-  const limiter = rateLimit(`resend-verification:${clientIp(request)}`, 5, 60_000);
-  if (!limiter.ok) return tooManyRequestsResponse(limiter.retryAfterSeconds);
+export async function POST(req: Request) {
   try {
-    const body = await request.json();
+    const body = await req.json();
     const email = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : '';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) return NextResponse.json(response);
-    if (!await allowEmailRequest('verify', email, 3)) return NextResponse.json(response);
-    // RLS: server-controlled lookup by email for unverified active account. Generic response preserved.
-    const user = await runAsSystem((tx) => (tx.user as any).findFirst({ where: { email, emailVerificationRequired: true, emailVerified: null, status: 'ACTIVE' }, select: { id: true, name: true, email: true } })) as { id: string; name: string | null; email: string } | null;
-    if (user) await sendEmailActionToken(user, 'VERIFY_EMAIL');
-    return NextResponse.json(response);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json({ ok: true, message: 'Se o email for elegível, receberá um email de confirmação.' });
+    }
+    if (!await allowEmailRequest('resend-verification', email, 5)) {
+      return NextResponse.json({ ok: true, message: 'Se o email for elegível, receberá um email de confirmação.' });
+    }
+    // RLS: server-controlled lookup for unverified active user.
+    const user = await runAsSystem((tx) => (tx.user as any).findFirst({ where: { email, emailVerificationRequired: true, emailVerified: null, status: 'ACTIVE' }, select: { id: true, name: true, email: true } }), PRIVILEGED_RLS) as { id: string; name: string | null; email: string } | null;
+    if (user) {
+      const sent = await sendEmailActionToken(user, 'VERIFY_EMAIL');
+      if (!sent.ok || !sent.accepted) return NextResponse.json({ ok: false, message: 'Não foi possível enviar o email de confirmação. Tente novamente.' }, { status: 503 });
+    }
+    return NextResponse.json({ ok: true, message: 'Se o email for elegível, receberá um email de confirmação.' });
   } catch {
-    return NextResponse.json(response);
+    return NextResponse.json({ ok: false, message: 'Erro ao processar o pedido.' }, { status: 500 });
   }
 }

@@ -4,7 +4,7 @@ import { validateRegistration } from '@/lib/registration-validation';
 import { sendEmailActionToken } from '@/lib/email-actions';
 import { createUnsubscribeToken, hashEmailToken } from '@/lib/email-actions';
 import { clientIp, rateLimit, tooManyRequestsResponse } from '@/lib/rate-limit';
-import { runAsSystem } from '@/lib/tenant-db';
+import { runAsSystem, PRIVILEGED_RLS } from '@/lib/tenant-db';
 
 export async function POST(req: Request) {
   const limiter = rateLimit(`register:${clientIp(req)}`, 5, 60_000);
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     const tenantName = (body.tenantName as string).trim();
 
     // RLS: pre-registration lookup/creation is server-controlled identity bootstrap (no authenticated tenant context yet).
-    const existingUser = await runAsSystem((tx) => (tx.user as any).findUnique({ where: { email }, select: { id: true } }));
+    const existingUser = await runAsSystem((tx) => (tx.user as any).findUnique({ where: { email }, select: { id: true } }), PRIVILEGED_RLS);
     if (existingUser) return NextResponse.json({ success: true, message: 'Se o registo puder ser concluído, receberá instruções no email indicado.' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -44,7 +44,7 @@ export async function POST(req: Request) {
         await inner.marketingPreference.update({ where: { id: preference.id }, data: { unsubscribeTokenHash: hashEmailToken(createUnsubscribeToken(preference.id)) } });
       }
       return user;
-    })) as any;
+    }), PRIVILEGED_RLS) as any;
 
     await sendEmailActionToken(newUser, 'VERIFY_EMAIL');
     return NextResponse.json({ success: true, message: 'Se o registo puder ser concluído, receberá instruções no email indicado.' });

@@ -1,6 +1,6 @@
 {
   "db": "postgresql://postgres:testpass@127.0.0.1:5437/mf_rls_staging",
-  "generatedAt": "2026-11-05T15:45:27.678Z",
+  "generatedAt": "2026-11-05T22:35:51.350Z",
   "scope": "prioritized-tables+missing-context+admin+write-checks",
   "passed": 60,
   "failed": 0,
@@ -278,12 +278,12 @@
     {
       "name": "No context: global EmailDelivery visibility (policy-dependent)",
       "ok": true,
-      "detail": "n=1 (tenantId IS NULL rows; policy allows IS NULL OR matching tenant)"
+      "detail": "n=9 (tenantId IS NULL rows; policy allows IS NULL OR matching tenant)"
     },
     {
       "name": "Admin context sees suppliers across tenants",
       "ok": true,
-      "detail": "n=5"
+      "detail": "n=13"
     },
     {
       "name": "Admin context sees plan payments",
@@ -293,7 +293,7 @@
     {
       "name": "Supplier insert own tenant succeeds",
       "ok": true,
-      "detail": "01c093bc-5bc9-4217-8990-df7a0705cedf"
+      "detail": "fe20fa36-8ad3-455a-823a-5c2dccc82299"
     },
     {
       "name": "Supplier own inserted row readable",

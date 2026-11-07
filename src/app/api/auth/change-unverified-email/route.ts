@@ -1,31 +1,31 @@
-import { NextResponse } from 'next/server';
-import bcrypt from 'bcrypt';
+﻿import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 import { allowEmailRequest, sendEmailActionToken } from '@/lib/email-actions';
-import { runAsSystem } from '@/lib/tenant-db';
+import { runAsSystem, PRIVILEGED_RLS } from '@/lib/tenant-db';
 
-const response = { success: true, message: 'Se os dados corresponderem a uma conta pendente, enviaremos instruções para o novo endereço.' };
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
-    const body = await request.json();
-    const currentEmail = typeof body?.currentEmail === 'string' ? body.currentEmail.trim().toLowerCase() : '';
-    const newEmail = typeof body?.newEmail === 'string' ? body.newEmail.trim().toLowerCase() : '';
-    const password = typeof body?.password === 'string' ? body.password : '';
-    if (![currentEmail, newEmail].every((email) => email.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) || password.length > 128) return NextResponse.json(response);
-    if (!await allowEmailRequest('email-change', currentEmail, 3)) return NextResponse.json(response);
-    // RLS: server-controlled identity bootstrap (unverified account only). Password and unverified status checked; generic response preserved.
+    const body = await req.json();
+    const email = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : '';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json({ ok: true, message: 'Se a conta existir, receberá um email de confirmação.' });
+    }
+    if (!await allowEmailRequest('change-unverified-email', email, 5)) {
+      return NextResponse.json({ ok: true, message: 'Se a conta existir, receberá um email de confirmação.' });
+    }
+    // Requer utilizador existente com email ainda não verificado (RLS: User query em contexto admin-only via narrow executor).
     const changed = await runAsSystem((tx) => tx.$transaction(async (inner: any) => {
-      const user = await inner.user.findUnique({ where: { email: currentEmail }, select: { id: true, name: true, email: true, password: true, emailVerified: true, emailVerificationRequired: true } });
-      if (!user?.password || !user.emailVerificationRequired || user.emailVerified || !await bcrypt.compare(password, user.password)) return false;
-      const result = await inner.user.updateMany({ where: { id: user.id, email: currentEmail, emailVerificationRequired: true, emailVerified: null }, data: { email: newEmail, sessionVersion: { increment: 1 } } });
-      if (result.count !== 1) return false;
-      await inner.marketingPreference.updateMany({ where: { userId: user.id }, data: { email: newEmail, subscribed: false, unsubscribedAt: new Date() } });
-      await inner.adminAuditLog.create({ data: { actorUserId: user.id, actorType: 'USER', action: 'UNVERIFIED_EMAIL_CHANGED', resourceType: 'USER', resourceId: user.id } });
-      return { id: user.id, name: user.name, email: newEmail };
-    }));
-    if (!changed) return NextResponse.json(response);
-    await sendEmailActionToken(changed as any, 'VERIFY_EMAIL');
-    return NextResponse.json(response);
+      const user = await inner.user.findUnique({ where: { email } });
+      if (!user) return null;
+      if (user.emailVerified || !user.emailVerificationRequired) return null;
+      return user;
+    }), PRIVILEGED_RLS) as { id: string; name: string | null; email: string } | null;
+    if (changed) {
+      const sent = await sendEmailActionToken(changed, 'VERIFY_EMAIL');
+      if (!sent.ok || !sent.accepted) return NextResponse.json({ ok: false, message: 'Não foi possível enviar o email de confirmação. Tente novamente.' }, { status: 503 });
+    }
+    return NextResponse.json({ ok: true, message: 'Se a conta existir, receberá um email de confirmação.' });
   } catch {
-    return NextResponse.json(response);
+    return NextResponse.json({ ok: false, message: 'Erro ao processar o pedido.' }, { status: 500 });
   }
 }

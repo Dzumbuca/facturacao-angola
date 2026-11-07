@@ -1,0 +1,13 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: machine-stock-test-pg
+    environment:
+      POSTGRES_PASSWORD: testpass
+      POSTGRES_DB: machine_stock_test
+    ports:
+      - "5437:5432"
+    volumes:
+      - machine_stock_test_data:/var/lib/postgresql/data
+volumes:
+  machine_stock_test_data:

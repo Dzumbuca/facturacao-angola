@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: machine-wms-e2e-disposable
+    environment:
+      POSTGRES_PASSWORD: ${E2E_PG_PASSWORD:?set E2E_PG_PASSWORD}
+      POSTGRES_DB: wms_e2e_disposable
+    ports:
+      - "5441:5432"
+    volumes:
+      - machine-wms-e2e-disposable-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d wms_e2e_disposable"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+volumes:
+  machine-wms-e2e-disposable-data:
+    name: machine-wms-e2e-disposable-data

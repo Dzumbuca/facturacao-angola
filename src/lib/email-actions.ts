@@ -2,7 +2,7 @@ import 'server-only';
 import { createHash, createHmac, randomBytes } from 'node:crypto';
 import bcrypt from 'bcrypt';
 import { prisma } from '@/lib/prisma';
-import { runAsSystem, runWithRlsContext } from '@/lib/tenant-db';
+import { runAsSystem, runWithRlsContext, PRIVILEGED_RLS } from '@/lib/tenant-db';
 import { createPublicEmailUrl, escapeEmailHtml, sendSmtpEmail, type EmailActionPurpose } from './email-core';
 
 const db = prisma as any;
@@ -28,7 +28,7 @@ export async function allowEmailRequest(scope: string, email: string, limit = 5)
        "requestCount" = CASE WHEN "EmailRequestLimit"."windowStartedAt" <= $3 THEN 1 ELSE "EmailRequestLimit"."requestCount" + 1 END,
        "updatedAt" = $2
      RETURNING "requestCount"`, keyHash, now, cutoff,
-  )) as Array<{ requestCount?: number | bigint }>;
+  ), PRIVILEGED_RLS) as Array<{ requestCount?: number | bigint }>;
   return Number(rows[0]?.requestCount ?? limit + 1) <= limit;
 }
 
@@ -46,7 +46,7 @@ export async function sendAndRecordEmail(input: {
     errorCode: sent.ok ? (sent.accepted ? null : 'SMTP_NOT_ACCEPTED') : sent.code,
     userId: input.userId ?? null, tenantId: input.tenantId ?? null, invoiceId: input.invoiceId ?? null,
     sentByUserId: input.sentByUserId ?? null,
-  } }));
+  } }), PRIVILEGED_RLS);
   return sent;
 }
 
@@ -56,10 +56,10 @@ export async function sendEmailActionToken(user: { id: string; name: string | nu
   const token = randomBytes(32).toString('base64url');
   const now = new Date();
   // RLS: token issuance is server-controlled identity flow (EmailActionToken RLS-off in staging prototype).
-  await runAsSystem((tx) => tx.$transaction(async (inner: any) => {
-    await inner.emailActionToken.updateMany({ where: { userId: user.id, purpose, consumedAt: null }, data: { consumedAt: now } });
-    await inner.emailActionToken.create({ data: { userId: user.id, purpose, tokenHash: hashEmailToken(token), expiresAt: new Date(now.getTime() + tokenLifetime[purpose]) } });
-  }));
+  await runAsSystem(async (tx) => {
+    await tx.emailActionToken.updateMany({ where: { userId: user.id, purpose, consumedAt: null }, data: { consumedAt: now } });
+    await tx.emailActionToken.create({ data: { userId: user.id, purpose, tokenHash: hashEmailToken(token), expiresAt: new Date(now.getTime() + tokenLifetime[purpose]) } });
+  }, PRIVILEGED_RLS);
   const path = purpose === 'VERIFY_EMAIL' ? '/verify-email' : '/reset-password';
   const url = createPublicEmailUrl(path, token);
   const greeting = escapeEmailHtml(user.name?.trim() || 'Utilizador');
@@ -77,19 +77,26 @@ export async function verifyEmailToken(rawToken: string) {
   if (!/^[A-Za-z0-9_-]{40,60}$/.test(rawToken)) return false;
   const now = new Date();
   // RLS: server-controlled token bootstrap; AdminAuditLog is admin-only.
-  const verified = await runAsSystem((tx) => tx.$transaction(async (inner: any) => {
+  // Single-use: lock candidate row (FOR UPDATE), then consume by id only if still valid/unconsumed.
+  const verified = await runAsSystem(async (tx) => {
     const tokenHash = hashEmailToken(rawToken);
-    const consumed = await inner.emailActionToken.updateMany({ where: { tokenHash, purpose: 'VERIFY_EMAIL', consumedAt: null, expiresAt: { gt: now } }, data: { consumedAt: now } });
+    const rows = await tx.$queryRaw<Array<{ id: string; userId: string }>>`
+      SELECT id, "userId" FROM "EmailActionToken"
+      WHERE "tokenHash" = ${tokenHash} AND purpose = 'VERIFY_EMAIL'::"EmailActionPurpose"
+        AND "consumedAt" IS NULL AND "expiresAt" > ${now}
+      FOR UPDATE
+    `;
+    if (rows.length !== 1) return false;
+    const row = rows[0];
+    const consumed = await tx.emailActionToken.updateMany({ where: { id: row.id, userId: row.userId, purpose: 'VERIFY_EMAIL', consumedAt: null, expiresAt: { gt: now } }, data: { consumedAt: now } });
     if (consumed.count !== 1) return false;
-    const token = await inner.emailActionToken.findUnique({ where: { tokenHash }, select: { userId: true } });
-    if (!token) return false;
-    await inner.user.update({ where: { id: token.userId }, data: { emailVerified: now, emailVerificationRequired: false, sessionVersion: { increment: 1 } } });
-    await inner.adminAuditLog.create({ data: { actorUserId: token.userId, actorType: 'USER', action: 'EMAIL_VERIFIED', resourceType: 'USER', resourceId: token.userId, result: 'SUCCESS' } });
+    await tx.user.update({ where: { id: row.userId }, data: { emailVerified: now, emailVerificationRequired: false, sessionVersion: { increment: 1 } } });
+    await tx.adminAuditLog.create({ data: { actorUserId: row.userId, actorType: 'USER', action: 'EMAIL_VERIFIED', resourceType: 'USER', resourceId: row.userId, result: 'SUCCESS' } });
     return true;
-  }, { isolationLevel: 'Serializable' }));
+  }, PRIVILEGED_RLS);
   if (!verified) return false;
   try {
-    const token = await runAsSystem((tx) => tx.emailActionToken.findUnique({ where: { tokenHash: hashEmailToken(rawToken) }, select: { user: { select: { id: true, name: true, email: true } } } })) as any;
+    const token = await runAsSystem((tx) => tx.emailActionToken.findUnique({ where: { tokenHash: hashEmailToken(rawToken) }, select: { user: { select: { id: true, name: true, email: true } } } }), PRIVILEGED_RLS) as any;
     const user = token?.user;
     if (user?.email) await sendAndRecordEmail({ purpose: 'ACCOUNT_WELCOME', to: user.email, userId: user.id, subject: 'Email confirmado — Machine Facturas', text: `Olá ${user.name || 'Utilizador'}, o seu email foi confirmado e a conta está activa. Já pode iniciar sessão.`, html: `<p>Olá ${escapeEmailHtml(user.name || 'Utilizador')},</p><p>O seu email foi confirmado e a conta está activa. Já pode iniciar sessão.</p>` });
   } catch { /* Confirmation must remain complete even if this notification fails. */ }
@@ -100,19 +107,25 @@ export async function resetPasswordWithToken(rawToken: string, newPassword: stri
   if (!/^[A-Za-z0-9_-]{40,60}$/.test(rawToken) || newPassword.length < 8 || newPassword.length > 128) return false;
   const passwordHash = await bcrypt.hash(newPassword, 12);
   const now = new Date();
-  const changed = await runAsSystem((tx) => tx.$transaction(async (inner: any) => {
+  const changed = await runAsSystem(async (tx) => {
     const tokenHash = hashEmailToken(rawToken);
-    const consumed = await inner.emailActionToken.updateMany({ where: { tokenHash, purpose: 'PASSWORD_RESET', consumedAt: null, expiresAt: { gt: now } }, data: { consumedAt: now } });
+    const rows = await tx.$queryRaw<Array<{ id: string; userId: string }>>`
+      SELECT id, "userId" FROM "EmailActionToken"
+      WHERE "tokenHash" = ${tokenHash} AND purpose = 'PASSWORD_RESET'::"EmailActionPurpose"
+        AND "consumedAt" IS NULL AND "expiresAt" > ${now}
+      FOR UPDATE
+    `;
+    if (rows.length !== 1) return false;
+    const row = rows[0];
+    const consumed = await tx.emailActionToken.updateMany({ where: { id: row.id, userId: row.userId, purpose: 'PASSWORD_RESET', consumedAt: null, expiresAt: { gt: now } }, data: { consumedAt: now } });
     if (consumed.count !== 1) return false;
-    const token = await inner.emailActionToken.findUnique({ where: { tokenHash }, select: { userId: true } });
-    if (!token) return false;
-    await inner.user.update({ where: { id: token.userId }, data: { password: passwordHash, sessionVersion: { increment: 1 } } });
-    await inner.adminAuditLog.create({ data: { actorUserId: token.userId, actorType: 'USER', action: 'PASSWORD_RESET', resourceType: 'USER', resourceId: token.userId, result: 'SUCCESS' } });
+    await tx.user.update({ where: { id: row.userId }, data: { password: passwordHash, sessionVersion: { increment: 1 } } });
+    await tx.adminAuditLog.create({ data: { actorUserId: row.userId, actorType: 'USER', action: 'PASSWORD_RESET', resourceType: 'USER', resourceId: row.userId, result: 'SUCCESS' } });
     return true;
-  }, { isolationLevel: 'Serializable' }));
+  }, PRIVILEGED_RLS);
   if (!changed) return false;
   try {
-    const user = await runAsSystem((tx) => tx.emailActionToken.findUnique({ where: { tokenHash: hashEmailToken(rawToken) }, select: { user: { select: { id: true, name: true, email: true } } } })) as any;
+    const user = await runAsSystem((tx) => tx.emailActionToken.findUnique({ where: { tokenHash: hashEmailToken(rawToken) }, select: { user: { select: { id: true, name: true, email: true } } } }), PRIVILEGED_RLS) as any;
     if (user?.user?.email) await sendAndRecordEmail({ purpose: 'PASSWORD_CHANGED', to: user.user.email, userId: user.user.id, subject: 'Palavra-passe alterada — Machine Facturas', text: `Olá ${user.user.name || 'Utilizador'}, a palavra-passe da sua conta foi alterada. Se não fez esta alteração, contacte o suporte.`, html: `<p>Olá ${escapeEmailHtml(user.user.name || 'Utilizador')},</p><p>A palavra-passe da sua conta foi alterada.</p><p>Se não fez esta alteração, contacte o suporte.</p>` });
   } catch { /* Password update must not be rolled back by a notification failure. */ }
   return true;
@@ -122,12 +135,12 @@ export async function unsubscribeFromMarketing(rawToken: string) {
   if (!/^[A-Za-z0-9_-]{40,60}$/.test(rawToken)) return false;
   // RLS: MarketingPreference is tenant-scoped; unsubscribe is token-based public action. System context is narrow and token-gated.
   const tokenHash = hashEmailToken(rawToken);
-  const updated = await runAsSystem((tx) => tx.$transaction(async (inner: any) => {
-    const preference = await inner.marketingPreference.findUnique({ where: { unsubscribeTokenHash: tokenHash }, select: { id: true, subscribed: true } });
+  const updated = await runAsSystem(async (tx) => {
+    const preference = await tx.marketingPreference.findUnique({ where: { unsubscribeTokenHash: tokenHash }, select: { id: true, subscribed: true } });
     if (!preference) return false;
     if (!preference.subscribed) return true;
-    await inner.marketingPreference.update({ where: { id: preference.id }, data: { subscribed: false, unsubscribedAt: new Date() } });
+    await tx.marketingPreference.update({ where: { id: preference.id }, data: { subscribed: false, unsubscribedAt: new Date() } });
     return true;
-  }));
+  }, PRIVILEGED_RLS);
   return updated === true;
 }
