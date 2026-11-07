@@ -106,3 +106,26 @@ Notas:
 - **Nenhuma base de produção foi tocada** — não existe URL de produção nos ficheiros de ambiente do repositório; o alvo remoto em `.env.staging` é staging.
 - Snapshot do histórico de migrations do staging local guardado em `tmp/local-staging-5436-migrations-*.json`.
 - `scripts/ensure-db-roles.cjs` cria as roles de forma idempotente em qualquer alvo.
+
+## 9. Produção sem credenciais (2026-11-07)
+
+O código novo é compatível com o schema atual; **nada fica bloqueado** se ninguém tiver acesso à BD de produção.
+
+Quando existir acesso, o alinhamento é feito por script, com dry-run por omissão:
+
+```bash
+# 1) dry-run (não escreve nada)
+DATABASE_URL="postgresql://..." npm run db:align-prod
+
+# 2) aplicar (snapshot + roles + JWT se faltar + resolve das baselines)
+DATABASE_URL="postgresql://..." npm run db:align-prod -- --apply
+```
+
+O script:
+- recusa correr sem `DATABASE_URL`;
+- guarda snapshot do `_prisma_migrations` em `tmp/` antes de escrever;
+- só trata das migrations conhecidas (JWT, baseline de stock, índices);
+- **aborta** se houver migrations pendentes desconhecidas ou se as tabelas de stock não existirem (nesse caso a BD precisa de `migrate deploy`, não de `resolve`);
+- termina com `prisma migrate status`.
+
+Se o deploy for gerido por outra pessoa, basta entregar-lhe este ficheiro e a secção 6.
