@@ -114,8 +114,8 @@ Notas:
 - **Ações**: roles necessárias criadas; `prisma migrate deploy` aplicou as **3 migrations pendentes** (JWT, baseline de stock, alinhamento de índices).
 - **Depois**: **27 migrations**, **53 tabelas**, stock + `AuthJwtRevocation` presentes; dados intactos (17 users, 16 tenants, 3 products).
 - **Snapshot do schema antes das alterações**: `tmp/prod-schema-before.sql`.
-- **Smoke test** (deploy protegido por Vercel Authentication, via `vercel curl`): `/login` **200**, `/` e `/stock` **307** (redirect esperado para login).
+- **Smoke test** (produção, alias `https://machinefaturas.shop`): `/login` **200**, `/api/auth/csrf` **200**, `/` **307** (redirect esperado para login).
 - **Credenciais**: guardadas apenas em `.env.production.local` (ignorado pelo git, `.env.*`). Recomenda-se **rotacionar a password** por ter sido partilhada em conversa.
-- **Nota**: `NEXT_PUBLIC_SUPABASE_URL` na Vercel aponta para `sunsbstzulrijraptfhn`, que não resolve em DNS — confirmar se é configuração antiga.
+- **Supabase env (passo 2)**: `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` corrigidos na Vercel para o projeto vivo (`dodoplzkmazdlrwqdmpp`), com validação da chave em `/auth/v1/settings` e `/storage/v1/bucket` (200). Redeploy de produção feito; `.vercelignore` reforçado para excluir `tmp/`, `dist-*` e artefactos de teste.
 
 O script `npm run db:align-prod` (secção anterior) continua disponível para outros ambientes, com dry-run por omissão; `scripts/ensure-db-roles.cjs` passou a aceitar o certificado do pooler Supabase.
