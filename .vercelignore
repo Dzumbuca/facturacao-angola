@@ -12,3 +12,12 @@ coverage
 # Local env files (values are configured as Vercel env vars)
 .env
 .env.*
+
+# Artefactos locais grandes (evita o limite de 100 MB no upload)
+tmp
+dist-*
+electron-dist
+test-results
+playwright-report
+*.log
+e2e-server*.log
