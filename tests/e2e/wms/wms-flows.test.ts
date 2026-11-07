@@ -175,3 +175,44 @@ describe('WMS v2 E2E - Saldos e consultas', () => {
     expect(balances[0].product?.name).toBeTruthy();
   });
 });
+
+describe('WMS v2 E2E - Movimentos diretos (IN/OUT)', () => {
+  const balanceOf = async (session: any): Promise<number> => {
+    const res = await authenticatedFetch(`/api/stock/balances?warehouseId=${WAREHOUSE_A}&productId=${PRODUCT_A1}`, session);
+    expect(res.status).toBe(200);
+    const rows = await res.json();
+    return rows.reduce((sum: number, r: any) => sum + Number(r.quantity || 0), 0);
+  };
+
+  it('sem sessão devolve 401', async () => {
+    const res = await fetch(`${process.env.APP_URL || 'http://localhost:3002'}/api/stock/movements`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+    expect(res.status).toBe(401);
+  });
+
+  it('IN incrementa e OUT repõe o saldo; OUT insuficiente devolve 400', async () => {
+    const session = await login();
+    const before = await balanceOf(session);
+
+    const inn = await authenticatedFetch('/api/stock/movements', session, json({
+      productId: PRODUCT_A1, warehouseId: WAREHOUSE_A, type: 'IN', quantity: 2, reason: 'E2E movimento IN',
+    }));
+    expect(inn.status).toBe(201);
+    expect(await balanceOf(session)).toBe(before + 2);
+
+    const out = await authenticatedFetch('/api/stock/movements', session, json({
+      productId: PRODUCT_A1, warehouseId: WAREHOUSE_A, type: 'OUT', quantity: 2, reason: 'E2E movimento OUT',
+    }));
+    expect(out.status).toBe(201);
+    expect(await balanceOf(session)).toBe(before);
+
+    const insufficient = await authenticatedFetch('/api/stock/movements', session, json({
+      productId: PRODUCT_A1, warehouseId: WAREHOUSE_A, type: 'OUT', quantity: 999999, reason: 'E2E insuficiente',
+    }));
+    expect(insufficient.status).toBe(400);
+    expect(await balanceOf(session)).toBe(before);
+  });
+});
