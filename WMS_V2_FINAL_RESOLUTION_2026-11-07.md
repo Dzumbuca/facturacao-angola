@@ -118,4 +118,6 @@ Notas:
 - **Credenciais**: guardadas apenas em `.env.production.local` (ignorado pelo git, `.env.*`). Recomenda-se **rotacionar a password** por ter sido partilhada em conversa.
 - **Supabase env (passo 2)**: `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` corrigidos na Vercel para o projeto vivo (`dodoplzkmazdlrwqdmpp`), com validação da chave em `/auth/v1/settings` e `/storage/v1/bucket` (200). Redeploy de produção feito; `.vercelignore` reforçado para excluir `tmp/`, `dist-*` e artefactos de teste.
 
+- **Correção pós-deploy (login Google)**: o `DATABASE_URL` da Vercel ainda tinha a password antiga (`PrismaClientInitializationError: Authentication failed ... credentials for 'postgres' are not valid`), o que fazia o callback Google devolver "Server error / problem with the server configuration" (AdapterError). Secret atualizado com a URI do pooler e redeploy feito; probe de credenciais devolve agora 302 `CredentialsSignin` e os logs deixaram de mostrar erros de BD.
+
 O script `npm run db:align-prod` (secção anterior) continua disponível para outros ambientes, com dry-run por omissão; `scripts/ensure-db-roles.cjs` passou a aceitar o certificado do pooler Supabase.
