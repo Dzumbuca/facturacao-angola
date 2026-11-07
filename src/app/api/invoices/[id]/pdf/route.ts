@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getTenantReadAccess } from '@/lib/tenant-api-access';
-import { prisma } from '@/lib/prisma';
+import { runWithTenant } from '@/lib/tenant-db';
 import { generateInvoicePDF } from '@/lib/pdf-generator';
 
 type Context = { params: Promise<{ id: string }> };
@@ -8,16 +8,17 @@ type Context = { params: Promise<{ id: string }> };
 export async function GET(_request: NextRequest, { params }: Context) {
   const access = await getTenantReadAccess();
   if (!access.ok) return NextResponse.json(access.body, { status: access.status });
-  const { tenantId } = access.access;
-  const invoice = await prisma.invoice.findFirst({
-    where: { id: (await params).id, tenantId },
+  const { tenantId, userId } = access.access;
+  const { id } = await params;
+  const invoice = await runWithTenant(tenantId, (tx) => tx.invoice.findFirst({
+    where: { id, tenantId },
     include: {
       customer: true,
       items: true,
       companyLogo: true,
       payments: { orderBy: { paymentDate: 'asc' } },
     },
-  });
+  }), { userId }) as any;
   if (!invoice) return NextResponse.json({ error: 'Factura não encontrada.' }, { status: 404 });
   try {
     const pdf = await generateInvoicePDF({

@@ -1,0 +1,309 @@
+{
+  "db": "postgresql://postgres:testpass@127.0.0.1:5437/mf_rls_staging",
+  "generatedAt": "2026-11-05T15:45:27.678Z",
+  "scope": "prioritized-tables+missing-context+admin+write-checks",
+  "passed": 60,
+  "failed": 0,
+  "results": [
+    {
+      "name": "Supplier read own A",
+      "ok": true,
+      "detail": "n=1"
+    },
+    {
+      "name": "Supplier block B",
+      "ok": true,
+      "detail": "n=0"
+    },
+    {
+      "name": "CompanyBankAccount read own A",
+      "ok": true,
+      "detail": "n=1"
+    },
+    {
+      "name": "CompanyBankAccount block B",
+      "ok": true,
+      "detail": "n=0"
+    },
+    {
+      "name": "CompanyLogo read own A",
+      "ok": true,
+      "detail": "n=1"
+    },
+    {
+      "name": "CompanyLogo block B",
+      "ok": true,
+      "detail": "n=0"
+    },
+    {
+      "name": "PlanPayment read own A",
+      "ok": true,
+      "detail": "n=1"
+    },
+    {
+      "name": "PlanPayment block B",
+      "ok": true,
+      "detail": "n=0"
+    },
+    {
+      "name": "ProductWarehouseStock read own A",
+      "ok": true,
+      "detail": "n=1"
+    },
+    {
+      "name": "ProductWarehouseStock block B",
+      "ok": true,
+      "detail": "n=0"
+    },
+    {
+      "name": "StockLot read own A",
+      "ok": true,
+      "detail": "n=1"
+    },
+    {
+      "name": "StockLot block B",
+      "ok": true,
+      "detail": "n=0"
+    },
+    {
+      "name": "StockAdjustment read own A",
+      "ok": true,
+      "detail": "n=1"
+    },
+    {
+      "name": "StockAdjustment block B",
+      "ok": true,
+      "detail": "n=0"
+    },
+    {
+      "name": "StockAdjustmentItem read own A",
+      "ok": true,
+      "detail": "n=1"
+    },
+    {
+      "name": "StockAdjustmentItem block B",
+      "ok": true,
+      "detail": "n=0"
+    },
+    {
+      "name": "StockReservation read own A",
+      "ok": true,
+      "detail": "n=1"
+    },
+    {
+      "name": "StockReservation block B",
+      "ok": true,
+      "detail": "n=0"
+    },
+    {
+      "name": "StockTransfer read own A",
+      "ok": true,
+      "detail": "n=1"
+    },
+    {
+      "name": "StockTransfer block B",
+      "ok": true,
+      "detail": "n=0"
+    },
+    {
+      "name": "StockTransferItem read own A",
+      "ok": true,
+      "detail": "n=1"
+    },
+    {
+      "name": "StockTransferItem block B",
+      "ok": true,
+      "detail": "n=0"
+    },
+    {
+      "name": "StockTransferReception read own A",
+      "ok": true,
+      "detail": "n=1"
+    },
+    {
+      "name": "StockTransferReception block B",
+      "ok": true,
+      "detail": "n=0"
+    },
+    {
+      "name": "StockTransferReceptionItem read own A",
+      "ok": true,
+      "detail": "n=1"
+    },
+    {
+      "name": "StockTransferReceptionItem block B",
+      "ok": true,
+      "detail": "n=0"
+    },
+    {
+      "name": "PurchaseOrder read own A",
+      "ok": true,
+      "detail": "n=1"
+    },
+    {
+      "name": "PurchaseOrder block B",
+      "ok": true,
+      "detail": "n=0"
+    },
+    {
+      "name": "PurchaseOrderItem read own A",
+      "ok": true,
+      "detail": "n=1"
+    },
+    {
+      "name": "PurchaseOrderItem block B",
+      "ok": true,
+      "detail": "n=0"
+    },
+    {
+      "name": "PurchaseReception read own A",
+      "ok": true,
+      "detail": "n=1"
+    },
+    {
+      "name": "PurchaseReception block B",
+      "ok": true,
+      "detail": "n=0"
+    },
+    {
+      "name": "PurchaseReceptionItem read own A",
+      "ok": true,
+      "detail": "n=1"
+    },
+    {
+      "name": "PurchaseReceptionItem block B",
+      "ok": true,
+      "detail": "n=0"
+    },
+    {
+      "name": "TenantApplication read own A",
+      "ok": true,
+      "detail": "n=1"
+    },
+    {
+      "name": "TenantApplication block B",
+      "ok": true,
+      "detail": "n=0"
+    },
+    {
+      "name": "TenantSubscription read own A",
+      "ok": true,
+      "detail": "n=1"
+    },
+    {
+      "name": "TenantSubscription block B",
+      "ok": true,
+      "detail": "n=0"
+    },
+    {
+      "name": "EmailDelivery read own A",
+      "ok": true,
+      "detail": "n=1"
+    },
+    {
+      "name": "EmailDelivery block B",
+      "ok": true,
+      "detail": "n=0"
+    },
+    {
+      "name": "AdUnlock read own A",
+      "ok": true,
+      "detail": "n=1"
+    },
+    {
+      "name": "AdUnlock block B",
+      "ok": true,
+      "detail": "n=0"
+    },
+    {
+      "name": "Supplier insert tenant B blocked (WITH CHECK)",
+      "ok": true,
+      "detail": "new row violates row-level security policy for table \"Supplier\""
+    },
+    {
+      "name": "Supplier update B blocked",
+      "ok": true,
+      "detail": "rowCount=0"
+    },
+    {
+      "name": "Supplier delete B blocked",
+      "ok": true,
+      "detail": "rowCount=0"
+    },
+    {
+      "name": "Supplier B unchanged after blocked writes",
+      "ok": true,
+      "detail": "Sup B"
+    },
+    {
+      "name": "CompanyBankAccount insert tenant B blocked",
+      "ok": true,
+      "detail": "new row violates row-level security policy for table \"CompanyBankAccount\""
+    },
+    {
+      "name": "PlanPayment update B blocked",
+      "ok": true,
+      "detail": "rowCount=0"
+    },
+    {
+      "name": "AdUnlock insert tenant B blocked",
+      "ok": true,
+      "detail": "new row violates row-level security policy for table \"AdUnlock\""
+    },
+    {
+      "name": "No context: zero suppliers",
+      "ok": true,
+      "detail": "n=0"
+    },
+    {
+      "name": "No context: zero plan payments",
+      "ok": true,
+      "detail": "n=0"
+    },
+    {
+      "name": "No context: zero stock transfers",
+      "ok": true,
+      "detail": "n=0"
+    },
+    {
+      "name": "No context: zero purchase orders",
+      "ok": true,
+      "detail": "n=0"
+    },
+    {
+      "name": "No context: zero ad unlocks",
+      "ok": true,
+      "detail": "n=0"
+    },
+    {
+      "name": "No context: global EmailDelivery visibility (policy-dependent)",
+      "ok": true,
+      "detail": "n=1 (tenantId IS NULL rows; policy allows IS NULL OR matching tenant)"
+    },
+    {
+      "name": "Admin context sees suppliers across tenants",
+      "ok": true,
+      "detail": "n=5"
+    },
+    {
+      "name": "Admin context sees plan payments",
+      "ok": true,
+      "detail": "n=2"
+    },
+    {
+      "name": "Supplier insert own tenant succeeds",
+      "ok": true,
+      "detail": "01c093bc-5bc9-4217-8990-df7a0705cedf"
+    },
+    {
+      "name": "Supplier own inserted row readable",
+      "ok": true,
+      "detail": "n=1"
+    },
+    {
+      "name": "Supplier own inserted row hidden from B",
+      "ok": true,
+      "detail": "n=0"
+    }
+  ]
+}

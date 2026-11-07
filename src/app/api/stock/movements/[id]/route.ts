@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getTenantWriteAccess } from '@/lib/tenant-api-access';
-import { prisma } from '@/lib/prisma';
 import { runWithTenant } from '@/lib/tenant-db';
 
 type Context = { params: Promise<{ id: string }> };
@@ -17,7 +16,9 @@ export async function DELETE(_request: NextRequest, { params }: Context) {
   const { tenantId } = access.access;
   const { id } = await params;
 
-  const movement = await prisma.stockMovement.findFirst({ where: { id, tenantId }, select: { id: true, type: true } });
+  const movement = await runWithTenant(tenantId, (tx) =>
+    tx.stockMovement.findFirst({ where: { id, tenantId }, select: { id: true, type: true } })
+  );
   if (!movement) return NextResponse.json({ error: 'Movimento nao encontrado.' }, { status: 404 });
 
   return NextResponse.json(

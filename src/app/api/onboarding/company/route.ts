@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { runWithRlsContext } from '@/lib/tenant-db';
 import { isValidNif, normalizeNif } from '@/lib/nif';
 
 // Cria o espaço (tenant) da empresa para um utilizador autenticado que ainda
@@ -26,33 +26,28 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'O NIF indicado tem um formato inválido. Verifique ou deixe vazio para preencher depois.' }, { status: 400 });
     }
 
-    const user = await (prisma.user as any).findUnique({ where: { id: userId }, select: { tenantId: true } });
-    if (!user) {
-      return NextResponse.json({ error: 'Utilizador não encontrado.' }, { status: 404 });
-    }
-    if (user.tenantId) {
-      return NextResponse.json({ success: true });
-    }
-
-    try {
-      await (prisma as any).$transaction(async (tx: any) => {
-        const tenant = await tx.tenant.create({ data: { name: tenantName, nif: nif || null } });
-        // Guard condicional: só liga a empresa se o utilizador continuar sem
-        // empresa. Se outro pedido ganhou a corrida, o throw desfaz (rollback)
-        // a empresa criada aqui e a resposta é idempotente.
-        const linked = await tx.user.updateMany({
-          where: { id: userId, tenantId: null },
-          data: { tenantId: tenant.id, tenantRole: 'COMPANY_ADMIN' },
+    const result = await runWithRlsContext(async (tx: any) => {
+      const user = await tx.user.findUnique({ where: { id: userId }, select: { tenantId: true } });
+      if (!user) return { status: 404 as const, error: 'Utilizador não encontrado.' };
+      if (user.tenantId) return { status: 200 as const, success: true };
+      try {
+        await tx.$transaction(async (inner: any) => {
+          const tenant = await inner.tenant.create({ data: { name: tenantName, nif: nif || null } });
+          // Guard condicional: só liga a empresa se o utilizador continuar sem empresa.
+          const linked = await inner.user.updateMany({
+            where: { id: userId, tenantId: null },
+            data: { tenantId: tenant.id, tenantRole: 'COMPANY_ADMIN' },
+          });
+          if (linked.count === 0) throw new Error('ONBOARDING_ALREADY_DONE');
         });
-        if (linked.count === 0) throw new Error('ONBOARDING_ALREADY_DONE');
-      });
-    } catch (transactionError) {
-      if ((transactionError as Error)?.message === 'ONBOARDING_ALREADY_DONE') {
-        return NextResponse.json({ success: true });
+      } catch (transactionError) {
+        if ((transactionError as Error)?.message === 'ONBOARDING_ALREADY_DONE') return { status: 200 as const, success: true };
+        throw transactionError;
       }
-      throw transactionError;
-    }
+      return { status: 200 as const, success: true };
+    }, { userId, tenantId: null, isAdmin: false });
 
+    if ('error' in result) return NextResponse.json({ error: result.error }, { status: result.status });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Erro ao criar espaço da empresa.');

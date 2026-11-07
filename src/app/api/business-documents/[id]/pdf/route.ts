@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getTenantReadAccess } from '@/lib/tenant-api-access';
+import { runWithTenant } from '@/lib/tenant-db';
 import { createBusinessDocumentService } from '@/lib/business-document-service';
 import { businessDocumentRepository } from '@/lib/business-document-repository';
 import { generateBusinessDocumentRecordPDF } from '@/lib/business-document-pdf';
-import { prisma } from '@/lib/prisma';
 
 const service = createBusinessDocumentService(businessDocumentRepository);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -19,7 +19,7 @@ export async function GET(_request: Request, { params }: Context) {
   let logo: { mimeType: string; content: Uint8Array } | null = null;
   const logoId = (document.companySnapshot as Record<string, unknown>)?.currentLogoId;
   if (typeof logoId === 'string') {
-    const storedLogo = await prisma.companyLogo.findFirst({ where: { id: logoId, tenantId: access.access.tenantId }, select: { mimeType: true, content: true } });
+    const storedLogo = await runWithTenant(access.access.tenantId, (tx) => tx.companyLogo.findFirst({ where: { id: logoId, tenantId: access.access.tenantId }, select: { mimeType: true, content: true } }), { userId: access.access.userId }) as { mimeType: string; content: Uint8Array } | null;
     if (storedLogo) logo = { mimeType: storedLogo.mimeType, content: storedLogo.content };
   }
   const pdf = await generateBusinessDocumentRecordPDF(document as any, logo);

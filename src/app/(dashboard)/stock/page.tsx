@@ -4,7 +4,9 @@ import { getSessionTenantId } from '@/lib/session';
 import { StockClient } from './stock-client';
 import { StockHistory } from './stock-history';
 import { TransferForm } from './transfer-form';
+import { TransferList } from './transfer-list';
 import { WarehouseManager } from './warehouse-manager';
+import { StockOperationsNav } from './stock-operations-nav';
 
 export default async function StockPage() {
   const tenantId = getSessionTenantId(await auth());
@@ -21,6 +23,8 @@ export default async function StockPage() {
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">Machine Stock</h1>
+
+      <StockOperationsNav />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="border rounded-lg p-4">
@@ -41,12 +45,16 @@ export default async function StockPage() {
         </div>
       </div>
 
-      <StockClient products={products.map((p: any) => ({ id: p.id, name: p.name, stock: p.stock }))} />
+      <StockClient
+        products={products.map((p: any) => ({ id: p.id, name: p.name, stock: p.stock }))}
+        warehouses={warehouses.map((w: any) => ({ id: w.id, name: w.name }))}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <WarehouseManager warehouses={warehouses.map((w: any) => ({ id: w.id, name: w.name, location: w.location }))} />
-        <TransferForm products={products.map((p: any) => ({ id: p.id, name: p.name }))} warehouses={warehouses.map((w: any) => ({ id: w.id, name: w.name }))} onSuccess={() => {}} />
+        <TransferForm products={products.map((p: any) => ({ id: p.id, name: p.name }))} warehouses={warehouses.map((w: any) => ({ id: w.id, name: w.name }))} />
       </div>
+      <TransferList />
 
       <div className="border rounded-lg overflow-x-auto">
         <table className="w-full text-sm">

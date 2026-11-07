@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from './prisma';
+import { runWithTenant } from './tenant-db';
 import { formatBusinessDocumentNumber } from './business-document-core';
 import type { BusinessDocumentRepository } from './business-document-service';
 
@@ -24,19 +25,19 @@ async function lockDocument(tx: any, id: string, tenantId: string) {
 export function createPrismaBusinessDocumentRepository(client: any = db): BusinessDocumentRepository {
   return {
     findCompany(tenantId) {
-      return client.tenant.findUnique({
+      return runWithTenant(tenantId, (tx) => tx.tenant.findUnique({
         where: { id: tenantId },
         select: { id: true, name: true, legalName: true, nif: true, address: true, municipality: true, province: true, country: true, phone: true, email: true, website: true, currentLogoId: true, brandColor: true, invoiceFooter: true },
-      });
+      }));
     },
     findCustomer(id, tenantId) {
-      return client.customer.findFirst({ where: { id, tenantId }, select: { id: true, name: true, nif: true, address: true, email: true } });
+      return runWithTenant(tenantId, (tx) => tx.customer.findFirst({ where: { id, tenantId }, select: { id: true, name: true, nif: true, address: true, email: true } }));
     },
     findProducts(ids, tenantId) {
-      return client.product.findMany({ where: { id: { in: ids }, tenantId }, select: { id: true } });
+      return runWithTenant(tenantId, (tx) => tx.product.findMany({ where: { id: { in: ids }, tenantId }, select: { id: true } }));
     },
     async create(input) {
-      return client.$transaction(async (tx: any) => {
+      return runWithTenant(input.tenantId, async (tx) => {
         const year = Number(new Intl.DateTimeFormat('en', { year: 'numeric', timeZone: 'Africa/Luanda' }).format(input.issueDate));
         const counter = await tx.businessDocumentCounter.upsert({
           where: { tenantId_type_year: { tenantId: input.tenantId, type: input.type, year } },
@@ -55,13 +56,13 @@ export function createPrismaBusinessDocumentRepository(client: any = db): Busine
           },
           include: includeDocument,
         });
-      });
+      }, { userId: input.createdByUserId });
     },
     find(id, tenantId) {
-      return client.businessDocument.findFirst({ where: { id, tenantId }, include: includeDocument });
+      return runWithTenant(tenantId, (tx) => tx.businessDocument.findFirst({ where: { id, tenantId }, include: includeDocument }));
     },
     async updateDraft(id, tenantId, actorUserId, input) {
-      return client.$transaction(async (tx: any) => {
+      return runWithTenant(tenantId, async (tx) => {
         const locked = await lockDocument(tx, id, tenantId);
         if (!locked || locked.status !== 'DRAFT' || locked.type !== input.type) return null;
         const { items, tenantId: inputTenantId, createdByUserId: _createdByUserId, ...documentData } = input;
@@ -70,10 +71,10 @@ export function createPrismaBusinessDocumentRepository(client: any = db): Busine
         if (items.length) await tx.businessDocumentItem.createMany({ data: items.map((item) => ({ ...item, tenantId: inputTenantId, businessDocumentId: id })) });
         await tx.businessDocumentEvent.create({ data: { tenantId, businessDocumentId: id, actorUserId, eventType: 'UPDATED', nextStatus: 'DRAFT', details: { changed: ['title', 'customer', 'dates', 'items', 'notes'] } } });
         return tx.businessDocument.findFirst({ where: { id, tenantId }, include: includeDocument });
-      });
+      }, { userId: actorUserId });
     },
     async transition(id, tenantId, actorUserId, from, to) {
-      return client.$transaction(async (tx: any) => {
+      return runWithTenant(tenantId, async (tx) => {
         const locked = await lockDocument(tx, id, tenantId);
         if (!locked || locked.status !== from) return null;
         const changed = await tx.businessDocument.updateMany({ where: { id, tenantId, status: from }, data: { status: to } });
@@ -81,10 +82,10 @@ export function createPrismaBusinessDocumentRepository(client: any = db): Busine
         const eventType = to as 'ISSUED' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED';
         await tx.businessDocumentEvent.create({ data: { tenantId, businessDocumentId: id, actorUserId, eventType, previousStatus: from, nextStatus: to, details: {} } });
         return tx.businessDocument.findFirst({ where: { id, tenantId }, include: includeDocument });
-      });
+      }, { userId: actorUserId });
     },
     async convertToInvoiceDraft(input) {
-      return client.$transaction(async (tx: any) => {
+      return runWithTenant(input.tenantId, async (tx) => {
         const locked = await lockDocument(tx, input.documentId, input.tenantId);
         if (!locked || locked.status !== 'ACCEPTED' || !['PROPOSAL', 'QUOTE', 'PROFORMA'].includes(locked.type)) return null;
         const draft = await tx.invoiceDraft.create({
@@ -110,26 +111,28 @@ export function createPrismaBusinessDocumentRepository(client: any = db): Busine
           eventType: 'CONVERTED_TO_INVOICE_DRAFT', previousStatus: 'ACCEPTED', nextStatus: 'CONVERTED', details: { invoiceDraftId: draft.id },
         } });
         return draft;
-      });
+      }, { userId: input.actorUserId });
     },
     async list(input) {
-      const where: any = { tenantId: input.tenantId };
-      if (input.type) where.type = input.type;
-      if (input.status) where.status = input.status;
-      if (input.from || input.to) where.issueDate = { ...(input.from ? { gte: input.from } : {}), ...(input.to ? { lte: input.to } : {}) };
-      if (input.query) {
-        where.OR = [
-          { number: { contains: input.query, mode: 'insensitive' } },
-          { title: { contains: input.query, mode: 'insensitive' } },
-          { customer: { is: { name: { contains: input.query, mode: 'insensitive' } } } },
-          { items: { some: { description: { contains: input.query, mode: 'insensitive' } } } },
-        ];
-      }
-      const [documents, total] = await Promise.all([
-        client.businessDocument.findMany({ where, orderBy: [{ issueDate: 'desc' }, { createdAt: 'desc' }], skip: (input.page - 1) * input.pageSize, take: input.pageSize, include: { customer: { select: { name: true } }, items: { select: { description: true, quantity: true, unitPrice: true, total: true } } } }),
-        client.businessDocument.count({ where }),
-      ]);
-      return { documents, total };
+      return runWithTenant(input.tenantId, async (tx) => {
+        const where: any = { tenantId: input.tenantId };
+        if (input.type) where.type = input.type;
+        if (input.status) where.status = input.status;
+        if (input.from || input.to) where.issueDate = { ...(input.from ? { gte: input.from } : {}), ...(input.to ? { lte: input.to } : {}) };
+        if (input.query) {
+          where.OR = [
+            { number: { contains: input.query, mode: 'insensitive' } },
+            { title: { contains: input.query, mode: 'insensitive' } },
+            { customer: { is: { name: { contains: input.query, mode: 'insensitive' } } } },
+            { items: { some: { description: { contains: input.query, mode: 'insensitive' } } } },
+          ];
+        }
+        const [documents, total] = await Promise.all([
+          tx.businessDocument.findMany({ where, orderBy: [{ issueDate: 'desc' }, { createdAt: 'desc' }], skip: (input.page - 1) * input.pageSize, take: input.pageSize, include: { customer: { select: { name: true } }, items: { select: { description: true, quantity: true, unitPrice: true, total: true } } } }),
+          tx.businessDocument.count({ where }),
+        ]);
+        return { documents, total };
+      });
     },
   };
 }

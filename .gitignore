@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+/tools/lint/node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -12,6 +13,11 @@
 
 # testing
 /coverage
+/test-results
+/playwright-report
+e2e-server*.log
+.playwright-mcp/
+.superpowers/
 
 # next.js
 /.next/
@@ -126,3 +132,42 @@ dsh-*.py
 .tmp-*.py
 .tmp-*.html
 .tmp-*.txt
+
+.env.playwright
+
+# artefactos locais de sessões anteriores (não versionar)
+/.next-*/
+/.tmp-*/
+/tmp/
+/output/
+/check*.js
+/chk*.js
+/get*.js
+/testreq.js
+/cookies*.txt
+/build*.txt
+/mig*.txt
+/dev-*.txt
+/ts_err.txt
+/ts_errors.log
+/vercel-*.txt
+/out.html
+/query
+/schema-diff.sql
+/db-pull-*.log
+/staging-mig*.txt
+/migrate-status*.txt
+/prisma-introspection.log
+/tmp-*
+/seed-test-user.ts
+/cleanup*.ts
+/smtp-test.mjs
+*.bak
+*.bak2
+*.bak3
+*.BAK_*
+*.HEAD-copy
+*.backup-before-rebuild
+*.pre-refactor
+*.rebuild
+*.fixed

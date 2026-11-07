@@ -1,0 +1,774 @@
+{
+  "generatedAt": "2026-11-05T15:11:18.912Z",
+  "db": "127.0.0.1:5437/mf_rls_staging",
+  "models": [
+    {
+      "model": "Tenant",
+      "hasTenantId": false,
+      "tenantField": null
+    },
+    {
+      "model": "PlanPayment",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "PaymentReceipt",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "Customer",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "Product",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "Warehouse",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "ProductWarehouseStock",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "StockLot",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "Supplier",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "PurchaseOrder",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "PurchaseOrderItem",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "PurchaseReception",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "PurchaseReceptionItem",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "StockTransfer",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "StockTransferItem",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "StockTransferReception",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "StockTransferReceptionItem",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "StockAdjustment",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "StockAdjustmentItem",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "StockReservation",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "StockMovement",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "AdUnlock",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "Invoice",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "CompanyBankAccount",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "Payment",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "InvoiceDraft",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "BusinessDocumentCounter",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "BusinessDocument",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "BusinessDocumentItem",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "BusinessDocumentEvent",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "PaymentEvent",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "CompanyLogo",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "User",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "PlatformConfig",
+      "hasTenantId": false,
+      "tenantField": null
+    },
+    {
+      "model": "AdminAuditLog",
+      "hasTenantId": false,
+      "tenantField": null
+    },
+    {
+      "model": "EmailActionToken",
+      "hasTenantId": false,
+      "tenantField": null
+    },
+    {
+      "model": "EmailRequestLimit",
+      "hasTenantId": false,
+      "tenantField": null
+    },
+    {
+      "model": "EmailDelivery",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "PlatformTeamInvite",
+      "hasTenantId": false,
+      "tenantField": null
+    },
+    {
+      "model": "MarketingPreference",
+      "hasTenantId": false,
+      "tenantField": null
+    },
+    {
+      "model": "EmailCampaign",
+      "hasTenantId": false,
+      "tenantField": null
+    },
+    {
+      "model": "EmailCampaignRecipient",
+      "hasTenantId": false,
+      "tenantField": null
+    },
+    {
+      "model": "Account",
+      "hasTenantId": false,
+      "tenantField": null
+    },
+    {
+      "model": "Session",
+      "hasTenantId": false,
+      "tenantField": null
+    },
+    {
+      "model": "VerificationToken",
+      "hasTenantId": false,
+      "tenantField": null
+    },
+    {
+      "model": "InvoiceItem",
+      "hasTenantId": false,
+      "tenantField": null
+    },
+    {
+      "model": "PlatformApplication",
+      "hasTenantId": false,
+      "tenantField": null
+    },
+    {
+      "model": "SubscriptionPlan",
+      "hasTenantId": false,
+      "tenantField": null
+    },
+    {
+      "model": "PlanApplication",
+      "hasTenantId": false,
+      "tenantField": null
+    },
+    {
+      "model": "TenantApplication",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    },
+    {
+      "model": "TenantSubscription",
+      "hasTenantId": true,
+      "tenantField": "tenantId"
+    }
+  ],
+  "rows": [
+    {
+      "model": "Tenant",
+      "hasTenantIdSchema": false,
+      "tenantField": null,
+      "inDb": true,
+      "dbTenantCol": false,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_self_or_admin"
+    },
+    {
+      "model": "PlanPayment",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    },
+    {
+      "model": "PaymentReceipt",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    },
+    {
+      "model": "Customer",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    },
+    {
+      "model": "Product",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    },
+    {
+      "model": "Warehouse",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    },
+    {
+      "model": "ProductWarehouseStock",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    },
+    {
+      "model": "StockLot",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    },
+    {
+      "model": "Supplier",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    },
+    {
+      "model": "PurchaseOrder",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    },
+    {
+      "model": "PurchaseOrderItem",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    },
+    {
+      "model": "PurchaseReception",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    },
+    {
+      "model": "PurchaseReceptionItem",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    },
+    {
+      "model": "StockTransfer",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    },
+    {
+      "model": "StockTransferItem",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    },
+    {
+      "model": "StockTransferReception",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    },
+    {
+      "model": "StockTransferReceptionItem",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    },
+    {
+      "model": "StockAdjustment",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    },
+    {
+      "model": "StockAdjustmentItem",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    },
+    {
+      "model": "StockReservation",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    },
+    {
+      "model": "StockMovement",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    },
+    {
+      "model": "AdUnlock",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_adunlock_tenant"
+    },
+    {
+      "model": "Invoice",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    },
+    {
+      "model": "CompanyBankAccount",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    },
+    {
+      "model": "Payment",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    },
+    {
+      "model": "InvoiceDraft",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    },
+    {
+      "model": "BusinessDocumentCounter",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    },
+    {
+      "model": "BusinessDocument",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    },
+    {
+      "model": "BusinessDocumentItem",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    },
+    {
+      "model": "BusinessDocumentEvent",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    },
+    {
+      "model": "PaymentEvent",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    },
+    {
+      "model": "CompanyLogo",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    },
+    {
+      "model": "User",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_user_self_tenant_admin"
+    },
+    {
+      "model": "PlatformConfig",
+      "hasTenantIdSchema": false,
+      "tenantField": null,
+      "inDb": true,
+      "dbTenantCol": false,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_admin_only"
+    },
+    {
+      "model": "AdminAuditLog",
+      "hasTenantIdSchema": false,
+      "tenantField": null,
+      "inDb": true,
+      "dbTenantCol": false,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_admin_only"
+    },
+    {
+      "model": "EmailActionToken",
+      "hasTenantIdSchema": false,
+      "tenantField": null,
+      "inDb": true,
+      "dbTenantCol": false,
+      "rlsEnabled": false,
+      "policyCount": 0,
+      "policies": null
+    },
+    {
+      "model": "EmailRequestLimit",
+      "hasTenantIdSchema": false,
+      "tenantField": null,
+      "inDb": true,
+      "dbTenantCol": false,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_admin_only"
+    },
+    {
+      "model": "EmailDelivery",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_emaildelivery_tenant_or_global"
+    },
+    {
+      "model": "PlatformTeamInvite",
+      "hasTenantIdSchema": false,
+      "tenantField": null,
+      "inDb": true,
+      "dbTenantCol": false,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_admin_only"
+    },
+    {
+      "model": "MarketingPreference",
+      "hasTenantIdSchema": false,
+      "tenantField": null,
+      "inDb": true,
+      "dbTenantCol": false,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_admin_only"
+    },
+    {
+      "model": "EmailCampaign",
+      "hasTenantIdSchema": false,
+      "tenantField": null,
+      "inDb": true,
+      "dbTenantCol": false,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_admin_only"
+    },
+    {
+      "model": "EmailCampaignRecipient",
+      "hasTenantIdSchema": false,
+      "tenantField": null,
+      "inDb": true,
+      "dbTenantCol": false,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_admin_only"
+    },
+    {
+      "model": "Account",
+      "hasTenantIdSchema": false,
+      "tenantField": null,
+      "inDb": true,
+      "dbTenantCol": false,
+      "rlsEnabled": false,
+      "policyCount": 0,
+      "policies": null
+    },
+    {
+      "model": "Session",
+      "hasTenantIdSchema": false,
+      "tenantField": null,
+      "inDb": true,
+      "dbTenantCol": false,
+      "rlsEnabled": false,
+      "policyCount": 0,
+      "policies": null
+    },
+    {
+      "model": "VerificationToken",
+      "hasTenantIdSchema": false,
+      "tenantField": null,
+      "inDb": true,
+      "dbTenantCol": false,
+      "rlsEnabled": false,
+      "policyCount": 0,
+      "policies": null
+    },
+    {
+      "model": "InvoiceItem",
+      "hasTenantIdSchema": false,
+      "tenantField": null,
+      "inDb": true,
+      "dbTenantCol": false,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_invoiceitem_via_invoice"
+    },
+    {
+      "model": "PlatformApplication",
+      "hasTenantIdSchema": false,
+      "tenantField": null,
+      "inDb": true,
+      "dbTenantCol": false,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_admin_only"
+    },
+    {
+      "model": "SubscriptionPlan",
+      "hasTenantIdSchema": false,
+      "tenantField": null,
+      "inDb": true,
+      "dbTenantCol": false,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_admin_only"
+    },
+    {
+      "model": "PlanApplication",
+      "hasTenantIdSchema": false,
+      "tenantField": null,
+      "inDb": true,
+      "dbTenantCol": false,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_admin_only"
+    },
+    {
+      "model": "TenantApplication",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    },
+    {
+      "model": "TenantSubscription",
+      "hasTenantIdSchema": true,
+      "tenantField": "tenantId",
+      "inDb": true,
+      "dbTenantCol": true,
+      "rlsEnabled": true,
+      "policyCount": 1,
+      "policies": "rls_tenant_isolation"
+    }
+  ],
+  "dbOnly": []
+}

@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { getSessionTenantId } from '@/lib/session';
-import { prisma } from '@/lib/prisma';
+import { getSessionTenantId, getSessionUserId } from '@/lib/session';
 import { runWithTenant } from '@/lib/tenant-db';
 
 export async function GET() {
@@ -26,6 +25,6 @@ export async function POST(req: Request) {
 
   const warehouse = await runWithTenant(tenantId, async (tx) => {
     return tx.warehouse.create({ data: { tenantId, name, location, isDefault: !!isDefault } });
-  });
+  }, { userId: getSessionUserId(session) });
   return NextResponse.json(warehouse, { status: 201 });
 }

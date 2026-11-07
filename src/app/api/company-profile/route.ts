@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getTenantReadAccess, getTenantWriteAccess } from '@/lib/tenant-api-access';
-import { prisma } from '@/lib/prisma';
+import { runWithTenant } from '@/lib/tenant-db';
 import { validateCompanyProfileInput } from '@/lib/company-profile-validation';
 
 const profileFields = {
@@ -27,31 +27,7 @@ const profileFields = {
   defaultObservations: true,
 } as const;
 
-function toProfileResponse(tenant: {
-  id: string;
-  name: string;
-  legalName: string | null;
-  nif: string | null;
-  address: string | null;
-  municipality: string | null;
-  province: string | null;
-  country: string | null;
-  phone: string | null;
-  email: string | null;
-  website: string | null;
-  bankName: string | null;
-  bankAccountName: string | null;
-  iban: string | null;
-  brandColor: string | null;
-  invoiceFooter: string | null;
-  defaultMessage: string | null;
-  defaultCurrency: string;
-  documentLanguage: string;
-  defaultPaymentDays: number | null;
-  defaultPaymentMethod: string | null;
-  defaultObservations: string | null;
-  currentLogo: { id: string; mimeType: string; content: Uint8Array } | null;
-}) {
+function toProfileResponse(tenant: any) {
   return {
     id: tenant.id,
     name: tenant.name,
@@ -85,12 +61,12 @@ export async function GET() {
   try {
     const access = await getTenantReadAccess();
     if (!access.ok) return NextResponse.json(access.body, { status: access.status });
-    const { tenantId } = access.access;
+    const { tenantId, userId } = access.access;
 
-    const tenant = await prisma.tenant.findUnique({
+    const tenant = await runWithTenant(tenantId, (tx) => tx.tenant.findUnique({
       where: { id: tenantId },
       select: { id: true, ...profileFields, currentLogo: { select: { id: true, mimeType: true, content: true } } },
-    });
+    }), { userId });
     if (!tenant) return NextResponse.json({ error: 'Empresa não encontrada' }, { status: 404 });
 
     return NextResponse.json({ profile: toProfileResponse(tenant) });
@@ -104,7 +80,7 @@ export async function PUT(request: Request) {
   try {
     const access = await getTenantWriteAccess('company_settings');
     if (!access.ok) return NextResponse.json(access.body, { status: access.status });
-    const { tenantId } = access.access;
+    const { tenantId, userId } = access.access;
 
     const formData = await request.formData();
     const validation = await validateCompanyProfileInput(formData);
@@ -113,7 +89,7 @@ export async function PUT(request: Request) {
     }
 
     const { logo, removeLogo, ...profile } = validation.value;
-    const updatedTenant = await prisma.$transaction(async (transaction: any) => {
+    const updatedTenant = await runWithTenant(tenantId, async (transaction) => {
       const logoRecord = logo
         ? await transaction.companyLogo.create({
           data: {
@@ -143,7 +119,7 @@ export async function PUT(request: Request) {
         },
       });
       return tenant;
-    });
+    }, { userId });
 
     return NextResponse.json({ profile: toProfileResponse(updatedTenant) });
   } catch (error) {

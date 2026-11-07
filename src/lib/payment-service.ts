@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { ensureReceiptForPaymentTx } from './receipt-service';
-import { prisma } from './prisma';
+import { runWithTenant } from './tenant-db';
 import { canRecordPayment, getAllowedPaymentTransition, getInvoicePaymentTotals as calculateInvoicePaymentTotals, getReservedPaymentAmount } from './payment-rules';
 import type { PaymentInput } from './payment-validation';
 
@@ -11,7 +11,7 @@ export class PaymentServiceError extends Error {
 export async function recordPayment(invoiceId: string, input: PaymentInput, tenantId: string, actorId: string | null) {
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      return await prisma.$transaction(async (tx: any) => {
+      return await runWithTenant(tenantId, async (tx) => {
         const duplicate = await tx.payment.findUnique({ where: { tenantId_idempotencyKey: { tenantId, idempotencyKey: input.idempotencyKey } }, include: { events: true } });
         if (duplicate) return duplicate;
 
@@ -37,7 +37,7 @@ export async function recordPayment(invoiceId: string, input: PaymentInput, tena
           snapshot: { amount: input.amount, currency: input.currency, method: input.method, reference: input.reference, paymentDate: input.paymentDate.toISOString() },
         } });
         return payment;
-      }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+      }, { userId: actorId });
     } catch (error) {
       if (error instanceof PaymentServiceError) throw error;
       const prismaError = error as { code?: string };
@@ -50,7 +50,7 @@ export async function recordPayment(invoiceId: string, input: PaymentInput, tena
 }
 
 export async function transitionPayment(paymentId: string, nextStatus: 'CONFIRMED' | 'CANCELLED' | 'REVERSED', tenantId: string, actorId: string | null) {
-  return prisma.$transaction(async (tx: any) => {
+  return runWithTenant(tenantId, async (tx) => {
     const payment = await tx.payment.findFirst({ where: { id: paymentId, tenantId }, include: { invoice: true } });
     if (!payment) throw new PaymentServiceError('Pagamento não encontrado.', 404);
     if (!getAllowedPaymentTransition(payment.status, nextStatus)) throw new PaymentServiceError('Transição de estado não permitida.', 409);
@@ -63,11 +63,13 @@ export async function transitionPayment(paymentId: string, nextStatus: 'CONFIRME
     } });
     if (nextStatus === 'CONFIRMED') await ensureReceiptForPaymentTx(tx, tenantId, payment.id);
     return result;
-  }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+  }, { userId: actorId });
 }
 
-export async function getInvoicePaymentTotals(invoiceId: string, tenantId: string) {
-  const invoice = await prisma.invoice.findFirst({ where: { id: invoiceId, tenantId }, select: { total: true, payments: { select: { amount: true, status: true } } } });
-  if (!invoice) throw new PaymentServiceError('Factura não encontrada.', 404);
-  return calculateInvoicePaymentTotals(Number(invoice.total), invoice.payments.map((payment: any) => ({ amount: Number(payment.amount), status: payment.status })));
+export async function getInvoicePaymentTotals(invoiceId: string, tenantId: string, actorId?: string | null) {
+  return runWithTenant(tenantId, async (tx) => {
+    const invoice = await tx.invoice.findFirst({ where: { id: invoiceId, tenantId }, select: { total: true, payments: { select: { amount: true, status: true } } } });
+    if (!invoice) throw new PaymentServiceError('Factura não encontrada.', 404);
+    return calculateInvoicePaymentTotals(Number(invoice.total), invoice.payments.map((payment: any) => ({ amount: Number(payment.amount), status: payment.status })));
+  }, { userId: actorId ?? null });
 }

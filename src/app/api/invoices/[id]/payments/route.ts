@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getTenantReadAccess, getTenantWriteAccess } from '@/lib/tenant-api-access';
-import { prisma } from '@/lib/prisma';
+import { runWithTenant } from '@/lib/tenant-db';
 import { PaymentServiceError, getInvoicePaymentTotals, recordPayment } from '@/lib/payment-service';
 import { validatePaymentInput } from '@/lib/payment-validation';
 
@@ -9,14 +9,14 @@ type Context = { params: Promise<{ id: string }> };
 export async function GET(_request: NextRequest, { params }: Context) {
   const access = await getTenantReadAccess();
   if (!access.ok) return NextResponse.json(access.body, { status: access.status });
-  const { tenantId } = access.access;
+  const { tenantId, userId } = access.access;
   const { id } = await params;
-  const invoice = await prisma.invoice.findFirst({
+  const invoice = await runWithTenant(tenantId, (tx) => tx.invoice.findFirst({
     where: { id, tenantId },
     select: { id: true, number: true, payments: { orderBy: { createdAt: 'desc' }, include: { events: { orderBy: { createdAt: 'asc' } } } } },
-  });
+  }), { userId }) as any;
   if (!invoice) return NextResponse.json({ error: 'Factura não encontrada.' }, { status: 404 });
-  const totals = await getInvoicePaymentTotals(id, tenantId);
+  const totals = await getInvoicePaymentTotals(id, tenantId, userId);
   return NextResponse.json({ payments: invoice.payments, totals });
 }
 

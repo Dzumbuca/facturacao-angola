@@ -32,3 +32,68 @@ jobs:
 
       - name: Build de produção
         run: npm run build
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      # Toolchain isolado (TypeScript 6) porque typescript-eslint não suporta TS 7.
+      - name: Instalar toolchain de lint
+        run: cd tools/lint && npm ci
+
+      - name: Lint
+        run: npm run lint
+
+  e2e:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: wms_e2e_disposable
+        ports:
+          - 5441:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      DATABASE_URL: "postgresql://postgres:postgres@127.0.0.1:5441/wms_e2e_disposable"
+      NEXTAUTH_SECRET: "valor-apenas-para-e2e-0123456789abcdef0123456789abcdef"
+      AUTH_TRUST_HOST: "true"
+      NEXTAUTH_URL: "http://localhost:3002"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Criar roles exigidas pelas migrations
+        run: node scripts/ensure-db-roles.cjs
+
+      - name: Instalar Chromium (Playwright)
+        run: npx playwright install --with-deps chromium
+
+      - name: Build de produção
+        run: npm run build
+
+      - name: E2E completo (vitest HTTP + Playwright UI)
+        run: node scripts/e2e-local.cjs --skip-build
+

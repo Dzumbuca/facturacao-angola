@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getTenantWriteAccess } from '@/lib/tenant-api-access';
-import { prisma } from '@/lib/prisma';
+import { runWithTenant } from '@/lib/tenant-db';
 import { generateInvoicePDF } from '@/lib/pdf-generator';
 import { sendAndRecordEmail } from '@/lib/email-actions';
 
@@ -12,7 +12,9 @@ export async function POST(request: NextRequest, { params }: Context) {
   try { body = await request.json(); } catch { return NextResponse.json({ error: 'Pedido inválido.' }, { status: 400 }); }
   const recipient = typeof (body as any)?.recipient === 'string' ? (body as any).recipient.trim() : '';
   if (recipient.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient)) return NextResponse.json({ error: 'Introduza um email válido.' }, { status: 400 });
-  const invoice = await prisma.invoice.findFirst({ where: { id: (await params).id, tenantId: access.access.tenantId }, include: { customer: true, tenant: true, items: true, companyLogo: true, payments: { orderBy: { paymentDate: 'asc' } } } });
+  const { tenantId, userId } = access.access;
+  const { id } = await params;
+  const invoice = await runWithTenant(tenantId, (tx) => tx.invoice.findFirst({ where: { id, tenantId }, include: { customer: true, tenant: true, items: true, companyLogo: true, payments: { orderBy: { paymentDate: 'asc' } } } }), { userId }) as any;
   if (!invoice) return NextResponse.json({ error: 'Factura não encontrada.' }, { status: 404 });
   if (invoice.status !== 'ISSUED' || invoice.type !== 'FT') return NextResponse.json({ error: 'Só é possível enviar uma factura emitida.' }, { status: 409 });
   const storedRecipient = invoice.customer.email?.trim() ?? '';
@@ -23,7 +25,7 @@ export async function POST(request: NextRequest, { params }: Context) {
       purpose: 'INVOICE', to: storedRecipient, subject: `Factura ${invoice.number} — ${invoice.tenant.name}`,
       text: `Segue em anexo a factura ${invoice.number} emitida por ${invoice.tenant.name}.`,
       html: `<p>Segue em anexo a factura <strong>${invoice.number.replace(/[&<>"']/g, '')}</strong> emitida por ${invoice.tenant.name.replace(/[&<>"']/g, '')}.</p>`,
-      tenantId: invoice.tenantId, invoiceId: invoice.id, sentByUserId: access.access.userId,
+      tenantId: invoice.tenantId, invoiceId: invoice.id, sentByUserId: userId,
       attachments: [{ filename: `${invoice.number.replace(/[^A-Za-z0-9._-]/g, '_')}.pdf`, content: pdf, contentType: 'application/pdf' }],
     });
     if (!result.ok || !result.accepted) return NextResponse.json({ error: 'O servidor de email não aceitou o envio. A factura não foi marcada como enviada; pode tentar novamente.' }, { status: 502 });

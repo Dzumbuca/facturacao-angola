@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { decode, encode } from 'next-auth/jwt';
-import { prisma } from '@/lib/prisma';
 import { canRefreshAuthSession } from '@/lib/session-refresh-security';
+import { runWithRlsContext } from '@/lib/tenant-db';
 
 // Reemite o token de sessão com os dados frescos da base de dados.
 // Usado depois do onboarding (empresa criada) para que o proxy, que lê
@@ -17,10 +17,11 @@ export async function POST(request: NextRequest) {
     const token = await decode({ token: raw, secret, salt: cookieName });
     if (!token?.sub) return NextResponse.json({ error: 'Sessão inválida.' }, { status: 401 });
 
-    const user = await (prisma.user as any).findUnique({
-      where: { id: token.sub },
+    // RLS: self-user read is allowed by User policy when app.user_id matches; run in explicit user context.
+    const user = await runWithRlsContext((tx) => (tx.user as any).findUnique({
+      where: { id: token.sub as string },
       select: { status: true, tenantId: true, sessionVersion: true, emailVerified: true, emailVerificationRequired: true },
-    });
+    }), { userId: token.sub as string, tenantId: null, isAdmin: false }) as any;
     if (!canRefreshAuthSession(token, user)) return NextResponse.json({ error: 'Sessão inválida.' }, { status: 401 });
 
     const refreshed = await encode({

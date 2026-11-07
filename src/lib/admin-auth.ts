@@ -1,6 +1,6 @@
 import 'server-only';
 import { auth } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { runWithRlsContext } from '@/lib/tenant-db';
 import {
   createAuthorizationGuards,
   PLATFORM_PERMISSIONS,
@@ -17,7 +17,9 @@ export type { AccessUser, PlatformPermission, TenantWriteOperation } from './adm
 const guards = createAuthorizationGuards({
   getSession: () => auth(),
   findUserById: async (id) => {
-    const user = await (prisma.user as any).findUnique({
+    // RLS (5437 NOBYPASSRLS): server-controlled authz lookup. Read self user in user context;
+    // read own tenant status in tenant context only when tenantId is present. No cross-tenant data.
+    const user = await runWithRlsContext((tx) => (tx.user as any).findUnique({
       where: { id },
       select: {
         id: true,
@@ -28,10 +30,17 @@ const guards = createAuthorizationGuards({
         platformPermissions: true,
         tenantRole: true,
         status: true,
-        tenant: { select: { status: true } },
       },
-    });
-    return user as AccessUser | null;
+    }), { userId: id, tenantId: null, isAdmin: false }) as any;
+    if (!user) return null;
+    let tenant: { status: string } | null = null;
+    if (typeof user.tenantId === 'string' && user.tenantId.trim()) {
+      tenant = await runWithRlsContext((tx) => (tx.tenant as any).findUnique({
+        where: { id: user.tenantId },
+        select: { status: true },
+      }), { userId: id, tenantId: user.tenantId, isAdmin: false }) as { status: string } | null;
+    }
+    return { ...user, tenant } as AccessUser | null;
   },
 });
 

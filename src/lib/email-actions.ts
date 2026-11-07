@@ -2,6 +2,7 @@ import 'server-only';
 import { createHash, createHmac, randomBytes } from 'node:crypto';
 import bcrypt from 'bcrypt';
 import { prisma } from '@/lib/prisma';
+import { runAsSystem, runWithRlsContext } from '@/lib/tenant-db';
 import { createPublicEmailUrl, escapeEmailHtml, sendSmtpEmail, type EmailActionPurpose } from './email-core';
 
 const db = prisma as any;
@@ -19,14 +20,15 @@ export async function allowEmailRequest(scope: string, email: string, limit = 5)
   const keyHash = hashEmailToken(`${scope}:${normalized}`);
   const now = new Date();
   const cutoff = new Date(now.getTime() - 60 * 60 * 1000);
-  const rows = await db.$queryRawUnsafe(
+  // RLS: EmailRequestLimit is admin-only infrastructure table in staging; narrow system context only.
+  const rows = await runAsSystem(async (tx) => tx.$queryRawUnsafe(
     `INSERT INTO "EmailRequestLimit" ("keyHash", "windowStartedAt", "requestCount", "updatedAt") VALUES ($1, $2, 1, $2)
      ON CONFLICT ("keyHash") DO UPDATE SET
        "windowStartedAt" = CASE WHEN "EmailRequestLimit"."windowStartedAt" <= $3 THEN $2 ELSE "EmailRequestLimit"."windowStartedAt" END,
        "requestCount" = CASE WHEN "EmailRequestLimit"."windowStartedAt" <= $3 THEN 1 ELSE "EmailRequestLimit"."requestCount" + 1 END,
        "updatedAt" = $2
      RETURNING "requestCount"`, keyHash, now, cutoff,
-  );
+  )) as Array<{ requestCount?: number | bigint }>;
   return Number(rows[0]?.requestCount ?? limit + 1) <= limit;
 }
 
@@ -37,13 +39,14 @@ export async function sendAndRecordEmail(input: {
   attachments?: Array<{ filename: string; content: Buffer; contentType?: string }>;
 }) {
   const sent = await sendSmtpEmail(input);
-  await db.emailDelivery.create({ data: {
+  // RLS: EmailDelivery allows tenant match, tenantId NULL global rows, or admin; use system context for narrow audit write.
+  await runAsSystem((tx) => tx.emailDelivery.create({ data: {
     purpose: input.purpose, recipient: input.to, subject: input.subject,
     status: sent.ok && sent.accepted ? 'ACCEPTED' : 'FAILED',
     errorCode: sent.ok ? (sent.accepted ? null : 'SMTP_NOT_ACCEPTED') : sent.code,
     userId: input.userId ?? null, tenantId: input.tenantId ?? null, invoiceId: input.invoiceId ?? null,
     sentByUserId: input.sentByUserId ?? null,
-  } });
+  } }));
   return sent;
 }
 
@@ -52,10 +55,11 @@ export async function sendEmailActionToken(user: { id: string; name: string | nu
   if (!validEmail(email)) return { ok: false as const, code: 'INVALID_RECIPIENT' };
   const token = randomBytes(32).toString('base64url');
   const now = new Date();
-  await db.$transaction(async (tx: any) => {
-    await tx.emailActionToken.updateMany({ where: { userId: user.id, purpose, consumedAt: null }, data: { consumedAt: now } });
-    await tx.emailActionToken.create({ data: { userId: user.id, purpose, tokenHash: hashEmailToken(token), expiresAt: new Date(now.getTime() + tokenLifetime[purpose]) } });
-  });
+  // RLS: token issuance is server-controlled identity flow (EmailActionToken RLS-off in staging prototype).
+  await runAsSystem((tx) => tx.$transaction(async (inner: any) => {
+    await inner.emailActionToken.updateMany({ where: { userId: user.id, purpose, consumedAt: null }, data: { consumedAt: now } });
+    await inner.emailActionToken.create({ data: { userId: user.id, purpose, tokenHash: hashEmailToken(token), expiresAt: new Date(now.getTime() + tokenLifetime[purpose]) } });
+  }));
   const path = purpose === 'VERIFY_EMAIL' ? '/verify-email' : '/reset-password';
   const url = createPublicEmailUrl(path, token);
   const greeting = escapeEmailHtml(user.name?.trim() || 'Utilizador');
@@ -72,19 +76,20 @@ export async function sendEmailActionToken(user: { id: string; name: string | nu
 export async function verifyEmailToken(rawToken: string) {
   if (!/^[A-Za-z0-9_-]{40,60}$/.test(rawToken)) return false;
   const now = new Date();
-  const verified = await db.$transaction(async (tx: any) => {
+  // RLS: server-controlled token bootstrap; AdminAuditLog is admin-only.
+  const verified = await runAsSystem((tx) => tx.$transaction(async (inner: any) => {
     const tokenHash = hashEmailToken(rawToken);
-    const consumed = await tx.emailActionToken.updateMany({ where: { tokenHash, purpose: 'VERIFY_EMAIL', consumedAt: null, expiresAt: { gt: now } }, data: { consumedAt: now } });
+    const consumed = await inner.emailActionToken.updateMany({ where: { tokenHash, purpose: 'VERIFY_EMAIL', consumedAt: null, expiresAt: { gt: now } }, data: { consumedAt: now } });
     if (consumed.count !== 1) return false;
-    const token = await tx.emailActionToken.findUnique({ where: { tokenHash }, select: { userId: true } });
+    const token = await inner.emailActionToken.findUnique({ where: { tokenHash }, select: { userId: true } });
     if (!token) return false;
-    await tx.user.update({ where: { id: token.userId }, data: { emailVerified: now, emailVerificationRequired: false, sessionVersion: { increment: 1 } } });
-    await tx.adminAuditLog.create({ data: { actorUserId: token.userId, actorType: 'USER', action: 'EMAIL_VERIFIED', resourceType: 'USER', resourceId: token.userId, result: 'SUCCESS' } });
+    await inner.user.update({ where: { id: token.userId }, data: { emailVerified: now, emailVerificationRequired: false, sessionVersion: { increment: 1 } } });
+    await inner.adminAuditLog.create({ data: { actorUserId: token.userId, actorType: 'USER', action: 'EMAIL_VERIFIED', resourceType: 'USER', resourceId: token.userId, result: 'SUCCESS' } });
     return true;
-  }, { isolationLevel: 'Serializable' });
+  }, { isolationLevel: 'Serializable' }));
   if (!verified) return false;
   try {
-    const token = await db.emailActionToken.findUnique({ where: { tokenHash: hashEmailToken(rawToken) }, select: { user: { select: { id: true, name: true, email: true } } } });
+    const token = await runAsSystem((tx) => tx.emailActionToken.findUnique({ where: { tokenHash: hashEmailToken(rawToken) }, select: { user: { select: { id: true, name: true, email: true } } } })) as any;
     const user = token?.user;
     if (user?.email) await sendAndRecordEmail({ purpose: 'ACCOUNT_WELCOME', to: user.email, userId: user.id, subject: 'Email confirmado — Machine Facturas', text: `Olá ${user.name || 'Utilizador'}, o seu email foi confirmado e a conta está activa. Já pode iniciar sessão.`, html: `<p>Olá ${escapeEmailHtml(user.name || 'Utilizador')},</p><p>O seu email foi confirmado e a conta está activa. Já pode iniciar sessão.</p>` });
   } catch { /* Confirmation must remain complete even if this notification fails. */ }
@@ -95,19 +100,19 @@ export async function resetPasswordWithToken(rawToken: string, newPassword: stri
   if (!/^[A-Za-z0-9_-]{40,60}$/.test(rawToken) || newPassword.length < 8 || newPassword.length > 128) return false;
   const passwordHash = await bcrypt.hash(newPassword, 12);
   const now = new Date();
-  const changed = await db.$transaction(async (tx: any) => {
+  const changed = await runAsSystem((tx) => tx.$transaction(async (inner: any) => {
     const tokenHash = hashEmailToken(rawToken);
-    const consumed = await tx.emailActionToken.updateMany({ where: { tokenHash, purpose: 'PASSWORD_RESET', consumedAt: null, expiresAt: { gt: now } }, data: { consumedAt: now } });
+    const consumed = await inner.emailActionToken.updateMany({ where: { tokenHash, purpose: 'PASSWORD_RESET', consumedAt: null, expiresAt: { gt: now } }, data: { consumedAt: now } });
     if (consumed.count !== 1) return false;
-    const token = await tx.emailActionToken.findUnique({ where: { tokenHash }, select: { userId: true } });
+    const token = await inner.emailActionToken.findUnique({ where: { tokenHash }, select: { userId: true } });
     if (!token) return false;
-    await tx.user.update({ where: { id: token.userId }, data: { password: passwordHash, sessionVersion: { increment: 1 } } });
-    await tx.adminAuditLog.create({ data: { actorUserId: token.userId, actorType: 'USER', action: 'PASSWORD_RESET', resourceType: 'USER', resourceId: token.userId, result: 'SUCCESS' } });
+    await inner.user.update({ where: { id: token.userId }, data: { password: passwordHash, sessionVersion: { increment: 1 } } });
+    await inner.adminAuditLog.create({ data: { actorUserId: token.userId, actorType: 'USER', action: 'PASSWORD_RESET', resourceType: 'USER', resourceId: token.userId, result: 'SUCCESS' } });
     return true;
-  }, { isolationLevel: 'Serializable' });
+  }, { isolationLevel: 'Serializable' }));
   if (!changed) return false;
   try {
-    const user = await db.emailActionToken.findUnique({ where: { tokenHash: hashEmailToken(rawToken) }, select: { user: { select: { id: true, name: true, email: true } } } });
+    const user = await runAsSystem((tx) => tx.emailActionToken.findUnique({ where: { tokenHash: hashEmailToken(rawToken) }, select: { user: { select: { id: true, name: true, email: true } } } })) as any;
     if (user?.user?.email) await sendAndRecordEmail({ purpose: 'PASSWORD_CHANGED', to: user.user.email, userId: user.user.id, subject: 'Palavra-passe alterada — Machine Facturas', text: `Olá ${user.user.name || 'Utilizador'}, a palavra-passe da sua conta foi alterada. Se não fez esta alteração, contacte o suporte.`, html: `<p>Olá ${escapeEmailHtml(user.user.name || 'Utilizador')},</p><p>A palavra-passe da sua conta foi alterada.</p><p>Se não fez esta alteração, contacte o suporte.</p>` });
   } catch { /* Password update must not be rolled back by a notification failure. */ }
   return true;
@@ -115,9 +120,14 @@ export async function resetPasswordWithToken(rawToken: string, newPassword: stri
 
 export async function unsubscribeFromMarketing(rawToken: string) {
   if (!/^[A-Za-z0-9_-]{40,60}$/.test(rawToken)) return false;
-  const preference = await db.marketingPreference.findUnique({ where: { unsubscribeTokenHash: hashEmailToken(rawToken) }, select: { id: true, subscribed: true } });
-  if (!preference) return false;
-  if (!preference.subscribed) return true;
-  await db.marketingPreference.update({ where: { id: preference.id }, data: { subscribed: false, unsubscribedAt: new Date() } });
-  return true;
+  // RLS: MarketingPreference is tenant-scoped; unsubscribe is token-based public action. System context is narrow and token-gated.
+  const tokenHash = hashEmailToken(rawToken);
+  const updated = await runAsSystem((tx) => tx.$transaction(async (inner: any) => {
+    const preference = await inner.marketingPreference.findUnique({ where: { unsubscribeTokenHash: tokenHash }, select: { id: true, subscribed: true } });
+    if (!preference) return false;
+    if (!preference.subscribed) return true;
+    await inner.marketingPreference.update({ where: { id: preference.id }, data: { subscribed: false, unsubscribedAt: new Date() } });
+    return true;
+  }));
+  return updated === true;
 }
