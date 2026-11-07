@@ -93,3 +93,16 @@ npx playwright test
 - **CI** (`.github/workflows/ci.yml`): jobs `test-and-build` (existente), `lint` (toolchain isolado) e `e2e` (Postgres 17 service em 5441, roles via `scripts/ensure-db-roles.cjs`, Chromium, build e `e2e-local.cjs --skip-build`).
 - **Toolchain de lint**: `tools/lint` com lockfile próprio (`npm ci` no job de lint); removido o vínculo acidental ao pacote raiz que partia o build.
 - **Volume do incidente**: cópia read-only montada num Postgres temporário em 5450; listadas as bases `machine_stock_test` (9.5 MB), `mf_rls_staging` (12 MB), `mf_rls_shadow` (9.3 MB). Cópia e container temporários removidos; volume original intacto.
+
+## 8. Ambientes alinhados (2026-11-07 — autorização "faça tudo")
+
+| Ambiente | Antes | Ação | Estado final |
+|---|---|---|---|
+| local `127.0.0.1:5436/wms_staging` | 24 migrations; `AuthJwtRevocation` ausente; baselines não registadas | roles criadas; JWT aplicada manualmente em transação + `resolve --applied`; baselines registadas | **27 migrations**, 53 tabelas, status up to date, RLS + 3 policies |
+| Supabase staging (`DIRECT_URL` 5432) | `public` vazio, sem `_prisma_migrations` | roles `mf_*` criadas; `migrate deploy` das 27 migrations | **27 migrations**, 53 tabelas, stock presente, status up to date |
+| descartável `5441/wms_e2e_disposable` | baselines resolvidas | — | status up to date; E2E 25/25 + 8/8 |
+
+Notas:
+- **Nenhuma base de produção foi tocada** — não existe URL de produção nos ficheiros de ambiente do repositório; o alvo remoto em `.env.staging` é staging.
+- Snapshot do histórico de migrations do staging local guardado em `tmp/local-staging-5436-migrations-*.json`.
+- `scripts/ensure-db-roles.cjs` cria as roles de forma idempotente em qualquer alvo.
