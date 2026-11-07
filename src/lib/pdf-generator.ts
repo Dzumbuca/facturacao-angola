@@ -20,8 +20,7 @@ const PAGE_OPTIONS = {
   margins: { top: PAGE_MARGIN, left: PAGE_MARGIN, right: PAGE_MARGIN, bottom: FOOTER_SPACE },
 };
 
-const createDocumentForType = () => new PDFDocument({ size: 'A4' });
-type PdfDocumentInstance = ReturnType<typeof createDocumentForType>;
+type PdfDocumentInstance = InstanceType<typeof PDFDocument>;
 
 type PdfItem = {
   desc?: unknown;

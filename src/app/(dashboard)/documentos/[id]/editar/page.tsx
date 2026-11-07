@@ -2,7 +2,7 @@ import { notFound, redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { getTenantAccess } from '@/lib/admin-auth';
 import { BusinessDocumentForm } from '../../business-document-form';
-import { BUSINESS_DOCUMENT_TYPES, type BusinessDocumentInput, type BusinessDocumentType } from '@/lib/business-document-core';
+import { type BusinessDocumentInput, type BusinessDocumentType } from '@/lib/business-document-core';
 
 export const dynamic = 'force-dynamic';
 export default async function EditBusinessDocumentPage({ params }: { params: Promise<{ id: string }> }) {

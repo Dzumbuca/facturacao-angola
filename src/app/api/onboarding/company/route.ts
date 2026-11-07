@@ -49,7 +49,7 @@ export async function POST(req: Request) {
 
     if ('error' in result) return NextResponse.json({ error: result.error }, { status: result.status });
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch {
     console.error('Erro ao criar espaço da empresa.');
     return NextResponse.json({ error: 'Não foi possível criar o espaço da empresa. Tente novamente.' }, { status: 500 });
   }

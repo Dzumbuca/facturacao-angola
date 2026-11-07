@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     }), { userId });
 
     return NextResponse.json({ success: true, payment });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Não foi possível enviar o comprovativo. Tente novamente.' }, { status: 500 });
   }
 }
@@ -65,7 +65,7 @@ export async function GET() {
       select: { id: true, amountKz: true, months: true, status: true, adminNote: true, createdAt: true },
     }), { userId });
     return NextResponse.json({ payments });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Erro ao carregar os pagamentos.' }, { status: 500 });
   }
 }

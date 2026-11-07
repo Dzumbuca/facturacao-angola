@@ -118,7 +118,7 @@ export function OrcamentoProformaForm({ tipo }: { tipo: 'orcamento' | 'proforma'
 
   const submeter = async () => {
     if (!valido) return;
-    const ok = await descarregar({
+    await descarregar({
       tipo,
       empresa: { nome: empresaNome.trim(), nif: empresaNif.trim() || undefined, contacto: empresaContacto.trim() || undefined },
       cliente: { nome: clienteNome.trim(), nif: clienteNif.trim() || undefined, contacto: clienteContacto.trim() || undefined },

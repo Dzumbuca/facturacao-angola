@@ -2,14 +2,14 @@ import { NextResponse } from 'next/server';
 import { getTenantReadAccess, getTenantWriteAccess } from '@/lib/tenant-api-access';
 import { runWithTenant } from '@/lib/tenant-db';
 
-export async function GET(req: Request) {
+export async function GET(_req: Request) {
   try {
     const access = await getTenantReadAccess();
     if (!access.ok) return NextResponse.json(access.body, { status: access.status });
     const { tenantId, userId } = access.access;
     const produtos = await runWithTenant(tenantId, (tx) => tx.product.findMany({ where: { tenantId } }), { userId });
     return NextResponse.json(produtos);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Erro ao buscar produtos' }, { status: 500 });
   }
 }
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
       id: produto.id,
       produto: { ...produto, price: Number(produto.price) },
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Erro ao criar produto' }, { status: 500 });
   }
 }

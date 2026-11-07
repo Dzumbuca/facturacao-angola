@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { ToolPage } from '@/components/tool-page';
-import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
 import { AdHtml } from '@/components/ad-html';
 import { BackToHub, RelatedTools } from '../tool-links';

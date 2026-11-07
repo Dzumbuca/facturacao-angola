@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       maxAge: 30 * 24 * 60 * 60,
     });
     return response;
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Erro ao actualizar a sessão.' }, { status: 500 });
   }
 }

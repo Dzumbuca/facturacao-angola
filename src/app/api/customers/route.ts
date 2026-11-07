@@ -9,7 +9,7 @@ export async function GET() {
     const { tenantId, userId } = access.access;
     const customers = await runWithTenant(tenantId, (tx) => tx.customer.findMany({ where: { tenantId } }), { userId });
     return NextResponse.json(customers);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Erro ao buscar clientes' }, { status: 500 });
   }
 }
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     }), { userId });
 
     return NextResponse.json(customer);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Erro ao criar cliente' }, { status: 500 });
   }
 }

@@ -42,7 +42,7 @@ export async function PATCH(request: NextRequest, { params }: Context) {
     if (!customer) return NextResponse.json({ error: 'Cliente não encontrado.' }, { status: 404 });
 
     return NextResponse.json(customer);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Erro ao actualizar o cliente' }, { status: 500 });
   }
 }
@@ -63,7 +63,7 @@ export async function DELETE(_request: NextRequest, { params }: Context) {
     if ('conflict' in result) return NextResponse.json({ error: `Este cliente tem ${result.conflict} factura(s) associada(s) e não pode ser apagado.` }, { status: 409 });
     if (!result.deleted) return NextResponse.json({ error: 'Cliente não encontrado.' }, { status: 404 });
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Erro ao apagar o cliente' }, { status: 500 });
   }
 }

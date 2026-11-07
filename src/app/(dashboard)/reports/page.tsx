@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { auth } from '@/lib/auth';
 import { getSessionTenantId } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
