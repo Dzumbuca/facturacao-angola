@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { randomBytes } from 'node:crypto';
 import { sendAndRecordEmail } from '@/lib/email-actions';
 import { escapeEmailHtml } from '@/lib/email-core';
-import { runAsSystem } from '@/lib/tenant-db';
+import { runAsSystem, PRIVILEGED_RLS } from '@/lib/tenant-db';
 
 // Cron diário (Vercel): envia lembretes de cobrança para facturas emitidas em atraso.
 // Regras: no máximo 1 lembrete por factura a cada 7 dias; apenas adquirentes com email;
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     },
     orderBy: { dueAt: 'asc' },
     take: 20,
-  })) as any[];
+  }), PRIVILEGED_RLS) as any[];
 
   let sent = 0;
   const results: { invoice: string; to: string; status: string }[] = [];
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
 
     const token = randomBytes(24).toString('base64url');
     const expires = new Date(now.getTime() + 30 * 86_400_000);
-    await runAsSystem((tx) => tx.invoice.update({ where: { id: invoice.id }, data: { shareToken: token, shareExpiresAt: expires, lastReminderAt: now } }));
+    await runAsSystem((tx) => tx.invoice.update({ where: { id: invoice.id }, data: { shareToken: token, shareExpiresAt: expires, lastReminderAt: now } }), PRIVILEGED_RLS);
 
     const base = process.env.APP_URL?.replace(/\/$/, '') ?? 'https://machinefaturas.shop';
     const link = `${base}/f/${token}`;

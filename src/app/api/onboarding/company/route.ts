@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { runWithRlsContext } from '@/lib/tenant-db';
+import { runAsSystem, runWithRlsContext, PRIVILEGED_RLS } from '@/lib/tenant-db';
 import { isValidNif, normalizeNif } from '@/lib/nif';
 
 // Cria o espaço (tenant) da empresa para um utilizador autenticado que ainda
@@ -28,18 +28,18 @@ export async function POST(req: Request) {
 
     const result = await runWithRlsContext(async (tx: any) => {
       const user = await tx.user.findUnique({ where: { id: userId }, select: { tenantId: true } });
-      if (!user) return { status: 404 as const, error: 'Utilizador não encontrado.' };
+      if (!user) return { status: 404 as const, error: 'Utilizador nÃ£o encontrado.' };
       if (user.tenantId) return { status: 200 as const, success: true };
       try {
-        await tx.$transaction(async (inner: any) => {
-          const tenant = await inner.tenant.create({ data: { name: tenantName, nif: nif || null } });
-          // Guard condicional: só liga a empresa se o utilizador continuar sem empresa.
-          const linked = await inner.user.updateMany({
-            where: { id: userId, tenantId: null },
-            data: { tenantId: tenant.id, tenantRole: 'COMPANY_ADMIN' },
-          });
-          if (linked.count === 0) throw new Error('ONBOARDING_ALREADY_DONE');
+        // RLS: Tenant INSERT requires admin or app.tenant_id = id (Tenant policy). No existing tenant yet,
+        // so create tenant in narrow server-controlled system context; then link user in same outer tx
+        // (User self policy allows update when app.user_id=id). Link is guarded by tenantId:null condition.
+        const tenant = await runAsSystem((sys) => sys.tenant.create({ data: { name: tenantName, nif: nif || null } }), PRIVILEGED_RLS) as { id: string };
+        const linked = await tx.user.updateMany({
+          where: { id: userId, tenantId: null },
+          data: { tenantId: tenant.id, tenantRole: 'COMPANY_ADMIN' },
         });
+        if (linked.count === 0) return { status: 200 as const, success: true };
       } catch (transactionError) {
         if ((transactionError as Error)?.message === 'ONBOARDING_ALREADY_DONE') return { status: 200 as const, success: true };
         throw transactionError;

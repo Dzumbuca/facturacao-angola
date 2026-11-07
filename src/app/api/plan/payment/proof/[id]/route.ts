@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { runAsAdmin } from '@/lib/tenant-db';
+import { runAsAdmin, PRIVILEGED_RLS } from '@/lib/tenant-db';
 
 type Context = { params: Promise<{ id: string }> };
 
@@ -18,7 +18,7 @@ export async function GET(_request: NextRequest, { params }: Context) {
       if (!me || !['ADMIN', 'SUPERADMIN'].includes(me.platformRole)) return { ok: false as const };
       const payment = await tx.planPayment.findUnique({ where: { id }, select: { proofData: true, proofName: true } });
       return { ok: true as const, payment };
-    }, { userId: sessionUser.id });
+    }, { userId: sessionUser.id }, PRIVILEGED_RLS);
     if (!authorized.ok) return NextResponse.json({ error: 'Sem permissão.' }, { status: 403 });
     const payment = authorized.payment;
     if (!payment?.proofData) return NextResponse.json({ error: 'Comprovativo não encontrado.' }, { status: 404 });
