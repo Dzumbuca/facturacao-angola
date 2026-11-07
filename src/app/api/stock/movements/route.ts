@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { auth } from '@/lib/auth';
 import { getSessionTenantId, getSessionUserId } from '@/lib/session';
 import { runWithTenant } from '@/lib/tenant-db';
+import { upsertProductWarehouseStock } from '@/lib/stock-service';
 
 const MAX_PAGE_LIMIT = 200;
 const DEFAULT_PAGE_LIMIT = 50;
@@ -119,11 +120,9 @@ export async function POST(req: Request) {
         });
         if (updated.count === 0) throw new Error('INSUFFICIENT');
       } else {
-        await tx.productWarehouseStock.upsert({
-          where: { tenantId_productId_warehouseId_lotId: { tenantId, productId, warehouseId, lotId: lotIdValue as any } },
-          update: { quantity: { increment: qty } },
-          create: { tenantId, productId, warehouseId, lotId: lotIdValue, quantity: qty },
-        });
+        // O unique composto inclui `lotId` nulável: o `upsert` do Prisma não aceita
+        // `lotId: null` nesse where. Usar o helper transacional (advisory lock + find/create).
+        await upsertProductWarehouseStock(tx, { tenantId, productId, warehouseId, lotId: lotIdValue }, { quantity: qty });
         await tx.product.update({
           where: { id: productId },
           data: { stock: { increment: qty } },

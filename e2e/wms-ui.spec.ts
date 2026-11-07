@@ -46,6 +46,22 @@ test.describe('WMS v2 - UI', () => {
     await expect(page.getByRole('button', { name: /Registar ajuste/i })).toBeVisible();
   });
 
+  test('compras, recepções, lotes e reservas carregam', async ({ page }) => {
+    await login(page);
+
+    await page.goto('/stock/compras');
+    await expect(page.getByRole('heading', { name: 'Compras e recepções', exact: true })).toBeVisible();
+
+    await page.goto('/stock/recepcoes');
+    await expect(page.getByRole('heading', { name: 'Receções de mercadorias', exact: true })).toBeVisible();
+
+    await page.goto('/stock/lotes');
+    await expect(page.getByRole('heading', { name: 'Lotes e validades', exact: true })).toBeVisible();
+
+    await page.goto('/stock/reservas');
+    await expect(page.getByRole('heading', { name: 'Reservas de stock', exact: true })).toBeVisible();
+  });
+
   test('raiz do dashboard continua acessível após login', async ({ page }) => {
     await login(page);
     await page.goto('/');

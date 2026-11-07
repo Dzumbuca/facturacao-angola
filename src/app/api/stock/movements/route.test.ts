@@ -23,7 +23,11 @@ function mockMovementTx(overrides: any = {}) {
     },
     product: { findFirst: vi.fn().mockResolvedValue({ id: 'p', tenantId: 't1' }), update: vi.fn().mockResolvedValue({ id: 'p' }) },
     warehouse: { findFirst: vi.fn().mockResolvedValue({ id: 'w', isActive: true }) },
-    productWarehouseStock: { upsert: vi.fn().mockResolvedValue({ id: 'pws' }) },
+    productWarehouseStock: {
+      findFirst: vi.fn().mockResolvedValue(null),
+      create: vi.fn().mockResolvedValue({ id: 'pws', quantity: 3 }),
+      update: vi.fn().mockResolvedValue({ id: 'pws' }),
+    },
     ...overrides.tx,
   };
   return { tx, calls };
@@ -113,8 +117,9 @@ describe('POST /api/stock/movements', () => {
     vi.mocked(runWithTenant).mockImplementation(async (_t, fn) => fn(tx as any));
     const res = await POST(mkReq({ productId: 'p', warehouseId: 'w', type: 'IN', quantity: 3, reason: 'r', idempotencyKey: 'k1' }));
     expect(res.status).toBe(201);
-    const body = { upsert: (tx.productWarehouseStock.upsert as any).mock.calls[0][0], prodUpdate: (tx.product.update as any).mock.calls[0][0], created: (tx.stockMovement.create as any).mock.calls[0][0] };
-    expect(body.upsert.update.quantity.increment).toBe(3);
+    const body = { create: (tx.productWarehouseStock.create as any).mock.calls[0][0], prodUpdate: (tx.product.update as any).mock.calls[0][0], created: (tx.stockMovement.create as any).mock.calls[0][0] };
+    expect(body.create.data.quantity).toBe(3);
+    expect(body.create.data.lotId).toBeNull();
     expect(body.prodUpdate.data.stock.increment).toBe(3);
     expect(body.created.data.quantitySigned).toBe(3);
     expect(body.created.data.idempotencyKey).toBe('k1');
