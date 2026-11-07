@@ -41,6 +41,6 @@ export default defineConfig({
     url: `${APP_URL}/api/auth/csrf`,
     reuseExistingServer: true,
     timeout: 180000,
-    env: { ...readE2eEnv(), NEXTAUTH_URL: APP_URL },
+    env: { ...readE2eEnv(), NEXTAUTH_URL: APP_URL, AUTH_RATE_LIMIT_MAX: '300' },
   },
 });
