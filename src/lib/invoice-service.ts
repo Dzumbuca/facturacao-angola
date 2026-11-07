@@ -3,9 +3,7 @@ import crypto from 'crypto';
 import { Prisma } from '@prisma/client';
 import { runWithTenant } from './tenant-db';
 import { calculateInvoiceTotals } from './tax';
-import { computeEffectivePlan } from './plan';
-import { FREE_INVOICE_LIMIT, AdUnlockRequiredError } from './invoice-quota';
-import { claimUnlockForEmission, linkUnlockToInvoice } from './ad-unlock-service';
+import { resolveInvoiceLimit, countInvoicesThisMonth, InvoiceQuotaExceededError } from './invoice-quota';
 import { decrementStockForInvoice } from './stock-service';
 import { isApplicationEnabled } from './platform-apps';
 
@@ -212,14 +210,11 @@ export const issueInvoice = async (
 
     // Serializa emissões da empresa: fecha a janela de corrida no limite.
     await transaction.$queryRaw`SELECT id FROM "Tenant" WHERE id = ${tenant.id} FOR UPDATE`;
-    const planInfo = computeEffectivePlan(tenant.plan, tenant.planExpiry);
-    const usedInvoices = await transaction.invoice.count({
-      where: { tenantId: tenant.id, type: 'FT' },
-    });
-    let claimedUnlockId: string | null = null;
-    if (planInfo.effectivePlan !== 'PRO' && usedInvoices >= FREE_INVOICE_LIMIT) {
-      claimedUnlockId = await claimUnlockForEmission(tenant.id, transaction);
-      if (!claimedUnlockId) throw new AdUnlockRequiredError(usedInvoices, FREE_INVOICE_LIMIT);
+    // Limite mensal de facturas (subscrição activa ou modelo legado FREE/PRO).
+    const invoiceLimit = await resolveInvoiceLimit(transaction, tenant.id);
+    if (invoiceLimit !== null) {
+      const usedThisMonth = await countInvoicesThisMonth(transaction, tenant.id);
+      if (usedThisMonth >= invoiceLimit) throw new InvoiceQuotaExceededError(usedThisMonth, invoiceLimit);
     }
     const saved = await transaction.invoice.create(invoiceCreateData);
 
@@ -265,16 +260,8 @@ export const issueInvoice = async (
       });
       if (updatedDraft.count !== 1) throw new Error('O rascunho foi alterado durante a emissão.');
     }
-    return { saved, claimedUnlockId, tenantId, shortHash, customerName: customer.name, customerNif: customer.nif, items: invoiceData.items };
+    return { saved, tenantId, shortHash, customerName: customer.name, customerNif: customer.nif, items: invoiceData.items };
   });
-
-  // Auditoria do desbloqueio (best-effort, após commit): liga o desbloqueio à
-  // factura emitida. Se falhar, o desbloqueio continua CONSUMED — nunca reutilizável.
-  // linkUnlockToInvoice usa o cliente prisma global (fora da transacao)
-  // por proposito — nao deve reverter a fatura se falhar.
-  if (result.claimedUnlockId) {
-    await linkUnlockToInvoice(result.tenantId, result.claimedUnlockId, result.saved.id).catch(() => undefined);
-  }
 
   return {
     ...result.saved,

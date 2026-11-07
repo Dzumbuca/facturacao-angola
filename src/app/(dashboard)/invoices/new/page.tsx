@@ -8,7 +8,7 @@ export default async function NewInvoicePage() {
   const tenantId = getSessionTenantId(await auth());
   if (!tenantId) return <p>Empresa não configurada.</p>;
 
-  const [customers, products, tenant, bankAccounts, quota, platformConfig] = await Promise.all([
+  const [customers, products, tenant, bankAccounts, quota] = await Promise.all([
     prisma.customer.findMany({ where: { tenantId }, orderBy: { name: 'asc' } }),
     prisma.product.findMany({ where: { tenantId }, orderBy: { name: 'asc' } }),
     prisma.tenant.findUnique({
@@ -30,10 +30,6 @@ export default async function NewInvoicePage() {
     }),
     prisma.companyBankAccount.findMany({ where: { tenantId, isActive: true }, orderBy: [{ isPrimary: 'desc' }, { bankName: 'asc' }], select: { id: true, bankName: true, label: true } }),
     getInvoiceQuota(tenantId),
-    // Anúncio de plataforma (HTML gerido em /admin/configuracoes) apresentado na
-    // janela de desbloqueio — o mesmo código já usado na sidebar pública.
-    // Falha de base de dados nunca quebra a página: o modal fica sem anúncio.
-    prisma.platformConfig.findUnique({ where: { id: 'global' }, select: { adHtml: true } }).catch(() => null),
   ]);
   const hasCompanyProfile = Boolean(tenant && (
     tenant.currentLogoId || [
@@ -66,6 +62,5 @@ export default async function NewInvoicePage() {
     initialDueAt={initialDueAt}
     defaultObservations={tenant?.defaultObservations || tenant?.defaultMessage || ''}
     quota={quota}
-    adHtml={platformConfig?.adHtml ?? null}
   />;
 }

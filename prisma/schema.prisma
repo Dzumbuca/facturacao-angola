@@ -989,6 +989,7 @@ model SubscriptionPlan {
   name             String
   description      String?
   priceKz          Decimal              @default(0) @db.Decimal(12, 2)
+  priceYearly      Decimal?             @db.Decimal(12, 2)
   billingCycle     String               @default("MONTHLY")
   isBundle         Boolean              @default(false)
   isActive         Boolean              @default(true)
@@ -997,6 +998,18 @@ model SubscriptionPlan {
   planApplications PlanApplication[]
   subscriptions    TenantSubscription[]
   limits           PlanLimit[]
+  capabilities     PlanCapability[]
+}
+
+model PlanCapability {
+  id         String           @id @default(uuid())
+  planId     String
+  capability String
+  enabled    Boolean          @default(true)
+  plan       SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, capability])
+  @@index([planId])
 }
 
 model PlanLimit {
