@@ -65,9 +65,9 @@ npx playwright test
 ## 5. Riscos remanescentes
 
 1. **Drift schema ↔ migrations — resolvido nesta sessão** (ver secção 6): baseline `20261107190000_stock_schema_baseline`. Em BDs novas, `migrate deploy` cria tudo; em BDs onde os objetos já existem (criados por `db push`), registar a baseline como aplicada **antes** de correr `migrate deploy`.
-2. **Drift fora do stock (não tratado)**: nomes de índices de `BusinessDocument`, `Email*` e `PlatformTeamInvite` continuam a divergir entre migrations e schema; decisão pendente (renomear em BD vs ajustar schema).
-3. **Volume do incidente** `facturacao-angola_machine_stock_test_data` continua sem container montado; recuperação exige autorização explícita (read-only).
-4. 43 avisos de lint (imports/`catch(error)` não usados) em código legado fora do WMS.
+2. **Drift de índices fora do stock — resolvido** com `20261107191000_align_nonstock_indexes` (BusinessDocument, Email*, PlatformTeamInvite). Validado: BD nova criada só por `migrate deploy` fica **idêntica** ao schema (diff vazio). Em BDs já alinhadas por `db push`, registar como aplicada.
+3. **Volume do incidente** `facturacao-angola_machine_stock_test_data`: inspecionado em **read-only sobre cópia** — dados presentes (`machine_stock_test` 9.5 MB, `mf_rls_staging` 12 MB, `mf_rls_shadow` 9.3 MB, PG 17). Original permanece sem container montado; recuperação/restauro de serviço só com autorização explícita.
+4. 38 avisos de lint (imports/`catch(error)` não usados) em código legado fora do WMS.
 5. `docker compose` deve usar sempre `-p <projeto>` para evitar reconciliação multi-stack.
 
 ## 6. Migration baseline do stock (2026-11-07)
@@ -85,3 +85,11 @@ npx playwright test
   # 3) confirmar
   npx prisma migrate deploy   # deve responder "No pending migrations"
   ```
+
+## 7. E2E num comando, CI e volume (2026-11-07)
+
+- **`npm run test:e2e:local`**: build → `prisma generate` → `migrate deploy` → seed → servidor `next start` em 3002 → Vitest E2E → Playwright (desktop+mobile) → servidor terminado. Executado com sucesso: **25/25 HTTP + 8/8 UI**. `--skip-build` reutiliza o build.
+- **Compatível com CI**: lê `DATABASE_URL` do ambiente (`.env.e2e.local` opcional) e recusa alvos que não sejam `wms_e2e_disposable:5441`.
+- **CI** (`.github/workflows/ci.yml`): jobs `test-and-build` (existente), `lint` (toolchain isolado) e `e2e` (Postgres 17 service em 5441, roles via `scripts/ensure-db-roles.cjs`, Chromium, build e `e2e-local.cjs --skip-build`).
+- **Toolchain de lint**: `tools/lint` com lockfile próprio (`npm ci` no job de lint); removido o vínculo acidental ao pacote raiz que partia o build.
+- **Volume do incidente**: cópia read-only montada num Postgres temporário em 5450; listadas as bases `machine_stock_test` (9.5 MB), `mf_rls_staging` (12 MB), `mf_rls_shadow` (9.3 MB). Cópia e container temporários removidos; volume original intacto.

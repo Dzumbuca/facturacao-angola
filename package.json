@@ -11,6 +11,8 @@
         "lint": "node tools/lint/node_modules/eslint/bin/eslint.js --config tools/lint/eslint.config.mjs src",
         "lint:wms": "node tools/lint/node_modules/eslint/bin/eslint.js --config tools/lint/eslint.config.mjs \"src/app/(dashboard)/stock\" \"src/app/api/stock\" src/lib/stock-service.ts src/lib/invoice-service.ts src/components/warehouses tests/e2e e2e",
         "test:e2e": "vitest run --config vitest.e2e.config.ts",
+        "test:e2e:local": "node scripts/e2e-local.cjs",
+        "test:e2e:local:fast": "node scripts/e2e-local.cjs --skip-build",
         "test:e2e:seed": "node --env-file=.env.e2e.local tests/e2e/wms/seed.mjs",
         "test:e2e:ui": "playwright test",
         "desktop:dev": "npm run desktop:build && electron .",
