@@ -21,7 +21,8 @@ const ROLES = [
 (async () => {
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error('DATABASE_URL ausente.');
-  const client = new Client({ connectionString: url });
+  const ssl = /supabase\.(com|co)/.test(url) ? { rejectUnauthorized: false } : undefined;
+  const client = new Client({ connectionString: url, ssl });
   await client.connect();
   try {
     for (const role of ROLES) {

@@ -107,25 +107,15 @@ Notas:
 - Snapshot do histórico de migrations do staging local guardado em `tmp/local-staging-5436-migrations-*.json`.
 - `scripts/ensure-db-roles.cjs` cria as roles de forma idempotente em qualquer alvo.
 
-## 9. Produção sem credenciais (2026-11-07)
+## 9. Produção alinhada (2026-11-07)
 
-O código novo é compatível com o schema atual; **nada fica bloqueado** se ninguém tiver acesso à BD de produção.
+- **Projeto Supabase**: `dodoplzkmazdlrwqdmpp`, via **Session pooler** IPv4 (`aws-0-eu-west-1.pooler.supabase.com:5432`). A ligação direta (`db.*.supabase.co`) é IPv6-only e não é alcançável desta máquina (`ENETUNREACH`).
+- **Antes**: 38 tabelas, 24 migrations aplicadas; **sem** tabelas de stock e sem `AuthJwtRevocation`.
+- **Ações**: roles necessárias criadas; `prisma migrate deploy` aplicou as **3 migrations pendentes** (JWT, baseline de stock, alinhamento de índices).
+- **Depois**: **27 migrations**, **53 tabelas**, stock + `AuthJwtRevocation` presentes; dados intactos (17 users, 16 tenants, 3 products).
+- **Snapshot do schema antes das alterações**: `tmp/prod-schema-before.sql`.
+- **Smoke test** (deploy protegido por Vercel Authentication, via `vercel curl`): `/login` **200**, `/` e `/stock` **307** (redirect esperado para login).
+- **Credenciais**: guardadas apenas em `.env.production.local` (ignorado pelo git, `.env.*`). Recomenda-se **rotacionar a password** por ter sido partilhada em conversa.
+- **Nota**: `NEXT_PUBLIC_SUPABASE_URL` na Vercel aponta para `sunsbstzulrijraptfhn`, que não resolve em DNS — confirmar se é configuração antiga.
 
-Quando existir acesso, o alinhamento é feito por script, com dry-run por omissão:
-
-```bash
-# 1) dry-run (não escreve nada)
-DATABASE_URL="postgresql://..." npm run db:align-prod
-
-# 2) aplicar (snapshot + roles + JWT se faltar + resolve das baselines)
-DATABASE_URL="postgresql://..." npm run db:align-prod -- --apply
-```
-
-O script:
-- recusa correr sem `DATABASE_URL`;
-- guarda snapshot do `_prisma_migrations` em `tmp/` antes de escrever;
-- só trata das migrations conhecidas (JWT, baseline de stock, índices);
-- **aborta** se houver migrations pendentes desconhecidas ou se as tabelas de stock não existirem (nesse caso a BD precisa de `migrate deploy`, não de `resolve`);
-- termina com `prisma migrate status`.
-
-Se o deploy for gerido por outra pessoa, basta entregar-lhe este ficheiro e a secção 6.
+O script `npm run db:align-prod` (secção anterior) continua disponível para outros ambientes, com dry-run por omissão; `scripts/ensure-db-roles.cjs` passou a aceitar o certificado do pooler Supabase.

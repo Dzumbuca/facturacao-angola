@@ -46,7 +46,10 @@ function prisma(args, env) {
 }
 
 (async () => {
-  const client = new Client({ connectionString: url, connectionTimeoutMillis: 20000, query_timeout: 60000 });
+  // O pooler do Supabase apresenta uma cadeia de certificados própria; a ligação
+  // continua encriptada. Para hosts locais não forçamos SSL.
+  const ssl = /supabase\.(com|co)/.test(url) ? { rejectUnauthorized: false } : undefined;
+  const client = new Client({ connectionString: url, ssl, connectionTimeoutMillis: 20000, query_timeout: 60000 });
   await client.connect();
   try {
     const migTable = await client.query(`SELECT to_regclass('public."_prisma_migrations"') AS t`);
