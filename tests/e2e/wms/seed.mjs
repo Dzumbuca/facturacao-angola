@@ -54,6 +54,28 @@ async function main() {
     });
   }
 
+  // Pacotes comerciais (preços a configurar; SKUs sem limite definido).
+  const plans = [
+    { slug: 'gratis', name: 'Grátis', limits: { max_warehouses: 0 } },
+    { slug: 'basico', name: 'Básico', limits: { max_warehouses: 1 } },
+    { slug: 'profissional', name: 'Profissional', limits: { max_warehouses: 3 } },
+    { slug: 'empresarial', name: 'Empresarial', limits: {} },
+  ];
+  for (const planSeed of plans) {
+    const plan = await prisma.subscriptionPlan.upsert({
+      where: { slug: planSeed.slug },
+      update: { name: planSeed.name, isActive: true },
+      create: { slug: planSeed.slug, name: planSeed.name, description: planSeed.name, priceKz: 0, billingCycle: 'MONTHLY', isActive: true },
+    });
+    for (const [metric, value] of Object.entries(planSeed.limits)) {
+      await prisma.planLimit.upsert({
+        where: { planId_metric: { planId: plan.id, metric } },
+        update: { value },
+        create: { planId: plan.id, metric, value },
+      });
+    }
+  }
+
   const upsertUser = async (email, tenantId) => prisma.user.upsert({
     where: { email },
     update: {

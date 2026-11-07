@@ -1,6 +1,6 @@
 'use client';
 import { useActionState } from 'react';
-import { setTenantStatus, setUserStatus, setTenantRole, setPlatformRole, setTenantPlan, setTenantWmsEnabled } from '@/lib/admin-actions';
+import { setTenantStatus, setUserStatus, setTenantRole, setPlatformRole, setTenantPlan, setTenantWmsEnabled, setTenantPackage } from '@/lib/admin-actions';
 
 type State = { ok: boolean; message: string };
 const initial: State = { ok: false, message: '' };
@@ -41,4 +41,17 @@ export function AdminWmsForm({ id, current }: { id: string; current: boolean }) 
   const action = async (_: State, data: FormData) => setTenantWmsEnabled(String(data.get('id')), data.get('value') === 'ON', String(data.get('reason')));
   const options: [string, string][] = [[current ? 'ON' : 'OFF', current ? 'Manter: activo' : 'Manter: inactivo'], ['ON', 'Activar Armazém e Stock'], ['OFF', 'Desactivar Armazém e Stock']];
   return <StatusForm key={`wms-${current}`} action={action} id={id} title="Módulo Armazém e Stock" options={options} />;
+}
+
+export function AdminPackageForm({ id, current }: { id: string; current: string }) {
+  const action = async (_: State, data: FormData) => setTenantPackage(String(data.get('id')), data.get('value') as any, String(data.get('reason')));
+  const options: [string, string][] = [
+    [current, `Manter: ${current}`],
+    ['gratis', 'Grátis — catálogo, sem WMS'],
+    ['basico', 'Básico — WMS, 1 armazém'],
+    ['profissional', 'Profissional — WMS, 3 armazéns'],
+    ['empresarial', 'Empresarial — limites personalizados'],
+    ['none', 'Sem pacote (legado/grandfathered)'],
+  ];
+  return <StatusForm key={`package-${current}`} action={action} id={id} title="Pacote comercial (WMS)" options={options} />;
 }

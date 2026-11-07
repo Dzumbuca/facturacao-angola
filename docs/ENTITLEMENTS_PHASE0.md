@@ -238,3 +238,30 @@ Antes do motor de entitlements, foi implementado o gate binário do WMS com a in
 - **UI**: aviso em `/apps` e paywall na área de stock; dados sempre visíveis quando o módulo é desactivado.
 - **Testes**: 3 E2E novos (403, reactivação, redirect da página) — 30/30 E2E e 10/10 UI verdes.
 - **Comportamento actual**: tenants existentes mantêm acesso; tenants novos ficam sem WMS por omissão, até o admin activar. Limites e pacotes continuam por implementar (Fases 1+).
+
+---
+
+## 17. Fases 1–2 implementadas (2026-11-07) — catálogo vs stock + limites de armazéns
+
+**Sem deploy e sem migrations em produção.** Migration criada e aplicada apenas na BD descartável de E2E.
+
+### Fase 1 — catálogo gratuito separado do stock
+- `Product.trackStock` (boolean; backfill `stock > 0`): distingue catálogo de SKU gerido pelo WMS.
+- `/api/produtos` (POST/PATCH): `stock`/`minStock` sem módulo WMS → **403 `STOCK_REQUIRES_WMS`**; criação normal continua gratuita.
+- UI de produtos: campos/coluna de stock escondidos sem WMS, com nota e link para pacotes.
+- Facturação: baixa de stock só quando o tenant tem WMS **e** o produto tem `trackStock`; o catálogo gratuito factura normalmente, sem exigir armazém padrão.
+- Bug corrigido: `DELETE /api/produtos/[id]` usava `invoiceItem.tenantId` (campo inexistente) → 500; passou a filtrar por `invoice.tenantId`.
+
+### Fase 2 — estrutura de limites por pacote
+- `PlanLimit(planId, metric, value)` com `value NULL = ilimitado/personalizado`.
+- Planos semeados (E2E): Grátis (0 armazéns), Básico (1), Profissional (3), Empresarial (sem limite). **Preços e limites de SKUs não definidos** (SKUs sem enforcement).
+- `src/lib/entitlements.ts`: plano efectivo a partir de `TenantSubscription`; sem subscrição, tenants com WMS activo ficam **grandfathered sem limites** (preserva os 16 clientes); restantes → Grátis.
+- Limite de armazéns aplicado no servidor em `POST /api/stock/warehouses`, com advisory lock por tenant (evita ultrapassar em concorrência) → **403 `LIMIT_REACHED`** com `used`/`limit`.
+- Admin: `setTenantPackage` (auditado em `AdminAuditLog`) atribui pacote e sincroniza o gate (`Grátis` desactiva WMS; restantes activam; `none` = legado grandfathered).
+
+### Testes
+- 313 unitários (5 novos de entitlements) + 33 E2E (3 novos de pacotes) + 10 UI + tsc + lint + build de produção.
+
+### Pendente de autorização
+- Aplicar a migration em produção e fazer deploy.
+- Preços dos planos, limites de SKUs e integração com pagamentos (Fases 3–4).

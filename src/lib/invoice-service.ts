@@ -7,6 +7,7 @@ import { computeEffectivePlan } from './plan';
 import { FREE_INVOICE_LIMIT, AdUnlockRequiredError } from './invoice-quota';
 import { claimUnlockForEmission, linkUnlockToInvoice } from './ad-unlock-service';
 import { decrementStockForInvoice } from './stock-service';
+import { isApplicationEnabled } from './platform-apps';
 
 export const issueInvoice = async (
   invoiceData: any,
@@ -222,26 +223,39 @@ export const issueInvoice = async (
     }
     const saved = await transaction.invoice.create(invoiceCreateData);
 
-    // Baixa automatica de estoque para cada item da fatura que tenha produto associado
+    // Baixa automatica de estoque apenas para produtos com controlo de stock e
+    // tenants com o modulo WMS activo. O catalogo gratuito factura sem stock.
     const invoiceItems = (invoiceData.items || []).filter(
       (item: any) => item.productId && item.qty > 0
     );
     if (invoiceItems.length > 0) {
-      const defaultWarehouse = await transaction.warehouse.findFirst({
-        where: { tenantId: tenant.id, isDefault: true, isActive: true },
-      });
-      if (!defaultWarehouse) throw new Error('Nenhum armazem padrao configurado para o tenant');
+      const wmsEnabled = await isApplicationEnabled(tenant.id, 'wms');
+      const trackedProducts = wmsEnabled
+        ? await transaction.product.findMany({
+            where: { tenantId: tenant.id, id: { in: invoiceItems.map((item: any) => item.productId) }, trackStock: true },
+            select: { id: true },
+          })
+        : [];
+      const trackedIds = new Set(trackedProducts.map((product: any) => product.id));
+      const trackedItems = invoiceItems.filter((item: any) => trackedIds.has(item.productId));
 
-      await decrementStockForInvoice(
-        tenant.id,
-        saved.id,
-        defaultWarehouse.id,
-        invoiceItems.map((item: any) => ({
-          productId: item.productId,
-          quantity: item.qty,
-        })),
-        transaction
-      );
+      if (trackedItems.length > 0) {
+        const defaultWarehouse = await transaction.warehouse.findFirst({
+          where: { tenantId: tenant.id, isDefault: true, isActive: true },
+        });
+        if (!defaultWarehouse) throw new Error('Nenhum armazem padrao configurado para o tenant');
+
+        await decrementStockForInvoice(
+          tenant.id,
+          saved.id,
+          defaultWarehouse.id,
+          trackedItems.map((item: any) => ({
+            productId: item.productId,
+            quantity: item.qty,
+          })),
+          transaction
+        );
+      }
     }
 
     if (invoiceData.sourceDraftId) {

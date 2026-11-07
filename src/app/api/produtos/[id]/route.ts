@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { runWithTenant } from '@/lib/tenant-db';
 import { getTenantWriteAccess } from '@/lib/tenant-api-access';
+import { isApplicationEnabled } from '@/lib/platform-apps';
 
 type Context = { params: Promise<{ id: string }> };
 
@@ -33,6 +34,17 @@ export async function PATCH(request: NextRequest, { params }: Context) {
       return NextResponse.json({ error: 'Stock minimo invalido' }, { status: 400 });
     }
 
+    // Catálogo gratuito não altera stock: exige módulo WMS.
+    if (stock !== undefined || minStock !== undefined) {
+      const wmsEnabled = await isApplicationEnabled(tenantId, 'wms');
+      if (!wmsEnabled) {
+        return NextResponse.json(
+          { code: 'STOCK_REQUIRES_WMS', error: 'O controlo de stock faz parte dos pacotes pagos.' },
+          { status: 403 },
+        );
+      }
+    }
+
     const produto = await runWithTenant(tenantId, async (tx) => {
       const existing = await tx.product.findFirst({ where: { id, tenantId }, select: { id: true } });
       if (!existing) return null;
@@ -41,7 +53,7 @@ export async function PATCH(request: NextRequest, { params }: Context) {
         data: {
           ...(nome !== undefined ? { name: nome } : {}),
           ...(preco !== undefined ? { price: preco } : {}),
-          ...(stock !== undefined ? { stock } : {}),
+          ...(stock !== undefined ? { stock, trackStock: stock > 0 } : {}),
           ...(minStock !== undefined ? { minStock } : {}),
           ...(codigo !== undefined ? { codigo } : {}),
           ...(categoria !== undefined ? { categoria } : {}),
@@ -64,7 +76,7 @@ export async function DELETE(_request: NextRequest, { params }: Context) {
     const { id } = await params;
 
     const result = await runWithTenant(tenantId, async (tx) => {
-      const items = await tx.invoiceItem.count({ where: { productId: id, tenantId } });
+      const items = await tx.invoiceItem.count({ where: { productId: id, invoice: { tenantId } } });
       if (items > 0) return { conflict: items as number };
       const deleted = await tx.product.deleteMany({ where: { id, tenantId } });
       return { deleted: deleted.count as number };
