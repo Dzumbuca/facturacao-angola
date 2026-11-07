@@ -14,7 +14,7 @@ type Product = {
   categoria: string;
 };
 
-export function ProductManagement({ initialProducts }: { initialProducts: Product[] }) {
+export function ProductManagement({ initialProducts, wmsEnabled }: { initialProducts: Product[]; wmsEnabled: boolean }) {
   const [products, setProducts] = useState(initialProducts);
   const [editing, setEditing] = useState<Product | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -61,14 +61,16 @@ export function ProductManagement({ initialProducts }: { initialProducts: Produc
     setIsSaving(true);
 
     const form = new FormData(formElement);
-    const payload = {
+    const payload: Record<string, unknown> = {
       codigo: String(form.get('codigo') ?? '').trim() || null,
       nome: String(form.get('nome') ?? '').trim(),
       preco: String(form.get('preco') ?? ''),
-      stock: String(form.get('stock') ?? ''),
-      minStock: String(form.get('minStock') ?? ''),
       categoria: String(form.get('categoria') ?? '').trim() || 'GERAL',
     };
+    if (wmsEnabled) {
+      payload.stock = String(form.get('stock') ?? '');
+      payload.minStock = String(form.get('minStock') ?? '');
+    }
 
     try {
       const editingProduct = editing;
@@ -116,13 +118,13 @@ export function ProductManagement({ initialProducts }: { initialProducts: Produc
           ) : (
             <div className="overflow-x-auto rounded-xl border border-[#e1e8f0]">
               <table className="data-table min-w-[760px]">
-                <thead><tr><th>Código</th><th>Nome</th><th>Preço (Kz)</th><th>Stock</th><th>Categoria</th><th>Acções</th></tr></thead>
+                <thead><tr><th>Código</th><th>Nome</th><th>Preço (Kz)</th>{wmsEnabled && <th>Stock</th>}<th>Categoria</th><th>Acções</th></tr></thead>
                 <tbody>
                   {products.map((product) => <tr key={product.id} className="transition hover:bg-[#f8fafc]">
                     <td className="font-mono text-xs text-[#64768a]">{product.codigo || 'SEM-COD'}</td>
                     <td className="font-semibold text-[#263c52]">{product.name}</td>
                     <td className="tabular-nums font-medium">{product.price.toFixed(2)}</td>
-                    <td className="tabular-nums">{product.stock}</td>
+                    {wmsEnabled && <td className="tabular-nums">{product.stock}</td>}
                     <td className="text-[#607286]">{product.categoria}</td>
                     <td>
                       <div className="flex gap-2">
@@ -148,9 +150,10 @@ export function ProductManagement({ initialProducts }: { initialProducts: Produc
             <div><label htmlFor="product-name" className="app-label">Nome do produto <span className="text-[#c44747]">*</span></label><input id="product-name" name="nome" className="app-input" maxLength={160} required autoFocus defaultValue={editing?.name ?? ''} /></div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div><label htmlFor="product-price" className="app-label">Preço (Kz) <span className="text-[#c44747]">*</span></label><input id="product-price" name="preco" type="number" className="app-input tabular-nums" min="0" step="0.01" required defaultValue={editing?.price ?? ''} /></div>
-              <div><label htmlFor="product-stock" className="app-label">Stock <span className="font-normal text-[#708195]">(opcional)</span></label><input id="product-stock" name="stock" type="number" className="app-input tabular-nums" min="0" step="1" placeholder="0" defaultValue={editing?.stock ?? ''} /></div>
-              <div><label htmlFor="product-minstock" className="app-label">Stock minimo <span className="font-normal text-[#708195]">(opcional)</span></label><input id="product-minstock" name="minStock" type="number" className="app-input tabular-nums" min="0" step="1" placeholder="0" defaultValue={editing?.minStock ?? ''} /></div>
+              {wmsEnabled && <div><label htmlFor="product-stock" className="app-label">Stock <span className="font-normal text-[#708195]">(opcional)</span></label><input id="product-stock" name="stock" type="number" className="app-input tabular-nums" min="0" step="1" placeholder="0" defaultValue={editing?.stock ?? ''} /></div>}
+              {wmsEnabled && <div><label htmlFor="product-minstock" className="app-label">Stock minimo <span className="font-normal text-[#708195]">(opcional)</span></label><input id="product-minstock" name="minStock" type="number" className="app-input tabular-nums" min="0" step="1" placeholder="0" defaultValue={editing?.minStock ?? ''} /></div>}
             </div>
+            {!wmsEnabled && <p className="rounded-lg border border-[#e1e8f0] bg-[#f8fafc] px-3 py-2 text-sm text-[#607286]">O controlo de stock faz parte dos pacotes pagos. <a href="/apps" className="font-semibold text-[#2878d0] underline">Ver pacotes</a></p>}
             <div className="grid gap-4 sm:grid-cols-2">
               <div><label htmlFor="product-code" className="app-label">Código <span className="font-normal text-[#708195]">(opcional)</span></label><input id="product-code" name="codigo" className="app-input" defaultValue={editing?.codigo ?? ''} /></div>
               <div><label htmlFor="product-category" className="app-label">Categoria <span className="font-normal text-[#708195]">(opcional)</span></label><input id="product-category" name="categoria" className="app-input" defaultValue={editing?.categoria ?? 'GERAL'} /></div>

@@ -87,6 +87,52 @@ export async function setTenantWmsEnabled(id: string, enabled: boolean, rawReaso
   } catch { return failure; }
 }
 
+// Atribui um pacote comercial (subscrição) e sincroniza o módulo WMS.
+// 'none' remove a subscrição e mantém o tenant legado (grandfathering).
+export type TenantPackage = 'gratis' | 'basico' | 'profissional' | 'empresarial' | 'none';
+export async function setTenantPackage(id: string, packageSlug: TenantPackage, rawReason: string): Promise<ActionResult> {
+  const currentActor = await actor('companies.update');
+  const reason = validateAdminReason(rawReason);
+  const allowed: TenantPackage[] = ['gratis', 'basico', 'profissional', 'empresarial', 'none'];
+  if (!currentActor || !validId(id) || !allowed.includes(packageSlug) || !reason) return failure;
+  try {
+    await db.$transaction(async (tx: any) => {
+      const tenant = await tx.tenant.findUnique({ where: { id }, select: { id: true } });
+      if (!tenant) throw new Error('not-found');
+      await tx.tenantSubscription.deleteMany({ where: { tenantId: id } });
+      if (packageSlug !== 'none') {
+        const plan = await tx.subscriptionPlan.findUnique({ where: { slug: packageSlug } });
+        if (!plan) throw new Error('plan-missing');
+        await tx.tenantSubscription.create({
+          data: { tenantId: id, planId: plan.id, status: 'ACTIVE', startsAt: new Date(), endsAt: null, autoRenew: false },
+        });
+      }
+      const app = await tx.platformApplication.findUnique({ where: { slug: 'wms' } });
+      const wmsEnabled = packageSlug === 'none' ? true : packageSlug !== 'gratis';
+      if (app) {
+        await tx.tenantApplication.upsert({
+          where: { tenantId_applicationId: { tenantId: id, applicationId: app.id } },
+          update: { enabled: wmsEnabled, enabledAt: wmsEnabled ? new Date() : null, disabledAt: wmsEnabled ? null : new Date() },
+          create: { tenantId: id, applicationId: app.id, enabled: wmsEnabled, enabledAt: wmsEnabled ? new Date() : null, disabledAt: wmsEnabled ? null : new Date() },
+        });
+      }
+      await tx.adminAuditLog.create({
+        data: {
+          actorUserId: currentActor.id,
+          action: 'TENANT_PACKAGE_CHANGED',
+          resourceType: 'TENANT',
+          resourceId: id,
+          reason,
+          metadata: { package: packageSlug, wmsEnabled },
+        },
+      });
+    }, { isolationLevel: 'Serializable' });
+    revalidatePath('/admin'); revalidatePath('/admin/empresas'); revalidatePath(`/admin/empresas/${id}`);
+    revalidatePath('/stock'); revalidatePath('/apps');
+    return success;
+  } catch { return failure; }
+}
+
 export async function setUserStatus(id: string, status: 'ACTIVE' | 'SUSPENDED', rawReason: string): Promise<ActionResult> {
   const currentActor = await actor('users.suspend');
   const reason = validateAdminReason(rawReason);
