@@ -64,7 +64,24 @@ npx playwright test
 
 ## 5. Riscos remanescentes
 
-1. **Drift schema ↔ migrations**: as tabelas de stock (Supplier, PurchaseOrder, StockLot, etc.) existem via `db push`, não via migrations. Uma BD criada apenas com `migrate deploy` fica incompleta. Recomenda-se gerar uma migration baseline idempotente antes de produção.
-2. **Volume do incidente** `facturacao-angola_machine_stock_test_data` continua sem container montado; recuperação exige autorização explícita (read-only).
-3. 43 avisos de lint (imports/`catch(error)` não usados) em código legado fora do WMS.
-4. `docker compose` deve usar sempre `-p <projeto>` para evitar reconciliação multi-stack.
+1. **Drift schema ↔ migrations — resolvido nesta sessão** (ver secção 6): baseline `20261107190000_stock_schema_baseline`. Em BDs novas, `migrate deploy` cria tudo; em BDs onde os objetos já existem (criados por `db push`), registar a baseline como aplicada **antes** de correr `migrate deploy`.
+2. **Drift fora do stock (não tratado)**: nomes de índices de `BusinessDocument`, `Email*` e `PlatformTeamInvite` continuam a divergir entre migrations e schema; decisão pendente (renomear em BD vs ajustar schema).
+3. **Volume do incidente** `facturacao-angola_machine_stock_test_data` continua sem container montado; recuperação exige autorização explícita (read-only).
+4. 43 avisos de lint (imports/`catch(error)` não usados) em código legado fora do WMS.
+5. `docker compose` deve usar sempre `-p <projeto>` para evitar reconciliação multi-stack.
+
+## 6. Migration baseline do stock (2026-11-07)
+
+- **Ficheiro**: `prisma/migrations/20261107190000_stock_schema_baseline/migration.sql`.
+- **Como foi gerada**: `prisma migrate diff --from-migrations prisma/migrations --to-schema-datamodel prisma/schema.prisma --shadow-database-url <shadow> --script`, filtrada para o domínio de stock (excluído o drift de índices de tabelas não-stock).
+- **Validação**: BD nova `wms_baseline_verify` em 5441 → `migrate deploy` aplicou as 26 migrations; o diff resultante contra `schema.prisma` contém apenas os drops/criações de índices não-stock (excluídos de propósito). DB temporária removida no fim.
+- **BD descartável de E2E**: baseline registada com `prisma migrate resolve --applied 20261107190000_stock_schema_baseline`; `migrate status` = up to date.
+- **Para ambientes existentes (staging/produção), quando autorizado**:
+  ```bash
+  # 1) confirmar que as tabelas já existem (criadas por db push)
+  npx prisma migrate status
+  # 2) registar a baseline sem a executar
+  npx prisma migrate resolve --applied 20261107190000_stock_schema_baseline
+  # 3) confirmar
+  npx prisma migrate deploy   # deve responder "No pending migrations"
+  ```
