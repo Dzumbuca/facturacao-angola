@@ -1,6 +1,6 @@
 # Fase 0 — Pacotes, entitlements e limites do WMS
 
-**Estado:** proposta para decisão. **Nenhuma alteração de comportamento ou de schema foi aplicada.**
+**Estado:** Fase 0 concluída. O **MVP de gate de módulo** foi implementado (ver secção 16); o restante documento continua como plano para limites/pacotes (Fases 1+).
 **Objectivo:** fechar decisões comerciais/técnicas e deixar a implementação sem ambiguidades.
 
 ---
@@ -225,3 +225,16 @@ Testes obrigatórios antes de activar o gate:
 - Não fazer planos bespoke por cliente.
 - Não confiar no gate da UI.
 - Não activar limites antes da migração da fonte de verdade.
+
+---
+
+## 16. MVP implementado (2026-11-07) — gate de módulo
+
+Antes do motor de entitlements, foi implementado o gate binário do WMS com a infra-estrutura já existente (`PlatformApplication` + `TenantApplication`):
+
+- **Seed idempotente**: `npm run db:seed-wms` (`scripts/seed-wms-application.cjs`) regista a aplicação `wms` e activa-a para todos os tenants existentes (grandfathering). Executado staging (4/4), E2E (2/2) e produção (16/16).
+- **Enforcement servidor**: `src/proxy.ts` (Next 16, Node runtime) lê a sessão NextAuth e bloqueia `/stock/*` (redirect para `/apps?wms=bloqueado`) e `/api/stock/*` (403 `APP_NOT_ENABLED`) quando o módulo não está activo. Defesa em profundidade: `src/app/(dashboard)/stock/layout.tsx`.
+- **Admin**: acção `setTenantWmsEnabled` (permissão `companies.update`, transacção Serializable, auditoria em `AdminAuditLog`) + formulário no detalhe da empresa.
+- **UI**: aviso em `/apps` e paywall na área de stock; dados sempre visíveis quando o módulo é desactivado.
+- **Testes**: 3 E2E novos (403, reactivação, redirect da página) — 30/30 E2E e 10/10 UI verdes.
+- **Comportamento actual**: tenants existentes mantêm acesso; tenants novos ficam sem WMS por omissão, até o admin activar. Limites e pacotes continuam por implementar (Fases 1+).

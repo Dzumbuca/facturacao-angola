@@ -90,7 +90,8 @@ function stopServer(child) {
     cwd: ROOT,
     shell: true,
     stdio: 'ignore',
-    env: { ...process.env, DATABASE_URL: databaseUrl, NEXTAUTH_URL: APP_URL },
+    // A suite faz >30 logins/min; elevar o rate limit só neste servidor de teste.
+    env: { ...process.env, DATABASE_URL: databaseUrl, NEXTAUTH_URL: APP_URL, AUTH_RATE_LIMIT_MAX: '300' },
   });
 
   let exitCode = 0;

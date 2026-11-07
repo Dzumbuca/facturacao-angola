@@ -51,6 +51,42 @@ export async function setTenantPlan(id: string, plan: 'FREE' | 'PRO', rawReason:
   } catch { return failure; }
 }
 
+// Activa/desactiva o módulo WMS (armazém e stock) para uma empresa.
+export async function setTenantWmsEnabled(id: string, enabled: boolean, rawReason: string): Promise<ActionResult> {
+  const currentActor = await actor('companies.update');
+  const reason = validateAdminReason(rawReason);
+  if (!currentActor || !validId(id) || typeof enabled !== 'boolean' || !reason) return failure;
+  try {
+    await db.$transaction(async (tx: any) => {
+      const tenant = await tx.tenant.findUnique({ where: { id }, select: { id: true } });
+      if (!tenant) throw new Error('not-found');
+      const app = await tx.platformApplication.findUnique({ where: { slug: 'wms' } });
+      if (!app) throw new Error('app-missing');
+      const existing = await tx.tenantApplication.findUnique({
+        where: { tenantId_applicationId: { tenantId: id, applicationId: app.id } },
+      });
+      await tx.tenantApplication.upsert({
+        where: { tenantId_applicationId: { tenantId: id, applicationId: app.id } },
+        update: { enabled, enabledAt: enabled ? new Date() : null, disabledAt: enabled ? null : new Date() },
+        create: { tenantId: id, applicationId: app.id, enabled, enabledAt: enabled ? new Date() : null, disabledAt: enabled ? null : new Date() },
+      });
+      await tx.adminAuditLog.create({
+        data: {
+          actorUserId: currentActor.id,
+          action: enabled ? 'TENANT_WMS_ENABLED' : 'TENANT_WMS_DISABLED',
+          resourceType: 'TENANT',
+          resourceId: id,
+          reason,
+          metadata: { previous: !!existing?.enabled, next: enabled },
+        },
+      });
+    }, { isolationLevel: 'Serializable' });
+    revalidatePath('/admin'); revalidatePath('/admin/empresas'); revalidatePath(`/admin/empresas/${id}`);
+    revalidatePath('/stock'); revalidatePath('/apps');
+    return success;
+  } catch { return failure; }
+}
+
 export async function setUserStatus(id: string, status: 'ACTIVE' | 'SUSPENDED', rawReason: string): Promise<ActionResult> {
   const currentActor = await actor('users.suspend');
   const reason = validateAdminReason(rawReason);

@@ -1,13 +1,20 @@
 import { auth } from '@/lib/auth';
 import { listTenantApplications } from '@/lib/platform-apps';
 
-export default async function MachineAppsPage() {
+export default async function MachineAppsPage({ searchParams }: { searchParams?: Promise<{ wms?: string }> }) {
+  const params = searchParams ? await searchParams : {};
   const session = await auth();
-  const tenantId = (session?.user as any)?.tenantId;
+  const tenantId = (session?.user as { tenantId?: string | null } | undefined)?.tenantId;
   const apps = tenantId ? await listTenantApplications(tenantId) : [];
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Machine Apps</h1>
+      {params?.wms === 'bloqueado' && (
+        <div role="alert" className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-slate-800">
+          O módulo <strong>Armazém e Stock</strong> não está incluído no pacote actual da sua empresa.
+          Contacte o comercial para o activar.
+        </div>
+      )}
       <p className="text-gray-500 mb-6">Aplicações disponíveis na sua plataforma.</p>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {apps.map((a: any) => (
