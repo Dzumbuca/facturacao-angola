@@ -2,6 +2,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { prismaMock } = vi.hoisted(() => ({
   prismaMock: {
+    // runWithTenant executa a operação dentro de prisma.$transaction e define
+    // o contexto RLS via $executeRaw (set_config).
+    $executeRaw: vi.fn(),
+    $transaction: vi.fn(),
     companyBankAccount: { findFirst: vi.fn() },
     invoiceDraft: { create: vi.fn(), findUnique: vi.fn(), updateMany: vi.fn(), findFirst: vi.fn() },
   },
@@ -27,7 +31,11 @@ const persistedDraft = {
 };
 
 describe('offline invoice draft server contract', () => {
-  beforeEach(() => { vi.clearAllMocks(); });
+  beforeEach(() => {
+    vi.clearAllMocks();
+    prismaMock.$executeRaw.mockResolvedValue(1);
+    prismaMock.$transaction.mockImplementation(async (fn: any) => fn(prismaMock));
+  });
 
   it('returns the existing tenant draft on an identical stable-ID replay', async () => {
     prismaMock.invoiceDraft.create.mockRejectedValue({ code: 'P2002' });

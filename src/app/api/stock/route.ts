@@ -1,6 +1,5 @@
 import { auth } from '@/lib/auth';
-import { getSessionTenantId } from '@/lib/session';
-import { prisma } from '@/lib/prisma';
+import { getSessionTenantId, getSessionUserId } from '@/lib/session';
 import { runWithTenant } from '@/lib/tenant-db';
 
 export async function GET(request: Request) {
@@ -56,7 +55,7 @@ export async function GET(request: Request) {
           createdAt: 'desc',
         },
       });
-    });
+    }, { userId: getSessionUserId(session) });
 
     return new Response(JSON.stringify(movements), {
       status: 200,
@@ -76,7 +75,7 @@ export async function GET(request: Request) {
 }
 
 /** GET stock summary */
-export async function HEAD(request: Request) {
+export async function HEAD(_request: Request) {
   return new Response(null, {
     status: 200,
     headers: {

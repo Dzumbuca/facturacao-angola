@@ -22,11 +22,6 @@ type Props = {
   onAvailabilityChange?: (value: string) => void;
 };
 
-function formatCurrency(value: number | string) {
-  const num = typeof value === 'string' ? parseFloat(value) : value;
-  return new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA' }).format(num || 0);
-}
-
 function getStockStatus(stock: number, minStock: number) {
   if (stock <= 0) return { label: 'Sem stock', className: 'bg-[#fdf3f3] text-[#a83939] border border-red-100' };
   if (stock <= minStock) return { label: 'Stock baixo', className: 'bg-[#fdf6e9] text-[#8a5a10] border border-amber-100' };

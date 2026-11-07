@@ -18,7 +18,7 @@ describe('WMS v2 E2E - HTTP Auth (staging)', () => {
   });
 
   it('unauthenticated request to /api/stock returns 401', async () => {
-    const res = await fetch('http://localhost:3002/api/stock');
+    const res = await fetch(`${process.env.APP_URL || 'http://localhost:3002'}/api/stock`);
     expect(res.status).toBe(401);
   });
 

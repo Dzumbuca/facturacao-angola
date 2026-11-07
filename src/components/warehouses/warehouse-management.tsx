@@ -2,13 +2,11 @@
 
 import { useMemo, useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { WarehouseIndicators } from './WarehouseIndicators';
 import { WarehouseList } from './WarehouseList';
 import { ProductStockGrid } from './ProductStockGrid';
 import { StockMovementsHistory } from './StockMovementsHistory';
-import { NewWarehouseDialog } from './NewWarehouseDialog';
-import { NewMovementDialog } from './NewMovementDialog';
 
 type Warehouse = {
   id: string;
@@ -71,12 +69,6 @@ export function WarehouseManagement({
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [availabilityFilter, setAvailabilityFilter] = useState('');
-
-  const categories = useMemo(() => {
-    const cats = new Set<string>();
-    products.forEach((p) => { if (p.categoria) cats.add(p.categoria); });
-    return Array.from(cats).sort();
-  }, [products]);
 
   function openCreateWarehouse() {
     setEditingWarehouse(null);
@@ -246,7 +238,7 @@ export function WarehouseManagement({
       }
       if (mRes.ok) {
         const data = await mRes.json();
-        setMovements(Array.isArray(data) ? data : []);
+        setMovements(Array.isArray(data) ? data : (data?.items ?? []));
       }
       setNotice('Dados actualizados.');
     } catch {

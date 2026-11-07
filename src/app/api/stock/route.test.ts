@@ -10,6 +10,7 @@ vi.mock('@/lib/auth', () => ({
 
 vi.mock('@/lib/session', () => ({
   getSessionTenantId: vi.fn(),
+  getSessionUserId: vi.fn(),
 }));
 
 vi.mock('@/lib/tenant-db', () => ({
@@ -75,7 +76,7 @@ describe('GET /api/stock', () => {
     const req = new Request('http://localhost:3000/api/stock?tenantId=tenant-2');
     const res = await GET(req);
     expect(res.status).toBe(200);
-    expect(runWithTenant).toHaveBeenCalledWith('tenant-1', expect.any(Function));
+    expect(runWithTenant).toHaveBeenCalledWith('tenant-1', expect.any(Function), expect.any(Object));
   });
 
   it('aplica filtros productId, type e days', async () => {

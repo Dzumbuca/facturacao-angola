@@ -2,9 +2,9 @@
 // Harness HTTP de autenticacao real contra NextAuth (staging).
 // Requer o servidor Next.js em execucao (npm run dev com .env.playwright).
 
-const BASE_URL = process.env.APP_URL || 'http://localhost:3000';
-const TEST_USER_EMAIL = 'e2e-test@machinefacturas.test';
-const TEST_USER_PASSWORD = 'TestPass123!';
+const BASE_URL = process.env.APP_URL || 'http://localhost:3002';
+const DEFAULT_EMAIL = 'e2e-test@machinefacturas.test';
+const DEFAULT_PASSWORD = 'TestPass123!';
 
 export interface AuthSession {
   cookies: string;
@@ -20,7 +20,7 @@ export async function getCsrfToken(): Promise<string> {
   return json.csrfToken;
 }
 
-export async function login(): Promise<AuthSession> {
+export async function login(email: string = DEFAULT_EMAIL, password: string = DEFAULT_PASSWORD): Promise<AuthSession> {
   const csrfToken = await getCsrfToken();
   const csrfCookie = (global as any).__csrfCookie || '';
 
@@ -29,8 +29,8 @@ export async function login(): Promise<AuthSession> {
 
   const body = new URLSearchParams({
     csrfToken,
-    email: TEST_USER_EMAIL,
-    password: TEST_USER_PASSWORD,
+    email,
+    password,
     callbackUrl: `${BASE_URL}/`,
     json: 'true',
   });

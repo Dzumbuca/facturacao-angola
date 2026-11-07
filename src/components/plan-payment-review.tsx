@@ -6,11 +6,12 @@ import { reviewPlanPayment } from '@/lib/admin-actions';
 type ReviewState = { ok: boolean; message: string };
 
 export function PlanPaymentReviewForm({ id, done }: { id: string; done: boolean }) {
-  if (done) return null;
+  // Hook chamado incondicionalmente (regras dos hooks); o early-return vem depois.
   const [state, formAction, pending] = useActionState<ReviewState, FormData>(
     async (_previous: ReviewState, formData: FormData) => reviewPlanPayment(id, formData.get('decision') as 'CONFIRMADO' | 'REJEITADO', String(formData.get('note') ?? '')),
     { ok: false, message: '' },
   );
+  if (done) return null;
 
   return <form action={formAction} className="mt-3 space-y-2 border-t border-slate-100 pt-3">
     <div className="grid gap-2 sm:grid-cols-[220px_1fr]">
