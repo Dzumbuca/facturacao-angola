@@ -1,4 +1,4 @@
-import { notFound, redirect } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { getTenantAccess } from '@/lib/admin-auth';
 import { BUSINESS_DOCUMENT_TYPES, type BusinessDocumentType } from '@/lib/business-document-core';

@@ -1,11 +1,9 @@
 import 'server-only';
 import { createHash, createHmac, randomBytes } from 'node:crypto';
 import bcrypt from 'bcrypt';
-import { prisma } from '@/lib/prisma';
-import { runAsSystem, runWithRlsContext, PRIVILEGED_RLS } from '@/lib/tenant-db';
+import { runAsSystem, PRIVILEGED_RLS } from '@/lib/tenant-db';
 import { createPublicEmailUrl, escapeEmailHtml, sendSmtpEmail, type EmailActionPurpose } from './email-core';
 
-const db = prisma as any;
 const tokenLifetime = { VERIFY_EMAIL: 24 * 60 * 60 * 1000, PASSWORD_RESET: 60 * 60 * 1000 } as const;
 export const hashEmailToken = (token: string) => createHash('sha256').update(token).digest('hex');
 export const createUnsubscribeToken = (preferenceId: string) => {

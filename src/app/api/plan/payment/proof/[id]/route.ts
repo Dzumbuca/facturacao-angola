@@ -30,7 +30,7 @@ export async function GET(_request: NextRequest, { params }: Context) {
     return new NextResponse(Buffer.from(b64, 'base64'), {
       headers: { 'content-type': mime, 'content-disposition': `inline; filename="${safeName}"` },
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Erro ao carregar o comprovativo.' }, { status: 500 });
   }
 }

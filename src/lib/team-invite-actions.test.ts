@@ -10,7 +10,6 @@ vi.mock('@/lib/email-core', () => ({ createPublicEmailUrl: (p: string, t: string
 
 import { previewTeamInvite, acceptTeamInvite } from './team-invite-actions';
 import { prisma } from '@/lib/prisma';
-import { allowEmailRequest } from '@/lib/email-actions';
 
 const tokenHash = (token: string) => createHash('sha256').update(token).digest('hex');
 const validToken = 'A'.repeat(44);

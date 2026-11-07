@@ -51,7 +51,7 @@ export async function PATCH(request: NextRequest, { params }: Context) {
     if (!produto) return NextResponse.json({ error: 'Produto não encontrado.' }, { status: 404 });
 
     return NextResponse.json({ success: true, id: produto.id, produto: { ...produto, price: Number(produto.price) } });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Erro ao actualizar o produto' }, { status: 500 });
   }
 }
@@ -72,7 +72,7 @@ export async function DELETE(_request: NextRequest, { params }: Context) {
     if ('conflict' in result) return NextResponse.json({ error: `Este produto já foi usado em ${result.conflict} linha(s) de factura e não pode ser apagado.` }, { status: 409 });
     if (!result.deleted) return NextResponse.json({ error: 'Produto não encontrado.' }, { status: 404 });
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Erro ao apagar o produto' }, { status: 500 });
   }
 }

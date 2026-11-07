@@ -1,6 +1,5 @@
 import 'server-only';
 import { PrismaAdapter } from '@auth/prisma-adapter';
-import type { PrismaClient } from '@prisma/client';
 import { runAsSystem, runWithRlsContext, PRIVILEGED_RLS } from './tenant-db';
 
 // RLS-aware wrapper for @auth/prisma-adapter.

@@ -3,11 +3,7 @@ import { auth } from '@/lib/auth';
 import { runWithRlsContext } from '@/lib/tenant-db';
 import {
   createAuthorizationGuards,
-  PLATFORM_PERMISSIONS,
-  getPlatformPermissions,
-  isSuperAdminRole,
   type AccessUser,
-  type PlatformPermission,
   type TenantWriteOperation,
 } from './admin-auth-core';
 

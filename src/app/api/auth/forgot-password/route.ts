@@ -1,5 +1,4 @@
 ﻿import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import { allowEmailRequest, sendEmailActionToken } from '@/lib/email-actions';
 import { runAsSystem, PRIVILEGED_RLS } from '@/lib/tenant-db';
 

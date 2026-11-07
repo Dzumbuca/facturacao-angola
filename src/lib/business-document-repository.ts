@@ -22,7 +22,7 @@ async function lockDocument(tx: any, id: string, tenantId: string) {
   return Array.isArray(rows) && rows.length === 1 ? rows[0] as { id: string; status: string; type: string } : null;
 }
 
-export function createPrismaBusinessDocumentRepository(client: any = db): BusinessDocumentRepository {
+export function createPrismaBusinessDocumentRepository(_client: any = db): BusinessDocumentRepository {
   return {
     findCompany(tenantId) {
       return runWithTenant(tenantId, (tx) => tx.tenant.findUnique({

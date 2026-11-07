@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 
 export function ConsultasClient() {
@@ -10,8 +10,11 @@ export function ConsultasClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filters, setFilters] = useState({ productId:'', warehouseId:'', q:'' });
+  const filtersRef = useRef(filters);
+  filtersRef.current = filters;
 
-  async function load() {
+  const load = useCallback(async () => {
+    const filters = filtersRef.current;
     setLoading(true); setError('');
     try {
       const [mRes,bRes,pRes,wRes]=await Promise.all([
@@ -24,8 +27,8 @@ export function ConsultasClient() {
       if(mRes.ok) setMovements(Array.isArray(m)?m:(m?.items??[])); if(bRes.ok) setBalances(Array.isArray(b)?b:[]); if(pRes.ok) setProducts(Array.isArray(p)?p:[]); if(wRes.ok) setWarehouses(Array.isArray(w)?w:[]);
       if(!mRes.ok && !bRes.ok) throw new Error('Erro ao carregar dados de consulta.');
     } catch(e:any){ setError(e.message||'Erro ao carregar.'); } finally { setLoading(false); }
-  }
-  useEffect(()=>{ load(); },[]);
+  }, []);
+  useEffect(()=>{ void load(); }, [load]);
 
   const filteredMov = useMemo(()=>movements.filter((m:any)=>{
     if(filters.productId && m.productId!==filters.productId) return false;

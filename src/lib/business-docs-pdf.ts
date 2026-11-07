@@ -7,8 +7,7 @@ import PDFDocument from 'pdfkit';
 import type { DocumentoDespesas, DocumentoItens, DocumentoPayload, DocumentoRecibo } from './business-docs';
 import { calcularTotaisItens, totaisDespesasPorCategoria } from './business-docs';
 
-const PDF_BASE = () => new PDFDocument({ size: 'A4' });
-type Doc = ReturnType<typeof PDF_BASE>;
+type Doc = InstanceType<typeof PDFDocument>;
 
 const COLORS = {
   blue: '#021F87',
