@@ -40,6 +40,20 @@ async function main() {
     });
   }
 
+  // Módulo WMS activo para os dois tenants (o gate bloqueia por omissão).
+  const wmsApp = await prisma.platformApplication.upsert({
+    where: { slug: 'wms' },
+    update: { name: 'Armazém e Stock', status: 'ACTIVE' },
+    create: { slug: 'wms', name: 'Armazém e Stock', description: 'Gestão de armazém e stock', icon: '📦', version: '1.0.0', status: 'ACTIVE', isCore: false },
+  });
+  for (const [id] of tenants) {
+    await prisma.tenantApplication.upsert({
+      where: { tenantId_applicationId: { tenantId: id, applicationId: wmsApp.id } },
+      update: { enabled: true, enabledAt: new Date(), disabledAt: null },
+      create: { tenantId: id, applicationId: wmsApp.id, enabled: true, enabledAt: new Date() },
+    });
+  }
+
   const upsertUser = async (email, tenantId) => prisma.user.upsert({
     where: { email },
     update: {

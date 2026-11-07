@@ -1,6 +1,6 @@
 'use client';
 import { useActionState } from 'react';
-import { setTenantStatus, setUserStatus, setTenantRole, setPlatformRole, setTenantPlan } from '@/lib/admin-actions';
+import { setTenantStatus, setUserStatus, setTenantRole, setPlatformRole, setTenantPlan, setTenantWmsEnabled } from '@/lib/admin-actions';
 
 type State = { ok: boolean; message: string };
 const initial: State = { ok: false, message: '' };
@@ -35,4 +35,10 @@ export function AdminPlanForm({ id, current }: { id: string; current: string }) 
   const action = async (_: State, data: FormData) => setTenantPlan(String(data.get('id')), data.get('value') as 'FREE' | 'PRO', String(data.get('reason')));
   const options: [string, string][] = [[current, `Manter: ${current === 'PRO' ? 'Pro (sem anúncios)' : 'Grátis (com anúncios)'}`], ['FREE', 'Grátis — vê anúncios'], ['PRO', 'Pro — sem anúncios']];
   return <StatusForm key={`plan-${current}`} action={action} id={id} title="Plano comercial" options={options} />;
+}
+
+export function AdminWmsForm({ id, current }: { id: string; current: boolean }) {
+  const action = async (_: State, data: FormData) => setTenantWmsEnabled(String(data.get('id')), data.get('value') === 'ON', String(data.get('reason')));
+  const options: [string, string][] = [[current ? 'ON' : 'OFF', current ? 'Manter: activo' : 'Manter: inactivo'], ['ON', 'Activar Armazém e Stock'], ['OFF', 'Desactivar Armazém e Stock']];
+  return <StatusForm key={`wms-${current}`} action={action} id={id} title="Módulo Armazém e Stock" options={options} />;
 }
