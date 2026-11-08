@@ -293,3 +293,20 @@ Antes do motor de entitlements, foi implementado o gate binário do WMS com a in
 ### Pendente de autorização
 - Aplicar migration em produção, `npm run db:seed-plans` e deploy.
 - Limites de SKUs, cobrança anual automática e pagamentos.
+
+---
+
+## 19. Relatórios de armazém (2026-11-08)
+
+Integrados na página **`/reports`** existente, sem quebrar os relatórios financeiros:
+
+- **Novos relatórios**: Posição de stock por armazém, Movimentos de stock, Produtos abaixo do stock mínimo, Transferências entre armazéns, Valorização do inventário.
+- **Filtros**: período, armazém e produto (consoante o relatório); cliente/estado mantêm-se apenas nos financeiros.
+- **Exportação** PDF/XLSX/CSV herdada de `/api/reports/export`, com `warehouseId`/`productId`.
+- **Gate**: relatórios de stock exigem WMS activo. Sem WMS, a página mostra o relatório financeiro com aviso e a exportação devolve **403 `APP_NOT_ENABLED`**.
+- **Valorização**: valor de venda (quantidade × preço), não custo — etiquetado como tal.
+- **Período**: movimentos e transferências filtram por data; posições/mínimos/valorização são a fotografia actual.
+
+### Testes
+- **319 unitários** (3 novos de stock reports) · **36 E2E** (1 novo de gate/exportação) · **10/10 UI** · tsc 0 · lint 0 · build OK.
+- Sem migration; apenas código.

@@ -1,8 +1,23 @@
 import { runWithTenant } from './tenant-db';
-import { buildReportDataset, type ReportKind } from './report-data';
+import { buildReportDataset, isStockReportKind, type AnyReportKind, type ReportDataset, type ReportKind } from './report-data';
 import type { ReportPeriod } from './report-period';
+import { isApplicationEnabled } from './platform-apps';
+import { buildStockReportDataset, StockReportsUnavailableError } from './stock-report-service';
 
-export async function getReportDataset(tenantId: string, period: ReportPeriod, kind: ReportKind, customerId: string | null = null, state: string | null = null) {
+export async function getReportDataset(
+  tenantId: string,
+  period: ReportPeriod,
+  kind: AnyReportKind,
+  customerId: string | null = null,
+  state: string | null = null,
+  warehouseId: string | null = null,
+  productId: string | null = null,
+): Promise<ReportDataset> {
+  if (isStockReportKind(kind)) {
+    if (!(await isApplicationEnabled(tenantId, 'wms'))) throw new StockReportsUnavailableError();
+    return buildStockReportDataset({ tenantId, kind, period, warehouseId, productId });
+  }
+
   return runWithTenant(tenantId, async (tx) => {
     const [tenant, invoices, payments] = await Promise.all([
       tx.tenant.findUnique({ where: { id: tenantId }, select: { name: true, nif: true } }),
@@ -20,10 +35,14 @@ export async function getReportDataset(tenantId: string, period: ReportPeriod, k
         include: { invoice: { select: { number: true, customer: { select: { name: true } } } } },
       }) : Promise.resolve([]),
     ]);
-    return buildReportDataset({ kind, company: { name: tenant?.name ?? '', nif: tenant?.nif ?? null }, period, customerId, state, invoices, payments });
+    return buildReportDataset({ kind: kind as ReportKind, company: { name: tenant?.name ?? '', nif: tenant?.nif ?? null }, period, customerId, state, invoices, payments });
   });
 }
 
-export function parseReportKind(value: string | null | undefined): ReportKind {
-  return value === 'receipts' || value === 'debt' || value === 'customers' || value === 'products' ? value : 'invoices';
+export function parseReportKind(value: string | null | undefined): AnyReportKind {
+  const kinds: AnyReportKind[] = [
+    'invoices', 'receipts', 'debt', 'customers', 'products',
+    'stock_balances', 'stock_movements', 'stock_low', 'stock_transfers', 'stock_valuation',
+  ];
+  return kinds.includes(value as AnyReportKind) ? (value as AnyReportKind) : 'invoices';
 }

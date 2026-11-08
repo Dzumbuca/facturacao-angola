@@ -197,3 +197,22 @@ describe('Pacotes — limite de armazéns', () => {
     }
   });
 });
+
+describe('Relatórios de armazém', () => {
+  it('exportação de stock exige WMS (403) e funciona com WMS (200)', async () => {
+    const sessionB = await login(USER_B);
+    await setWms(TENANT_B, false);
+    try {
+      const blocked = await authenticatedFetch('/api/reports/export?kind=stock_balances&format=csv', sessionB);
+      expect(blocked.status).toBe(403);
+      expect(await blocked.json()).toMatchObject({ code: 'APP_NOT_ENABLED' });
+    } finally {
+      await setWms(TENANT_B, true);
+    }
+
+    const sessionA = await login();
+    const allowed = await authenticatedFetch('/api/reports/export?kind=stock_balances&format=csv', sessionA);
+    expect(allowed.status).toBe(200);
+    expect(await allowed.text()).toContain('Produto');
+  });
+});
