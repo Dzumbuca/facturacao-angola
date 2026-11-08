@@ -3,9 +3,14 @@ import { getInvoiceState } from './invoice-state';
 import type { ReportPeriod } from './report-period';
 
 export type ReportKind = 'invoices' | 'receipts' | 'debt' | 'customers' | 'products';
+export type StockReportKind = 'stock_balances' | 'stock_movements' | 'stock_low' | 'stock_transfers' | 'stock_valuation';
+export type AnyReportKind = ReportKind | StockReportKind;
+export const STOCK_REPORT_KINDS: readonly StockReportKind[] = ['stock_balances', 'stock_movements', 'stock_low', 'stock_transfers', 'stock_valuation'];
+export const isStockReportKind = (kind: AnyReportKind): kind is StockReportKind =>
+  (STOCK_REPORT_KINDS as readonly string[]).includes(kind);
 export type ReportDataset = {
-  kind: ReportKind; title: string; company: { name: string; nif: string | null };
-  period: ReportPeriod; generatedAt: Date; filters: { customerId: string | null; state: string | null };
+  kind: AnyReportKind; title: string; company: { name: string; nif: string | null };
+  period: ReportPeriod; generatedAt: Date; filters: { customerId: string | null; state: string | null; warehouseId?: string | null; productId?: string | null };
   headers: string[]; rows: (string | number | null)[][]; totals: (string | number | null)[];
 };
 

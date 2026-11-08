@@ -3,27 +3,37 @@ import { getSessionTenantId } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 import { parseReportPeriod } from '@/lib/report-period';
 import { getReportDataset, parseReportKind } from '@/lib/report-service';
+import { isApplicationEnabled } from '@/lib/platform-apps';
+import { isStockReportKind } from '@/lib/report-data';
 import { ReportBreakdownChart } from '@/components/report-breakdown-chart';
 import { SaftExport } from '@/components/saft-export';
 
-type Props = { searchParams: Promise<{ period?: string; from?: string; to?: string; kind?: string; customerId?: string; state?: string }> };
+type Props = { searchParams: Promise<{ period?: string; from?: string; to?: string; kind?: string; customerId?: string; state?: string; warehouseId?: string; productId?: string }> };
 
 export default async function ReportsPage({ searchParams }: Props) {
   const tenantId = getSessionTenantId(await auth());
   if (!tenantId) return <p>Empresa não configurada.</p>;
   const query = await searchParams;
-  const kind = parseReportKind(query.kind);
+  const requestedKind = parseReportKind(query.kind);
+  const wmsEnabled = await isApplicationEnabled(tenantId, 'wms');
+  const stockReportBlocked = isStockReportKind(requestedKind) && !wmsEnabled;
+  const kind = stockReportBlocked ? 'invoices' : requestedKind;
+  const stockKind = isStockReportKind(kind);
   let period;
   try { period = parseReportPeriod({ period: query.period ?? 'thisMonth', from: query.from, to: query.to }); }
   catch { period = parseReportPeriod({ period: 'thisMonth' }); }
-  const [customers, dataset] = await Promise.all([
+  const [customers, warehouses, products, dataset] = await Promise.all([
     prisma.customer.findMany({ where: { tenantId }, orderBy: { name: 'asc' }, select: { id: true, name: true } }),
-    getReportDataset(tenantId, period, kind, query.customerId || null, query.state || null),
+    wmsEnabled ? prisma.warehouse.findMany({ where: { tenantId, isActive: true }, orderBy: { name: 'asc' }, select: { id: true, name: true } }) : Promise.resolve([]),
+    wmsEnabled ? prisma.product.findMany({ where: { tenantId }, orderBy: { name: 'asc' }, take: 500, select: { id: true, name: true, codigo: true } }) : Promise.resolve([]),
+    getReportDataset(tenantId, period, kind, query.customerId || null, query.state || null, query.warehouseId || null, query.productId || null),
   ]);
   const params = new URLSearchParams();
   params.set('kind', kind); params.set('period', query.period ?? 'thisMonth');
   if (query.from) params.set('from', query.from); if (query.to) params.set('to', query.to); if (query.customerId) params.set('customerId', query.customerId);
   if (query.state) params.set('state', query.state);
+  if (query.warehouseId) params.set('warehouseId', query.warehouseId);
+  if (query.productId) params.set('productId', query.productId);
   const exportHref = (format: string) => `/api/reports/export?${new URLSearchParams([...params.entries(), ['format', format]]).toString()}`;
   const financialIndex = dataset.headers.findIndex((header) => /\(AOA\)/i.test(header) && /total|saldo|valor|facturado|recebido/i.test(header));
   const reportTotal = financialIndex >= 0 ? dataset.rows.reduce((sum, row) => sum + (typeof row[financialIndex] === 'number' ? row[financialIndex] as number : 0), 0) : null;
@@ -31,9 +41,11 @@ export default async function ReportsPage({ searchParams }: Props) {
 
   return <div className="space-y-8 pb-8">
     <header className="flex flex-col justify-between gap-5 border-b border-[#dce2e9] pb-6 lg:flex-row lg:items-end">
-      <div><p className="text-[11px] font-bold uppercase tracking-[.16em] text-[#67768a]">Análise financeira</p><h2 className="mt-2 text-[30px] font-semibold tracking-[-.035em] text-[#152236] md:text-[36px]">Relatórios</h2><p className="mt-2 text-sm text-[#65758a]">{dataset.title} · {periodLabel}</p></div>
+      <div><p className="text-[11px] font-bold uppercase tracking-[.16em] text-[#67768a]">{stockKind ? 'Análise de armazém' : 'Análise financeira'}</p><h2 className="mt-2 text-[30px] font-semibold tracking-[-.035em] text-[#152236] md:text-[36px]">Relatórios</h2><p className="mt-2 text-sm text-[#65758a]">{dataset.title} · {periodLabel}</p></div>
       <div className="flex flex-wrap gap-2">{(['pdf', 'xlsx', 'csv'] as const).map((format) => <a key={format} href={exportHref(format)} className="inline-flex min-h-10 items-center rounded-md border border-[#cbd3de] bg-white px-3 text-xs font-semibold uppercase tracking-wide text-[#344256] transition-colors hover:border-[#021F87] hover:text-[#021F87]">Descarregar {format}</a>)}</div>
     </header>
+
+    {stockReportBlocked && <div role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-slate-800">Os relatórios de armazém exigem o módulo WMS activo. A mostrar o relatório de facturação.</div>}
 
     <section className="rounded-2xl border border-[#e2e9f1] bg-white p-5 md:p-6" aria-label="Exportação SAFT-AO">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -51,16 +63,18 @@ export default async function ReportsPage({ searchParams }: Props) {
     </section>
 
     <form action="/reports" method="get" className="grid gap-3 border-y border-[#dce2e9] bg-white/60 py-5 sm:grid-cols-2 lg:grid-cols-6">
-      <div><label htmlFor="report-kind" className="app-label">Relatório</label><select id="report-kind" name="kind" defaultValue={kind} className="app-input"><option value="invoices">Facturação</option><option value="receipts">Recebimentos</option><option value="debt">Dívida e antiguidade</option><option value="customers">Clientes</option><option value="products">Artigos facturados</option></select></div>
+      <div><label htmlFor="report-kind" className="app-label">Relatório</label><select id="report-kind" name="kind" defaultValue={kind} className="app-input"><option value="invoices">Facturação</option><option value="receipts">Recebimentos</option><option value="debt">Dívida e antiguidade</option><option value="customers">Clientes</option><option value="products">Artigos facturados</option>{wmsEnabled && <optgroup label="Armazém e stock"><option value="stock_balances">Posição de stock</option><option value="stock_movements">Movimentos de stock</option><option value="stock_low">Abaixo do stock mínimo</option><option value="stock_transfers">Transferências</option><option value="stock_valuation">Valorização do inventário</option></optgroup>}</select></div>
       <div><label htmlFor="report-period" className="app-label">Período</label><select id="report-period" name="period" defaultValue={query.period ?? 'thisMonth'} className="app-input"><option value="today">Hoje</option><option value="last7days">Últimos 7 dias</option><option value="last30days">Últimos 30 dias</option><option value="thisMonth">Este mês</option><option value="lastMonth">Mês anterior</option><option value="thisQuarter">Trimestre actual</option><option value="thisYear">Ano actual</option><option value="custom">Personalizado</option></select></div>
       <div><label htmlFor="report-from" className="app-label">De</label><input id="report-from" name="from" type="date" defaultValue={query.from} className="app-input" /></div>
       <div><label htmlFor="report-to" className="app-label">Até</label><input id="report-to" name="to" type="date" defaultValue={query.to} className="app-input" /></div>
-      <div><label htmlFor="report-customer" className="app-label">Cliente</label><select id="report-customer" name="customerId" defaultValue={query.customerId ?? ''} className="app-input"><option value="">Todos</option>{customers.map((customer: { id: string; name: string }) => <option key={customer.id} value={customer.id}>{customer.name}</option>)}</select></div>
-      <div><label htmlFor="report-state" className="app-label">Estado</label><select id="report-state" name="state" defaultValue={query.state ?? ''} className="app-input"><option value="">Todos</option>{(kind === 'receipts' ? [['PENDING', 'Pendente'], ['CONFIRMED', 'Confirmado'], ['CANCELLED', 'Cancelado'], ['REVERSED', 'Estornado']] : [['ISSUED', 'Emitida'], ['PARTIALLY_PAID', 'Parcialmente paga'], ['PAID', 'Paga'], ['OVERDUE', 'Vencida']]).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
+      {!stockKind && <div><label htmlFor="report-customer" className="app-label">Cliente</label><select id="report-customer" name="customerId" defaultValue={query.customerId ?? ''} className="app-input"><option value="">Todos</option>{customers.map((customer: { id: string; name: string }) => <option key={customer.id} value={customer.id}>{customer.name}</option>)}</select></div>}
+      {!stockKind && <div><label htmlFor="report-state" className="app-label">Estado</label><select id="report-state" name="state" defaultValue={query.state ?? ''} className="app-input"><option value="">Todos</option>{(kind === 'receipts' ? [['PENDING', 'Pendente'], ['CONFIRMED', 'Confirmado'], ['CANCELLED', 'Cancelado'], ['REVERSED', 'Estornado']] : [['ISSUED', 'Emitida'], ['PARTIALLY_PAID', 'Parcialmente paga'], ['PAID', 'Paga'], ['OVERDUE', 'Vencida']]).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>}
+      {stockKind && <div><label htmlFor="report-warehouse" className="app-label">Armazém</label><select id="report-warehouse" name="warehouseId" defaultValue={query.warehouseId ?? ''} className="app-input"><option value="">Todos</option>{warehouses.map((warehouse: { id: string; name: string }) => <option key={warehouse.id} value={warehouse.id}>{warehouse.name}</option>)}</select></div>}
+      {stockKind && <div><label htmlFor="report-product" className="app-label">Produto</label><select id="report-product" name="productId" defaultValue={query.productId ?? ''} className="app-input"><option value="">Todos</option>{products.map((product: { id: string; name: string; codigo: string | null }) => <option key={product.id} value={product.id}>{product.codigo ? `${product.codigo} · ${product.name}` : product.name}</option>)}</select></div>}
       <div className="flex flex-wrap items-center gap-3 sm:col-span-2 lg:col-span-6"><button className="min-h-10 rounded-md bg-[#021F87] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#061965]">Aplicar filtros</button><span className="text-xs text-[#708195]">Datas no fuso Africa/Luanda · valores em AOA</span></div>
     </form>
 
-    <ReportBreakdownChart kind={dataset.kind} headers={dataset.headers} rows={dataset.rows} />
+    {!stockKind && <ReportBreakdownChart kind={dataset.kind as any} headers={dataset.headers} rows={dataset.rows} />}
 
     <section className="min-w-0 border-t border-[#dce2e9] pt-5">
       <div className="mb-4 flex flex-wrap items-end justify-between gap-2"><div><p className="text-[10px] font-bold uppercase tracking-[.14em] text-[#718095]">Detalhe</p><h3 className="mt-1 text-base font-semibold text-[#1d2b40]">{dataset.title}</h3></div><p className="text-xs text-[#7a8796]">{dataset.company.name}{dataset.company.nif ? ` · NIF ${dataset.company.nif}` : ''}</p></div>
