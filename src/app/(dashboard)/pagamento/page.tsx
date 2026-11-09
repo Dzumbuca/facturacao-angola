@@ -15,12 +15,26 @@ export default async function PagamentoPage() {
   const tenantId = typeof sessionUser?.tenantId === 'string' ? sessionUser.tenantId : null;
   if (!tenantId) return <p>Empresa não configurada.</p>;
 
-  const payments = await prisma.planPayment.findMany({
-    where: { tenantId },
-    orderBy: { createdAt: 'desc' },
-    take: 10,
-    select: { id: true, amountKz: true, months: true, status: true, adminNote: true, createdAt: true },
-  });
+  const [payments, plans] = await Promise.all([
+    prisma.planPayment.findMany({
+      where: { tenantId },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+      select: { id: true, amountKz: true, months: true, planSlug: true, billingCycle: true, status: true, adminNote: true, createdAt: true },
+    }),
+    prisma.subscriptionPlan.findMany({
+      where: { slug: { in: ['basico', 'profissional', 'empresarial'] }, isActive: true },
+      orderBy: { priceKz: 'asc' },
+      select: { slug: true, name: true, priceKz: true, priceYearly: true },
+    }),
+  ]);
+  const paymentPlans = plans.map((plan: any) => ({
+    slug: plan.slug as 'basico' | 'profissional' | 'empresarial',
+    name: plan.name,
+    priceKz: Number(plan.priceKz),
+    priceYearly: plan.priceYearly == null ? null : Number(plan.priceYearly),
+  }));
+  const planNames: Record<string, string> = { basico: 'Básico', profissional: 'Profissional', empresarial: 'Empresarial' };
 
   return <div className="space-y-6">
     <div>
@@ -46,7 +60,7 @@ export default async function PagamentoPage() {
 
     <section className="rounded-2xl border border-[#e2e9f1] bg-white p-5 md:p-6">
       <h3 className="text-lg font-bold text-[#1c2d3f]">2. Envia o comprovativo</h3>
-      <div className="mt-4"><PaymentForm /></div>
+      <div className="mt-4"><PaymentForm plans={paymentPlans} /></div>
     </section>
 
     <section className="rounded-2xl border border-[#e2e9f1] bg-white p-5 md:p-6">
@@ -56,7 +70,7 @@ export default async function PagamentoPage() {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="font-semibold text-[#1c2d3f]">
               {new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', maximumFractionDigits: 0 }).format(Number(payment.amountKz))}
-              <span className="ml-1.5 text-xs font-normal text-[#708195]">· {payment.months} {payment.months === 1 ? 'mês' : 'meses'}</span>
+              <span className="ml-1.5 text-xs font-normal text-[#708195]">· {payment.planSlug ? `${planNames[payment.planSlug] ?? payment.planSlug} · ${payment.billingCycle === 'ANNUAL' ? 'anual' : 'mensal'}` : `${payment.months} ${payment.months === 1 ? 'mês' : 'meses'}`}</span>
             </span>
             <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${statusStyles[payment.status] ?? ''}`}>{statusLabels[payment.status] ?? payment.status}</span>
           </div>

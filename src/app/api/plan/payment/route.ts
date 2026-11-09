@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { runWithTenant } from '@/lib/tenant-db';
+import { prisma } from '@/lib/prisma';
+import {
+  isBillingCycle,
+  isPaidPackageSlug,
+  legacyCharge,
+  legacySlugToPackage,
+  resolveCharge,
+  type BillingCycle,
+  type PaidPackageSlug,
+} from '@/lib/plan-pricing';
 
-const PRICES: Record<string, number> = { BASICO: 9900, PRO: 19900 };
 const ALLOWED_MONTHS = [1, 3, 6, 12];
 const MAX_PROOF_BYTES = 3 * 1024 * 1024;
 const ALLOWED_PROOF_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
@@ -18,10 +27,33 @@ export async function POST(req: NextRequest) {
     const form = await req.formData().catch(() => null);
     if (!form) return NextResponse.json({ error: 'Dados inválidos.' }, { status: 400 });
 
-    const plan = String(form.get('plan') ?? '');
-    if (!['BASICO', 'PRO'].includes(plan)) return NextResponse.json({ error: 'Escolhe o plano (Básico ou Pro).' }, { status: 400 });
-    const months = Number(form.get('months'));
-    if (!ALLOWED_MONTHS.includes(months)) return NextResponse.json({ error: 'Escolhe a duração (1, 3, 6 ou 12 meses).' }, { status: 400 });
+    // Pacote: novo formato (planSlug + billingCycle) com compatibilidade para o antigo (plan BASICO/PRO + months).
+    const rawSlug = String(form.get('planSlug') ?? '');
+    const rawCycle = String(form.get('billingCycle') ?? '');
+    const legacyPlan = String(form.get('plan') ?? '');
+    const legacyMonths = Number(form.get('months'));
+
+    const planSlug: PaidPackageSlug | null = isPaidPackageSlug(rawSlug)
+      ? rawSlug
+      : legacySlugToPackage(legacyPlan);
+    if (!planSlug) return NextResponse.json({ error: 'Escolhe um pacote válido (Básico, Profissional ou Empresarial).' }, { status: 400 });
+
+    const cycle: BillingCycle | null = isBillingCycle(rawCycle)
+      ? rawCycle
+      : (Number.isInteger(legacyMonths) && ALLOWED_MONTHS.includes(legacyMonths) ? 'MONTHLY' : null);
+
+    const plan = await prisma.subscriptionPlan.findUnique({ where: { slug: planSlug } });
+    if (!plan || !plan.isActive) return NextResponse.json({ error: 'Pacote indisponível.' }, { status: 400 });
+
+    let charge: { amount: number; months: number } | null;
+    if (isBillingCycle(rawCycle)) {
+      charge = resolveCharge(plan, cycle as BillingCycle);
+    } else if (Number.isInteger(legacyMonths) && ALLOWED_MONTHS.includes(legacyMonths)) {
+      charge = legacyCharge(plan, legacyMonths);
+    } else {
+      charge = null;
+    }
+    if (!charge) return NextResponse.json({ error: 'Duração inválida para este pacote.' }, { status: 400 });
 
     const payerName = String(form.get('payerName') ?? '').trim().slice(0, 120);
     const payerPhone = String(form.get('payerPhone') ?? '').trim().slice(0, 24);
@@ -36,13 +68,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'O comprovativo deve ser uma imagem (JPG, PNG, WebP) ou PDF.' }, { status: 400 });
     }
 
-    const amountKz = PRICES[plan] * months;
     const buffer = Buffer.from(await proof.arrayBuffer());
     const proofData = `data:${proof.type};base64,${buffer.toString('base64')}`;
 
     const payment = await runWithTenant(tenantId, (tx) => tx.planPayment.create({
-      data: { tenantId, payerName, payerPhone, amountKz, months, proofName: proof.name.slice(0, 160), proofData, status: 'PENDENTE' },
-      select: { id: true, status: true, createdAt: true },
+      data: {
+        tenantId,
+        payerName,
+        payerPhone,
+        amountKz: charge.amount,
+        months: charge.months,
+        planSlug,
+        billingCycle: isBillingCycle(rawCycle) ? rawCycle : 'MONTHLY',
+        proofName: proof.name.slice(0, 160),
+        proofData,
+        status: 'PENDENTE',
+      },
+      select: { id: true, status: true, createdAt: true, amountKz: true, months: true, planSlug: true, billingCycle: true },
     }), { userId });
 
     return NextResponse.json({ success: true, payment });
@@ -62,7 +104,7 @@ export async function GET() {
       where: { tenantId },
       orderBy: { createdAt: 'desc' },
       take: 20,
-      select: { id: true, amountKz: true, months: true, status: true, adminNote: true, createdAt: true },
+      select: { id: true, amountKz: true, months: true, planSlug: true, billingCycle: true, status: true, adminNote: true, createdAt: true },
     }), { userId });
     return NextResponse.json({ payments });
   } catch {
