@@ -19,6 +19,8 @@ describe('entitlements', () => {
 
   it('usa os limites do plano da subscrição activa', async () => {
     findFirst.mockResolvedValue({
+      status: 'ACTIVE',
+      endsAt: null,
       plan: {
         slug: 'profissional',
         limits: [
@@ -46,9 +48,20 @@ describe('entitlements', () => {
     expect(limits).toMatchObject({ planSlug: 'gratis', maxWarehouses: 0, maxProducts: 30, maxClients: 30, maxInvoicesPerMonth: 15, capabilities: { transfers: false }, grandfathered: false });
   });
 
+  it('subscrição expirada cai para Grátis (sem grandfathering)', async () => {
+    findFirst.mockResolvedValue({
+      status: 'ACTIVE',
+      endsAt: new Date('2020-01-01T00:00:00Z'),
+      plan: { slug: 'profissional', limits: [{ metric: 'max_warehouses', value: 3 }] },
+    });
+    isApplicationEnabled.mockResolvedValue(true);
+    const limits = await getTenantWmsLimits('t1');
+    expect(limits).toMatchObject({ planSlug: 'gratis', grandfathered: false, maxWarehouses: 0, maxProducts: 30 });
+  });
+
   it('bloqueia criação quando o uso atinge o limite', async () => {
     const tx = {
-      tenantSubscription: { findFirst: vi.fn().mockResolvedValue({ plan: { slug: 'basico', limits: [{ metric: 'max_warehouses', value: 1 }] } }) },
+      tenantSubscription: { findFirst: vi.fn().mockResolvedValue({ status: 'ACTIVE', endsAt: null, plan: { slug: 'basico', limits: [{ metric: 'max_warehouses', value: 1 }] } }) },
       warehouse: { count: vi.fn().mockResolvedValue(1) },
     };
     const status = await getWarehouseLimitStatus(tx, 't1');
@@ -57,7 +70,7 @@ describe('entitlements', () => {
 
   it('permite criação abaixo do limite', async () => {
     const tx = {
-      tenantSubscription: { findFirst: vi.fn().mockResolvedValue({ plan: { slug: 'profissional', limits: [{ metric: 'max_warehouses', value: 3 }] } }) },
+      tenantSubscription: { findFirst: vi.fn().mockResolvedValue({ status: 'ACTIVE', endsAt: null, plan: { slug: 'profissional', limits: [{ metric: 'max_warehouses', value: 3 }] } }) },
       warehouse: { count: vi.fn().mockResolvedValue(2) },
     };
     const status = await getWarehouseLimitStatus(tx, 't1');

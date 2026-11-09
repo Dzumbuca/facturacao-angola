@@ -109,6 +109,11 @@ export async function setTenantPackage(id: string, packageSlug: TenantPackage, r
       }
       const app = await tx.platformApplication.findUnique({ where: { slug: 'wms' } });
       const wmsEnabled = packageSlug === 'none' ? true : packageSlug !== 'gratis';
+      // Espelho legado (anúncios/relatórios antigos): pago = PRO; Grátis = FREE.
+      await tx.tenant.update({
+        where: { id },
+        data: packageSlug === 'gratis' ? { plan: 'FREE', planExpiry: null } : { plan: 'PRO', planExpiry: null },
+      });
       if (app) {
         await tx.tenantApplication.upsert({
           where: { tenantId_applicationId: { tenantId: id, applicationId: app.id } },
@@ -219,19 +224,46 @@ export async function reviewPlanPayment(id: string, decision: 'CONFIRMADO' | 'RE
   const reason = validateAdminReason(rawReason);
   if (!currentActor || !validId(id) || !['CONFIRMADO', 'REJEITADO'].includes(decision) || !reason) return failure;
   try {
-    await db.$transaction(async (tx: any) => {
-      const payment = await tx.planPayment.findUnique({ where: { id }, select: { id: true, status: true, tenantId: true, months: true } });
+    const result = await db.$transaction(async (tx: any) => {
+      const payment = await tx.planPayment.findUnique({ where: { id }, select: { id: true, status: true, tenantId: true, months: true, planSlug: true, billingCycle: true } });
       if (!payment) throw new Error('not-found');
-      if (payment.status !== 'PENDENTE') return;
+      if (payment.status !== 'PENDENTE') return null;
       await tx.planPayment.update({ where: { id }, data: { status: decision, adminNote: reason, reviewedAt: new Date() } });
       if (decision === 'CONFIRMADO') {
-        const tenant = await tx.tenant.findUnique({ where: { id: payment.tenantId }, select: { planExpiry: true } });
-        const expiry = nextPlanExpiry(tenant?.planExpiry, payment.months);
-        await tx.tenant.update({ where: { id: payment.tenantId }, data: { plan: 'PRO', planExpiry: expiry } });
+        const now = new Date();
+        if (payment.planSlug) {
+          const plan = await tx.subscriptionPlan.findUnique({ where: { slug: payment.planSlug } });
+          if (!plan) throw new Error('plan-missing');
+          const existing = await tx.tenantSubscription.findFirst({ where: { tenantId: payment.tenantId }, orderBy: { startsAt: 'desc' } });
+          const base = existing?.endsAt && existing.endsAt.getTime() > now.getTime() ? new Date(existing.endsAt) : new Date(now);
+          base.setMonth(base.getMonth() + (payment.billingCycle === 'ANNUAL' ? 12 : payment.months));
+          if (existing) {
+            await tx.tenantSubscription.update({ where: { id: existing.id }, data: { planId: plan.id, status: 'ACTIVE', endsAt: base, autoRenew: false } });
+          } else {
+            await tx.tenantSubscription.create({ data: { tenantId: payment.tenantId, planId: plan.id, status: 'ACTIVE', startsAt: now, endsAt: base, autoRenew: false } });
+          }
+          const app = await tx.platformApplication.findUnique({ where: { slug: 'wms' } });
+          if (app) {
+            await tx.tenantApplication.upsert({
+              where: { tenantId_applicationId: { tenantId: payment.tenantId, applicationId: app.id } },
+              update: { enabled: true, enabledAt: new Date(), disabledAt: null },
+              create: { tenantId: payment.tenantId, applicationId: app.id, enabled: true, enabledAt: new Date() },
+            });
+          }
+          // Espelho legado (anúncios): PRO até ao fim da subscrição.
+          await tx.tenant.update({ where: { id: payment.tenantId }, data: { plan: 'PRO', planExpiry: base } });
+        } else {
+          // Pagamento antigo sem pacote: mantém o comportamento legado.
+          const tenant = await tx.tenant.findUnique({ where: { id: payment.tenantId }, select: { planExpiry: true } });
+          const expiry = nextPlanExpiry(tenant?.planExpiry, payment.months);
+          await tx.tenant.update({ where: { id: payment.tenantId }, data: { plan: 'PRO', planExpiry: expiry } });
+        }
       }
-      await tx.adminAuditLog.create({ data: { actorUserId: currentActor.id, action: 'PLAN_PAYMENT_REVIEWED', resourceType: 'PLAN_PAYMENT', resourceId: id, reason, metadata: { decision, previousStatus: payment.status, months: payment.months } } });
+      await tx.adminAuditLog.create({ data: { actorUserId: currentActor.id, action: 'PLAN_PAYMENT_REVIEWED', resourceType: 'PLAN_PAYMENT', resourceId: id, reason, metadata: { decision, previousStatus: payment.status, months: payment.months, planSlug: payment.planSlug, billingCycle: payment.billingCycle } } });
+      return { planSlug: payment.planSlug };
     }, { isolationLevel: 'Serializable' });
-    revalidatePath('/admin/pagamentos'); revalidatePath('/admin');
-    return decision === 'CONFIRMADO' ? { ok: true, message: 'Pagamento confirmado e plano Pro activado.' } : { ok: true, message: 'Pagamento rejeitado.' };
+    revalidatePath('/admin/pagamentos'); revalidatePath('/admin'); revalidatePath('/pagamento'); revalidatePath('/stock');
+    if (!result) return { ok: true, message: 'Este pagamento já tinha sido revisto.' };
+    return decision === 'CONFIRMADO' ? { ok: true, message: 'Pagamento confirmado e pacote activado.' } : { ok: true, message: 'Pagamento rejeitado.' };
   } catch { return failure; }
 }

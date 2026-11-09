@@ -76,6 +76,8 @@ model PlanPayment {
   payerPhone String
   amountKz   Decimal   @db.Decimal(12, 2)
   months     Int       @default(1)
+  planSlug   String?
+  billingCycle String?
   proofName  String?
   proofData  String?
   status     String    @default("PENDENTE")

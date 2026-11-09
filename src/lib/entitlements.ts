@@ -74,16 +74,19 @@ function toLimits(plan: {
  * - restantes (Grátis) → limites do Grátis.
  */
 export async function getTenantWmsLimits(tenantId: string, db: any = prisma, now = new Date()): Promise<WmsLimits> {
+  // Qualquer subscrição (mesmo expirada) tira o tenant do grandfathering.
   const subscription = await db.tenantSubscription.findFirst({
-    where: {
-      tenantId,
-      status: { in: ['ACTIVE', 'TRIAL'] },
-      OR: [{ endsAt: null }, { endsAt: { gt: now } }],
-    },
+    where: { tenantId },
     orderBy: { startsAt: 'desc' },
     include: { plan: { include: { limits: true, capabilities: true } } },
   });
-  if (subscription?.plan) return toLimits(subscription.plan);
+  if (subscription) {
+    const active = (subscription.status === 'ACTIVE' || subscription.status === 'TRIAL')
+      && (!subscription.endsAt || subscription.endsAt.getTime() > now.getTime());
+    if (active && subscription.plan) return toLimits(subscription.plan);
+    // Expirada/cancelada: cai para Grátis (sem grandfathering).
+    return GRATIS;
+  }
 
   // Compatibilidade com o modelo legado: quem já tem o módulo activo mantém acesso.
   if (await isApplicationEnabled(tenantId, 'wms')) return GRANDFATHERED;

@@ -310,3 +310,24 @@ Integrados na página **`/reports`** existente, sem quebrar os relatórios finan
 ### Testes
 - **319 unitários** (3 novos de stock reports) · **36 E2E** (1 novo de gate/exportação) · **10/10 UI** · tsc 0 · lint 0 · build OK.
 - Sem migration; apenas código.
+
+---
+
+## 20. P0 — Fechar a facturação (2026-11-09)
+
+Correcção do elo pagamento → pacote → subscrição:
+
+- **`PlanPayment.planSlug` + `billingCycle`**: o comprovativo passa a registar o pacote e o ciclo.
+- **Preço calculado no servidor** a partir de `SubscriptionPlan.priceKz`/`priceYearly` (`src/lib/plan-pricing.ts`); o valor enviado pelo cliente é ignorado. Corrige o bug de o formulário/API ainda cobrarem 9.900/19.900.
+- **Formulário** lista Básico/Profissional/Empresarial e mensal/anual (anual com 15%).
+- **Aprovação** (`reviewPlanPayment`): cria/renova `TenantSubscription` (fim = base + meses), activa o WMS e espelha `Tenant.plan = PRO` com `planExpiry` para anúncios/legado. Pagamentos antigos sem pacote mantêm o comportamento anterior.
+- **Expiração sem fuga**: qualquer subscrição (mesmo expirada/cancelada) retira o tenant do grandfathering e cai para **Grátis**; só tenants sem qualquer subscrição e com WMS activo continuam grandfathered.
+- **`setTenantPackage`** espelha o plano legado (Grátis → FREE; pagos/nenhum → PRO).
+
+### Testes
+- **324 unitários** (4 novos de pricing + 2 de expiração) · tsc 0 · lint 0 · build OK.
+- Migration `20261108090000_plan_payment_package` (aditiva). E2E validado no CI (Docker local indisponível).
+
+### Pendente
+- Factura fiscal da própria subscrição (emissor plataforma) e cobrança automática.
+- Limites de SKUs; contagem física; custo/FIFO.

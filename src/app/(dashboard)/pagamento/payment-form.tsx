@@ -1,26 +1,30 @@
 'use client';
 
 import { useState } from 'react';
+import type { BillingCycle, PaidPackageSlug } from '@/lib/plan-pricing';
 
-const PRICES: Record<string, number> = { BASICO: 9900, PRO: 19900 };
+type PlanOption = { slug: PaidPackageSlug; name: string; priceKz: number; priceYearly: number | null };
 const kz = (value: number) => new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA' }).format(value);
 
-export function PaymentForm() {
-  const [plan, setPlan] = useState<'BASICO' | 'PRO'>('BASICO');
-  const [months, setMonths] = useState(1);
+export function PaymentForm({ plans }: { plans: PlanOption[] }) {
+  const [planSlug, setPlanSlug] = useState<PaidPackageSlug>(plans[0]?.slug ?? 'basico');
+  const [cycle, setCycle] = useState<BillingCycle>('MONTHLY');
   const [fileName, setFileName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const amount = PRICES[plan] * months;
+  const selected = plans.find((plan) => plan.slug === planSlug) ?? plans[0];
+  const annualAvailable = Boolean(selected?.priceYearly && Number(selected.priceYearly) > 0);
+  const effectiveCycle: BillingCycle = cycle === 'ANNUAL' && annualAvailable ? 'ANNUAL' : 'MONTHLY';
+  const amount = effectiveCycle === 'ANNUAL' ? Number(selected?.priceYearly ?? 0) : Number(selected?.priceKz ?? 0);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError('');
     setLoading(true);
     const form = new FormData(event.currentTarget);
-    form.set('plan', plan);
-    form.set('months', String(months));
+    form.set('planSlug', planSlug);
+    form.set('billingCycle', effectiveCycle);
     try {
       const response = await fetch('/api/plan/payment', { method: 'POST', body: form });
       const data = await response.json().catch(() => ({}));
@@ -39,25 +43,32 @@ export function PaymentForm() {
   return <form className="space-y-4" onSubmit={handleSubmit}>
     <div className="grid gap-4 sm:grid-cols-2">
       <div>
-        <label htmlFor="pay-plan" className="app-label">Plano</label>
-        <select id="pay-plan" className="app-input" value={plan} onChange={(event) => setPlan(event.target.value as 'BASICO' | 'PRO')}>
-          <option value="BASICO">Básico — 5.000 Kz/mês</option>
-          <option value="PRO">Profissional — 12.500 Kz/mês</option>
+        <label htmlFor="pay-plan" className="app-label">Pacote</label>
+        <select
+          id="pay-plan"
+          className="app-input"
+          value={planSlug}
+          onChange={(event) => {
+            const next = event.target.value as PaidPackageSlug;
+            setPlanSlug(next);
+            const plan = plans.find((entry) => entry.slug === next);
+            if (!plan?.priceYearly || Number(plan.priceYearly) <= 0) setCycle('MONTHLY');
+          }}
+        >
+          {plans.map((plan) => <option key={plan.slug} value={plan.slug}>{plan.name} — {kz(Number(plan.priceKz))}/mês</option>)}
         </select>
       </div>
       <div>
-        <label htmlFor="pay-months" className="app-label">Duração</label>
-        <select id="pay-months" className="app-input" value={months} onChange={(event) => setMonths(Number(event.target.value))}>
-          <option value="1">1 mês</option>
-          <option value="3">3 meses</option>
-          <option value="6">6 meses</option>
-          <option value="12">12 meses</option>
+        <label htmlFor="pay-cycle" className="app-label">Pagamento</label>
+        <select id="pay-cycle" className="app-input" value={effectiveCycle} onChange={(event) => setCycle(event.target.value as BillingCycle)}>
+          <option value="MONTHLY">Mensal — 1 mês</option>
+          {annualAvailable && <option value="ANNUAL">Anual — 12 meses (15% desconto)</option>}
         </select>
       </div>
     </div>
 
     <div className="rounded-xl border border-[#c9def2] bg-[#eef6ff] p-4">
-      <p className="text-xs font-semibold uppercase tracking-wide text-[#2878d0]">Total a transferir</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-[#2878d0]">Total a transferir · {effectiveCycle === 'ANNUAL' ? '12 meses' : '1 mês'}</p>
       <p className="mt-1 text-2xl font-black tabular-nums text-[#2878d0]">{kz(amount)}</p>
       <p className="mt-2 text-sm text-[#4a5f76]">
         Envia via <strong>Multicaixa Express</strong> para o número
@@ -95,7 +106,7 @@ export function PaymentForm() {
 
     {error && <p role="alert" className="rounded-lg border border-red-100 bg-red-50 px-3 py-2.5 text-sm text-[#a83939]">{error}</p>}
 
-    <button type="submit" disabled={loading} className="min-h-12 w-full rounded-lg bg-[#2878d0] px-4 py-3 font-semibold text-white transition hover:bg-[#216bbd] disabled:cursor-wait disabled:opacity-60">
+    <button type="submit" disabled={loading || plans.length === 0} className="min-h-12 w-full rounded-lg bg-[#2878d0] px-4 py-3 font-semibold text-white transition hover:bg-[#216bbd] disabled:cursor-wait disabled:opacity-60">
       {loading ? 'A enviar…' : 'Enviar comprovativo para confirmação'}
     </button>
     <p className="text-center text-xs text-[#708195]">A tua conta é activada logo que o pagamento for confirmado pela equipa.</p>
