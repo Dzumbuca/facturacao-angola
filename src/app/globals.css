@@ -332,3 +332,25 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .tool-authenticated .prose-cta { display: none; }
 .tool-authenticated header, .tool-authenticated footer { display: none; }
 .tool-authenticated div:has(> div > .ad-slot) { display: none; }
+
+/* --- Shell móvel, safe areas e contenção de overflow --- */
+html { overflow-x: clip; }
+body { overflow-x: clip; overflow-wrap: break-word; touch-action: manipulation; }
+img, svg, video, canvas { max-width: 100%; }
+main { min-width: 0; }
+main > * { min-width: 0; }
+main :where(.grid) > * { min-width: 0; }
+
+/* Tabelas largas rolam dentro do próprio contentor, nunca na página. */
+.table-scroll { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+
+/* Folha "Mais" da navegação móvel. */
+@keyframes sheet-up { from { transform: translateY(18px); opacity: .55; } to { transform: translateY(0); opacity: 1; } }
+.sheet-panel { animation: sheet-up .22s cubic-bezier(.2, .8, .2, 1) both; }
+@media (prefers-reduced-motion: reduce) { .sheet-panel { animation: none; } }
+
+@media (max-width: 767px) {
+  /* 16px evita o zoom automático do iOS ao focar campos. */
+  .app-input, input, select, textarea { font-size: 16px; }
+}
+
