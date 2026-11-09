@@ -50,45 +50,52 @@ const plans: {
     price: '0 Kz',
     period: 'para sempre',
     tagline: 'Para começar hoje',
-    items: ['20 facturas por mês', '1 utilizador', 'Clientes e produtos ilimitados', 'Login com Google', 'App para telemóvel e computador'],
+    items: ['15 facturas por mês', '30 produtos e 30 clientes', '1 utilizador', 'Assinatura digital padrão AGT', 'Sem gestão de stock'],
     cta: 'Criar conta grátis',
   },
   {
     name: 'Básico',
-    price: '9.900 Kz',
+    price: '5.000 Kz',
     period: 'por mês',
-    tagline: 'Para o dia-a-dia do negócio',
-    items: ['Facturas ilimitadas', '3 utilizadores', 'Envio de facturas por email', 'Contas bancárias nos documentos', 'Suporte prioritário por WhatsApp'],
-    highlight: true,
+    tagline: 'Para pequenos negócios',
+    items: ['100 facturas por mês', '100 produtos e 100 clientes', 'Stock com 1 armazém', 'Entradas e saídas de stock', 'Sem anúncios'],
     cta: 'Começar no Básico',
   },
   {
-    name: 'Pro',
-    price: '19.900 Kz',
+    name: 'Profissional',
+    price: '12.500 Kz',
     period: 'por mês',
-    tagline: 'Para quem quer tudo',
-    items: ['Tudo do Básico', 'Exportação SAFT-AO', 'Utilizadores ilimitados', 'Relatórios avançados', 'Campanhas de email'],
-    cta: 'Começar no Pro',
+    tagline: 'Para empresas em crescimento',
+    items: ['Facturas ilimitadas', '500 produtos e 500 clientes', '3 armazéns e transferências', 'Relatórios de armazém', 'Suporte prioritário'],
+    highlight: true,
+    cta: 'Começar no Profissional',
+  },
+  {
+    name: 'Empresarial',
+    price: '25.000 Kz',
+    period: 'por mês',
+    tagline: 'Para operações completas',
+    items: ['Tudo do Profissional', 'Produtos e clientes ilimitados', '10 armazéns', 'Relatórios completos', 'Apoio dedicado'],
+    cta: 'Falar com comercial',
   },
 ];
 
-const comparison: { label: string; free: string; basico: string; pro: string }[] = [
-  { label: 'Facturas por mês', free: '20', basico: 'Ilimitadas', pro: 'Ilimitadas' },
-  { label: 'Utilizadores', free: '1', basico: '3', pro: 'Ilimitados' },
-  { label: 'Assinatura digital padrão AGT', free: '✓', basico: '✓', pro: '✓' },
-  { label: 'Clientes e produtos', free: 'Ilimitados', basico: 'Ilimitados', pro: 'Ilimitados' },
-  { label: 'Envio de facturas por email', free: '—', basico: '✓', pro: '✓' },
-  { label: 'Exportação SAFT-AO', free: '—', basico: '—', pro: '✓' },
-  { label: 'Relatórios', free: 'Básicos', basico: 'Básicos', pro: 'Avançados' },
-  { label: 'Campanhas de email', free: '—', basico: '—', pro: '✓' },
-  { label: 'Anúncios no painel', free: 'Sim', basico: 'Não', pro: 'Não' },
+const comparison: { label: string; free: string; basico: string; profissional: string; empresarial: string }[] = [
+  { label: 'Facturas por mês', free: '15', basico: '100', profissional: 'Ilimitadas', empresarial: 'Ilimitadas' },
+  { label: 'Produtos', free: '30', basico: '100', profissional: '500', empresarial: 'Ilimitados' },
+  { label: 'Clientes', free: '30', basico: '100', profissional: '500', empresarial: 'Ilimitados' },
+  { label: 'Gestão de stock', free: '—', basico: '1 armazém', profissional: '3 armazéns', empresarial: '10 armazéns' },
+  { label: 'Transferências entre armazéns', free: '—', basico: '—', profissional: '✓', empresarial: '✓' },
+  { label: 'Relatórios de armazém', free: '—', basico: 'Básicos', profissional: 'Avançados', empresarial: 'Completos' },
+  { label: 'Assinatura digital padrão AGT', free: '✓', basico: '✓', profissional: '✓', empresarial: '✓' },
+  { label: 'Anúncios no painel', free: 'Sim', basico: 'Não', profissional: 'Não', empresarial: 'Não' },
 ];
 
 const faq: { q: string; a: string }[] = [
-  { q: 'Como pago um plano pago?', a: 'Por Multicaixa Express, para o número 937 555 618. Depois de transferir, envie o comprovativo na página Pagamento dentro da plataforma — a equipa confirma e o plano fica activo na hora.' },
-  { q: 'O que acontece quando atingo as 20 facturas do plano Grátis?', a: 'A emissão fica disponível novamente no mês seguinte, ou imediatamente se subir de plano. Os rascunhos continuam sempre disponíveis.' },
+  { q: 'Como pago um plano pago?', a: 'Por Multicaixa Express, para o número 937 555 618. Depois de transferir, envie o comprovativo na página Pagamento dentro da plataforma — a equipa confirma e o pacote fica activo na hora.' },
+  { q: 'O que acontece quando atingo as 15 facturas do plano Grátis?', a: 'A emissão fica disponível novamente no mês seguinte, ou imediatamente se subir de plano. Os rascunhos continuam sempre disponíveis.' },
   { q: 'Preciso de instalar alguma coisa?', a: 'Não. A plataforma funciona no navegador — telemóvel, tablet ou computador — e as facturas ficam guardadas com segurança na sua conta.' },
-  { q: 'Como funciona a renovação?', a: 'Cada pagamento tem a duração que escolher (1, 3, 6 ou 12 meses). Renovações feitas antes do prazo somam aos dias restantes — não perde nada.' },
+  { q: 'Como funciona a renovação?', a: 'Pode pagar mensalmente ou anualmente (12 meses com 15% de desconto). Renovações feitas antes do prazo somam aos dias restantes — não perde nada.' },
   { q: 'Os meus dados estão seguros?', a: 'Cada empresa só acede aos seus próprios dados, as facturas levam assinatura digital e a plataforma mantém cópias de segurança diárias.' },
 ];
 
@@ -195,8 +202,8 @@ export default async function LandingPage() {
           <h2 className="mt-2 text-3xl font-bold tracking-tight md:text-4xl">Preços simples, em Kwanzas</h2>
           <p className="mt-3 leading-7 text-[#4a5f76]">Comece grátis e cresça quando quiser. Sem contratos de fidelização — paga por Multicaixa Express, mês a mês ou com desconto de duração.</p>
         </div>
-        <div className="mt-12 grid items-start gap-5 lg:grid-cols-3">
-          {plans.map((plan) => <div key={plan.name} className={`relative flex flex-col rounded-3xl border bg-white p-7 shadow-[0_3px_14px_rgba(25,52,80,.035)] ${plan.highlight ? 'border-[#2878d0] shadow-[0_18px_50px_rgba(40,120,208,.18)] lg:-mt-3 lg:pb-9' : 'border-[#e2e9f1]'}`}>
+        <div className="mt-12 grid items-start gap-5 md:grid-cols-2 lg:grid-cols-4">
+          {plans.map((plan) => <div key={plan.name} className={`relative flex h-full flex-col rounded-3xl border bg-white p-6 shadow-[0_3px_14px_rgba(25,52,80,.035)] ${plan.highlight ? 'border-[#2878d0] shadow-[0_18px_50px_rgba(40,120,208,.18)] lg:-mt-3 lg:pb-9' : 'border-[#e2e9f1]'}`}>
             {plan.highlight && <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#2878d0] px-4 py-1 text-xs font-bold text-white">Mais popular</span>}
             <p className="text-sm font-bold uppercase tracking-[.14em] text-[#2878d0]">{plan.name}</p>
             <p className="mt-3 text-4xl font-black tracking-tight">{plan.price}<span className="ml-1 text-sm font-medium text-[#708195]">/ {plan.period}</span></p>
@@ -211,27 +218,29 @@ export default async function LandingPage() {
         <div className="mt-14">
           <h3 className="text-center text-xl font-bold tracking-tight">Compare os planos em detalhe</h3>
           <div className="mt-6 overflow-x-auto rounded-2xl border border-[#e2e9f1]">
-            <table className="data-table min-w-[640px] bg-white">
-              <thead><tr><th>Recurso</th><th>Grátis</th><th>Básico</th><th>Pro</th></tr></thead>
+            <table className="data-table min-w-[720px] bg-white">
+              <thead><tr><th>Recurso</th><th>Grátis</th><th>Básico</th><th>Profissional</th><th>Empresarial</th></tr></thead>
               <tbody>
                 {comparison.map((row) => <tr key={row.label}>
                   <td className="font-medium text-[#263c52]">{row.label}</td>
                   <td>{row.free}</td>
                   <td className={row.basico !== '—' ? 'font-semibold text-[#1c2d3f]' : 'text-[#a9b6c4]'}>{row.basico}</td>
-                  <td className={row.pro !== '—' ? 'font-semibold text-[#1c2d3f]' : 'text-[#a9b6c4]'}>{row.pro}</td>
+                  <td className={row.profissional !== '—' ? 'font-semibold text-[#1c2d3f]' : 'text-[#a9b6c4]'}>{row.profissional}</td>
+                  <td className={row.empresarial !== '—' ? 'font-semibold text-[#1c2d3f]' : 'text-[#a9b6c4]'}>{row.empresarial}</td>
                 </tr>)}
                 <tr>
                   <td className="font-medium text-[#263c52]">Preço</td>
                   <td className="font-bold">0 Kz</td>
-                  <td className="font-bold">9.900 Kz/mês</td>
-                  <td className="font-bold">19.900 Kz/mês</td>
+                  <td className="font-bold">5.000 Kz/mês</td>
+                  <td className="font-bold">12.500 Kz/mês</td>
+                  <td className="font-bold">25.000 Kz/mês</td>
                 </tr>
               </tbody>
             </table>
           </div>
           <p className="mt-4 text-center text-xs leading-5 text-[#708195]">
             Pagamento por <strong>Multicaixa Express (937 555 618)</strong> · envia o comprovativo na plataforma e a activação é feita pela equipa.
-            Duração à escolha: 1, 3, 6 ou 12 meses — renovações somam ao prazo restante.
+            Mensal, ou anual com 15% de desconto — renovações somam ao prazo restante.
           </p>
         </div>
 
