@@ -69,9 +69,23 @@ O teste verifica `scrollWidth - innerWidth <= 1` (sem scroll horizontal), visibi
 
 ---
 
-## 4. Limitações assumidas
+## 4. Segunda iteração — limitações resolvidas
 
-- As tabelas continuam a rolar **dentro do contentor** em mobile (padrão profissional); não foram convertidas em cartões em todas as páginas para não duplicar markup nem perder colunas/ordenação.
-- O painel `/admin` mantém o shell próprio (área interna da plataforma) e não recebeu bottom nav.
-- A validação visual corre no CI (Playwright + Postgres); localmente o Docker/BD descartável estava indisponível.
-- Tema escuro mantém o remapeamento existente; novos componentes usam os tokens já mapeados.
+| Limitação anterior | Resolução |
+|---|---|
+| Tabelas só rolavam em mobile | **`ResponsiveTables`**: lê os cabeçalhos e escreve `data-label` em cada célula; no mobile a tabela vira cartões (sem duplicar markup). Reanota em paginação/filtros via `MutationObserver`. Aplica-se a toda a área autenticada e ao admin. |
+| Admin sem bottom nav | **`AdminMobileNav`** com Visão geral, Empresas, Utilizadores, Pagamentos e folha Mais (Equipa, Documentos, Emails, Auditoria, Sistema, Configurações, Voltar à app, Terminar sessão), filtrada por permissões. Shell admin passou a `hidden md:flex`, cabeçalho sticky e `pb-28`. |
+| Tema escuro incompleto nos novos componentes | Novos remaps para `bg-white/95`, `bg-[#f7f9fc]/95`, `bg-[#eef4ff]`, `bg-[#f2f6fb]`, `text-[#9aa8b8]`, `bg-[#c8d2de]` e cartões de tabela. |
+| Validação local indisponível | Criada base PostgreSQL 18 local em `127.0.0.1:5441` (`wms_e2e_disposable`) com roles; corrida local de **324 unitários + 13 Playwright** (3 saltados por design no projecto mobile). |
+
+### Componentes novos desta iteração
+| Ficheiro | Função |
+|---|---|
+| `src/components/responsive-tables.tsx` | Anotador global de tabelas → cartões mobile |
+| `src/components/mobile-nav-base.tsx` | Base partilhada da navegação móvel (tenant e admin) |
+| `src/components/admin-mobile-nav.tsx` | Bottom nav do painel de administração |
+
+### Limitações remanescentes
+- Tabelas com mais de 5–6 colunas em ecrãs de 360px podem exigir scroll dentro do cartão; os rótulos mantêm a leitura.
+- O teste responsivo cobre as páginas principais; páginas secundárias herdam o comportamento global mas não têm asserção dedicada.
+- O tema escuro é um remapeamento de classes existentes, não uma reescrita de todos os ecrãs.

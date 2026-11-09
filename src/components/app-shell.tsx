@@ -7,6 +7,7 @@ import { AdHtml } from '@/components/ad-html';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { NavIcon } from '@/components/nav-icons';
 import { MobileBottomNav } from '@/components/mobile-bottom-nav';
+import { ResponsiveTables } from '@/components/responsive-tables';
 
 type NavLink = { href: string; label: string; icon: string };
 const groups: { title: string; links: NavLink[] }[] = [
@@ -97,6 +98,7 @@ export function AppShell({ children, platformAdmin = false, plan = 'FREE', adHtm
       </div>
 
       <MobileBottomNav platformAdmin={platformAdmin} plan={plan} planExpired={planExpired} wmsEnabled={wmsEnabled} />
+      <ResponsiveTables />
     </div>
   );
 }

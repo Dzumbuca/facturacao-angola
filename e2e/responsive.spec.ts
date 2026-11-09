@@ -56,6 +56,18 @@ test.describe('Responsividade global', () => {
     await page.keyboard.press('Escape');
     await expect(sheet).toBeHidden();
 
+    // Tabelas tornam-se cartões no mobile (sem overflow horizontal).
+    await page.goto('/produtos', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('table.responsive-table').first()).toBeAttached({ timeout: 8000 });
+    const cardified = await page.evaluate(() => {
+      const table = document.querySelector('table.responsive-table');
+      if (!table) return false;
+      const head = table.querySelector('thead');
+      const row = table.querySelector('tbody tr');
+      return Boolean(head && getComputedStyle(head).display === 'none' && row && getComputedStyle(row).display === 'block');
+    });
+    expect(cardified, 'tabela deve estar em modo cartão no mobile').toBe(true);
+
     await page.setViewportSize({ width: 1366, height: 900 });
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await expect(page.getByRole('navigation', { name: 'Navegação móvel' })).toBeHidden();

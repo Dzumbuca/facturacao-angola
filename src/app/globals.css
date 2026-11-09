@@ -352,5 +352,43 @@ main :where(.grid) > * { min-width: 0; }
 @media (max-width: 767px) {
   /* 16px evita o zoom automático do iOS ao focar campos. */
   .app-input, input, select, textarea { font-size: 16px; }
+
+  /* Tabelas anotadas por <ResponsiveTables /> tornam-se cartões legíveis. */
+  table.responsive-table { display: block; width: 100% !important; min-width: 0 !important; border-collapse: separate; }
+  table.responsive-table thead { display: none; }
+  table.responsive-table tbody { display: block; }
+  table.responsive-table tr { display: block; margin: 0 0 .75rem; padding: .85rem 1rem; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+  table.responsive-table tr:last-child { margin-bottom: 0; }
+  table.responsive-table td {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+    width: auto !important; max-width: none !important; border: 0 !important; padding: .3rem 0 !important;
+    text-align: right; white-space: normal !important;
+  }
+  table.responsive-table td::before {
+    content: attr(data-label); flex: 0 0 42%; text-align: left;
+    font-size: .72rem; font-weight: 700; letter-spacing: .03em; color: var(--text-muted);
+  }
+  table.responsive-table td:not([data-label])::before { content: none; }
+  table.responsive-table td:first-child {
+    display: block; margin: 0 0 .4rem; padding: 0 0 .5rem !important;
+    border-bottom: 1px solid var(--line) !important; text-align: left; font-weight: 700;
+  }
+  table.responsive-table td:first-child::before { display: none; }
+  table.responsive-table td[colspan] { display: block; text-align: center; }
+  table.responsive-table td[colspan]::before { content: none; }
+  table.responsive-table td:empty { display: none; }
+
+  /* Filtros e barras de acções deixam de esticar a página. */
+  main form { min-width: 0; }
 }
+
+/* Tema escuro: novos tokens usados pelo shell e pela navegação móvel. */
+:root[data-theme="dark"] [class~="bg-white/95"] { background-color: color-mix(in srgb, var(--surface) 94%, transparent) !important; }
+:root[data-theme="dark"] [class~="bg-[#f7f9fc]/95"] { background-color: color-mix(in srgb, var(--surface) 95%, transparent) !important; }
+:root[data-theme="dark"] [class~="bg-[#eef4ff]"] { background-color: #16233f !important; }
+:root[data-theme="dark"] [class~="bg-[#f2f6fb]"] { background-color: var(--surface-raised) !important; }
+:root[data-theme="dark"] [class~="text-[#9aa8b8]"] { color: var(--text-muted) !important; }
+:root[data-theme="dark"] [class~="bg-[#c8d2de]"] { background-color: var(--line) !important; }
+:root[data-theme="dark"] table.responsive-table tr { background: var(--surface); }
+
 
