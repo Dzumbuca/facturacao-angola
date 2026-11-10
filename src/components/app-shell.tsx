@@ -8,6 +8,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { NavIcon } from '@/components/nav-icons';
 import { MobileBottomNav } from '@/components/mobile-bottom-nav';
 import { ResponsiveTables } from '@/components/responsive-tables';
+import { PwaInstall } from '@/components/pwa-install';
 
 type NavLink = { href: string; label: string; icon: string };
 const groups: { title: string; links: NavLink[] }[] = [
@@ -94,10 +95,11 @@ export function AppShell({ children, platformAdmin = false, plan = 'FREE', adHtm
 
         {adHtml && plan !== 'PRO' && (pathname === '/' || pathname.startsWith('/ferramentas')) && <div className="mx-auto max-w-4xl px-4 pt-4 md:hidden"><div className="overflow-hidden rounded-xl bg-white p-2"><AdHtml html={adHtml} /></div></div>}
 
-        <main className="mx-auto w-full max-w-[1440px] px-4 pb-28 pt-5 md:px-8 md:pb-10 md:pt-8">{children}</main>
+        <main className="mx-auto w-full max-w-[1440px] px-4 pb-36 pt-5 md:px-8 md:pb-10 md:pt-8">{children}</main>
       </div>
 
       <MobileBottomNav platformAdmin={platformAdmin} plan={plan} planExpired={planExpired} wmsEnabled={wmsEnabled} />
+      <PwaInstall />
       <ResponsiveTables />
     </div>
   );
