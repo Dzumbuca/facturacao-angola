@@ -10,7 +10,7 @@ vi.mock('@/lib/platform-apps', () => ({
   isApplicationEnabled: (...args: any[]) => isApplicationEnabled(...args),
 }));
 
-import { getTenantWmsLimits, getWarehouseLimitStatus } from './entitlements';
+import { getTenantWmsLimits, getWarehouseLimitStatus, decideWmsAccess } from './entitlements';
 
 describe('entitlements', () => {
   beforeEach(() => {
@@ -75,5 +75,33 @@ describe('entitlements', () => {
     };
     const status = await getWarehouseLimitStatus(tx, 't1');
     expect(status).toEqual({ allowed: true, limit: 3, used: 2 });
+  });
+
+  describe('acesso ao WMS por pacote', () => {
+    const base = { maxStockProducts: null, maxProducts: null, maxClients: null, maxInvoicesPerMonth: null, capabilities: { transfers: false } };
+
+    it('Grátis sem módulo → bloqueado', () => {
+      expect(decideWmsAccess({ ...base, planSlug: 'gratis', maxWarehouses: 0, grandfathered: false }, false).allowed).toBe(false);
+    });
+
+    it('Grátis com subscrição explícita e módulo ligado → continua bloqueado', () => {
+      expect(decideWmsAccess({ ...base, planSlug: 'gratis', maxWarehouses: 0, grandfathered: false }, true).allowed).toBe(false);
+    });
+
+    it('Básico com WMS → permitido', () => {
+      expect(decideWmsAccess({ ...base, planSlug: 'basico', maxWarehouses: 1, grandfathered: false }, true).allowed).toBe(true);
+    });
+
+    it('pacote pago sem linha TenantApplication → permitido pelo pacote', () => {
+      expect(decideWmsAccess({ ...base, planSlug: 'profissional', maxWarehouses: 3, grandfathered: false }, false).allowed).toBe(true);
+    });
+
+    it('tenant legado (grandfathering) mantém acesso', () => {
+      expect(decideWmsAccess({ ...base, planSlug: 'empresarial', maxWarehouses: null, grandfathered: true }, true).allowed).toBe(true);
+    });
+
+    it('subscrição expirada cai para Grátis e bloqueia', () => {
+      expect(decideWmsAccess({ ...base, planSlug: 'gratis', maxWarehouses: 0, grandfathered: false }, true).allowed).toBe(false);
+    });
   });
 });

@@ -1,11 +1,14 @@
+import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { getSessionTenantId } from '@/lib/session';
+import { getWmsAccess } from '@/lib/entitlements';
 import { WarehouseManagement } from '@/components/warehouses/warehouse-management';
 
 export default async function WarehousesPage() {
   const tenantId = getSessionTenantId(await auth());
   if (!tenantId) return <p>Empresa não configurada.</p>;
+  if (!(await getWmsAccess(tenantId)).allowed) redirect('/apps?wms=bloqueado');
 
   const [warehouses, products, movements] = await Promise.all([
     prisma.warehouse.findMany({ where: { tenantId }, orderBy: { name: 'asc' } }),

@@ -123,3 +123,35 @@ export async function hasCapability(tenantId: string, capability: keyof PlanCapa
   const limits = await getTenantWmsLimits(tenantId);
   return Boolean(limits.capabilities[capability]);
 }
+
+/**
+ * Decisão pura de acesso ao WMS a partir dos limites do pacote e do módulo.
+ * Regra comercial: o WMS só está disponível em pacotes com armazéns
+ * (maxWarehouses > 0 ou ilimitado). O módulo activo é necessário, exceto
+ * quando existe um pacote pago activo (o pacote já inclui o WMS) ou quando
+ * o tenant é legado (grandfathering).
+ */
+export function decideWmsAccess(limits: WmsLimits, appEnabled: boolean): {
+  allowed: boolean;
+  planIncludesWms: boolean;
+  paidPlan: boolean;
+} {
+  const planIncludesWms = limits.maxWarehouses === null || limits.maxWarehouses > 0;
+  const paidPlan = limits.planSlug !== 'gratis' && !limits.grandfathered;
+  const allowed = planIncludesWms && (appEnabled || paidPlan || limits.grandfathered);
+  return { allowed, planIncludesWms, paidPlan };
+}
+
+export async function getWmsAccess(tenantId: string): Promise<{
+  allowed: boolean;
+  appEnabled: boolean;
+  planIncludesWms: boolean;
+  paidPlan: boolean;
+  limits: WmsLimits;
+}> {
+  const [limits, appEnabled] = await Promise.all([
+    getTenantWmsLimits(tenantId),
+    isApplicationEnabled(tenantId, 'wms'),
+  ]);
+  return { ...decideWmsAccess(limits, appEnabled), appEnabled, limits };
+}

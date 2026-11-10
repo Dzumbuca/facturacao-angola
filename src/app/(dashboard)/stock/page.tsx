@@ -1,12 +1,15 @@
+import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { getSessionTenantId } from '@/lib/session';
+import { getWmsAccess } from '@/lib/entitlements';
 import { StockDashboard } from './stock-dashboard';
 import { StockOperationsNav } from './stock-operations-nav';
 
 export default async function StockPage() {
   const tenantId = getSessionTenantId(await auth());
   if (!tenantId) return <p>Empresa não configurada.</p>;
+  if (!(await getWmsAccess(tenantId)).allowed) redirect('/apps?wms=bloqueado');
 
   const [products, warehouses, movements] = await Promise.all([
     prisma.product.findMany({ where: { tenantId }, orderBy: { name: 'asc' } }),
