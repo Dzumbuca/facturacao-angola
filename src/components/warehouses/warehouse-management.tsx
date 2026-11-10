@@ -271,10 +271,10 @@ export function WarehouseManagement({
   }, [products, searchQuery, categoryFilter, availabilityFilter]);
 
   const totalProducts = products.length;
-  const totalStock = products.reduce((sum, p) => sum + p.stock, 0);
-  const lowStockProducts = products.filter((p) => p.stock > 0 && p.stock <= p.minStock).length;
-  const outOfStockProducts = products.filter((p) => p.stock <= 0).length;
-  const totalValue = products.reduce((sum, p) => sum + p.price * p.stock, 0);
+  const totalStock = products.reduce((sum, p) => sum + Number(p.stock || 0), 0);
+  const lowStockProducts = products.filter((p) => Number(p.stock || 0) > 0 && Number(p.stock || 0) <= Number(p.minStock || 0)).length;
+  const outOfStockProducts = products.filter((p) => Number(p.stock || 0) <= 0).length;
+  const totalValue = products.reduce((sum, p) => sum + Number(p.price || 0) * Number(p.stock || 0), 0);
 
   if (loading) {
     return (
