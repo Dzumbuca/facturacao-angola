@@ -1,6 +1,15 @@
-const CACHE_NAME = 'machine-facturas-static-v1';
+const CACHE_NAME = 'machine-facturas-static-v3';
 const OFFLINE_URL = '/offline';
-const STATIC_ASSETS = ['/', '/offline', '/manifest.json', '/logo.png'];
+const STATIC_ASSETS = [
+  OFFLINE_URL,
+  '/manifest.json',
+  '/logo.png',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
+  '/icons/icon-maskable-192.png',
+  '/icons/icon-maskable-512.png',
+  '/icons/apple-touch-icon.png',
+];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -47,7 +56,7 @@ self.addEventListener('fetch', (event) => {
   // Navigation requests: network-first with offline fallback.
   if (req.mode === 'navigate') {
     event.respondWith(
-      fetch(req).catch(() => caches.match(OFFLINE_URL).then((r) => r || caches.match('/')))
+      fetch(req).catch(() => caches.match(OFFLINE_URL))
     );
     return;
   }
