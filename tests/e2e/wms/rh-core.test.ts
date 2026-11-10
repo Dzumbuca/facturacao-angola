@@ -495,4 +495,30 @@ describe('Machine RH - núcleo e isolamento entre empresas', () => {
     expect(financeRuleset.status).toBe(201);
     memberPayrollRulesetId = (await financeRuleset.json()).id;
   });
+
+  it('self-service: funcionário vê apenas os próprios dados', async () => {
+    const admin = await login();
+    const link = await authenticatedFetch(`/api/rh/employees/${employeeId}`, admin, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: viewerEmail }),
+    });
+    expect(link.status).toBe(200);
+
+    const viewer = await login(viewerEmail, PASSWORD);
+    const page = await authenticatedFetch('/meu-rh', viewer);
+    expect(page.status).toBe(200);
+    const html = await page.text();
+    expect(html).toContain('E2E');
+    expect(html).toContain('Recibos');
+
+    const pdf = await authenticatedFetch(`/api/meu-rh/documents/${documentId}/pdf`, viewer);
+    expect(pdf.status).toBe(200);
+    expect(pdf.headers.get('content-type')).toContain('application/pdf');
+
+    const adminPage = await authenticatedFetch('/meu-rh', admin);
+    expect(adminPage.status).toBe(200);
+    expect(await adminPage.text()).toContain('não está ligado');
+
+    const foreignPdf = await authenticatedFetch(`/api/meu-rh/documents/${documentId}/pdf`, admin);
+    expect(foreignPdf.status).toBe(404);
+  });
 });
