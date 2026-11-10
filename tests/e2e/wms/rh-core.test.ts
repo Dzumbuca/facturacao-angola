@@ -7,6 +7,11 @@ import { login, authenticatedFetch } from './http-auth-harness';
 const prisma = new PrismaClient();
 const stamp = Date.now();
 const PASSWORD = 'TestPass123!';
+
+function luandaHm(date: Date): string {
+  const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Africa/Luanda', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(date);
+  return `${parts.find((p) => p.type === 'hour')?.value}:${parts.find((p) => p.type === 'minute')?.value}`;
+}
 const viewerEmail = `e2e-rh-viewer-${stamp}@machinefacturas.test`;
 const blockedEmail = `e2e-rh-blocked-${stamp}@machinefacturas.test`;
 let tenantAId = '';
@@ -16,6 +21,7 @@ let blockedUserId = '';
 let departmentId = '';
 let employeeId = '';
 let employeeNumber = '';
+let shiftId = '';
 
 beforeAll(async () => {
   const admin = await prisma.user.findUnique({ where: { email: 'e2e-test@machinefacturas.test' }, select: { tenantId: true } });
@@ -45,6 +51,7 @@ afterAll(async () => {
   if (employeeId) await prisma.rhContract.deleteMany({ where: { tenantId: tenantAId, employeeId } });
   if (employeeId) await prisma.rhEmployee.deleteMany({ where: { tenantId: tenantAId, id: employeeId } });
   if (departmentId) await prisma.rhDepartment.deleteMany({ where: { tenantId: tenantAId, id: departmentId } });
+  if (shiftId) await prisma.rhShift.deleteMany({ where: { tenantId: tenantAId, id: shiftId } });
   await prisma.rhAuditLog.deleteMany({ where: { tenantId: tenantAId, createdAt: { gte: new Date(Date.now() - 10 * 60_000) } } });
   if (viewerId) await prisma.user.deleteMany({ where: { id: viewerId } });
   if (blockedUserId) await prisma.user.deleteMany({ where: { id: blockedUserId } });
@@ -94,11 +101,19 @@ describe('Machine RH - núcleo e isolamento entre empresas', () => {
     expect(dept.status).toBe(201);
     departmentId = (await dept.json()).id;
 
+    const startTime = luandaHm(new Date(Date.now() - 90 * 60_000));
+    const shift = await authenticatedFetch('/api/rh/shifts', session, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: `E2E Horário ${stamp}`, startTime, endTime: '23:59', toleranceMinutes: 5 }),
+    });
+    expect(shift.status).toBe(201);
+    shiftId = (await shift.json()).id;
+
     const employee = await authenticatedFetch('/api/rh/employees', session, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         firstName: 'E2E', lastName: `RH ${stamp}`, employeeNumber: 'ignorado', departmentId,
-        hireDate: '2026-01-15', contractType: 'INDEFINIDO', baseSalary: 350000,
+        hireDate: '2026-01-15', contractType: 'INDEFINIDO', baseSalary: 350000, shiftId,
         bi: '000000000LA000', email: `e2e-rh-${stamp}@machinefacturas.test`, pin: '1234',
       }),
     });
@@ -143,7 +158,9 @@ describe('Machine RH - núcleo e isolamento entre empresas', () => {
     const attendance = await authenticatedFetch('/api/rh/attendance', session);
     expect(attendance.status).toBe(200);
     const attendanceData = await attendance.json();
-    expect(attendanceData.some((entry: any) => entry.id === clockData.id && entry.employee.id === employeeId)).toBe(true);
+    const todayEntry = attendanceData.find((entry: any) => entry.id === clockData.id);
+    expect(todayEntry?.employee.id).toBe(employeeId);
+    expect(todayEntry?.lateMinutes).toBeGreaterThan(0);
 
     const list = await authenticatedFetch('/api/rh/employees', session);
     expect(list.status).toBe(200);
@@ -165,5 +182,11 @@ describe('Machine RH - núcleo e isolamento entre empresas', () => {
       body: JSON.stringify({ employeeId, type: 'ENTRADA', pin: '1234' }),
     });
     expect(clockB.status).toBe(404);
+
+    const employeeWithForeignShift = await authenticatedFetch('/api/rh/employees', sessionB, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ firstName: 'E2E', lastName: 'Cross', hireDate: '2026-01-15', baseSalary: 1000, shiftId }),
+    });
+    expect(employeeWithForeignShift.status).toBe(400);
   });
 });

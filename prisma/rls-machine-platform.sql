@@ -72,3 +72,10 @@ DROP POLICY IF EXISTS "rh_time_entry_isolation" ON "RhTimeEntry";
 CREATE POLICY "rh_time_entry_isolation" ON "RhTimeEntry" FOR ALL
   USING ("tenantId" = current_setting('app.tenant_id', true))
   WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+
+-- Machine Point: horários isolados por empresa.
+ALTER TABLE "RhShift" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_shift_isolation" ON "RhShift";
+CREATE POLICY "rh_shift_isolation" ON "RhShift" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));

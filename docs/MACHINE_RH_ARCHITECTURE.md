@@ -43,7 +43,7 @@ RhEmployee   1─* RhAuditLog (via entityId)
 
 ## 4. Rotas
 
-Implementadas: `/rh`, `/rh/dashboard`, `/rh/funcionarios`, `/rh/departamentos`, `/rh/cargos`, `/rh/contratos`, `/rh/assiduidade`, `/rh/configuracoes`.
+Implementadas: `/rh`, `/rh/dashboard`, `/rh/funcionarios`, `/rh/departamentos`, `/rh/cargos`, `/rh/contratos`, `/rh/assiduidade`, `/rh/horarios`, `/rh/configuracoes`.
 
 Desenhadas (badge “Brevemente”): `/rh/ferias`, `/rh/processamento-salarial`, `/rh/documentos`, `/rh/modelos`, `/rh/payroll`, `/rh/dispositivos`.
 
@@ -89,7 +89,8 @@ Assistente apenas com leitura e geração de rascunhos; nunca aprova pagamentos,
 | Gate comercial por aplicação + RBAC básico | **Implementado e testado** |
 | PWA RH (manifest, SW, shell, ícone) | **Implementado** (ícones PNG para lojas pendentes) |
 | Machine Point: registo de ponto por PIN (entrada/saídas), hoje e histórico | **Implementado e testado** |
-| Horários, turnos, QR dinâmico, quiosque e biométrico | **Desenhado, não implementado** |
+| Horários/turnos, tolerância e cálculo de atraso | **Implementado e testado** |
+| QR dinâmico, quiosque, WebAuthn e biométrico | **Desenhado, não implementado** |
 | Documentos / payroll / pagamentos / IA | **Desenhado, não implementado** |
 | Matriz RBAC fina (RH_ADMIN, FINANCE, MANAGER, EMPLOYEE) | **Pendente** |
 | Migração de produção | **Não executada** (requer aprovação) |

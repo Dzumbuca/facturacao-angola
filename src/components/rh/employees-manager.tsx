@@ -19,6 +19,7 @@ type Employee = {
   photoUrl: string | null;
   departmentId: string | null;
   positionId: string | null;
+  shiftId: string | null;
   hireDate: string;
   contractType: string;
   baseSalary: number;
@@ -29,6 +30,7 @@ type Employee = {
   bankIban: string | null;
   department: Department | null;
   position: { id: string; title: string } | null;
+  shift: { id: string; name: string; startTime: string; endTime: string } | null;
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -45,10 +47,11 @@ function date(value: string | null) {
   return value ? new Date(value).toLocaleDateString('pt-AO') : '—';
 }
 
-export function EmployeesManager({ initialEmployees, departments, positions }: {
+export function EmployeesManager({ initialEmployees, departments, positions, shifts }: {
   initialEmployees: Employee[];
   departments: Department[];
   positions: Position[];
+  shifts: { id: string; name: string; startTime: string; endTime: string }[];
 }) {
   const [employees, setEmployees] = useState(initialEmployees);
   const [query, setQuery] = useState('');
@@ -87,6 +90,7 @@ export function EmployeesManager({ initialEmployees, departments, positions }: {
       photoUrl: String(form.get('photoUrl') ?? ''),
       departmentId: String(form.get('departmentId') ?? '') || null,
       positionId: String(form.get('positionId') ?? '') || null,
+      shiftId: String(form.get('shiftId') ?? '') || null,
       hireDate: String(form.get('hireDate') ?? ''),
       contractType: String(form.get('contractType') ?? 'INDEFINIDO'),
       baseSalary: String(form.get('baseSalary') ?? ''),
@@ -217,6 +221,7 @@ export function EmployeesManager({ initialEmployees, departments, positions }: {
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div><label htmlFor="rh-dept" className="app-label">Departamento</label><select id="rh-dept" name="departmentId" className="app-input" defaultValue={editing?.departmentId ?? ''}><option value="">—</option>{departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}</select></div>
                   <div><label htmlFor="rh-pos" className="app-label">Cargo</label><select id="rh-pos" name="positionId" className="app-input" defaultValue={editing?.positionId ?? ''}><option value="">—</option>{positions.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}</select></div>
+                  <div><label htmlFor="rh-shift" className="app-label">Horário</label><select id="rh-shift" name="shiftId" className="app-input" defaultValue={editing?.shiftId ?? ''}><option value="">—</option>{shifts.map((shift) => <option key={shift.id} value={shift.id}>{shift.name} ({shift.startTime}–{shift.endTime})</option>)}</select></div>
                   <div><label htmlFor="rh-hire" className="app-label">Data de admissão *</label><input id="rh-hire" name="hireDate" type="date" className="app-input" required defaultValue={editing?.hireDate?.slice(0, 10) ?? ''} /></div>
                   <div><label htmlFor="rh-contract" className="app-label">Tipo de contrato</label><select id="rh-contract" name="contractType" className="app-input" defaultValue={editing?.contractType ?? 'INDEFINIDO'}>{Object.entries(CONTRACT_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
                   <div><label htmlFor="rh-salary" className="app-label">Salário-base (Kz) *</label><input id="rh-salary" name="baseSalary" type="number" min="0" step="0.01" className="app-input tabular-nums" required defaultValue={editing?.baseSalary ?? ''} /></div>

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 
 type Employee = { id: string; firstName: string; lastName: string; employeeNumber: string; hasPin: boolean };
 type Entry = {
-  id: string; type: string; source: string; occurredAt: string;
+  id: string; type: string; source: string; occurredAt: string; lateMinutes: number; shiftName: string | null;
   employee: { id: string; firstName: string; lastName: string; employeeNumber: string };
 };
 
@@ -33,6 +33,7 @@ export function AttendanceManager({ entries, employees }: { entries: Entry[]; em
 
   const selected = employees.find((employee) => employee.id === employeeId);
   const present = new Set(entries.filter((entry) => entry.type === 'ENTRADA').map((entry) => entry.employee.id)).size;
+  const late = entries.filter((entry) => entry.type === 'ENTRADA' && entry.lateMinutes > 0).length;
 
   async function clock(type: string) {
     setError('');
@@ -66,10 +67,11 @@ export function AttendanceManager({ entries, employees }: { entries: Entry[]; em
         <p className="mt-1 text-sm text-[#607286]">Registo de ponto por PIN. Horários, turnos e QR chegam nas próximas fases.</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="rounded-xl border border-[#e1e8f0] bg-white p-4"><p className="text-xs text-[#708195]">Presentes hoje</p><p className="mt-1 text-xl font-bold tabular-nums">{present}</p></div>
         <div className="rounded-xl border border-[#e1e8f0] bg-white p-4"><p className="text-xs text-[#708195]">Marcações hoje</p><p className="mt-1 text-xl font-bold tabular-nums">{entries.length}</p></div>
         <div className="rounded-xl border border-[#e1e8f0] bg-white p-4"><p className="text-xs text-[#708195]">Funcionários com PIN</p><p className="mt-1 text-xl font-bold tabular-nums">{employees.filter((e) => e.hasPin).length}</p></div>
+        <div className="rounded-xl border border-[#e1e8f0] bg-white p-4"><p className="text-xs text-[#708195]">Atrasados hoje</p><p className="mt-1 text-xl font-bold tabular-nums text-[#a83939]">{late}</p></div>
       </div>
 
       <section className="rounded-xl border border-[#e1e8f0] bg-white p-5">
@@ -112,8 +114,8 @@ export function AttendanceManager({ entries, employees }: { entries: Entry[]; em
               {entries.map((entry) => (
                 <tr key={entry.id}>
                   <td data-mobile-primary className="font-semibold tabular-nums">{time(entry.occurredAt)}</td>
-                  <td>{entry.employee.firstName} {entry.employee.lastName} <span className="text-xs text-[#708195]">{entry.employee.employeeNumber}</span></td>
-                  <td>{TYPE_LABEL[entry.type] ?? entry.type}</td>
+                  <td>{entry.employee.firstName} {entry.employee.lastName} <span className="text-xs text-[#708195]">{entry.employee.employeeNumber}</span>{entry.shiftName && <span className="ml-2 text-[11px] text-[#8a99ab]">{entry.shiftName}</span>}</td>
+                  <td>{TYPE_LABEL[entry.type] ?? entry.type}{entry.lateMinutes > 0 && <span className="ml-2 rounded-full bg-[#fdf3f3] px-2 py-0.5 text-[10px] font-semibold text-[#a83939]">{entry.lateMinutes} min atraso</span>}</td>
                   <td><span className="rounded-full bg-[#eef4ff] px-2 py-0.5 text-[11px] font-semibold text-[#021f87]">{entry.source}</span></td>
                 </tr>
               ))}

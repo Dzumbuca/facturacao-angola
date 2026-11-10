@@ -49,3 +49,21 @@ export async function assertPositionInTenant(tx: Tx, tenantId: string, positionI
   if (!row) throw new Error('POSITION_NOT_FOUND');
   return row.id;
 }
+
+export async function assertShiftInTenant(tx: any, tenantId: string, shiftId: string | null | undefined) {
+  if (!shiftId) return null;
+  const row = await tx.rhShift.findFirst({ where: { id: shiftId, tenantId, isActive: true }, select: { id: true } });
+  if (!row) throw new Error('SHIFT_NOT_FOUND');
+  return row.id;
+}
+
+/** Minutos de atraso da entrada face ao horário, no fuso de Angola (UTC+1, sem DST). */
+export function lateMinutesFor(occurredAt: Date, shift: { startTime: string; toleranceMinutes: number } | null): number {
+  if (!shift) return 0;
+  const [sh, sm] = shift.startTime.split(':').map(Number);
+  if (!Number.isFinite(sh) || !Number.isFinite(sm)) return 0;
+  const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Africa/Luanda', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(occurredAt);
+  const hour = Number(parts.find((part) => part.type === 'hour')?.value ?? 0);
+  const minute = Number(parts.find((part) => part.type === 'minute')?.value ?? 0);
+  return Math.max(0, hour * 60 + minute - (sh * 60 + sm) - Math.max(0, shift.toleranceMinutes || 0));
+}

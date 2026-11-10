@@ -13,6 +13,7 @@ const activeLinks = [
   { href: '/rh/cargos', label: 'Cargos', icon: '◇' },
   { href: '/rh/contratos', label: 'Contratos', icon: '▧' },
   { href: '/rh/assiduidade', label: 'Assiduidade', icon: '◷' },
+  { href: '/rh/horarios', label: 'Horários', icon: '◔' },
   { href: '/rh/configuracoes', label: 'Configurações', icon: '⚙' },
 ];
 
