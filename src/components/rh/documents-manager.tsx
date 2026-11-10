@@ -97,6 +97,7 @@ export function DocumentsManager({ documents, templates, employees }: {
                 <td data-mobile-actions>
                   <div className="flex flex-wrap gap-2">
                     <a href={`/api/rh/documents/${document.id}/pdf`} target="_blank" rel="noreferrer" className="inline-flex min-h-9 items-center rounded-lg border border-[#cdddeb] px-3 text-xs font-semibold text-[#021f87]">PDF</a>
+                    <a href={`/api/rh/documents/${document.id}/docx`} className="inline-flex min-h-9 items-center rounded-lg border border-[#cdddeb] px-3 text-xs font-semibold text-[#52667a]">DOCX</a>
                     {document.status === 'RASCUNHO' && (
                       <>
                         <button type="button" onClick={() => decide(document.id, 'EMITIDO')} className="min-h-9 rounded-lg border border-[#cbe8dc] px-3 text-xs font-semibold text-[#267256]">Emitir</button>

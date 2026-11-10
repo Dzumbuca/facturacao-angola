@@ -348,6 +348,12 @@ describe('Machine RH - núcleo e isolamento entre empresas', () => {
     const header = Buffer.from(await pdf.arrayBuffer()).subarray(0, 4).toString('utf8');
     expect(header).toBe('%PDF');
 
+    const docx = await authenticatedFetch(`/api/rh/documents/${documentId}/docx`, session);
+    expect(docx.status).toBe(200);
+    expect(docx.headers.get('content-type')).toContain('wordprocessingml');
+    const docxHeader = Buffer.from(await docx.arrayBuffer()).subarray(0, 2).toString('utf8');
+    expect(docxHeader).toBe('PK');
+
     const issue = await authenticatedFetch(`/api/rh/documents/${documentId}`, session, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'EMITIDO' }),
     });
@@ -531,6 +537,7 @@ describe('Machine RH - núcleo e isolamento entre empresas', () => {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ instruction: 'Rascunho de teste', context: 'Empresa E2E' }),
     });
+    if (response.status === 200) return; // chave configurada localmente/Vercel
     expect(response.status).toBe(503);
     expect((await response.json()).code).toBe('AI_NOT_CONFIGURED');
   });

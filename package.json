@@ -38,6 +38,7 @@
         "@types/bcrypt": "^6.0.0",
         "autoprefixer": "^10.6.1",
         "bcrypt": "^6.0.0",
+        "docx": "^9.15.3",
         "exceljs": "^4.4.0",
         "fast-xml-parser": "^5.11.2",
         "next": "^16.4.2",
