@@ -18,6 +18,7 @@ const activeLinks = [
   { href: '/rh/ponto', label: 'Quiosque', icon: '▣' },
   { href: '/rh/dispositivos', label: 'Dispositivos', icon: '⌨' },
   { href: '/rh/documentos', label: 'Documentos', icon: '▤' },
+  { href: '/rh/ia', label: 'Assistente IA', icon: '✦' },
   { href: '/rh/modelos', label: 'Modelos', icon: '✎' },
   { href: '/rh/processamento-salarial', label: 'Processamento', icon: '₵' },
   { href: '/rh/pagamentos', label: 'Pagamentos', icon: '⇄' },

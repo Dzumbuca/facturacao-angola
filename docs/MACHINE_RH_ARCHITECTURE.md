@@ -100,7 +100,17 @@ Assistente apenas com leitura e geração de rascunhos; nunca aprova pagamentos,
 | Payroll: regras configuráveis/versionadas, cálculo, estados e recibos | **Implementado e testado** |
 | Payroll Connect: lotes, estados, idempotência (sem transferência real) | **Implementado e testado** |
 | Self-service do funcionário (`/meu-rh`): recibos, ponto, férias e documentos próprios | **Implementado e testado** |
-| Transferências bancárias reais (EMIS), DOCX e IA | **Pendente** |
+| Assistente IA de rascunhos (Groq free/OpenRouter free, revisão humana) | **Implementado** (requer chave) |
+| Transferências bancárias reais (EMIS) e DOCX | **Pendente** |
 | Matriz RBAC fina (RH_ADMIN, FINANCE, MANAGER, EMPLOYEE) | **Pendente** |
 | Migração de produção | **Não executada** (requer aprovação) |
 | Validação jurídica de modelos | **Pendente** (parceiro jurídico) |
+
+
+## Assistente IA (free)
+
+- **Groq** (recomendado): API compatível com OpenAI, 30 RPM e 1.000 pedidos/dia no nível gratuito, sem cartão. Criar chave em https://console.groq.com/keys e definir `GROQ_API_KEY`.
+- **OpenRouter** (fallback): modelos `:free` (ex. `meta-llama/llama-3.3-70b-instruct:free`), 20 RPM e 50 pedidos/dia. Definir `OPENROUTER_API_KEY`.
+- Opcionais: `RH_AI_MODEL` e `RH_AI_BASE_URL`; limite local de 10 pedidos/minuto por utilizador.
+- Sem chave, `/api/rh/ai/draft` devolve 503 `AI_NOT_CONFIGURED` e `/rh/ia` explica como configurar.
+- O assistente só produz **rascunhos**; a emissão continua a exigir revisão humana em `/rh/documentos`.

@@ -119,10 +119,12 @@ describe('Machine RH - núcleo e isolamento entre empresas', () => {
     expect(dept.status).toBe(201);
     departmentId = (await dept.json()).id;
 
-    const startTime = luandaHm(new Date(Date.now() - 90 * 60_000));
+    const nowLuanda = luandaHm(new Date());
+    const candidate = luandaHm(new Date(Date.now() - 30 * 60_000));
+    const startTime = candidate > nowLuanda ? '00:00' : candidate;
     const shift = await authenticatedFetch('/api/rh/shifts', session, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: `E2E Horário ${stamp}`, startTime, endTime: '23:59', toleranceMinutes: 5 }),
+      body: JSON.stringify({ name: `E2E Horário ${stamp}`, startTime, endTime: '23:59', toleranceMinutes: 0 }),
     });
     expect(shift.status).toBe(201);
     shiftId = (await shift.json()).id;
@@ -520,5 +522,16 @@ describe('Machine RH - núcleo e isolamento entre empresas', () => {
 
     const foreignPdf = await authenticatedFetch(`/api/meu-rh/documents/${documentId}/pdf`, admin);
     expect(foreignPdf.status).toBe(404);
+  });
+
+  it('IA: sem chave configurada devolve erro claro, sem chamar modelo', async () => {
+    if (process.env.GROQ_API_KEY || process.env.OPENROUTER_API_KEY) return;
+    const session = await login();
+    const response = await authenticatedFetch('/api/rh/ai/draft', session, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ instruction: 'Rascunho de teste', context: 'Empresa E2E' }),
+    });
+    expect(response.status).toBe(503);
+    expect((await response.json()).code).toBe('AI_NOT_CONFIGURED');
   });
 });
