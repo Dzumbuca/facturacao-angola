@@ -275,9 +275,9 @@ export function WarehouseManagement({
             <p className="text-sm text-[#708195]">Controlo de inventário</p>
             <h2 className="mt-1 text-2xl font-bold tracking-tight">Armazéns</h2>
           </div>
-          <div className="flex gap-2 sm:flex-col sm:gap-3 w-full sm:w-auto">
-            <SkeletonRow className="w-32" />
-            <SkeletonRow className="w-32" />
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:gap-3">
+            <SkeletonRow className="w-full sm:w-32" />
+            <SkeletonRow className="w-full sm:w-32" />
           </div>
         </div>
         <Card>
@@ -398,11 +398,11 @@ export function WarehouseManagement({
           <h2 className="mt-1 text-2xl font-bold tracking-tight">Armazéns</h2>
           <p className="mt-2 text-sm text-[#708195]">Gerencie armazéns, produtos em stock e histórico de movimentações.</p>
         </div>
-        <div className="flex gap-2 sm:flex-col sm:gap-3 w-full sm:w-auto">
-          <Button type="button" onClick={openCreateWarehouse} disabled={isSaving}>
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:gap-3">
+          <Button type="button" onClick={openCreateWarehouse} disabled={isSaving} className="w-full sm:w-auto">
             Novo armazém
           </Button>
-          <Button type="button" onClick={() => setMovementModalOpen(true)} variant="secondary" disabled={isSaving || products.length === 0}>
+          <Button type="button" onClick={() => setMovementModalOpen(true)} variant="secondary" disabled={isSaving || products.length === 0} className="w-full sm:w-auto">
             Novo movimento
           </Button>
         </div>
@@ -467,8 +467,8 @@ export function WarehouseManagement({
       </div>
 
       {warehouseModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#102b46]/50 p-0 backdrop-blur-[2px] sm:items-center sm:p-5" onMouseDown={(event) => { if (event.target === event.currentTarget && !isSaving) setWarehouseModalOpen(false); }}>
-          <section role="dialog" aria-modal="true" aria-labelledby="warehouse-form-title" className="max-h-[92vh] w-full overflow-y-auto rounded-t-2xl bg-white p-5 shadow-2xl sm:max-w-lg sm:rounded-2xl sm:p-7">
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-[#102b46]/50 p-0 backdrop-blur-[2px] sm:items-center sm:p-5" onMouseDown={(event) => { if (event.target === event.currentTarget && !isSaving) setWarehouseModalOpen(false); }}>
+          <section role="dialog" aria-modal="true" aria-labelledby="warehouse-form-title" className="max-h-[92dvh] w-full overflow-y-auto overscroll-contain rounded-t-2xl bg-white p-5 shadow-2xl sm:max-w-lg sm:rounded-2xl sm:p-7">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[.14em] text-[#2878d0]">Controlo de inventário</p>
@@ -493,7 +493,7 @@ export function WarehouseManagement({
                 </label>
               </div>
               {error && <p role="alert" className="rounded-lg border border-red-100 bg-red-50 px-3 py-2.5 text-sm text-[#a83939]">{error}</p>}
-              <div className="flex flex-col-reverse gap-2 border-t border-[#e7edf3] pt-4 sm:flex-row sm:justify-end">
+              <div className="sticky bottom-0 -mx-5 -mb-5 mt-2 flex flex-col-reverse gap-2 border-t border-[#e7edf3] bg-white px-5 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-4 sm:static sm:mx-0 sm:mb-0 sm:flex-row sm:justify-end sm:px-0 sm:pb-0">
                 <Button type="button" variant="secondary" onClick={() => setWarehouseModalOpen(false)} disabled={isSaving}>Cancelar</Button>
                 <Button type="submit" disabled={isSaving}>{isSaving ? 'A guardar…' : editingWarehouse ? 'Guardar alterações' : 'Criar armazém'}</Button>
               </div>
@@ -503,8 +503,8 @@ export function WarehouseManagement({
       )}
 
       {movementModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#102b46]/50 p-0 backdrop-blur-[2px] sm:items-center sm:p-5" onMouseDown={(event) => { if (event.target === event.currentTarget && !isSaving) setMovementModalOpen(false); }}>
-          <section role="dialog" aria-modal="true" aria-labelledby="movement-form-title" className="max-h-[92vh] w-full overflow-y-auto rounded-t-2xl bg-white p-5 shadow-2xl sm:max-w-lg sm:rounded-2xl sm:p-7">
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-[#102b46]/50 p-0 backdrop-blur-[2px] sm:items-center sm:p-5" onMouseDown={(event) => { if (event.target === event.currentTarget && !isSaving) setMovementModalOpen(false); }}>
+          <section role="dialog" aria-modal="true" aria-labelledby="movement-form-title" className="max-h-[92dvh] w-full overflow-y-auto overscroll-contain rounded-t-2xl bg-white p-5 shadow-2xl sm:max-w-lg sm:rounded-2xl sm:p-7">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[.14em] text-[#2878d0]">Controlo de inventário</p>
@@ -548,7 +548,7 @@ export function WarehouseManagement({
                 <input id="movement-reference" name="reference" className="app-input" placeholder="Referência (opcional)" />
               </div>
               {error && <p role="alert" className="rounded-lg border border-red-100 bg-red-50 px-3 py-2.5 text-sm text-[#a83939]">{error}</p>}
-              <div className="flex flex-col-reverse gap-2 border-t border-[#e7edf3] pt-4 sm:flex-row sm:justify-end">
+              <div className="sticky bottom-0 -mx-5 -mb-5 mt-2 flex flex-col-reverse gap-2 border-t border-[#e7edf3] bg-white px-5 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-4 sm:static sm:mx-0 sm:mb-0 sm:flex-row sm:justify-end sm:px-0 sm:pb-0">
                 <Button type="button" variant="secondary" onClick={() => setMovementModalOpen(false)} disabled={isSaving}>Cancelar</Button>
                 <Button type="submit" disabled={isSaving}>{isSaving ? 'A registar…' : 'Registar movimento'}</Button>
               </div>

@@ -95,6 +95,8 @@ test.describe('PWA', () => {
     test.skip(test.info().project.name !== 'desktop-chromium', 'verificação única');
     await page.setViewportSize({ width: 390, height: 844 });
     await login(page);
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(500);
 
     await page.evaluate(() => {
       const event = new Event('beforeinstallprompt') as Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> };

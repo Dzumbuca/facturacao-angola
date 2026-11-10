@@ -57,7 +57,7 @@ export function StockMovementsHistory({ movements }: Props) {
                   return (
                     <tr key={movement.id} className="transition hover:bg-[#f8fafc]">
                       <td className="text-sm text-[#607286]">{formatDateTime(movement.createdAt)}</td>
-                      <td className="text-sm font-medium text-[#263c52]">{movement.product?.name || '-'}</td>
+                      <td data-mobile-primary className="text-sm font-medium text-[#263c52]">{movement.product?.name || '-'}</td>
                       <td className="text-sm">
                         <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors border-transparent ${typeInfo.className}`}>
                           {typeInfo.label}
