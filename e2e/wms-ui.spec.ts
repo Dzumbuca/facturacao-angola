@@ -62,6 +62,30 @@ test.describe('WMS v2 - UI', () => {
     await expect(page.getByRole('heading', { name: 'Reservas de stock', exact: true })).toBeVisible();
   });
 
+  test('movimento exige armazém no formulário de /stock', async ({ page }) => {
+    await login(page);
+    await page.goto('/stock');
+    await page.waitForTimeout(800);
+    await page.getByRole('button', { name: /Entrada/ }).first().click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await dialog.locator('#movement-product').selectOption({ index: 1 });
+    await dialog.getByRole('button', { name: 'Registar movimento' }).click();
+    await expect(dialog.getByText('Escolhe o armazém onde o movimento acontece.')).toBeVisible();
+  });
+
+  test('movimento exige armazém no formulário de /warehouses', async ({ page }) => {
+    await login(page);
+    await page.goto('/warehouses');
+    await page.waitForTimeout(800);
+    await page.getByRole('button', { name: 'Novo movimento' }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await dialog.locator('#movement-product').selectOption({ index: 1 });
+    await dialog.getByRole('button', { name: 'Registar movimento' }).click();
+    await expect(dialog.getByText('Selecione o armazém onde o movimento acontece.')).toBeVisible();
+  });
+
   test('raiz do dashboard continua acessível após login', async ({ page }) => {
     await login(page);
     await page.goto('/');

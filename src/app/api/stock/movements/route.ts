@@ -87,7 +87,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 });
   }
   if (!warehouseId) {
-    return NextResponse.json({ error: 'Armazem e obrigatorio' }, { status: 400 });
+    return NextResponse.json({ error: 'Armazém é obrigatório' }, { status: 400 });
   }
   if (!['IN', 'OUT', 'ADJUSTMENT'].includes(type)) {
     return NextResponse.json({ error: 'Tipo inválido' }, { status: 400 });
