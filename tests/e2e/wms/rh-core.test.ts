@@ -29,6 +29,7 @@ let payrollRunId = '';
 let payrollRulesetId = '';
 let rhMemberId = '';
 let memberPayrollRulesetId = '';
+let paymentBatchId = '';
 
 beforeAll(async () => {
   const admin = await prisma.user.findUnique({ where: { email: 'e2e-test@machinefacturas.test' }, select: { tenantId: true } });
@@ -62,6 +63,7 @@ afterAll(async () => {
   if (deviceId) await prisma.rhDevice.deleteMany({ where: { tenantId: tenantAId, id: deviceId } });
   if (documentId) await prisma.rhDocument.deleteMany({ where: { tenantId: tenantAId, id: documentId } });
   if (documentTemplateId) await prisma.rhDocumentTemplate.deleteMany({ where: { tenantId: tenantAId, id: documentTemplateId } });
+  if (paymentBatchId) await prisma.rhPaymentBatch.deleteMany({ where: { tenantId: tenantAId, id: paymentBatchId } });
   if (payrollRunId) await prisma.rhPayrollRun.deleteMany({ where: { tenantId: tenantAId, id: payrollRunId } });
   if (payrollRulesetId) await prisma.rhPayrollRuleSet.deleteMany({ where: { tenantId: tenantAId, id: payrollRulesetId } });
   if (memberPayrollRulesetId) await prisma.rhPayrollRuleSet.deleteMany({ where: { tenantId: tenantAId, id: memberPayrollRulesetId } });
@@ -412,6 +414,34 @@ describe('Machine RH - núcleo e isolamento entre empresas', () => {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'PAGO' }),
     });
     expect(pay.status).toBe(409);
+
+    const batch = await authenticatedFetch('/api/rh/payments', session, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ runId: payrollRunId }),
+    });
+    expect(batch.status).toBe(201);
+    const batchData = await batch.json();
+    paymentBatchId = batchData.id;
+    expect(Number(batchData.total)).toBe(305550);
+
+    const batchDuplicate = await authenticatedFetch('/api/rh/payments', session, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ runId: payrollRunId }),
+    });
+    expect(batchDuplicate.status).toBe(409);
+
+    const send = await authenticatedFetch(`/api/rh/payments/${paymentBatchId}`, session, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'SENT' }),
+    });
+    expect(send.status).toBe(200);
+    const confirm = await authenticatedFetch(`/api/rh/payments/${paymentBatchId}`, session, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'CONFIRMED' }),
+    });
+    expect(confirm.status).toBe(200);
+
+    const settled = await authenticatedFetch(`/api/rh/payroll/runs/${payrollRunId}`, session);
+    expect((await settled.json()).status).toBe('PAGO');
+
+    const foreignBatch = await authenticatedFetch(`/api/rh/payments/${paymentBatchId}`, await login('e2e-other@machinefacturas.test'));
+    expect(foreignBatch.status).toBe(404);
 
     const sessionB = await login('e2e-other@machinefacturas.test');
     const foreign = await authenticatedFetch(`/api/rh/payroll/runs/${payrollRunId}`, sessionB);

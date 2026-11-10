@@ -134,3 +134,15 @@ DROP POLICY IF EXISTS "rh_member_isolation" ON "RhMember";
 CREATE POLICY "rh_member_isolation" ON "RhMember" FOR ALL
   USING ("tenantId" = current_setting('app.tenant_id', true))
   WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+
+-- Payroll Connect: lotes e itens isolados por empresa.
+ALTER TABLE "RhPaymentBatch" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_payment_batch_isolation" ON "RhPaymentBatch";
+CREATE POLICY "rh_payment_batch_isolation" ON "RhPaymentBatch" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+ALTER TABLE "RhPaymentItem" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_payment_item_isolation" ON "RhPaymentItem";
+CREATE POLICY "rh_payment_item_isolation" ON "RhPaymentItem" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));

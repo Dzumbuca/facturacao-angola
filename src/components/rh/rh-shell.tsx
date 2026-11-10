@@ -20,6 +20,7 @@ const activeLinks = [
   { href: '/rh/documentos', label: 'Documentos', icon: '▤' },
   { href: '/rh/modelos', label: 'Modelos', icon: '✎' },
   { href: '/rh/processamento-salarial', label: 'Processamento', icon: '₵' },
+  { href: '/rh/pagamentos', label: 'Pagamentos', icon: '⇄' },
   { href: '/rh/equipa', label: 'Equipa', icon: '♟' },
   { href: '/rh/configuracoes', label: 'Configurações', icon: '⚙' },
 ];

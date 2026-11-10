@@ -152,6 +152,8 @@ model Tenant {
   rhPayrollRuns            RhPayrollRun[]
   rhPayslips               RhPayslip[]
   rhMembers                RhMember[]
+  rhPaymentBatches         RhPaymentBatch[]
+  rhPaymentItems           RhPaymentItem[]
   rhShifts                 RhShift[]
   rhLeaveRequests          RhLeaveRequest[]
   rhSettings               RhSettings?
@@ -2660,6 +2662,7 @@ model RhEmployee {
   leaveRequests RhLeaveRequest[]
   documents     RhDocument[]
   payslips      RhPayslip[]
+  paymentItems  RhPaymentItem[]
 
 
 
@@ -3015,6 +3018,7 @@ model RhPayrollRun {
   tenant   Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   ruleset  RhPayrollRuleSet? @relation(fields: [rulesetId], references: [id], onDelete: SetNull)
   payslips RhPayslip[]
+  paymentBatches RhPaymentBatch[]
 
   @@unique([tenantId, period])
   @@index([tenantId, status])
@@ -3066,4 +3070,56 @@ model RhMember {
 
   @@unique([tenantId, userId])
   @@index([tenantId, role])
+}
+
+
+// Payroll Connect — lotes de pagamento (sem transferência real).
+enum RhPaymentProvider {
+  MANUAL
+  EMIS
+}
+
+enum RhPaymentStatus {
+  DRAFT
+  SENT
+  CONFIRMED
+  FAILED
+}
+
+model RhPaymentBatch {
+  id             String            @id @default(uuid())
+  tenantId       String
+  runId          String            @unique
+  provider       RhPaymentProvider @default(MANUAL)
+  status         RhPaymentStatus   @default(DRAFT)
+  total          Decimal           @db.Decimal(14, 2)
+  reference      String?
+  error          String?
+  createdAt      DateTime          @default(now())
+  sentAt         DateTime?
+  confirmedAt    DateTime?
+
+  tenant Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  run    RhPayrollRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  items  RhPaymentItem[]
+
+  @@index([tenantId, status])
+}
+
+model RhPaymentItem {
+  id          String          @id @default(uuid())
+  tenantId    String
+  batchId     String
+  employeeId  String
+  amount      Decimal         @db.Decimal(14, 2)
+  status      RhPaymentStatus @default(DRAFT)
+  externalRef String?
+  createdAt   DateTime        @default(now())
+
+  tenant   Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  batch    RhPaymentBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  employee RhEmployee    @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([batchId, employeeId])
+  @@index([tenantId, status])
 }
