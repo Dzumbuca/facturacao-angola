@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
+import { ProductPicker } from './ProductPicker';
 import { useWarehouseStock } from './use-warehouse-stock';
 
 type Props = {
@@ -14,7 +15,7 @@ type Props = {
 
 type FieldErrors = { productId?: string; warehouseId?: string; quantity?: string };
 
-export function MovementModal({ products, warehouses, open, onClose, onSuccess }: Props) {
+export function MovementModal({ products: _products, warehouses, open, onClose, onSuccess }: Props) {
   const [productId, setProductId] = useState('');
   const [warehouseId, setWarehouseId] = useState('');
   const [type, setType] = useState<'IN' | 'OUT' | 'ADJUSTMENT'>('IN');
@@ -93,22 +94,14 @@ export function MovementModal({ products, warehouses, open, onClose, onSuccess }
         <form className="space-y-4" onSubmit={submit} noValidate>
           <div>
             <label htmlFor="movement-product" className="app-label">Produto <span className="text-[#c44747]">*</span></label>
-            <select
+            <ProductPicker
               id="movement-product"
               value={productId}
-              onChange={(e) => { setProductId(e.target.value); clearFieldError('productId'); clearFieldError('quantity'); }}
-              className={`app-input ${fieldErrors.productId ? 'border-[#d98a8a]' : ''}`}
-              aria-invalid={Boolean(fieldErrors.productId)}
-              aria-describedby={fieldErrors.productId ? 'movement-product-error' : undefined}
-              required
-            >
-              <option value="">Seleccionar produto</option>
-              {products.map((product) => (
-                <option key={product.id} value={product.id}>
-                  {product.name} {product.codigo ? `(${product.codigo})` : ''}
-                </option>
-              ))}
-            </select>
+              warehouseId={warehouseId}
+              invalid={Boolean(fieldErrors.productId)}
+              errorId={fieldErrors.productId ? 'movement-product-error' : undefined}
+              onChange={(product) => { setProductId(product.id); clearFieldError('productId'); clearFieldError('quantity'); }}
+            />
             {fieldErrors.productId && <p id="movement-product-error" className="mt-1 text-xs font-medium text-[#a83939]">{fieldErrors.productId}</p>}
           </div>
 

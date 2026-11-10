@@ -69,7 +69,9 @@ test.describe('WMS v2 - UI', () => {
     await page.getByRole('button', { name: /Entrada/ }).first().click();
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
-    await dialog.locator('#movement-product').selectOption({ index: 1 });
+    await dialog.locator('#movement-product').fill('E2E');
+    await expect(dialog.getByRole('option').first()).toBeVisible();
+    await dialog.getByRole('option').first().click();
     await dialog.getByRole('button', { name: 'Registar movimento' }).click();
     await expect(dialog.getByText('Escolhe o armazém onde o movimento acontece.')).toBeVisible();
   });
@@ -84,6 +86,14 @@ test.describe('WMS v2 - UI', () => {
     await dialog.locator('#movement-product').selectOption({ index: 1 });
     await dialog.getByRole('button', { name: 'Registar movimento' }).click();
     await expect(dialog.getByText('Selecione o armazém onde o movimento acontece.')).toBeVisible();
+  });
+
+  test('indicadores de armazém não têm zeros à esquerda', async ({ page }) => {
+    await login(page);
+    await page.goto('/warehouses');
+    await page.waitForTimeout(800);
+    const value = await page.getByText('Stock total', { exact: true }).locator('xpath=following-sibling::p[1]').textContent();
+    expect(value?.trim()).toMatch(/^\d+$/);
   });
 
   test('raiz do dashboard continua acessível após login', async ({ page }) => {

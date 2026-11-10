@@ -20,9 +20,9 @@ export default async function StockPage() {
   ]);
 
   const totalProducts = products.length;
-  const totalStock = products.reduce((s: number, p: any) => s + (p.stock || 0), 0);
-  const lowStock = products.filter((p: any) => (p.stock || 0) > 0 && (p.stock || 0) <= (p.minStock || 0));
-  const outOfStock = products.filter((p: any) => (p.stock || 0) <= 0);
+  const totalStock = products.reduce((s: number, p: any) => s + Number(p.stock || 0), 0);
+  const lowStock = products.filter((p: any) => Number(p.stock || 0) > 0 && Number(p.stock || 0) <= Number(p.minStock || 0));
+  const outOfStock = products.filter((p: any) => Number(p.stock || 0) <= 0);
 
   return (
     <div className="space-y-6">

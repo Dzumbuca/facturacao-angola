@@ -127,6 +127,12 @@ model Product {
   stock                       Decimal                      @default(0) @db.Decimal(12, 3)
   trackStock                  Boolean                      @default(false)
   categoria                   String                       @default("GERAL")
+  subcategoria                String?
+  marca                       String?
+  modelo                      String?
+  unidade                     String                       @default("un")
+  purchasePrice               Decimal?                     @db.Decimal(12, 2)
+  imageUrl                    String?
   createdAt                   DateTime                     @default(now())
   minStock                    Decimal                      @default(0) @db.Decimal(12, 3)
   barcode                     String?

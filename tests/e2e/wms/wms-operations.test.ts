@@ -157,3 +157,62 @@ describe('WMS v2 E2E - Armazém obrigatório nos movimentos', () => {
     expect(res.status).toBe(400);
   });
 });
+
+describe('WMS v2 E2E - Catálogo e pesquisa de produtos', () => {
+  it('pesquisa por nome/SKU e devolve shape paginado', async () => {
+    const session = await login();
+    const bySku = await authenticatedFetch(`/api/produtos/search?sku=${encodeURIComponent('E2E-A1')}`, session);
+    expect(bySku.status).toBe(200);
+    const skuData = await bySku.json();
+    expect(skuData.total).toBeGreaterThanOrEqual(1);
+    expect(skuData.items.some((p: any) => p.id === TENANT_A_PRODUCT)).toBe(true);
+    expect(typeof skuData.totalPages).toBe('number');
+
+    const paged = await authenticatedFetch('/api/produtos/search?q=&limit=1&page=1', session);
+    const pagedData = await paged.json();
+    expect(pagedData.items.length).toBeLessThanOrEqual(1);
+    expect(pagedData.totalPages).toBeGreaterThanOrEqual(1);
+  });
+
+  it('pesquisa isolada por empresa (tenant B não vê produtos de A)', async () => {
+    const sessionB = await login(USER_B);
+    const res = await authenticatedFetch(`/api/produtos/search?q=${encodeURIComponent('E2E Produto A1')}`, sessionB);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.items.some((p: any) => p.id === TENANT_A_PRODUCT)).toBe(false);
+  });
+
+  it('cria produto com novos campos de catálogo e SKU automático', async () => {
+    const session = await login();
+    const barcode = `980${String(Date.now()).slice(-9)}`;
+    const create = await authenticatedFetch('/api/produtos', session, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nome: 'E2E Catálogo Completo',
+        preco: '250.00',
+        categoria: 'Elétrica',
+        subcategoria: 'Iluminação',
+        marca: 'E2E Marca',
+        modelo: 'M-100',
+        unidade: 'cx',
+        purchasePrice: '150.00',
+        barcode,
+        description: 'Produto de teste de catálogo',
+      }),
+    });
+    expect(create.status).toBe(200);
+    const created = await create.json();
+    expect(created.produto.codigo).toMatch(/^SKU-/);
+    expect(created.produto.marca).toBe('E2E Marca');
+    expect(created.produto.barcode).toBe(barcode);
+    expect(created.produto.unidade).toBe('cx');
+
+    const search = await authenticatedFetch(`/api/produtos/search?marca=${encodeURIComponent('E2E Marca')}`, session);
+    const searchData = await search.json();
+    expect(searchData.items.some((p: any) => p.id === created.id)).toBe(true);
+
+    const del = await authenticatedFetch(`/api/produtos/${created.id}`, session, { method: 'DELETE' });
+    expect(del.status).toBe(200);
+  });
+});
