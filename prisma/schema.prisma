@@ -67,6 +67,11 @@ model Tenant {
   tenantSubscriptions      TenantSubscription[]
   users                    User[]
   warehouses               Warehouse[]
+  rhDepartments            RhDepartment[]
+  rhPositions              RhPosition[]
+  rhEmployees              RhEmployee[]
+  rhContracts              RhContract[]
+  rhAuditLogs              RhAuditLog[]
 }
 
 model PlanPayment {
@@ -1214,4 +1219,146 @@ enum SubscriptionStatus {
   EXPIRED
   CANCELLED
   TRIAL
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Machine RH — núcleo (funcionários, organização, contratos, auditoria).
+// Módulo independente, multi-tenant. Migração aditiva; não aplicada em produção.
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum RhEmployeeStatus {
+  ACTIVO
+  SUSPENSO
+  FERIAS
+  CESSAO
+  INACTIVO
+}
+
+enum RhContractType {
+  INDEFINIDO
+  TERMO_CERTO
+  ESTAGIO
+  PRESTACAO_SERVICOS
+}
+
+enum RhContractStatus {
+  RASCUNHO
+  ACTIVO
+  RENOVADO
+  CESSAO
+  EXPIRADO
+}
+
+model RhDepartment {
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
+  code        String?
+  parentId    String?
+  managerName String?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant   Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  parent   RhDepartment?  @relation("RhDepartmentHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children RhDepartment[] @relation("RhDepartmentHierarchy")
+  positions RhPosition[]
+  employees RhEmployee[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId, parentId])
+}
+
+model RhPosition {
+  id           String   @id @default(uuid())
+  tenantId     String
+  title        String
+  code         String?
+  departmentId String?
+  level        Int?
+  description  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant     Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  department RhDepartment? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  employees  RhEmployee[]
+
+  @@unique([tenantId, title, departmentId])
+  @@index([tenantId, departmentId])
+}
+
+model RhEmployee {
+  id             String           @id @default(uuid())
+  tenantId       String
+  employeeNumber String
+  firstName      String
+  lastName       String
+  bi             String?
+  nif            String?
+  email          String?
+  phone          String?
+  address        String?
+  birthDate      DateTime?
+  gender         String?
+  photoUrl       String?
+  departmentId   String?
+  positionId     String?
+  hireDate       DateTime
+  contractType   RhContractType   @default(INDEFINIDO)
+  baseSalary     Decimal          @db.Decimal(14, 2)
+  status         RhEmployeeStatus @default(ACTIVO)
+  bankName       String?
+  bankAccount    String?
+  bankIban       String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  tenant     Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  department RhDepartment? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  position   RhPosition?   @relation(fields: [positionId], references: [id], onDelete: SetNull)
+  contracts  RhContract[]
+
+  @@unique([tenantId, employeeNumber])
+  @@index([tenantId, status])
+  @@index([tenantId, departmentId])
+  @@index([tenantId, positionId])
+}
+
+model RhContract {
+  id         String           @id @default(uuid())
+  tenantId   String
+  employeeId String
+  type       RhContractType
+  status     RhContractStatus @default(RASCUNHO)
+  startDate  DateTime
+  endDate    DateTime?
+  salary     Decimal          @db.Decimal(14, 2)
+  documentUrl String?
+  notes      String?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  tenant   Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  employee RhEmployee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, employeeId])
+  @@index([tenantId, status, endDate])
+}
+
+model RhAuditLog {
+  id          String   @id @default(uuid())
+  tenantId    String
+  actorUserId String?
+  action      String
+  entity      String
+  entityId    String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, createdAt])
+  @@index([tenantId, entity, entityId])
 }

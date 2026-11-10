@@ -37,3 +37,31 @@ CREATE POLICY "tenant_subscription_isolation" ON "TenantSubscription"
   FOR ALL
   USING ("tenantId" = current_setting('app.tenant_id', true))
   WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+
+-- Machine RH (núcleo): isolamento estrito por empresa.
+ALTER TABLE "RhDepartment" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "RhPosition" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "RhEmployee" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "RhContract" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "RhAuditLog" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "rh_department_isolation" ON "RhDepartment";
+CREATE POLICY "rh_department_isolation" ON "RhDepartment" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+DROP POLICY IF EXISTS "rh_position_isolation" ON "RhPosition";
+CREATE POLICY "rh_position_isolation" ON "RhPosition" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+DROP POLICY IF EXISTS "rh_employee_isolation" ON "RhEmployee";
+CREATE POLICY "rh_employee_isolation" ON "RhEmployee" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+DROP POLICY IF EXISTS "rh_contract_isolation" ON "RhContract";
+CREATE POLICY "rh_contract_isolation" ON "RhContract" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+DROP POLICY IF EXISTS "rh_audit_isolation" ON "RhAuditLog";
+CREATE POLICY "rh_audit_isolation" ON "RhAuditLog" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));

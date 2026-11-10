@@ -54,6 +54,20 @@ async function main() {
     });
   }
 
+  // Módulo Machine RH activo para os dois tenants de teste.
+  const rhApp = await prisma.platformApplication.upsert({
+    where: { slug: 'rh' },
+    update: { name: 'Machine RH', status: 'ACTIVE' },
+    create: { slug: 'rh', name: 'Machine RH', description: 'Recursos Humanos', icon: '👥', version: '1.0.0', status: 'ACTIVE', isCore: false },
+  });
+  for (const [id] of tenants) {
+    await prisma.tenantApplication.upsert({
+      where: { tenantId_applicationId: { tenantId: id, applicationId: rhApp.id } },
+      update: { enabled: true, enabledAt: new Date(), disabledAt: null },
+      create: { tenantId: id, applicationId: rhApp.id, enabled: true, enabledAt: new Date() },
+    });
+  }
+
   // Pacotes comerciais (preços de lançamento; SKUs sem limite definido).
   const plans = [
     { slug: 'gratis', name: 'Grátis', priceKz: 0, priceYearly: null, limits: { max_warehouses: 0, max_products: 30, max_clients: 30, max_invoices_per_month: 15 }, transfers: false },

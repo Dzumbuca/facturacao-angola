@@ -1,7 +1,7 @@
 import { auth } from '@/lib/auth';
 import { listTenantApplications } from '@/lib/platform-apps';
 
-export default async function MachineAppsPage({ searchParams }: { searchParams?: Promise<{ wms?: string }> }) {
+export default async function MachineAppsPage({ searchParams }: { searchParams?: Promise<{ wms?: string; rh?: string }> }) {
   const params = searchParams ? await searchParams : {};
   const session = await auth();
   const tenantId = (session?.user as { tenantId?: string | null } | undefined)?.tenantId;
@@ -13,6 +13,12 @@ export default async function MachineAppsPage({ searchParams }: { searchParams?:
         <div role="alert" className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-slate-800">
           O módulo <strong>Armazém e Stock</strong> não está incluído no pacote actual da sua empresa.
           <a href="/pagamento" className="ml-1 font-semibold text-[#021f87] underline">Ver pacotes disponíveis</a> para o activar.
+        </div>
+      )}
+      {params?.rh && (
+        <div role="alert" className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-slate-800">
+          O módulo <strong>Machine RH</strong> {params.rh === 'sem-permissao' ? 'não está disponível para o seu perfil.' : 'não está activo para esta empresa.'}
+          <a href="/pagamento" className="ml-1 font-semibold text-[#021f87] underline">Falar sobre o Machine RH</a> para o activar.
         </div>
       )}
       <p className="text-gray-500 mb-6">Aplicações disponíveis na sua plataforma.</p>
