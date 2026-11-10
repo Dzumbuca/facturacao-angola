@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 type Employee = { id: string; firstName: string; lastName: string; employeeNumber: string; hasPin: boolean };
@@ -64,6 +65,7 @@ export function AttendanceManager({ entries, employees }: { entries: Entry[]; em
       <div>
         <p className="text-sm text-[#708195]">Machine Point</p>
         <h1 className="mt-1 text-2xl font-bold text-[#1c2d3f]">Assiduidade</h1>
+        <Link href="/rh/ponto" className="mt-2 inline-flex min-h-9 items-center rounded-lg border border-[#cdddeb] bg-white px-3 text-xs font-semibold text-[#021f87]">Abrir quiosque →</Link>
         <p className="mt-1 text-sm text-[#607286]">Registo de ponto por PIN. Horários, turnos e QR chegam nas próximas fases.</p>
       </div>
 

@@ -135,6 +135,39 @@ describe('Machine RH - núcleo e isolamento entre empresas', () => {
     expect(contract.status).toBe(201);
     expect((await contract.json()).employeeId).toBe(employeeId);
 
+    // Machine Point: QR assinado, marcação e rejeições.
+    const qr = await authenticatedFetch(`/api/rh/employees/${employeeId}/qr`, session);
+    expect(qr.status).toBe(200);
+    const qrData = await qr.json();
+    expect(qrData.token).toContain('.');
+    expect(String(qrData.svg)).toContain('<svg');
+
+    const invalidQr = await authenticatedFetch('/api/rh/attendance/qr', session, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: 'invalido', type: 'SAIDA_ALMOCO' }),
+    });
+    expect(invalidQr.status).toBe(401);
+
+    const qrClock = await authenticatedFetch('/api/rh/attendance/qr', session, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: qrData.token, type: 'SAIDA_ALMOCO' }),
+    });
+    expect(qrClock.status).toBe(201);
+    expect((await qrClock.json()).source).toBe('QR');
+
+    const qrDuplicate = await authenticatedFetch('/api/rh/attendance/qr', session, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: qrData.token, type: 'SAIDA_ALMOCO' }),
+    });
+    expect(qrDuplicate.status).toBe(409);
+
+    const sessionQrB = await login('e2e-other@machinefacturas.test');
+    const foreignQr = await authenticatedFetch('/api/rh/attendance/qr', sessionQrB, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: qrData.token, type: 'ENTRADA' }),
+    });
+    expect(foreignQr.status).toBe(403);
+
     // Machine Point: PIN errado, entrada, duplicado no último minuto.
     const wrongPin = await authenticatedFetch('/api/rh/attendance/clock', session, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },

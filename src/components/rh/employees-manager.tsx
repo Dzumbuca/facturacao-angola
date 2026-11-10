@@ -60,6 +60,8 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
   const [editing, setEditing] = useState<Employee | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [qr, setQr] = useState<{ svg: string; name: string; expiresAt: string } | null>(null);
+  const [qrLoading, setQrLoading] = useState(false);
 
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -71,8 +73,23 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
     });
   }, [employees, query, statusFilter]);
 
-  function openCreate() { setEditing(null); setError(''); setOpen(true); }
-  function openEdit(employee: Employee) { setEditing(employee); setError(''); setOpen(true); }
+  function openCreate() { setEditing(null); setError(''); setQr(null); setOpen(true); }
+  function openEdit(employee: Employee) { setEditing(employee); setError(''); setQr(null); setOpen(true); }
+
+  async function loadQr() {
+    if (!editing) return;
+    setQrLoading(true); setError('');
+    try {
+      const response = await fetch(`/api/rh/employees/${editing.id}/qr`);
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data?.error ?? 'Não foi possível gerar o QR.');
+      setQr({ svg: data.svg, name: data.employee?.name ?? 'Funcionário', expiresAt: data.expiresAt });
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setQrLoading(false);
+    }
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -229,6 +246,25 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
                   <div><label htmlFor="rh-pin" className="app-label">PIN do ponto <span className="font-normal text-[#708195]">{editing?.hasPin ? '(definido)' : '(opcional)'}</span></label><input id="rh-pin" name="pin" type="password" inputMode="numeric" maxLength={8} className="app-input tracking-[.3em]" placeholder={editing?.hasPin ? 'Deixar vazio para manter' : '4 a 8 dígitos'} /></div>
                 </div>
               </fieldset>
+
+              {editing && (
+                <div className="rounded-lg border border-[#e1e8f0] bg-[#f8fafc] p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs font-semibold text-[#4a5d70]">QR do ponto (expira em 5 min)</p>
+                    <button type="button" onClick={loadQr} disabled={qrLoading} className="min-h-9 rounded-lg border border-[#cdddeb] bg-white px-3 text-xs font-semibold text-[#021f87] disabled:opacity-50">{qrLoading ? 'A gerar…' : 'Gerar QR'}</button>
+                  </div>
+                  {qr && (
+                    <div className="mt-2 flex items-center gap-3">
+                      <div className="h-28 w-28 shrink-0 rounded bg-white p-1 [&>svg]:h-full [&>svg]:w-full" dangerouslySetInnerHTML={{ __html: qr.svg }} />
+                      <div className="text-xs text-[#52667a]">
+                        <p className="font-semibold text-[#1c2d3f]">{qr.name}</p>
+                        <p className="mt-1">Expira às {new Date(qr.expiresAt).toLocaleTimeString('pt-AO', { hour: '2-digit', minute: '2-digit' })}.</p>
+                        <p className="mt-1">Use no quiosque em /rh/ponto.</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <fieldset className="space-y-3">
                 <legend className="text-[11px] font-bold uppercase tracking-[.12em] text-[#8a99ab]">Dados bancários (restrito)</legend>
