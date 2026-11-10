@@ -14,11 +14,11 @@ const activeLinks = [
   { href: '/rh/contratos', label: 'Contratos', icon: '▧' },
   { href: '/rh/assiduidade', label: 'Assiduidade', icon: '◷' },
   { href: '/rh/horarios', label: 'Horários', icon: '◔' },
+  { href: '/rh/ferias', label: 'Férias', icon: '☀' },
   { href: '/rh/configuracoes', label: 'Configurações', icon: '⚙' },
 ];
 
 const futureLinks = [
-  { href: '/rh/ferias', label: 'Férias e licenças' },
   { href: '/rh/processamento-salarial', label: 'Processamento salarial' },
   { href: '/rh/documentos', label: 'Documentos' },
   { href: '/rh/modelos', label: 'Modelos' },

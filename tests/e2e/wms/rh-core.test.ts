@@ -52,6 +52,8 @@ afterAll(async () => {
   if (employeeId) await prisma.rhEmployee.deleteMany({ where: { tenantId: tenantAId, id: employeeId } });
   if (departmentId) await prisma.rhDepartment.deleteMany({ where: { tenantId: tenantAId, id: departmentId } });
   if (shiftId) await prisma.rhShift.deleteMany({ where: { tenantId: tenantAId, id: shiftId } });
+  await prisma.rhLeaveRequest.deleteMany({ where: { tenantId: tenantAId } });
+  await prisma.rhSettings.deleteMany({ where: { tenantId: tenantAId } });
   await prisma.rhAuditLog.deleteMany({ where: { tenantId: tenantAId, createdAt: { gte: new Date(Date.now() - 10 * 60_000) } } });
   if (viewerId) await prisma.user.deleteMany({ where: { id: viewerId } });
   if (blockedUserId) await prisma.user.deleteMany({ where: { id: blockedUserId } });
@@ -188,5 +190,51 @@ describe('Machine RH - núcleo e isolamento entre empresas', () => {
       body: JSON.stringify({ firstName: 'E2E', lastName: 'Cross', hireDate: '2026-01-15', baseSalary: 1000, shiftId }),
     });
     expect(employeeWithForeignShift.status).toBe(400);
+  });
+
+  it('férias: cria, bloqueia sobreposição, aprova e configura saldo', async () => {
+    const session = await login();
+    const leave = await authenticatedFetch('/api/rh/leaves', session, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ employeeId, type: 'FERIAS', startDate: '2026-03-02', endDate: '2026-03-06', reason: 'E2E férias' }),
+    });
+    expect(leave.status).toBe(201);
+    const leaveData = await leave.json();
+    expect(leaveData.days).toBe(5);
+    expect(leaveData.status).toBe('PENDENTE');
+
+    const overlap = await authenticatedFetch('/api/rh/leaves', session, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ employeeId, type: 'FERIAS', startDate: '2026-03-05', endDate: '2026-03-10' }),
+    });
+    expect(overlap.status).toBe(409);
+
+    const approve = await authenticatedFetch(`/api/rh/leaves/${leaveData.id}`, session, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'APROVADO' }),
+    });
+    expect(approve.status).toBe(200);
+    expect((await approve.json()).status).toBe('APROVADO');
+
+    const again = await authenticatedFetch(`/api/rh/leaves/${leaveData.id}`, session, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'REJEITADO' }),
+    });
+    expect(again.status).toBe(409);
+
+    const settings = await authenticatedFetch('/api/rh/settings', session, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ vacationDaysPerYear: 22 }),
+    });
+    expect(settings.status).toBe(200);
+
+    const list = await authenticatedFetch('/api/rh/leaves?year=2026', session);
+    expect(list.status).toBe(200);
+    const listData = await list.json();
+    expect(listData.vacationDaysPerYear).toBe(22);
+    expect(listData.items.some((item: any) => item.id === leaveData.id && item.status === 'APROVADO')).toBe(true);
+
+    const sessionB = await login('e2e-other@machinefacturas.test');
+    const crossTenant = await authenticatedFetch(`/api/rh/leaves/${leaveData.id}`, sessionB, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'APROVADO' }),
+    });
+    expect(crossTenant.status).toBe(404);
   });
 });

@@ -79,3 +79,15 @@ DROP POLICY IF EXISTS "rh_shift_isolation" ON "RhShift";
 CREATE POLICY "rh_shift_isolation" ON "RhShift" FOR ALL
   USING ("tenantId" = current_setting('app.tenant_id', true))
   WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+
+-- Férias/licenças e configurações RH.
+ALTER TABLE "RhLeaveRequest" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_leave_isolation" ON "RhLeaveRequest";
+CREATE POLICY "rh_leave_isolation" ON "RhLeaveRequest" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+ALTER TABLE "RhSettings" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_settings_isolation" ON "RhSettings";
+CREATE POLICY "rh_settings_isolation" ON "RhSettings" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));

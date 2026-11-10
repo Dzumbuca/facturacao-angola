@@ -146,6 +146,8 @@ model Tenant {
 
   rhTimeEntries            RhTimeEntry[]
   rhShifts                 RhShift[]
+  rhLeaveRequests          RhLeaveRequest[]
+  rhSettings               RhSettings?
 
   rhAuditLogs              RhAuditLog[]
 
@@ -2647,6 +2649,7 @@ model RhEmployee {
 
   contracts  RhContract[]
   timeEntries RhTimeEntry[]
+  leaveRequests RhLeaveRequest[]
 
 
 
@@ -2826,4 +2829,53 @@ model RhShift {
 
   @@unique([tenantId, name])
   @@index([tenantId, isActive])
+}
+
+
+// Férias e licenças.
+enum RhLeaveType {
+  FERIAS
+  LICENCA
+  DISPENSA
+  DOENCA
+  OUTRA
+}
+
+enum RhLeaveStatus {
+  PENDENTE
+  APROVADO
+  REJEITADO
+  CANCELADO
+}
+
+model RhLeaveRequest {
+  id               String        @id @default(uuid())
+  tenantId         String
+  employeeId       String
+  type             RhLeaveType   @default(FERIAS)
+  status           RhLeaveStatus @default(PENDENTE)
+  startDate        DateTime
+  endDate          DateTime
+  days             Int
+  reason           String?
+  decidedByUserId  String?
+  decidedAt        DateTime?
+  decisionNote     String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  tenant   Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  employee RhEmployee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, status, startDate])
+  @@index([tenantId, employeeId])
+}
+
+model RhSettings {
+  tenantId             String   @id
+  vacationDaysPerYear  Int?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 }

@@ -1,7 +1,10 @@
 import { requireRhAccess } from '@/lib/rh-access';
+import { runWithTenant } from '@/lib/tenant-db';
+import { RhSettingsForm } from '@/components/rh/settings-form';
 
 export default async function RhSettingsPage() {
   const access = await requireRhAccess();
+  const settings = (await runWithTenant(access.tenantId, (tx) => tx.rhSettings.findUnique({ where: { tenantId: access.tenantId } }), { userId: access.userId })) as { vacationDaysPerYear: number | null } | null;
   return (
     <div className="space-y-5">
       <div>
@@ -19,6 +22,12 @@ export default async function RhSettingsPage() {
         <p className="mt-4 rounded-lg bg-[#f5f8fc] p-3 text-xs text-[#607286]">
           A matriz fina de permissões (RH_ADMIN, FINANCE, MANAGER, EMPLOYEE) será introduzida com a fase de assiduidade e payroll.
         </p>
+      </section>
+
+      <section className="rounded-xl border border-[#e1e8f0] bg-white p-5">
+        <h2 className="text-sm font-bold text-[#1c2d3f]">Férias</h2>
+        <p className="mt-1 text-xs text-[#607286]">Direito anual usado para calcular o saldo. Não é imposto nenhum valor legal por omissão.</p>
+        <RhSettingsForm initial={settings?.vacationDaysPerYear ?? null} />
       </section>
 
       <section className="rounded-xl border border-[#e1e8f0] bg-white p-5">
