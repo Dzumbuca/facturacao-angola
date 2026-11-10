@@ -96,6 +96,14 @@ test.describe('WMS v2 - UI', () => {
     expect(value?.trim()).toMatch(/^\d+$/);
   });
 
+  test('Machine RH: dashboard próprio e manifest independente', async ({ page }) => {
+    await login(page);
+    await page.goto('/rh/dashboard');
+    await expect(page.getByRole('heading', { name: 'Dashboard', exact: true })).toBeVisible();
+    const manifest = await page.locator('link[rel="manifest"]').getAttribute('href');
+    expect(manifest).toBe('/rh-manifest.json');
+  });
+
   test('raiz do dashboard continua acessível após login', async ({ page }) => {
     await login(page);
     await page.goto('/');

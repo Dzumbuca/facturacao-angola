@@ -1,0 +1,244 @@
+'use client';
+
+import { useMemo, useState, type FormEvent } from 'react';
+
+type Department = { id: string; name: string };
+type Position = { id: string; title: string; departmentId: string | null };
+type Employee = {
+  id: string;
+  employeeNumber: string;
+  firstName: string;
+  lastName: string;
+  bi: string | null;
+  nif: string | null;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  birthDate: string | null;
+  gender: string | null;
+  photoUrl: string | null;
+  departmentId: string | null;
+  positionId: string | null;
+  hireDate: string;
+  contractType: string;
+  baseSalary: number;
+  status: string;
+  bankName: string | null;
+  bankAccount: string | null;
+  bankIban: string | null;
+  department: Department | null;
+  position: { id: string; title: string } | null;
+};
+
+const STATUS_LABEL: Record<string, string> = {
+  ACTIVO: 'Activo', SUSPENSO: 'Suspenso', FERIAS: 'Férias', CESSAO: 'Cessão', INACTIVO: 'Inactivo',
+};
+const CONTRACT_LABEL: Record<string, string> = {
+  INDEFINIDO: 'Tempo indeterminado', TERMO_CERTO: 'Termo certo', ESTAGIO: 'Estágio', PRESTACAO_SERVICOS: 'Prestação de serviços',
+};
+
+function money(value: number) {
+  return new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', maximumFractionDigits: 2 }).format(value || 0);
+}
+function date(value: string | null) {
+  return value ? new Date(value).toLocaleDateString('pt-AO') : '—';
+}
+
+export function EmployeesManager({ initialEmployees, departments, positions }: {
+  initialEmployees: Employee[];
+  departments: Department[];
+  positions: Position[];
+}) {
+  const [employees, setEmployees] = useState(initialEmployees);
+  const [query, setQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Employee | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const filtered = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    return employees.filter((employee) => {
+      if (statusFilter && employee.status !== statusFilter) return false;
+      if (!term) return true;
+      return [employee.firstName, employee.lastName, employee.employeeNumber, employee.bi, employee.email]
+        .filter(Boolean).some((value) => String(value).toLowerCase().includes(term));
+    });
+  }, [employees, query, statusFilter]);
+
+  function openCreate() { setEditing(null); setError(''); setOpen(true); }
+  function openEdit(employee: Employee) { setEditing(employee); setError(''); setOpen(true); }
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const payload: Record<string, unknown> = {
+      firstName: String(form.get('firstName') ?? ''),
+      lastName: String(form.get('lastName') ?? ''),
+      bi: String(form.get('bi') ?? ''),
+      nif: String(form.get('nif') ?? ''),
+      email: String(form.get('email') ?? ''),
+      phone: String(form.get('phone') ?? ''),
+      address: String(form.get('address') ?? ''),
+      birthDate: String(form.get('birthDate') ?? '') || null,
+      gender: String(form.get('gender') ?? ''),
+      photoUrl: String(form.get('photoUrl') ?? ''),
+      departmentId: String(form.get('departmentId') ?? '') || null,
+      positionId: String(form.get('positionId') ?? '') || null,
+      hireDate: String(form.get('hireDate') ?? ''),
+      contractType: String(form.get('contractType') ?? 'INDEFINIDO'),
+      baseSalary: String(form.get('baseSalary') ?? ''),
+      status: String(form.get('status') ?? 'ACTIVO'),
+      bankName: String(form.get('bankName') ?? ''),
+      bankAccount: String(form.get('bankAccount') ?? ''),
+      bankIban: String(form.get('bankIban') ?? ''),
+    };
+    setSaving(true);
+    setError('');
+    try {
+      const response = await fetch(editing ? `/api/rh/employees/${editing.id}` : '/api/rh/employees', {
+        method: editing ? 'PATCH' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data?.error ?? 'Não foi possível guardar.');
+      const normalized: Employee = {
+        ...data,
+        baseSalary: Number(data.baseSalary),
+        department: departments.find((d) => d.id === data.departmentId) ?? null,
+        position: positions.find((p) => p.id === data.positionId) ? { id: data.positionId, title: positions.find((p) => p.id === data.positionId)!.title } : null,
+      };
+      setEmployees((current) => editing
+        ? current.map((item) => item.id === normalized.id ? normalized : item)
+        : [...current, normalized]);
+      setOpen(false);
+      setEditing(null);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="space-y-5">
+      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+        <div>
+          <p className="text-sm text-[#708195]">Pessoas</p>
+          <h1 className="mt-1 text-2xl font-bold text-[#1c2d3f]">Funcionários</h1>
+          <p className="mt-1 text-sm text-[#607286]">Cadastro, organização e dados profissionais da equipa.</p>
+        </div>
+        <button type="button" onClick={openCreate} className="min-h-11 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white hover:bg-[#061965]">Novo funcionário</button>
+      </div>
+
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Pesquisar por nome, nº, BI ou email"
+          className="app-input sm:max-w-sm"
+          aria-label="Pesquisar funcionários"
+        />
+        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="app-input sm:max-w-44" aria-label="Filtrar por estado">
+          <option value="">Todos os estados</option>
+          {Object.entries(STATUS_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+        </select>
+      </div>
+
+      <div className="overflow-x-auto rounded-xl border border-[#e1e8f0] bg-white">
+        <table className="data-table min-w-[860px]">
+          <thead><tr><th>Funcionário</th><th>Nº</th><th>Cargo / Departamento</th><th>Admissão</th><th>Salário</th><th>Estado</th><th>Acções</th></tr></thead>
+          <tbody>
+            {filtered.map((employee) => (
+              <tr key={employee.id}>
+                <td data-mobile-primary>
+                  <span className="block font-semibold text-[#1c2d3f]">{employee.firstName} {employee.lastName}</span>
+                  <span className="block text-xs text-[#708195]">{employee.email || '—'}</span>
+                </td>
+                <td className="font-mono text-xs text-[#607286]">{employee.employeeNumber}</td>
+                <td>
+                  <span className="block text-sm">{employee.position?.title ?? '—'}</span>
+                  <span className="block text-xs text-[#708195]">{employee.department?.name ?? '—'}</span>
+                </td>
+                <td className="tabular-nums">{date(employee.hireDate)}</td>
+                <td className="tabular-nums">{money(employee.baseSalary)}</td>
+                <td><span className="rounded-full bg-[#eef4ff] px-2 py-0.5 text-[11px] font-semibold text-[#021f87]">{STATUS_LABEL[employee.status] ?? employee.status}</span></td>
+                <td data-mobile-actions><button type="button" onClick={() => openEdit(employee)} className="min-h-10 rounded-lg border border-[#cdddeb] px-3 text-sm font-semibold text-[#021f87]">Editar</button></td>
+              </tr>
+            ))}
+            {filtered.length === 0 && (
+              <tr><td colSpan={7} className="px-4 py-10 text-center text-sm text-[#708195]">Nenhum funcionário encontrado.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {open && (
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-[#102b46]/50 p-0 backdrop-blur-[2px] sm:items-center sm:p-5" onMouseDown={(e) => { if (e.target === e.currentTarget && !saving) setOpen(false); }}>
+          <section role="dialog" aria-modal="true" aria-labelledby="rh-employee-title" className="max-h-[92dvh] w-full overflow-y-auto overscroll-contain rounded-t-2xl bg-white p-5 shadow-2xl sm:max-w-2xl sm:rounded-2xl sm:p-7">
+            <div className="mb-4 flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[.14em] text-[#021f87]">Machine RH</p>
+                <h2 id="rh-employee-title" className="mt-1 text-lg font-bold text-[#1c2d3f]">{editing ? 'Editar funcionário' : 'Novo funcionário'}</h2>
+              </div>
+              <button type="button" aria-label="Fechar" disabled={saving} onClick={() => setOpen(false)} className="flex h-10 w-10 items-center justify-center rounded-lg text-xl text-[#708195] hover:bg-[#f0f4f8]">×</button>
+            </div>
+            <form className="space-y-4" onSubmit={submit} key={editing?.id ?? 'novo'} noValidate>
+              <fieldset className="space-y-3">
+                <legend className="text-[11px] font-bold uppercase tracking-[.12em] text-[#8a99ab]">Identificação</legend>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div><label htmlFor="rh-first" className="app-label">Nome *</label><input id="rh-first" name="firstName" className="app-input" required defaultValue={editing?.firstName ?? ''} /></div>
+                  <div><label htmlFor="rh-last" className="app-label">Apelido *</label><input id="rh-last" name="lastName" className="app-input" required defaultValue={editing?.lastName ?? ''} /></div>
+                  <div><label htmlFor="rh-bi" className="app-label">BI</label><input id="rh-bi" name="bi" className="app-input" defaultValue={editing?.bi ?? ''} /></div>
+                  <div><label htmlFor="rh-nif" className="app-label">NIF</label><input id="rh-nif" name="nif" className="app-input" defaultValue={editing?.nif ?? ''} /></div>
+                  <div><label htmlFor="rh-birth" className="app-label">Data de nascimento</label><input id="rh-birth" name="birthDate" type="date" className="app-input" defaultValue={editing?.birthDate?.slice(0, 10) ?? ''} /></div>
+                  <div><label htmlFor="rh-gender" className="app-label">Género</label><select id="rh-gender" name="gender" className="app-input" defaultValue={editing?.gender ?? ''}><option value="">Não indicado</option><option value="M">Masculino</option><option value="F">Feminino</option><option value="OUTRO">Outro</option></select></div>
+                </div>
+              </fieldset>
+
+              <fieldset className="space-y-3">
+                <legend className="text-[11px] font-bold uppercase tracking-[.12em] text-[#8a99ab]">Contacto</legend>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div><label htmlFor="rh-email" className="app-label">Email</label><input id="rh-email" name="email" type="email" className="app-input" defaultValue={editing?.email ?? ''} /></div>
+                  <div><label htmlFor="rh-phone" className="app-label">Telefone</label><input id="rh-phone" name="phone" className="app-input" defaultValue={editing?.phone ?? ''} /></div>
+                  <div className="sm:col-span-2"><label htmlFor="rh-address" className="app-label">Morada</label><input id="rh-address" name="address" className="app-input" defaultValue={editing?.address ?? ''} /></div>
+                  <div className="sm:col-span-2"><label htmlFor="rh-photo" className="app-label">Fotografia (URL)</label><input id="rh-photo" name="photoUrl" className="app-input" placeholder="https://…" defaultValue={editing?.photoUrl ?? ''} /></div>
+                </div>
+              </fieldset>
+
+              <fieldset className="space-y-3">
+                <legend className="text-[11px] font-bold uppercase tracking-[.12em] text-[#8a99ab]">Vínculo profissional</legend>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div><label htmlFor="rh-dept" className="app-label">Departamento</label><select id="rh-dept" name="departmentId" className="app-input" defaultValue={editing?.departmentId ?? ''}><option value="">—</option>{departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}</select></div>
+                  <div><label htmlFor="rh-pos" className="app-label">Cargo</label><select id="rh-pos" name="positionId" className="app-input" defaultValue={editing?.positionId ?? ''}><option value="">—</option>{positions.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}</select></div>
+                  <div><label htmlFor="rh-hire" className="app-label">Data de admissão *</label><input id="rh-hire" name="hireDate" type="date" className="app-input" required defaultValue={editing?.hireDate?.slice(0, 10) ?? ''} /></div>
+                  <div><label htmlFor="rh-contract" className="app-label">Tipo de contrato</label><select id="rh-contract" name="contractType" className="app-input" defaultValue={editing?.contractType ?? 'INDEFINIDO'}>{Object.entries(CONTRACT_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
+                  <div><label htmlFor="rh-salary" className="app-label">Salário-base (Kz) *</label><input id="rh-salary" name="baseSalary" type="number" min="0" step="0.01" className="app-input tabular-nums" required defaultValue={editing?.baseSalary ?? ''} /></div>
+                  <div><label htmlFor="rh-status" className="app-label">Estado</label><select id="rh-status" name="status" className="app-input" defaultValue={editing?.status ?? 'ACTIVO'}>{Object.entries(STATUS_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
+                </div>
+              </fieldset>
+
+              <fieldset className="space-y-3">
+                <legend className="text-[11px] font-bold uppercase tracking-[.12em] text-[#8a99ab]">Dados bancários (restrito)</legend>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div><label htmlFor="rh-bank" className="app-label">Banco</label><input id="rh-bank" name="bankName" className="app-input" defaultValue={editing?.bankName ?? ''} /></div>
+                  <div><label htmlFor="rh-account" className="app-label">Conta</label><input id="rh-account" name="bankAccount" className="app-input" defaultValue={editing?.bankAccount ?? ''} /></div>
+                  <div><label htmlFor="rh-iban" className="app-label">IBAN</label><input id="rh-iban" name="bankIban" className="app-input" defaultValue={editing?.bankIban ?? ''} /></div>
+                </div>
+              </fieldset>
+
+              {error && <p role="alert" className="rounded-lg border border-red-100 bg-red-50 px-3 py-2.5 text-sm text-[#a83939]">{error}</p>}
+              <div className="sticky bottom-0 -mx-5 -mb-5 mt-2 flex flex-col-reverse gap-2 border-t border-[#e7edf3] bg-white px-5 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-4 sm:static sm:mx-0 sm:mb-0 sm:flex-row sm:justify-end sm:px-0 sm:pb-0">
+                <button type="button" onClick={() => setOpen(false)} disabled={saving} className="min-h-11 rounded-lg border border-[#cdddeb] px-4 text-sm font-semibold text-[#52667a]">Cancelar</button>
+                <button type="submit" disabled={saving} className="min-h-11 rounded-lg bg-[#021f87] px-5 text-sm font-semibold text-white disabled:opacity-60">{saving ? 'A guardar…' : 'Guardar funcionário'}</button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
+    </div>
+  );
+}
