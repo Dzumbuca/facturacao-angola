@@ -16,7 +16,7 @@ export async function GET() {
 
 export async function PUT(req: Request) {
   try {
-    const access = await requireRhAccess();
+    const access = await requireRhAccess('settings:write');
     const body = await req.json().catch(() => ({}));
     const raw = body.vacationDaysPerYear;
     if (raw !== null && raw !== undefined && raw !== '') {

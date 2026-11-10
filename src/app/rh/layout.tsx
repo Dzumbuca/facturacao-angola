@@ -28,8 +28,9 @@ export const viewport: Viewport = {
 };
 
 export default async function RhLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  let access;
   try {
-    await requireRhAccess();
+    access = await requireRhAccess();
   } catch (error) {
     if (error instanceof RhAccessError) {
       if (error.code === 'UNAUTHENTICATED') redirect('/login?callbackUrl=/rh/dashboard');
@@ -38,5 +39,5 @@ export default async function RhLayout({ children }: Readonly<{ children: React.
     }
     throw error;
   }
-  return <RhShell>{children}</RhShell>;
+  return <RhShell canManageMembers={access.permissions.includes('members:write')}>{children}</RhShell>;
 }

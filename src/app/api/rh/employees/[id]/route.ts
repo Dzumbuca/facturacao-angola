@@ -50,7 +50,7 @@ export async function PATCH(req: Request, { params }: Context) {
 
   try {
 
-    const access = await requireRhAccess();
+    const access = await requireRhAccess('employees:write');
 
     const { id } = await params;
 

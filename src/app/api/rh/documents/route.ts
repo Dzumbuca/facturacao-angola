@@ -22,7 +22,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const access = await requireRhAccess();
+    const access = await requireRhAccess('documents:write');
     const body = await req.json().catch(() => ({}));
     const templateId = typeof body.templateId === 'string' ? body.templateId : '';
     const employeeId = typeof body.employeeId === 'string' && body.employeeId ? body.employeeId : null;

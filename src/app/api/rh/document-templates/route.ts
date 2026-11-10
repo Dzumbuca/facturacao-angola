@@ -20,7 +20,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const access = await requireRhAccess();
+    const access = await requireRhAccess('documents:write');
     const body = await req.json().catch(() => ({}));
     const name = typeof body.name === 'string' ? body.name.trim() : '';
     const templateBody = typeof body.body === 'string' ? body.body.trim() : '';

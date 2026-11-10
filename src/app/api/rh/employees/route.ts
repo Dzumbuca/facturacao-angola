@@ -106,7 +106,7 @@ export async function POST(req: Request) {
 
   try {
 
-    const access = await requireRhAccess();
+    const access = await requireRhAccess('employees:write');
 
     const body = await req.json().catch(() => ({}));
 

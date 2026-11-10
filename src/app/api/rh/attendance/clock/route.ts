@@ -9,7 +9,7 @@ type TimeEntryType = (typeof TYPES)[number];
 
 export async function POST(req: Request) {
   try {
-    const access = await requireRhAccess();
+    const access = await requireRhAccess('attendance:write');
     const body = await req.json().catch(() => ({}));
     const employeeId = typeof body.employeeId === 'string' ? body.employeeId : '';
     const pin = typeof body.pin === 'string' ? body.pin.trim() : '';

@@ -27,6 +27,8 @@ let documentId = '';
 let documentTemplateId = '';
 let payrollRunId = '';
 let payrollRulesetId = '';
+let rhMemberId = '';
+let memberPayrollRulesetId = '';
 
 beforeAll(async () => {
   const admin = await prisma.user.findUnique({ where: { email: 'e2e-test@machinefacturas.test' }, select: { tenantId: true } });
@@ -62,6 +64,8 @@ afterAll(async () => {
   if (documentTemplateId) await prisma.rhDocumentTemplate.deleteMany({ where: { tenantId: tenantAId, id: documentTemplateId } });
   if (payrollRunId) await prisma.rhPayrollRun.deleteMany({ where: { tenantId: tenantAId, id: payrollRunId } });
   if (payrollRulesetId) await prisma.rhPayrollRuleSet.deleteMany({ where: { tenantId: tenantAId, id: payrollRulesetId } });
+  if (memberPayrollRulesetId) await prisma.rhPayrollRuleSet.deleteMany({ where: { tenantId: tenantAId, id: memberPayrollRulesetId } });
+  if (rhMemberId) await prisma.rhMember.deleteMany({ where: { tenantId: tenantAId, id: rhMemberId } });
   await prisma.rhLeaveRequest.deleteMany({ where: { tenantId: tenantAId } });
   await prisma.rhSettings.deleteMany({ where: { tenantId: tenantAId } });
   await prisma.rhAuditLog.deleteMany({ where: { tenantId: tenantAId, createdAt: { gte: new Date(Date.now() - 10 * 60_000) } } });
@@ -412,5 +416,53 @@ describe('Machine RH - núcleo e isolamento entre empresas', () => {
     const sessionB = await login('e2e-other@machinefacturas.test');
     const foreign = await authenticatedFetch(`/api/rh/payroll/runs/${payrollRunId}`, sessionB);
     expect(foreign.status).toBe(404);
+  });
+
+  it('RBAC fino: gestor escreve pessoas, financeiro escreve payroll', async () => {
+    const admin = await login();
+    const add = await authenticatedFetch('/api/rh/members', admin, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: viewerEmail, role: 'MANAGER' }),
+    });
+    expect(add.status).toBe(201);
+    rhMemberId = (await add.json()).id;
+
+    const manager = await login(viewerEmail, PASSWORD);
+    const dashboard = await authenticatedFetch('/rh/dashboard', manager);
+    expect(dashboard.status).toBe(200);
+
+    const managerEmployee = await authenticatedFetch('/api/rh/employees', manager, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+    expect(managerEmployee.status).toBe(400);
+
+    const managerPayroll = await authenticatedFetch('/api/rh/payroll/rulesets', manager, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: `Bloqueado ${stamp}` }),
+    });
+    expect(managerPayroll.status).toBe(403);
+
+    const promote = await authenticatedFetch(`/api/rh/members/${rhMemberId}`, admin, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'FINANCE' }),
+    });
+    expect(promote.status).toBe(200);
+
+    const finance = await login(viewerEmail, PASSWORD);
+    const financeEmployee = await authenticatedFetch('/api/rh/employees', finance, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+    expect(financeEmployee.status).toBe(403);
+
+    const financeRuleset = await authenticatedFetch('/api/rh/payroll/rulesets', finance, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: `E2E Financeiro ${stamp}`, effectiveFrom: '2026-01-01',
+        inssEmployeeRate: 3, inssEmployerRate: 8, foodAllowance: 0, transportAllowance: 0,
+        irtBrackets: [{ upTo: null, rate: 0, deduction: 0 }],
+      }),
+    });
+    expect(financeRuleset.status).toBe(201);
+    memberPayrollRulesetId = (await financeRuleset.json()).id;
   });
 });

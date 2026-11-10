@@ -10,7 +10,7 @@ type TimeEntryType = (typeof TYPES)[number];
 
 export async function POST(req: Request) {
   try {
-    const access = await requireRhAccess();
+    const access = await requireRhAccess('attendance:write');
     const body = await req.json().catch(() => ({}));
     const token = typeof body.token === 'string' ? body.token.trim() : '';
     const deviceToken = typeof body.deviceToken === 'string' ? body.deviceToken.trim() : '';

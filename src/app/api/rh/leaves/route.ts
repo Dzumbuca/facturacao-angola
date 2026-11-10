@@ -46,7 +46,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const access = await requireRhAccess();
+    const access = await requireRhAccess('leaves:write');
     const body = await req.json().catch(() => ({}));
     const employeeId = typeof body.employeeId === 'string' ? body.employeeId : '';
     const type: RhLeaveType = TYPES.includes(body.type) ? body.type : 'FERIAS';

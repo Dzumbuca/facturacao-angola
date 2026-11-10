@@ -20,7 +20,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const access = await requireRhAccess();
+    const access = await requireRhAccess('payroll:write');
     const body = await req.json().catch(() => ({}));
     const name = typeof body.name === 'string' ? body.name.trim() : '';
     const effectiveFrom = typeof body.effectiveFrom === 'string' ? new Date(`${body.effectiveFrom}T00:00:00.000Z`) : null;

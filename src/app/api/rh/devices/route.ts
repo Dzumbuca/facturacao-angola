@@ -25,7 +25,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const access = await requireRhAccess();
+    const access = await requireRhAccess('settings:write');
     const body = await req.json().catch(() => ({}));
     const name = typeof body.name === 'string' ? body.name.trim() : '';
     if (!name || name.length > 80) return NextResponse.json({ error: 'Nome do dispositivo inválido.' }, { status: 400 });

@@ -3,13 +3,16 @@ import { getTenantAccess, AuthorizationError } from './admin-auth';
 import { isApplicationEnabled } from './platform-apps';
 import { auth } from './auth';
 import { getSessionTenantId, getSessionUserId } from './session';
-import { isRhRoleAllowed } from './rh-policy';
+import { isRhRoleAllowed, rhPermissionsFor, hasRhPermission, type RhPermission, type RhMemberRole } from './rh-policy';
+import { runWithTenant } from './tenant-db';
 
 export type RhAccess = {
   tenantId: string;
   userId: string;
   tenantRole: string;
   platformRole: string;
+  rhRole: RhMemberRole | null;
+  permissions: RhPermission[];
 };
 
 export class RhAccessError extends Error {
@@ -23,7 +26,7 @@ export class RhAccessError extends Error {
  * Autorização server-side da Machine RH: sessão + empresa + role + módulo.
  * Toda a API e página do RH passa por aqui (não confiar na UI).
  */
-export async function requireRhAccess(): Promise<RhAccess> {
+export async function requireRhAccess(permission?: RhPermission): Promise<RhAccess> {
   const session = await auth();
   const tenantId = getSessionTenantId(session);
   const userId = getSessionUserId(session);
@@ -40,15 +43,26 @@ export async function requireRhAccess(): Promise<RhAccess> {
     throw error;
   }
 
-  if (!isRhRoleAllowed(tenantRole, platformRole)) {
-    throw new RhAccessError(403, 'FORBIDDEN', 'O seu perfil não tem acesso ao módulo de RH.');
-  }
-
   if (!(await isApplicationEnabled(tenantId, 'rh'))) {
     throw new RhAccessError(403, 'APP_NOT_ENABLED', 'O módulo Machine RH não está activo para esta empresa.');
   }
 
-  return { tenantId, userId, tenantRole, platformRole };
+  let rhRole: RhMemberRole | null = null;
+  if (!isRhRoleAllowed(tenantRole, platformRole)) {
+    const member = (await runWithTenant(tenantId, (tx) => tx.rhMember.findUnique({
+      where: { tenantId_userId: { tenantId, userId } },
+      select: { role: true },
+    }), { userId })) as { role: RhMemberRole } | null;
+    rhRole = member?.role ?? null;
+    if (!rhRole) throw new RhAccessError(403, 'FORBIDDEN', 'O seu perfil não tem acesso ao módulo de RH.');
+  }
+
+  const permissions = rhPermissionsFor(tenantRole, platformRole, rhRole);
+  if (permission && !hasRhPermission(permissions, permission)) {
+    throw new RhAccessError(403, 'FORBIDDEN', 'Não tem permissão para esta operação de RH.');
+  }
+
+  return { tenantId, userId, tenantRole, platformRole, rhRole, permissions };
 }
 
 export function rhAccessResponse(error: unknown): { status: number; body: { code: string; error: string } } {

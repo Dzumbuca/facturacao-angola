@@ -127,3 +127,10 @@ DROP POLICY IF EXISTS "rh_payslip_isolation" ON "RhPayslip";
 CREATE POLICY "rh_payslip_isolation" ON "RhPayslip" FOR ALL
   USING ("tenantId" = current_setting('app.tenant_id', true))
   WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+
+-- Machine RH: funções por empresa.
+ALTER TABLE "RhMember" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_member_isolation" ON "RhMember";
+CREATE POLICY "rh_member_isolation" ON "RhMember" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));

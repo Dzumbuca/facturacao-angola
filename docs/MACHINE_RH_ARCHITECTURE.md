@@ -43,7 +43,7 @@ RhEmployee   1─* RhAuditLog (via entityId)
 
 ## 4. Rotas
 
-Implementadas: `/rh`, `/rh/dashboard`, `/rh/funcionarios`, `/rh/departamentos`, `/rh/cargos`, `/rh/contratos`, `/rh/assiduidade`, `/rh/horarios`, `/rh/ferias`, `/rh/ponto`, `/rh/dispositivos`, `/rh/documentos`, `/rh/modelos`, `/rh/processamento-salarial`, `/rh/configuracoes`.
+Implementadas: `/rh`, `/rh/dashboard`, `/rh/funcionarios`, `/rh/departamentos`, `/rh/cargos`, `/rh/contratos`, `/rh/assiduidade`, `/rh/horarios`, `/rh/ferias`, `/rh/ponto`, `/rh/dispositivos`, `/rh/documentos`, `/rh/modelos`, `/rh/processamento-salarial`, `/rh/equipa`, `/rh/configuracoes`.
 
 Desenhadas (badge “Brevemente”): `/rh/ferias`, `/rh/processamento-salarial`, `/rh/documentos`, `/rh/modelos`, `/rh/payroll`, `/rh/dispositivos`.
 

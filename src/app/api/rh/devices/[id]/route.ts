@@ -7,7 +7,7 @@ type Context = { params: Promise<{ id: string }> };
 
 export async function PATCH(req: Request, { params }: Context) {
   try {
-    const access = await requireRhAccess();
+    const access = await requireRhAccess('settings:write');
     const { id } = await params;
     const body = await req.json().catch(() => ({}));
     if (typeof body.isActive !== 'boolean') return NextResponse.json({ error: 'Estado inválido.' }, { status: 400 });

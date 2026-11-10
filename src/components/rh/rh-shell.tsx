@@ -20,6 +20,7 @@ const activeLinks = [
   { href: '/rh/documentos', label: 'Documentos', icon: '▤' },
   { href: '/rh/modelos', label: 'Modelos', icon: '✎' },
   { href: '/rh/processamento-salarial', label: 'Processamento', icon: '₵' },
+  { href: '/rh/equipa', label: 'Equipa', icon: '♟' },
   { href: '/rh/configuracoes', label: 'Configurações', icon: '⚙' },
 ];
 
@@ -30,7 +31,8 @@ const futureLinks = [
 
 const mobileLinks = [activeLinks[0], activeLinks[1], activeLinks[5], activeLinks[4]];
 
-export function RhShell({ children }: { children: ReactNode }) {
+export function RhShell({ children, canManageMembers = false }: { children: ReactNode; canManageMembers?: boolean }) {
+  const links = activeLinks.filter((link) => link.href !== '/rh/equipa' || canManageMembers);
   const pathname = usePathname();
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
@@ -49,7 +51,7 @@ export function RhShell({ children }: { children: ReactNode }) {
           <div>
             <p className="px-2 text-[10px] font-semibold uppercase tracking-[.16em] text-[#8a99ab]">Gestão</p>
             <ul className="mt-2 space-y-1">
-              {activeLinks.map((link) => (
+              {links.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
@@ -89,7 +91,7 @@ export function RhShell({ children }: { children: ReactNode }) {
             <div className="min-w-0">
               <p className="hidden text-[10px] font-semibold uppercase tracking-[.14em] text-[#8a99ab] sm:block">Machine RH</p>
               <p className="truncate text-sm font-bold text-[#1c2d3f] md:text-base">
-                {activeLinks.find((l) => isActive(l.href))?.label ?? 'Recursos Humanos'}
+                {links.find((l) => isActive(l.href))?.label ?? 'Recursos Humanos'}
               </p>
             </div>
           </div>

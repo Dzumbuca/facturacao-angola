@@ -34,7 +34,7 @@ export async function GET(_req: Request, { params }: Context) {
 
 export async function PATCH(req: Request, { params }: Context) {
   try {
-    const access = await requireRhAccess();
+    const access = await requireRhAccess('payroll:write');
     const { id } = await params;
     const body = await req.json().catch(() => ({}));
     const target = body.status as Status;

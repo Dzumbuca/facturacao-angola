@@ -22,7 +22,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const access = await requireRhAccess();
+    const access = await requireRhAccess('payroll:write');
     const body = await req.json().catch(() => ({}));
     const period = typeof body.period === 'string' ? body.period.trim() : '';
     const rulesetId = typeof body.rulesetId === 'string' ? body.rulesetId : '';

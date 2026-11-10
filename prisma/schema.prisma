@@ -151,6 +151,7 @@ model Tenant {
   rhPayrollRuleSets        RhPayrollRuleSet[]
   rhPayrollRuns            RhPayrollRun[]
   rhPayslips               RhPayslip[]
+  rhMembers                RhMember[]
   rhShifts                 RhShift[]
   rhLeaveRequests          RhLeaveRequest[]
   rhSettings               RhSettings?
@@ -1538,6 +1539,7 @@ model User {
   platformRole              PlatformRole            @default(NONE)
 
   tenantRole                TenantRole              @default(USER)
+  rhMemberships             RhMember[]
 
   status                    AccountStatus           @default(ACTIVE)
 
@@ -3041,4 +3043,27 @@ model RhPayslip {
 
   @@unique([runId, employeeId])
   @@index([tenantId, employeeId])
+}
+
+
+// Machine RH — funções por empresa (RBAC fino).
+enum RhMemberRole {
+  ADMIN
+  MANAGER
+  FINANCE
+}
+
+model RhMember {
+  id        String       @id @default(uuid())
+  tenantId  String
+  userId    String
+  role      RhMemberRole @default(MANAGER)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, userId])
+  @@index([tenantId, role])
 }
