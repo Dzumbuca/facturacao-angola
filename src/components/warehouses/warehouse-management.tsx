@@ -7,6 +7,7 @@ import { WarehouseIndicators } from './WarehouseIndicators';
 import { WarehouseList } from './WarehouseList';
 import { ProductStockGrid } from './ProductStockGrid';
 import { StockMovementsHistory } from './StockMovementsHistory';
+import { useWarehouseStock } from './use-warehouse-stock';
 
 type Warehouse = {
   id: string;
@@ -63,6 +64,9 @@ export function WarehouseManagement({
   const [editingWarehouse, setEditingWarehouse] = useState<Warehouse | null>(null);
   const [warehouseModalOpen, setWarehouseModalOpen] = useState(false);
   const [movementModalOpen, setMovementModalOpen] = useState(false);
+  const [movementProductId, setMovementProductId] = useState('');
+  const [movementWarehouseId, setMovementWarehouseId] = useState('');
+  const { available: movementAvailable, checking: movementChecking } = useWarehouseStock(movementProductId, movementWarehouseId, movementModalOpen);
   const [deletingWarehouseId, setDeletingWarehouseId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -184,15 +188,18 @@ export function WarehouseManagement({
     const reason = String(form.get('reason') ?? '').trim() || null;
     const reference = String(form.get('reference') ?? '').trim() || null;
 
-    const selectedProduct = products.find((p) => p.id === productId);
-
     if (!productId) {
       setError('Selecione um produto.');
       setIsSaving(false);
       return;
     }
-    if (type === 'OUT' && selectedProduct && quantity > selectedProduct.stock) {
-      setError('Não é possível registar uma saída superior ao stock disponível.');
+    if (!movementWarehouseId) {
+      setError('Selecione o armazém onde o movimento acontece.');
+      setIsSaving(false);
+      return;
+    }
+    if (type === 'OUT' && movementAvailable !== null && quantity > movementAvailable) {
+      setError(`Só existem ${movementAvailable} unidades neste armazém.`);
       setIsSaving(false);
       return;
     }
@@ -201,7 +208,7 @@ export function WarehouseManagement({
       const res = await fetch('/api/stock/movements', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId, type, quantity, reason, reference }),
+        body: JSON.stringify({ productId, warehouseId: movementWarehouseId, type, quantity, reason, reference }),
       });
 
       if (!res.ok) {
@@ -210,6 +217,8 @@ export function WarehouseManagement({
       }
 
       setMovementModalOpen(false);
+      setMovementProductId('');
+      setMovementWarehouseId('');
       formElement.reset();
       onDataRefresh();
     } catch (err: any) {
@@ -402,7 +411,7 @@ export function WarehouseManagement({
           <Button type="button" onClick={openCreateWarehouse} disabled={isSaving} className="w-full sm:w-auto">
             Novo armazém
           </Button>
-          <Button type="button" onClick={() => setMovementModalOpen(true)} variant="secondary" disabled={isSaving || products.length === 0} className="w-full sm:w-auto">
+          <Button type="button" onClick={() => { setMovementProductId(''); setMovementWarehouseId(''); setMovementModalOpen(true); }} variant="secondary" disabled={isSaving || products.length === 0} className="w-full sm:w-auto">
             Novo movimento
           </Button>
         </div>
@@ -513,17 +522,45 @@ export function WarehouseManagement({
               </div>
               <button type="button" aria-label="Fechar" disabled={isSaving} onClick={() => setMovementModalOpen(false)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xl text-[#708195] hover:bg-[#f0f4f8] disabled:opacity-50">×</button>
             </div>
-            <form className="space-y-4" onSubmit={(e) => handleMovementSubmit(e)} key="movement-form">
+            <form className="space-y-4" onSubmit={(e) => handleMovementSubmit(e)} key="movement-form" noValidate>
               <div>
                 <label htmlFor="movement-product" className="app-label">Produto <span className="text-[#c44747]">*</span></label>
-                <select id="movement-product" name="productId" className="app-input" required>
+                <select
+                  id="movement-product"
+                  name="productId"
+                  className="app-input"
+                  value={movementProductId}
+                  onChange={(e) => setMovementProductId(e.target.value)}
+                  required
+                >
                   <option value="">Seleccionar produto</option>
                   {products.map((product) => (
                     <option key={product.id} value={product.id}>
-                      {product.name} ({product.codigo || 'SEM-COD'}) — Stock: {product.stock}
+                      {product.name} ({product.codigo || 'SEM-COD'})
                     </option>
                   ))}
                 </select>
+              </div>
+              <div>
+                <label htmlFor="movement-warehouse" className="app-label">Armazém <span className="text-[#c44747]">*</span></label>
+                <select
+                  id="movement-warehouse"
+                  name="warehouseId"
+                  className="app-input"
+                  value={movementWarehouseId}
+                  onChange={(e) => setMovementWarehouseId(e.target.value)}
+                  required
+                >
+                  <option value="">Selecionar armazém</option>
+                  {warehouses.filter((warehouse) => warehouse.isActive).map((warehouse) => (
+                    <option key={warehouse.id} value={warehouse.id}>{warehouse.name}</option>
+                  ))}
+                </select>
+                {movementProductId && movementWarehouseId && (
+                  <p className="mt-1 text-xs text-[#708195]">
+                    {movementChecking ? 'A verificar stock neste armazém…' : movementAvailable === null ? '' : movementAvailable > 0 ? `Disponível neste armazém: ${movementAvailable}` : 'Sem stock neste armazém.'}
+                  </p>
+                )}
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
