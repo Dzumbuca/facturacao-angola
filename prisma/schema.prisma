@@ -146,6 +146,8 @@ model Tenant {
 
   rhTimeEntries            RhTimeEntry[]
   rhDevices                RhDevice[]
+  rhDocumentTemplates      RhDocumentTemplate[]
+  rhDocuments              RhDocument[]
   rhShifts                 RhShift[]
   rhLeaveRequests          RhLeaveRequest[]
   rhSettings               RhSettings?
@@ -2651,6 +2653,7 @@ model RhEmployee {
   contracts  RhContract[]
   timeEntries RhTimeEntry[]
   leaveRequests RhLeaveRequest[]
+  documents     RhDocument[]
 
 
 
@@ -2897,4 +2900,60 @@ model RhDevice {
 
   @@unique([tenantId, name])
   @@index([tenantId, isActive])
+}
+
+
+// Machine Documents — modelos e documentos gerados.
+enum RhDocumentType {
+  CONTRATO
+  DECLARACAO_TRABALHO
+  DECLARACAO_RENDIMENTOS
+  DECLARACAO_FERIAS
+  OUTRO
+}
+
+enum RhDocumentStatus {
+  RASCUNHO
+  EMITIDO
+  ANULADO
+}
+
+model RhDocumentTemplate {
+  id        String         @id @default(uuid())
+  tenantId  String
+  name      String
+  type      RhDocumentType @default(OUTRO)
+  body      String
+  isActive  Boolean        @default(true)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  tenant    Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  documents RhDocument[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId, isActive])
+}
+
+model RhDocument {
+  id              String           @id @default(uuid())
+  tenantId        String
+  employeeId      String?
+  templateId      String?
+  type            RhDocumentType   @default(OUTRO)
+  title           String
+  content         String
+  status          RhDocumentStatus @default(RASCUNHO)
+  hash            String?
+  issuedAt        DateTime?
+  issuedByUserId  String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  tenant   Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  employee RhEmployee?         @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+  template RhDocumentTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, status, createdAt])
+  @@index([tenantId, employeeId])
 }

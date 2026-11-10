@@ -17,13 +17,13 @@ const activeLinks = [
   { href: '/rh/ferias', label: 'Férias', icon: '☀' },
   { href: '/rh/ponto', label: 'Quiosque', icon: '▣' },
   { href: '/rh/dispositivos', label: 'Dispositivos', icon: '⌨' },
+  { href: '/rh/documentos', label: 'Documentos', icon: '▤' },
+  { href: '/rh/modelos', label: 'Modelos', icon: '✎' },
   { href: '/rh/configuracoes', label: 'Configurações', icon: '⚙' },
 ];
 
 const futureLinks = [
   { href: '/rh/processamento-salarial', label: 'Processamento salarial' },
-  { href: '/rh/documentos', label: 'Documentos' },
-  { href: '/rh/modelos', label: 'Modelos' },
   { href: '/rh/payroll', label: 'Payroll Connect' },
   { href: '/rh/dispositivos', label: 'Dispositivos' },
 ];

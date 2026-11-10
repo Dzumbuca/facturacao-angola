@@ -43,7 +43,7 @@ RhEmployee   1─* RhAuditLog (via entityId)
 
 ## 4. Rotas
 
-Implementadas: `/rh`, `/rh/dashboard`, `/rh/funcionarios`, `/rh/departamentos`, `/rh/cargos`, `/rh/contratos`, `/rh/assiduidade`, `/rh/horarios`, `/rh/ferias`, `/rh/ponto`, `/rh/dispositivos`, `/rh/configuracoes`.
+Implementadas: `/rh`, `/rh/dashboard`, `/rh/funcionarios`, `/rh/departamentos`, `/rh/cargos`, `/rh/contratos`, `/rh/assiduidade`, `/rh/horarios`, `/rh/ferias`, `/rh/ponto`, `/rh/dispositivos`, `/rh/documentos`, `/rh/modelos`, `/rh/configuracoes`.
 
 Desenhadas (badge “Brevemente”): `/rh/ferias`, `/rh/processamento-salarial`, `/rh/documentos`, `/rh/modelos`, `/rh/payroll`, `/rh/dispositivos`.
 
@@ -95,7 +95,9 @@ Assistente apenas com leitura e geração de rascunhos; nunca aprova pagamentos,
 | WebAuthn, biometria e fila offline | **Desenhado, não implementado** |
 | Férias/licenças: pedido, aprovação/rejeição, sobreposição e saldo configurável | **Implementado e testado** |
 | Mapa anual/calendário visual de férias | **Parcial** (lista anual; sem calendário gráfico) |
-| Documentos / payroll / pagamentos / IA | **Desenhado, não implementado** |
+| Documentos: modelos por empresa, variáveis, rascunho, PDF e emissão | **Implementado e testado** |
+| DOCX, histórico de versões e biblioteca de modelos jurídicos | **Pendente** |
+| Payroll / pagamentos / IA | **Desenhado, não implementado** |
 | Matriz RBAC fina (RH_ADMIN, FINANCE, MANAGER, EMPLOYEE) | **Pendente** |
 | Migração de produção | **Não executada** (requer aprovação) |
 | Validação jurídica de modelos | **Pendente** (parceiro jurídico) |

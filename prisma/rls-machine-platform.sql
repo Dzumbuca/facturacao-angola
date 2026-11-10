@@ -98,3 +98,15 @@ DROP POLICY IF EXISTS "rh_device_isolation" ON "RhDevice";
 CREATE POLICY "rh_device_isolation" ON "RhDevice" FOR ALL
   USING ("tenantId" = current_setting('app.tenant_id', true))
   WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+
+-- Machine Documents: modelos e documentos isolados por empresa.
+ALTER TABLE "RhDocumentTemplate" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_doc_template_isolation" ON "RhDocumentTemplate";
+CREATE POLICY "rh_doc_template_isolation" ON "RhDocumentTemplate" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+ALTER TABLE "RhDocument" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_document_isolation" ON "RhDocument";
+CREATE POLICY "rh_document_isolation" ON "RhDocument" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));

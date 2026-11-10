@@ -23,6 +23,8 @@ let employeeId = '';
 let employeeNumber = '';
 let shiftId = '';
 let deviceId = '';
+let documentId = '';
+let documentTemplateId = '';
 
 beforeAll(async () => {
   const admin = await prisma.user.findUnique({ where: { email: 'e2e-test@machinefacturas.test' }, select: { tenantId: true } });
@@ -54,6 +56,8 @@ afterAll(async () => {
   if (departmentId) await prisma.rhDepartment.deleteMany({ where: { tenantId: tenantAId, id: departmentId } });
   if (shiftId) await prisma.rhShift.deleteMany({ where: { tenantId: tenantAId, id: shiftId } });
   if (deviceId) await prisma.rhDevice.deleteMany({ where: { tenantId: tenantAId, id: deviceId } });
+  if (documentId) await prisma.rhDocument.deleteMany({ where: { tenantId: tenantAId, id: documentId } });
+  if (documentTemplateId) await prisma.rhDocumentTemplate.deleteMany({ where: { tenantId: tenantAId, id: documentTemplateId } });
   await prisma.rhLeaveRequest.deleteMany({ where: { tenantId: tenantAId } });
   await prisma.rhSettings.deleteMany({ where: { tenantId: tenantAId } });
   await prisma.rhAuditLog.deleteMany({ where: { tenantId: tenantAId, createdAt: { gte: new Date(Date.now() - 10 * 60_000) } } });
@@ -304,5 +308,49 @@ describe('Machine RH - núcleo e isolamento entre empresas', () => {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'APROVADO' }),
     });
     expect(crossTenant.status).toBe(404);
+  });
+
+  it('documentos: modelo, variáveis, PDF, emissão e cross-tenant', async () => {
+    const session = await login();
+    const template = await authenticatedFetch('/api/rh/document-templates', session, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: `E2E Modelo ${stamp}`, type: 'DECLARACAO_TRABALHO', body: 'A empresa {{empresa_nome}} declara que {{funcionario_nome}} (BI {{funcionario_bi}}) exerce {{cargo}}.' }),
+    });
+    expect(template.status).toBe(201);
+    documentTemplateId = (await template.json()).id;
+
+    const created = await authenticatedFetch('/api/rh/documents', session, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ templateId: documentTemplateId, employeeId, title: 'Declaração E2E' }),
+    });
+    expect(created.status).toBe(201);
+    const document = await created.json();
+    documentId = document.id;
+    expect(document.status).toBe('RASCUNHO');
+    expect(document.content).toContain('E2E');
+    expect(document.content).not.toContain('{{funcionario_nome}}');
+
+    const pdf = await authenticatedFetch(`/api/rh/documents/${documentId}/pdf`, session);
+    expect(pdf.status).toBe(200);
+    expect(pdf.headers.get('content-type')).toContain('application/pdf');
+    const header = Buffer.from(await pdf.arrayBuffer()).subarray(0, 4).toString('utf8');
+    expect(header).toBe('%PDF');
+
+    const issue = await authenticatedFetch(`/api/rh/documents/${documentId}`, session, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'EMITIDO' }),
+    });
+    expect(issue.status).toBe(200);
+    const issued = await issue.json();
+    expect(issued.status).toBe('EMITIDO');
+    expect(String(issued.hash)).toHaveLength(64);
+
+    const again = await authenticatedFetch(`/api/rh/documents/${documentId}`, session, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'ANULADO' }),
+    });
+    expect(again.status).toBe(409);
+
+    const sessionB = await login('e2e-other@machinefacturas.test');
+    const foreignPdf = await authenticatedFetch(`/api/rh/documents/${documentId}/pdf`, sessionB);
+    expect(foreignPdf.status).toBe(404);
   });
 });
