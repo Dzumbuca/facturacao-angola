@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-import { isApplicationEnabled } from '@/lib/platform-apps';
+import { getWmsAccess } from '@/lib/entitlements';
 
 const SECURE_COOKIE = '__Secure-authjs.session-token';
 const COOKIE = 'authjs.session-token';
@@ -26,7 +26,7 @@ export async function proxy(request: NextRequest) {
   }
   if (!tenantId) return NextResponse.next();
 
-  const enabled = await isApplicationEnabled(tenantId, 'wms');
+  const enabled = (await getWmsAccess(tenantId)).allowed;
   if (enabled) return NextResponse.next();
 
   if (request.nextUrl.pathname.startsWith('/api/')) {
@@ -38,5 +38,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/stock/:path*', '/api/stock/:path*'],
+  matcher: ['/stock/:path*', '/warehouses/:path*', '/api/stock/:path*'],
 };

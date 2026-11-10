@@ -9,6 +9,7 @@ import { NavIcon } from '@/components/nav-icons';
 import { MobileBottomNav } from '@/components/mobile-bottom-nav';
 import { ResponsiveTables } from '@/components/responsive-tables';
 import { PwaInstall } from '@/components/pwa-install';
+import { visibleNavGroups } from '@/lib/navigation';
 
 type NavLink = { href: string; label: string; icon: string };
 const groups: { title: string; links: NavLink[] }[] = [
@@ -34,6 +35,7 @@ const titles: Record<string, string> = {
 export function AppShell({ children, platformAdmin = false, plan = 'FREE', adHtml = null, planDaysLeft = null, planExpired = false, wmsEnabled = false }: { children: ReactNode; platformAdmin?: boolean; plan?: string; adHtml?: string | null; planDaysLeft?: number | null; planExpired?: boolean; wmsEnabled?: boolean }) {
   const pathname = usePathname();
   const title = titles[pathname] ?? 'Facturação Angola';
+  const visibleGroups = visibleNavGroups(groups, wmsEnabled);
 
   return (
     <div className="min-h-dvh">
@@ -43,7 +45,7 @@ export function AppShell({ children, platformAdmin = false, plan = 'FREE', adHtm
           <span className="leading-tight"><strong className="block text-[14px] tracking-[.12em]">MACHINE FACTURAS</strong><span className="text-[10px] uppercase tracking-[.1em] text-slate-400">Gestão financeira</span></span>
         </Link>
         <nav aria-label="Navegação principal" className="min-h-0 flex-1 space-y-4 overflow-x-hidden overflow-y-auto overscroll-contain py-1">
-          {groups.map((group) => <section key={group.title} aria-label={group.title}>
+          {visibleGroups.map((group) => <section key={group.title} aria-label={group.title}>
             <h2 className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-[.16em] text-slate-500">{group.title}</h2>
             <ul className="space-y-0.5">{group.links.map(({ href, label, icon }) => {
               const active = pathname === href || (href !== '/' && pathname.startsWith(`${href}/`));

@@ -12,7 +12,7 @@ export default async function MachineAppsPage({ searchParams }: { searchParams?:
       {params?.wms === 'bloqueado' && (
         <div role="alert" className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-slate-800">
           O módulo <strong>Armazém e Stock</strong> não está incluído no pacote actual da sua empresa.
-          Contacte o comercial para o activar.
+          <a href="/pagamento" className="ml-1 font-semibold text-[#021f87] underline">Ver pacotes disponíveis</a> para o activar.
         </div>
       )}
       <p className="text-gray-500 mb-6">Aplicações disponíveis na sua plataforma.</p>
