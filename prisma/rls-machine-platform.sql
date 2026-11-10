@@ -110,3 +110,20 @@ DROP POLICY IF EXISTS "rh_document_isolation" ON "RhDocument";
 CREATE POLICY "rh_document_isolation" ON "RhDocument" FOR ALL
   USING ("tenantId" = current_setting('app.tenant_id', true))
   WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+
+-- Machine Payroll: regras, runs e recibos isolados por empresa.
+ALTER TABLE "RhPayrollRuleSet" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_payroll_ruleset_isolation" ON "RhPayrollRuleSet";
+CREATE POLICY "rh_payroll_ruleset_isolation" ON "RhPayrollRuleSet" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+ALTER TABLE "RhPayrollRun" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_payroll_run_isolation" ON "RhPayrollRun";
+CREATE POLICY "rh_payroll_run_isolation" ON "RhPayrollRun" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+ALTER TABLE "RhPayslip" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_payslip_isolation" ON "RhPayslip";
+CREATE POLICY "rh_payslip_isolation" ON "RhPayslip" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));

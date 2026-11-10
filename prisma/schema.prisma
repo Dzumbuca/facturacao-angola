@@ -148,6 +148,9 @@ model Tenant {
   rhDevices                RhDevice[]
   rhDocumentTemplates      RhDocumentTemplate[]
   rhDocuments              RhDocument[]
+  rhPayrollRuleSets        RhPayrollRuleSet[]
+  rhPayrollRuns            RhPayrollRun[]
+  rhPayslips               RhPayslip[]
   rhShifts                 RhShift[]
   rhLeaveRequests          RhLeaveRequest[]
   rhSettings               RhSettings?
@@ -2654,6 +2657,7 @@ model RhEmployee {
   timeEntries RhTimeEntry[]
   leaveRequests RhLeaveRequest[]
   documents     RhDocument[]
+  payslips      RhPayslip[]
 
 
 
@@ -2955,5 +2959,86 @@ model RhDocument {
   template RhDocumentTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
 
   @@index([tenantId, status, createdAt])
+  @@index([tenantId, employeeId])
+}
+
+
+// Machine Payroll — regras configuráveis, processamento e recibos.
+enum RhPayrollStatus {
+  RASCUNHO
+  CALCULADO
+  EM_REVISAO
+  APROVADO
+  PENDENTE_PAGAMENTO
+  PAGO
+  CANCELADO
+}
+
+model RhPayrollRuleSet {
+  id            String    @id @default(uuid())
+  tenantId      String
+  name          String
+  effectiveFrom DateTime
+  effectiveTo   DateTime?
+  status        String    @default("DRAFT")
+  config        Json
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  tenant Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  runs   RhPayrollRun[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId, status])
+}
+
+model RhPayrollRun {
+  id              String          @id @default(uuid())
+  tenantId        String
+  period          String
+  rulesetId       String?
+  status          RhPayrollStatus @default(RASCUNHO)
+  totalGross      Decimal         @default(0) @db.Decimal(14, 2)
+  totalNet        Decimal         @default(0) @db.Decimal(14, 2)
+  totalInss       Decimal         @default(0) @db.Decimal(14, 2)
+  totalIrt        Decimal         @default(0) @db.Decimal(14, 2)
+  approvedByUserId String?
+  approvedAt      DateTime?
+  paidAt          DateTime?
+  errorMessage    String?
+  createdByUserId String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  tenant   Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  ruleset  RhPayrollRuleSet? @relation(fields: [rulesetId], references: [id], onDelete: SetNull)
+  payslips RhPayslip[]
+
+  @@unique([tenantId, period])
+  @@index([tenantId, status])
+}
+
+model RhPayslip {
+  id              String   @id @default(uuid())
+  tenantId        String
+  runId           String
+  employeeId      String
+  baseSalary      Decimal  @db.Decimal(14, 2)
+  allowances      Decimal  @default(0) @db.Decimal(14, 2)
+  overtime        Decimal  @default(0) @db.Decimal(14, 2)
+  absences        Decimal  @default(0) @db.Decimal(14, 2)
+  gross           Decimal  @db.Decimal(14, 2)
+  inss            Decimal  @default(0) @db.Decimal(14, 2)
+  irt             Decimal  @default(0) @db.Decimal(14, 2)
+  otherDeductions Decimal  @default(0) @db.Decimal(14, 2)
+  net             Decimal  @db.Decimal(14, 2)
+  lines           Json?
+  createdAt       DateTime @default(now())
+
+  tenant   Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  run      RhPayrollRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  employee RhEmployee   @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([runId, employeeId])
   @@index([tenantId, employeeId])
 }

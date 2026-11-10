@@ -25,6 +25,8 @@ let shiftId = '';
 let deviceId = '';
 let documentId = '';
 let documentTemplateId = '';
+let payrollRunId = '';
+let payrollRulesetId = '';
 
 beforeAll(async () => {
   const admin = await prisma.user.findUnique({ where: { email: 'e2e-test@machinefacturas.test' }, select: { tenantId: true } });
@@ -58,6 +60,8 @@ afterAll(async () => {
   if (deviceId) await prisma.rhDevice.deleteMany({ where: { tenantId: tenantAId, id: deviceId } });
   if (documentId) await prisma.rhDocument.deleteMany({ where: { tenantId: tenantAId, id: documentId } });
   if (documentTemplateId) await prisma.rhDocumentTemplate.deleteMany({ where: { tenantId: tenantAId, id: documentTemplateId } });
+  if (payrollRunId) await prisma.rhPayrollRun.deleteMany({ where: { tenantId: tenantAId, id: payrollRunId } });
+  if (payrollRulesetId) await prisma.rhPayrollRuleSet.deleteMany({ where: { tenantId: tenantAId, id: payrollRulesetId } });
   await prisma.rhLeaveRequest.deleteMany({ where: { tenantId: tenantAId } });
   await prisma.rhSettings.deleteMany({ where: { tenantId: tenantAId } });
   await prisma.rhAuditLog.deleteMany({ where: { tenantId: tenantAId, createdAt: { gte: new Date(Date.now() - 10 * 60_000) } } });
@@ -352,5 +356,61 @@ describe('Machine RH - núcleo e isolamento entre empresas', () => {
     const sessionB = await login('e2e-other@machinefacturas.test');
     const foreignPdf = await authenticatedFetch(`/api/rh/documents/${documentId}/pdf`, sessionB);
     expect(foreignPdf.status).toBe(404);
+  });
+
+  it('payroll: regras configuráveis, cálculo, duplicado e transições', async () => {
+    const session = await login();
+    const ruleset = await authenticatedFetch('/api/rh/payroll/rulesets', session, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: `E2E Regras ${stamp}`, effectiveFrom: '2026-01-01',
+        inssEmployeeRate: 3, inssEmployerRate: 8, foodAllowance: 0, transportAllowance: 0,
+        irtBrackets: [{ upTo: 100000, rate: 0, deduction: 0 }, { upTo: null, rate: 10, deduction: 0 }],
+      }),
+    });
+    expect(ruleset.status).toBe(201);
+    payrollRulesetId = (await ruleset.json()).id;
+
+    const run = await authenticatedFetch('/api/rh/payroll/runs', session, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ period: '2026-01', rulesetId: payrollRulesetId }),
+    });
+    const runText = await run.text();
+    expect(run.status, runText).toBe(201);
+    const runData = JSON.parse(runText);
+    payrollRunId = runData.id;
+    expect(runData.status).toBe('CALCULADO');
+    expect(Number(runData.totalGross)).toBe(350000);
+    expect(Number(runData.totalInss)).toBe(10500);
+    expect(Number(runData.totalIrt)).toBe(33950);
+    expect(Number(runData.totalNet)).toBe(305550);
+
+    const duplicate = await authenticatedFetch('/api/rh/payroll/runs', session, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ period: '2026-01', rulesetId: payrollRulesetId }),
+    });
+    expect(duplicate.status).toBe(409);
+
+    const detail = await authenticatedFetch(`/api/rh/payroll/runs/${payrollRunId}`, session);
+    expect(detail.status).toBe(200);
+    const detailData = await detail.json();
+    expect(detailData.payslips.length).toBe(1);
+    expect(detailData.payslips[0].employee.id).toBe(employeeId);
+    expect(Number(detailData.payslips[0].net)).toBe(305550);
+
+    const approve = await authenticatedFetch(`/api/rh/payroll/runs/${payrollRunId}`, session, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'APROVADO' }),
+    });
+    expect(approve.status).toBe(200);
+    expect((await approve.json()).status).toBe('APROVADO');
+
+    const pay = await authenticatedFetch(`/api/rh/payroll/runs/${payrollRunId}`, session, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'PAGO' }),
+    });
+    expect(pay.status).toBe(409);
+
+    const sessionB = await login('e2e-other@machinefacturas.test');
+    const foreign = await authenticatedFetch(`/api/rh/payroll/runs/${payrollRunId}`, sessionB);
+    expect(foreign.status).toBe(404);
   });
 });
