@@ -13,12 +13,18 @@ const LABEL: Record<string, string> = { ENTRADA: 'Entrada', SAIDA_ALMOCO: 'Saíd
 export function KioskManager() {
   const [now, setNow] = useState(new Date());
   const [token, setToken] = useState('');
+  const [deviceToken, setDeviceToken] = useState('');
+  const [deviceDraft, setDeviceDraft] = useState('');
+  const [showDevice, setShowDevice] = useState(false);
   const [saving, setSaving] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 1000);
+    const stored = window.localStorage.getItem('rh_device_token') ?? '';
+    setDeviceToken(stored);
+    setDeviceDraft(stored);
     return () => window.clearInterval(timer);
   }, []);
 
@@ -30,7 +36,7 @@ export function KioskManager() {
       const response = await fetch('/api/rh/attendance/qr', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: token.trim(), type }),
+        body: JSON.stringify({ token: token.trim(), type, deviceToken: deviceToken || undefined }),
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data?.error ?? 'Não foi possível registar.');
@@ -71,6 +77,24 @@ export function KioskManager() {
         </div>
         {message && <p role="status" className="mt-3 rounded-lg bg-[#eff9f4] px-3 py-2 text-sm font-medium text-[#267256]">{message}</p>}
         {error && <p role="alert" className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-[#a83939]">{error}</p>}
+      </div>
+
+      <div className="rounded-xl border border-[#e1e8f0] bg-white p-4">
+        <button type="button" onClick={() => setShowDevice((value) => !value)} className="flex w-full items-center justify-between text-left text-xs font-semibold text-[#52667a]">
+          <span>Terminal {deviceToken ? 'configurado' : 'não configurado'}</span>
+          <span aria-hidden="true">{showDevice ? '−' : '+'}</span>
+        </button>
+        {showDevice && (
+          <div className="mt-3">
+            <label htmlFor="kiosk-device" className="app-label">Token do dispositivo</label>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <input id="kiosk-device" className="app-input font-mono text-xs" value={deviceDraft} onChange={(e) => setDeviceDraft(e.target.value)} placeholder="Colar token gerado em /rh/dispositivos" />
+              <button type="button" onClick={() => { const value = deviceDraft.trim(); setDeviceToken(value); window.localStorage.setItem('rh_device_token', value); }} className="min-h-11 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white">Guardar</button>
+              <button type="button" onClick={() => { setDeviceDraft(''); setDeviceToken(''); window.localStorage.removeItem('rh_device_token'); }} className="min-h-11 rounded-lg border border-[#cdddeb] px-4 text-sm font-semibold text-[#52667a]">Limpar</button>
+            </div>
+            <p className="mt-2 text-xs text-[#8a99ab]">Sem token, o quiosque funciona com a sessão do gestor; com token, cada marcação fica associada ao terminal.</p>
+          </div>
+        )}
       </div>
 
       <p className="text-center text-xs text-[#8a99ab]">

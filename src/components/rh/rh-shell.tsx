@@ -16,6 +16,7 @@ const activeLinks = [
   { href: '/rh/horarios', label: 'Horários', icon: '◔' },
   { href: '/rh/ferias', label: 'Férias', icon: '☀' },
   { href: '/rh/ponto', label: 'Quiosque', icon: '▣' },
+  { href: '/rh/dispositivos', label: 'Dispositivos', icon: '⌨' },
   { href: '/rh/configuracoes', label: 'Configurações', icon: '⚙' },
 ];
 

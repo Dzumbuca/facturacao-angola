@@ -91,3 +91,10 @@ DROP POLICY IF EXISTS "rh_settings_isolation" ON "RhSettings";
 CREATE POLICY "rh_settings_isolation" ON "RhSettings" FOR ALL
   USING ("tenantId" = current_setting('app.tenant_id', true))
   WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+
+-- Machine Point: dispositivos isolados por empresa.
+ALTER TABLE "RhDevice" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_device_isolation" ON "RhDevice";
+CREATE POLICY "rh_device_isolation" ON "RhDevice" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));

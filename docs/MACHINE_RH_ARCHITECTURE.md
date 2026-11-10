@@ -43,7 +43,7 @@ RhEmployee   1─* RhAuditLog (via entityId)
 
 ## 4. Rotas
 
-Implementadas: `/rh`, `/rh/dashboard`, `/rh/funcionarios`, `/rh/departamentos`, `/rh/cargos`, `/rh/contratos`, `/rh/assiduidade`, `/rh/horarios`, `/rh/ferias`, `/rh/ponto`, `/rh/configuracoes`.
+Implementadas: `/rh`, `/rh/dashboard`, `/rh/funcionarios`, `/rh/departamentos`, `/rh/cargos`, `/rh/contratos`, `/rh/assiduidade`, `/rh/horarios`, `/rh/ferias`, `/rh/ponto`, `/rh/dispositivos`, `/rh/configuracoes`.
 
 Desenhadas (badge “Brevemente”): `/rh/ferias`, `/rh/processamento-salarial`, `/rh/documentos`, `/rh/modelos`, `/rh/payroll`, `/rh/dispositivos`.
 
@@ -91,7 +91,8 @@ Assistente apenas com leitura e geração de rascunhos; nunca aprova pagamentos,
 | Machine Point: registo de ponto por PIN (entrada/saídas), hoje e histórico | **Implementado e testado** |
 | Horários/turnos, tolerância e cálculo de atraso | **Implementado e testado** |
 | QR assinado (5 min) + terminal quiosque `/rh/ponto` | **Implementado e testado** |
-| Registo de dispositivos, WebAuthn e biométrico | **Desenhado, não implementado** |
+| Registo de dispositivos/terminais e marcação vinculada ao dispositivo | **Implementado e testado** |
+| WebAuthn, biometria e fila offline | **Desenhado, não implementado** |
 | Férias/licenças: pedido, aprovação/rejeição, sobreposição e saldo configurável | **Implementado e testado** |
 | Mapa anual/calendário visual de férias | **Parcial** (lista anual; sem calendário gráfico) |
 | Documentos / payroll / pagamentos / IA | **Desenhado, não implementado** |

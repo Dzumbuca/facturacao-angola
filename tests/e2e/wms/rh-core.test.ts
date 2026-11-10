@@ -22,6 +22,7 @@ let departmentId = '';
 let employeeId = '';
 let employeeNumber = '';
 let shiftId = '';
+let deviceId = '';
 
 beforeAll(async () => {
   const admin = await prisma.user.findUnique({ where: { email: 'e2e-test@machinefacturas.test' }, select: { tenantId: true } });
@@ -52,6 +53,7 @@ afterAll(async () => {
   if (employeeId) await prisma.rhEmployee.deleteMany({ where: { tenantId: tenantAId, id: employeeId } });
   if (departmentId) await prisma.rhDepartment.deleteMany({ where: { tenantId: tenantAId, id: departmentId } });
   if (shiftId) await prisma.rhShift.deleteMany({ where: { tenantId: tenantAId, id: shiftId } });
+  if (deviceId) await prisma.rhDevice.deleteMany({ where: { tenantId: tenantAId, id: deviceId } });
   await prisma.rhLeaveRequest.deleteMany({ where: { tenantId: tenantAId } });
   await prisma.rhSettings.deleteMany({ where: { tenantId: tenantAId } });
   await prisma.rhAuditLog.deleteMany({ where: { tenantId: tenantAId, createdAt: { gte: new Date(Date.now() - 10 * 60_000) } } });
@@ -161,12 +163,45 @@ describe('Machine RH - núcleo e isolamento entre empresas', () => {
     });
     expect(qrDuplicate.status).toBe(409);
 
+    const device = await authenticatedFetch('/api/rh/devices', session, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: `E2E Terminal ${stamp}` }),
+    });
+    expect(device.status).toBe(201);
+    const deviceData = await device.json();
+    deviceId = deviceData.id;
+    expect(deviceData.token).toBeTruthy();
+
+    const devices = await authenticatedFetch('/api/rh/devices', session);
+    expect(devices.status).toBe(200);
+    const devicesData = await devices.json();
+    expect(devicesData.some((d: any) => d.id === deviceId && d.token === undefined && d.tokenHash === undefined)).toBe(true);
+
+    const qrWithDevice = await authenticatedFetch('/api/rh/attendance/qr', session, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: qrData.token, type: 'REGRESSO_ALMOCO', deviceToken: deviceData.token }),
+    });
+    expect(qrWithDevice.status).toBe(201);
+    expect((await qrWithDevice.json()).deviceId).toBe(deviceId);
+
+    const invalidDevice = await authenticatedFetch('/api/rh/attendance/qr', session, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: qrData.token, type: 'SAIDA', deviceToken: 'invalido' }),
+    });
+    expect(invalidDevice.status).toBe(401);
+
     const sessionQrB = await login('e2e-other@machinefacturas.test');
     const foreignQr = await authenticatedFetch('/api/rh/attendance/qr', sessionQrB, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token: qrData.token, type: 'ENTRADA' }),
     });
     expect(foreignQr.status).toBe(403);
+
+    const foreignDevice = await authenticatedFetch('/api/rh/attendance/qr', sessionQrB, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: qrData.token, type: 'ENTRADA', deviceToken: deviceData.token }),
+    });
+    expect(foreignDevice.status).toBe(403);
 
     // Machine Point: PIN errado, entrada, duplicado no último minuto.
     const wrongPin = await authenticatedFetch('/api/rh/attendance/clock', session, {

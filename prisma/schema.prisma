@@ -145,6 +145,7 @@ model Tenant {
   rhContracts              RhContract[]
 
   rhTimeEntries            RhTimeEntry[]
+  rhDevices                RhDevice[]
   rhShifts                 RhShift[]
   rhLeaveRequests          RhLeaveRequest[]
   rhSettings               RhSettings?
@@ -2878,4 +2879,22 @@ model RhSettings {
   updatedAt            DateTime @updatedAt
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+}
+
+
+// Machine Point — dispositivos/terminais autorizados.
+model RhDevice {
+  id         String    @id @default(uuid())
+  tenantId   String
+  name       String
+  tokenHash  String    @unique
+  isActive   Boolean   @default(true)
+  lastSeenAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, name])
+  @@index([tenantId, isActive])
 }
