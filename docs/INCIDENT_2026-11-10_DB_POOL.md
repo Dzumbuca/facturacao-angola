@@ -57,3 +57,30 @@ Os erros `CredentialsSignin` nos logs são esperados (password deliberadamente e
 - Não usar transações interativas longas no pooler de transação.
 - Monitorizar `EMAXCONNSESSION` nos logs e o número de ligações no Supabase.
 - Rollback: repor a URL com `:5432` e redeployar (mas o problema de limite regressa).
+
+## Seguimento — P2028 (`Unable to start a transaction`)
+
+Após a mudança para 6543, surgiu um segundo erro (digest **3565897406**):
+
+```text
+PrismaClientKnownRequestError: Transaction API error:
+Unable to start a transaction in the given time. (P2028)
+```
+
+**Causa:** `connection_limit=1` no pooler de transação. As transações interativas
+(usadas pelo RLS/auth) esperam 2s pela ligação (`maxWait` padrão do Prisma) e falham
+quando outra query ocupa a única ligação da instância.
+
+**Correção (dupla):**
+
+1. `connection_limit=5` na `DATABASE_URL` de produção.
+2. `transactionOptions: { maxWait: 10_000, timeout: 20_000 }` no `PrismaClient`
+   (`src/lib/prisma.ts`).
+
+**Reprodução e validação locais (24 transações concorrentes):**
+
+| Configuração | Sucesso | Falhas |
+|---|---|---|
+| `connection_limit=1`, `maxWait` padrão | 2 | 22× P2028 |
+| `connection_limit=5`, `maxWait=10s` | 24 | 0 |
+
