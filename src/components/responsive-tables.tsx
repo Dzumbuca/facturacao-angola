@@ -17,6 +17,7 @@ function annotateTables() {
     if (!labels.some(Boolean)) return;
 
     table.classList.add('responsive-table');
+    table.classList.toggle('has-primary', Boolean(table.querySelector('tbody td[data-mobile-primary]')));
     table.querySelectorAll('tbody tr').forEach((row) => {
       Array.from(row.children).forEach((cell, index) => {
         if (!(cell instanceof HTMLTableCellElement) || cell.tagName !== 'TD') return;

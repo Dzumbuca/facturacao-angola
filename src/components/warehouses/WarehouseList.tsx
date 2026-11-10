@@ -59,7 +59,7 @@ export function WarehouseList({
                     : 'bg-[#f0f4f8] text-[#64768a] border border-[#e7edf3]';
                   return (
                     <tr key={warehouse.id} className="transition hover:bg-[#f8fafc]">
-                      <td className="font-semibold text-[#263c52]">{warehouse.name}</td>
+                      <td data-mobile-primary className="font-semibold text-[#263c52]">{warehouse.name}</td>
                       <td className="text-[#607286]">{warehouse.location || '-'}</td>
                       <td>
                         <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors border-transparent ${statusBadge}`}>
@@ -71,13 +71,13 @@ export function WarehouseList({
                           {warehouse.isDefault ? 'Sim' : 'Não'}
                         </span>
                       </td>
-                      <td className="text-center">
+                      <td data-mobile-actions className="text-center">
                         <div className="flex gap-2 justify-center">
                           {onEdit && (
                             <button
                               type="button"
                               onClick={() => onEdit(warehouse)}
-                              className="rounded-lg border border-[#cdddeb] px-3 py-1.5 text-sm font-semibold text-[#2878d0] transition hover:bg-[#f0f6fc]"
+                              className="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#cdddeb] px-3 py-1.5 text-sm font-semibold text-[#2878d0] transition hover:bg-[#f0f6fc]"
                             >
                               <EditIcon className="h-3.5 w-3.5 mr-1" /> Editar
                             </button>
@@ -86,7 +86,7 @@ export function WarehouseList({
                             <button
                               type="button"
                               onClick={() => onToggle(warehouse)}
-                              className="rounded-lg border border-[#cdddeb] px-3 py-1.5 text-sm font-semibold text-[#64768a] transition hover:bg-[#f0f4f8]"
+                              className="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#cdddeb] px-3 py-1.5 text-sm font-semibold text-[#64768a] transition hover:bg-[#f0f4f8]"
                             >
                               {warehouse.isActive ? 'Desactivar' : 'Activar'}
                             </button>
@@ -96,7 +96,7 @@ export function WarehouseList({
                               type="button"
                               onClick={() => onDelete(warehouse)}
                               disabled={deletingId === warehouse.id}
-                              className="rounded-lg border border-[#f0d3d3] px-3 py-1.5 text-sm font-semibold text-[#a83939] transition hover:bg-[#fdf3f3] disabled:opacity-50"
+                              className="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#f0d3d3] px-3 py-1.5 text-sm font-semibold text-[#a83939] transition hover:bg-[#fdf3f3] disabled:opacity-50"
                             >
                               <TrashIcon className="h-3.5 w-3.5 mr-1" /> Apagar
                             </button>

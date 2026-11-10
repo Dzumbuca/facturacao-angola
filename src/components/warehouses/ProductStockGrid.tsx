@@ -106,7 +106,7 @@ export function ProductStockGrid({
                     return (
                       <tr key={product.id} className="transition hover:bg-[#f8fafc]">
                         <td className="font-mono text-xs text-[#64768a]">{product.codigo || 'SEM-COD'}</td>
-                        <td className="font-semibold text-[#263c52]">{product.name}</td>
+                        <td data-mobile-primary className="font-semibold text-[#263c52]">{product.name}</td>
                         <td className="tabular-nums font-medium">{typeof product.price === 'number' ? product.price.toFixed(2) : product.price}</td>
                         <td className="tabular-nums">{product.stock}</td>
                         <td className="tabular-nums">{product.minStock}</td>

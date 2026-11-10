@@ -22,7 +22,7 @@ test.describe('WMS v2 - UI', () => {
   test('login real e página de stock renderizam', async ({ page }) => {
     await login(page);
     await page.goto('/stock');
-    await expect(page.getByRole('heading', { name: 'Machine Stock', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Armazém e stock', exact: true })).toBeVisible();
     await expect(page.getByText('Produtos', { exact: true }).first()).toBeVisible();
   });
 

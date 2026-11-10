@@ -357,7 +357,7 @@ main :where(.grid) > * { min-width: 0; }
   table.responsive-table { display: block; width: 100% !important; min-width: 0 !important; border-collapse: separate; }
   table.responsive-table thead { display: none; }
   table.responsive-table tbody { display: block; }
-  table.responsive-table tr { display: block; margin: 0 0 .75rem; padding: .85rem 1rem; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+  table.responsive-table tr { display: flex; flex-direction: column; margin: 0 0 .75rem; padding: .85rem 1rem; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
   table.responsive-table tr:last-child { margin-bottom: 0; }
   table.responsive-table td {
     display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
@@ -377,6 +377,25 @@ main :where(.grid) > * { min-width: 0; }
   table.responsive-table td[colspan] { display: block; text-align: center; }
   table.responsive-table td[colspan]::before { content: none; }
   table.responsive-table td:empty { display: none; }
+
+  /* Célula principal escolhida pelo componente (ex.: nome do produto). */
+  table.responsive-table.has-primary td:first-child {
+    display: flex; margin: 0; padding: .3rem 0 !important;
+    border-bottom: 0 !important; text-align: right; font-weight: inherit;
+  }
+  table.responsive-table.has-primary td:first-child::before { display: block; }
+  table.responsive-table td[data-mobile-primary] {
+    order: -1; display: block; margin: 0 0 .4rem; padding: 0 0 .5rem !important;
+    border-bottom: 1px solid var(--line) !important; text-align: left;
+    font-size: .95rem; font-weight: 700;
+  }
+  table.responsive-table td[data-mobile-primary]::before { display: none; }
+
+  /* Célula de acções: botões grandes, em grelha, sem scroll lateral. */
+  table.responsive-table td[data-mobile-actions] { display: block; text-align: left; padding-top: .55rem !important; }
+  table.responsive-table td[data-mobile-actions]::before { display: none; }
+  table.responsive-table td[data-mobile-actions] > div { display: flex; flex-wrap: wrap; gap: .5rem; }
+  table.responsive-table td[data-mobile-actions] button { flex: 1 1 45%; min-height: 42px; justify-content: center; }
 
   /* Filtros e barras de acções deixam de esticar a página. */
   main form { min-width: 0; }

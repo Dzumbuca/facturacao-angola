@@ -1,7 +1,7 @@
-import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { getSessionTenantId } from "@/lib/session";
-import { WarehouseManagement } from "@/components/warehouses/warehouse-management";
+import { prisma } from '@/lib/prisma';
+import { auth } from '@/lib/auth';
+import { getSessionTenantId } from '@/lib/session';
+import { WarehouseManagement } from '@/components/warehouses/warehouse-management';
 
 export default async function WarehousesPage() {
   const tenantId = getSessionTenantId(await auth());
@@ -18,38 +18,34 @@ export default async function WarehousesPage() {
     }),
   ]);
 
-  const initialWarehouses = warehouses.map((w: any) => ({
-    id: w.id,
-    name: w.name,
-    location: w.location,
-    isDefault: w.isDefault,
-    isActive: w.isActive,
-    createdAt: w.createdAt.toISOString(),
-  }));
-
-  const initialProducts = products.map((p: any) => ({
-    id: p.id,
-    codigo: p.codigo,
-    name: p.name,
-    price: Number(p.price),
-    stock: p.stock,
-    minStock: p.minStock ?? 0,
-    categoria: p.categoria,
-  }));
-
-  const initialMovements = movements.map((m: any) => ({
-    id: m.id,
-    type: m.type,
-    quantity: m.quantity,
-    reason: m.reason,
-    reference: m.reference,
-    createdAt: m.createdAt.toISOString(),
-    product: m.product ? { name: m.product.name, codigo: m.product.codigo } : null,
-  }));
-
-  return <WarehouseManagement
-    initialWarehouses={initialWarehouses}
-    initialProducts={initialProducts}
-    initialMovements={initialMovements}
-  />;
+  return (
+    <WarehouseManagement
+      initialWarehouses={warehouses.map((w: any) => ({
+        id: w.id,
+        name: w.name,
+        location: w.location,
+        isDefault: w.isDefault,
+        isActive: w.isActive,
+        createdAt: w.createdAt.toISOString(),
+      }))}
+      initialProducts={products.map((p: any) => ({
+        id: p.id,
+        codigo: p.codigo,
+        name: p.name,
+        price: Number(p.price),
+        stock: p.stock,
+        minStock: p.minStock ?? 0,
+        categoria: p.categoria,
+      }))}
+      initialMovements={movements.map((m: any) => ({
+        id: m.id,
+        type: m.type,
+        quantity: m.quantity,
+        reason: m.reason,
+        reference: m.reference,
+        createdAt: m.createdAt.toISOString(),
+        product: m.product ? { name: m.product.name, codigo: m.product.codigo } : null,
+      }))}
+    />
+  );
 }
