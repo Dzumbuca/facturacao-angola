@@ -28,6 +28,10 @@ export const metadata: Metadata = {
       { url: '/icons/splash-2048x2732.png', media: '(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)' },
     ],
   },
+  other: {
+    // Safari (iOS < 16.4) só reconhece a variante com prefixo Apple.
+    'apple-mobile-web-app-capable': 'yes',
+  },
   alternates: {
     canonical: '/',
   },
