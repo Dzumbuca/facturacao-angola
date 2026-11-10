@@ -12,11 +12,17 @@
 
 **Nome:** Dzumbuca  
 **GitHub:** github.com/Dzumbuca  
-**Contacto:** Via issues no repositório GitHub  
+**Contacto:** joaquimzumbuca@gmail.com  
+**Commits:** 20  
 
 ## Contribuidores
 
-Não há contribuidores listados atualmente.
+### Black Machine
+
+- **GitHub:** [Bl4ck-Machine](https://github.com/Bl4ck-Machine)
+- **Contacto:** 116567369+Bl4ck-Machine@users.noreply.github.com
+- **Commits:** 111
+- **Papel:** Contribuidor principal (majoria dos commits do repositório)
 
 ## Licença
 
