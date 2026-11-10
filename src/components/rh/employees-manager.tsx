@@ -23,6 +23,7 @@ type Employee = {
   contractType: string;
   baseSalary: number;
   status: string;
+  hasPin?: boolean;
   bankName: string | null;
   bankAccount: string | null;
   bankIban: string | null;
@@ -90,10 +91,12 @@ export function EmployeesManager({ initialEmployees, departments, positions }: {
       contractType: String(form.get('contractType') ?? 'INDEFINIDO'),
       baseSalary: String(form.get('baseSalary') ?? ''),
       status: String(form.get('status') ?? 'ACTIVO'),
+      pin: String(form.get('pin') ?? ''),
       bankName: String(form.get('bankName') ?? ''),
       bankAccount: String(form.get('bankAccount') ?? ''),
       bankIban: String(form.get('bankIban') ?? ''),
     };
+    if (!String(payload.pin ?? '')) delete payload.pin;
     setSaving(true);
     setError('');
     try {
@@ -218,6 +221,7 @@ export function EmployeesManager({ initialEmployees, departments, positions }: {
                   <div><label htmlFor="rh-contract" className="app-label">Tipo de contrato</label><select id="rh-contract" name="contractType" className="app-input" defaultValue={editing?.contractType ?? 'INDEFINIDO'}>{Object.entries(CONTRACT_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
                   <div><label htmlFor="rh-salary" className="app-label">Salário-base (Kz) *</label><input id="rh-salary" name="baseSalary" type="number" min="0" step="0.01" className="app-input tabular-nums" required defaultValue={editing?.baseSalary ?? ''} /></div>
                   <div><label htmlFor="rh-status" className="app-label">Estado</label><select id="rh-status" name="status" className="app-input" defaultValue={editing?.status ?? 'ACTIVO'}>{Object.entries(STATUS_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
+                  <div><label htmlFor="rh-pin" className="app-label">PIN do ponto <span className="font-normal text-[#708195]">{editing?.hasPin ? '(definido)' : '(opcional)'}</span></label><input id="rh-pin" name="pin" type="password" inputMode="numeric" maxLength={8} className="app-input tracking-[.3em]" placeholder={editing?.hasPin ? 'Deixar vazio para manter' : '4 a 8 dígitos'} /></div>
                 </div>
               </fieldset>
 

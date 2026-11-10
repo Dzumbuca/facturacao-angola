@@ -65,3 +65,10 @@ DROP POLICY IF EXISTS "rh_audit_isolation" ON "RhAuditLog";
 CREATE POLICY "rh_audit_isolation" ON "RhAuditLog" FOR ALL
   USING ("tenantId" = current_setting('app.tenant_id', true))
   WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+
+-- Machine Point: registos de ponto isolados por empresa.
+ALTER TABLE "RhTimeEntry" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_time_entry_isolation" ON "RhTimeEntry";
+CREATE POLICY "rh_time_entry_isolation" ON "RhTimeEntry" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));

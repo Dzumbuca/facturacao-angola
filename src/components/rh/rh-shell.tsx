@@ -12,11 +12,11 @@ const activeLinks = [
   { href: '/rh/departamentos', label: 'Departamentos', icon: '▤' },
   { href: '/rh/cargos', label: 'Cargos', icon: '◇' },
   { href: '/rh/contratos', label: 'Contratos', icon: '▧' },
+  { href: '/rh/assiduidade', label: 'Assiduidade', icon: '◷' },
   { href: '/rh/configuracoes', label: 'Configurações', icon: '⚙' },
 ];
 
 const futureLinks = [
-  { href: '/rh/assiduidade', label: 'Assiduidade' },
   { href: '/rh/ferias', label: 'Férias e licenças' },
   { href: '/rh/processamento-salarial', label: 'Processamento salarial' },
   { href: '/rh/documentos', label: 'Documentos' },
@@ -25,7 +25,7 @@ const futureLinks = [
   { href: '/rh/dispositivos', label: 'Dispositivos' },
 ];
 
-const mobileLinks = activeLinks.slice(0, 4);
+const mobileLinks = [activeLinks[0], activeLinks[1], activeLinks[5], activeLinks[4]];
 
 export function RhShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();

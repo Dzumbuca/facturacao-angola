@@ -43,9 +43,9 @@ RhEmployee   1─* RhAuditLog (via entityId)
 
 ## 4. Rotas
 
-Implementadas: `/rh`, `/rh/dashboard`, `/rh/funcionarios`, `/rh/departamentos`, `/rh/cargos`, `/rh/contratos`, `/rh/configuracoes`.
+Implementadas: `/rh`, `/rh/dashboard`, `/rh/funcionarios`, `/rh/departamentos`, `/rh/cargos`, `/rh/contratos`, `/rh/assiduidade`, `/rh/configuracoes`.
 
-Desenhadas (badge “Brevemente”): `/rh/assiduidade`, `/rh/ferias`, `/rh/processamento-salarial`, `/rh/documentos`, `/rh/modelos`, `/rh/payroll`, `/rh/dispositivos`.
+Desenhadas (badge “Brevemente”): `/rh/ferias`, `/rh/processamento-salarial`, `/rh/documentos`, `/rh/modelos`, `/rh/payroll`, `/rh/dispositivos`.
 
 ## 5. PWA independente
 
@@ -88,7 +88,9 @@ Assistente apenas com leitura e geração de rascunhos; nunca aprova pagamentos,
 | Funcionários, departamentos, cargos, contratos (schema, API, UI) | **Implementado e testado** |
 | Gate comercial por aplicação + RBAC básico | **Implementado e testado** |
 | PWA RH (manifest, SW, shell, ícone) | **Implementado** (ícones PNG para lojas pendentes) |
-| Assiduidade / documentos / payroll / pagamentos / IA | **Desenhado, não implementado** |
+| Machine Point: registo de ponto por PIN (entrada/saídas), hoje e histórico | **Implementado e testado** |
+| Horários, turnos, QR dinâmico, quiosque e biométrico | **Desenhado, não implementado** |
+| Documentos / payroll / pagamentos / IA | **Desenhado, não implementado** |
 | Matriz RBAC fina (RH_ADMIN, FINANCE, MANAGER, EMPLOYEE) | **Pendente** |
 | Migração de produção | **Não executada** (requer aprovação) |
 | Validação jurídica de modelos | **Pendente** (parceiro jurídico) |

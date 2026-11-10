@@ -99,7 +99,7 @@ describe('Machine RH - núcleo e isolamento entre empresas', () => {
       body: JSON.stringify({
         firstName: 'E2E', lastName: `RH ${stamp}`, employeeNumber: 'ignorado', departmentId,
         hireDate: '2026-01-15', contractType: 'INDEFINIDO', baseSalary: 350000,
-        bi: '000000000LA000', email: `e2e-rh-${stamp}@machinefacturas.test`,
+        bi: '000000000LA000', email: `e2e-rh-${stamp}@machinefacturas.test`, pin: '1234',
       }),
     });
     expect(employee.status).toBe(201);
@@ -108,6 +108,8 @@ describe('Machine RH - núcleo e isolamento entre empresas', () => {
     employeeNumber = employeeData.employeeNumber;
     expect(employeeNumber).toMatch(/^RH-\d{4}$/);
     expect(Number(employeeData.baseSalary)).toBe(350000);
+    expect(employeeData.pinHash).toBeUndefined();
+    expect(employeeData.hasPin).toBe(true);
 
     const contract = await authenticatedFetch('/api/rh/contracts', session, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -115,6 +117,33 @@ describe('Machine RH - núcleo e isolamento entre empresas', () => {
     });
     expect(contract.status).toBe(201);
     expect((await contract.json()).employeeId).toBe(employeeId);
+
+    // Machine Point: PIN errado, entrada, duplicado no último minuto.
+    const wrongPin = await authenticatedFetch('/api/rh/attendance/clock', session, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ employeeId, type: 'ENTRADA', pin: '9999' }),
+    });
+    expect(wrongPin.status).toBe(401);
+
+    const clock = await authenticatedFetch('/api/rh/attendance/clock', session, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ employeeId, type: 'ENTRADA', pin: '1234' }),
+    });
+    expect(clock.status).toBe(201);
+    const clockData = await clock.json();
+    expect(clockData.type).toBe('ENTRADA');
+    expect(clockData.source).toBe('PIN');
+
+    const duplicate = await authenticatedFetch('/api/rh/attendance/clock', session, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ employeeId, type: 'ENTRADA', pin: '1234' }),
+    });
+    expect(duplicate.status).toBe(409);
+
+    const attendance = await authenticatedFetch('/api/rh/attendance', session);
+    expect(attendance.status).toBe(200);
+    const attendanceData = await attendance.json();
+    expect(attendanceData.some((entry: any) => entry.id === clockData.id && entry.employee.id === employeeId)).toBe(true);
 
     const list = await authenticatedFetch('/api/rh/employees', session);
     expect(list.status).toBe(200);
@@ -130,5 +159,11 @@ describe('Machine RH - núcleo e isolamento entre empresas', () => {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ firstName: 'Hack' }),
     });
     expect(patchB.status).toBe(404);
+
+    const clockB = await authenticatedFetch('/api/rh/attendance/clock', sessionB, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ employeeId, type: 'ENTRADA', pin: '1234' }),
+    });
+    expect(clockB.status).toBe(404);
   });
 });
