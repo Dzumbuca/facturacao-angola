@@ -96,12 +96,13 @@ Assistente apenas com leitura e geração de rascunhos; nunca aprova pagamentos,
 | Férias/licenças: pedido, aprovação/rejeição, sobreposição e saldo configurável | **Implementado e testado** |
 | Mapa anual/calendário visual de férias | **Parcial** (lista anual; sem calendário gráfico) |
 | Documentos: modelos por empresa, variáveis, rascunho, PDF e emissão | **Implementado e testado** |
-| DOCX, histórico de versões e biblioteca de modelos jurídicos | **Pendente** |
+| DOCX + versionamento imutável de modelos (histórico e versão usada no documento) | **Implementado e testado** |
+| Biblioteca de modelos jurídicos pré-validados | **Pendente** |
 | Payroll: regras configuráveis/versionadas, cálculo, estados e recibos | **Implementado e testado** |
 | Payroll Connect: lotes, estados, idempotência (sem transferência real) | **Implementado e testado** |
 | Self-service do funcionário (`/meu-rh`): recibos, ponto, férias e documentos próprios | **Implementado e testado** |
 | Assistente IA de rascunhos (Groq free/OpenRouter free, revisão humana) | **Implementado** (requer chave) |
-| Transferências bancárias reais (EMIS) e DOCX | **Pendente** |
+| Transferências bancárias reais (EMIS) | **Pendente** |
 | Matriz RBAC fina (RH_ADMIN, FINANCE, MANAGER, EMPLOYEE) | **Pendente** |
 | Migração de produção | **Não executada** (requer aprovação) |
 | Validação jurídica de modelos | **Pendente** (parceiro jurídico) |

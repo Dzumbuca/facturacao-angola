@@ -24,6 +24,7 @@ let employeeNumber = '';
 let shiftId = '';
 let deviceId = '';
 let documentId = '';
+let document2Id = '';
 let documentTemplateId = '';
 let payrollRunId = '';
 let payrollRulesetId = '';
@@ -62,6 +63,7 @@ afterAll(async () => {
   if (shiftId) await prisma.rhShift.deleteMany({ where: { tenantId: tenantAId, id: shiftId } });
   if (deviceId) await prisma.rhDevice.deleteMany({ where: { tenantId: tenantAId, id: deviceId } });
   if (documentId) await prisma.rhDocument.deleteMany({ where: { tenantId: tenantAId, id: documentId } });
+  if (document2Id) await prisma.rhDocument.deleteMany({ where: { tenantId: tenantAId, id: document2Id } });
   if (documentTemplateId) await prisma.rhDocumentTemplate.deleteMany({ where: { tenantId: tenantAId, id: documentTemplateId } });
   if (paymentBatchId) await prisma.rhPaymentBatch.deleteMany({ where: { tenantId: tenantAId, id: paymentBatchId } });
   if (payrollRunId) await prisma.rhPayrollRun.deleteMany({ where: { tenantId: tenantAId, id: payrollRunId } });
@@ -367,9 +369,34 @@ describe('Machine RH - núcleo e isolamento entre empresas', () => {
     });
     expect(again.status).toBe(409);
 
+    const updatedTemplate = await authenticatedFetch(`/api/rh/document-templates/${documentTemplateId}`, session, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ body: 'Versão 2: {{funcionario_nome}} na empresa {{empresa_nome}}.' }),
+    });
+    expect(updatedTemplate.status).toBe(200);
+    expect((await updatedTemplate.json()).version).toBe(2);
+
+    const versions = await authenticatedFetch(`/api/rh/document-templates/${documentTemplateId}/versions`, session);
+    expect(versions.status).toBe(200);
+    expect((await versions.json()).length).toBe(2);
+
+    const doc2 = await authenticatedFetch('/api/rh/documents', session, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ templateId: documentTemplateId, employeeId }),
+    });
+    expect(doc2.status).toBe(201);
+    const doc2Data = await doc2.json();
+    document2Id = doc2Data.id;
+    expect(doc2Data.templateVersion).toBe(2);
+    expect(doc2Data.content).toContain('Versão 2');
+
     const sessionB = await login('e2e-other@machinefacturas.test');
     const foreignPdf = await authenticatedFetch(`/api/rh/documents/${documentId}/pdf`, sessionB);
     expect(foreignPdf.status).toBe(404);
+    const foreignTemplate = await authenticatedFetch(`/api/rh/document-templates/${documentTemplateId}`, sessionB, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'Hack' }),
+    });
+    expect(foreignTemplate.status).toBe(404);
   });
 
   it('payroll: regras configuráveis, cálculo, duplicado e transições', async () => {

@@ -30,7 +30,10 @@ export async function POST(req: Request) {
 
     const created = await runWithTenant(access.tenantId, async (tx) => {
       const row = await tx.rhDocumentTemplate.create({
-        data: { tenantId: access.tenantId, name, type, body: templateBody },
+        data: {
+          tenantId: access.tenantId, name, type, body: templateBody,
+          versions: { create: { tenantId: access.tenantId, version: 1, name, type, body: templateBody, createdByUserId: access.userId } },
+        },
       });
       await rhAudit(tx, { tenantId: access.tenantId, actorUserId: access.userId, action: 'RH_DOCUMENT_TEMPLATE_CREATED', entity: 'RhDocumentTemplate', entityId: row.id, metadata: { name, type } });
       return row;

@@ -146,3 +146,10 @@ DROP POLICY IF EXISTS "rh_payment_item_isolation" ON "RhPaymentItem";
 CREATE POLICY "rh_payment_item_isolation" ON "RhPaymentItem" FOR ALL
   USING ("tenantId" = current_setting('app.tenant_id', true))
   WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+
+-- Machine Documents: versões de modelos.
+ALTER TABLE "RhDocumentTemplateVersion" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_doc_template_version_isolation" ON "RhDocumentTemplateVersion";
+CREATE POLICY "rh_doc_template_version_isolation" ON "RhDocumentTemplateVersion" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));

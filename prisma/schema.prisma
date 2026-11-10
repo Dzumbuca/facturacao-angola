@@ -2934,11 +2934,13 @@ model RhDocumentTemplate {
   type      RhDocumentType @default(OUTRO)
   body      String
   isActive  Boolean        @default(true)
+  version   Int            @default(1)
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 
   tenant    Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   documents RhDocument[]
+  versions  RhDocumentTemplateVersion[]
 
   @@unique([tenantId, name])
   @@index([tenantId, isActive])
@@ -2949,6 +2951,7 @@ model RhDocument {
   tenantId        String
   employeeId      String?
   templateId      String?
+  templateVersion Int?
   type            RhDocumentType   @default(OUTRO)
   title           String
   content         String
@@ -3122,4 +3125,23 @@ model RhPaymentItem {
 
   @@unique([batchId, employeeId])
   @@index([tenantId, status])
+}
+
+
+// Machine Documents — versões imutáveis dos modelos.
+model RhDocumentTemplateVersion {
+  id              String         @id @default(uuid())
+  tenantId        String
+  templateId      String
+  version         Int
+  name            String
+  type            RhDocumentType
+  body            String
+  createdByUserId String?
+  createdAt       DateTime       @default(now())
+
+  template RhDocumentTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@unique([templateId, version])
+  @@index([tenantId, templateId])
 }

@@ -46,6 +46,7 @@ export async function POST(req: Request) {
           tenantId: access.tenantId,
           employeeId,
           templateId,
+          templateVersion: template.version,
           type: template.type,
           title: typeof body.title === 'string' && body.title.trim() ? body.title.trim() : template.name,
           content,
