@@ -16,7 +16,7 @@ function providers(): Provider[] {
     list.push({
       name: 'groq',
       baseUrl: process.env.RH_AI_BASE_URL || GROQ_URL,
-      model: process.env.RH_AI_MODEL || 'llama-3.3-70b-versatile',
+      model: process.env.RH_AI_MODEL || 'openai/gpt-oss-120b',
       apiKey: process.env.GROQ_API_KEY,
     });
   }
