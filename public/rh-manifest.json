@@ -1,0 +1,26 @@
+{
+  "id": "/rh/",
+  "name": "Machine RH",
+  "short_name": "Machine RH",
+  "description": "Recursos Humanos, assiduidade, contratos e processamento salarial.",
+  "lang": "pt-AO",
+  "dir": "ltr",
+  "start_url": "/rh/dashboard",
+  "scope": "/rh/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#f5f7fb",
+  "theme_color": "#021f87",
+  "icons": [
+    { "src": "/icons/rh-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/rh-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/rh-icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "categories": ["business", "productivity"],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    { "name": "Funcionários", "short_name": "Funcionários", "url": "/rh/funcionarios", "icons": [{ "src": "/icons/rh-icon-192.png", "sizes": "192x192" }] },
+    { "name": "Contratos", "short_name": "Contratos", "url": "/rh/contratos", "icons": [{ "src": "/icons/rh-icon-192.png", "sizes": "192x192" }] }
+  ]
+}
