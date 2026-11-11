@@ -67,3 +67,11 @@ export function lateMinutesFor(occurredAt: Date, shift: { startTime: string; tol
   const minute = Number(parts.find((part) => part.type === 'minute')?.value ?? 0);
   return Math.max(0, hour * 60 + minute - (sh * 60 + sm) - Math.max(0, shift.toleranceMinutes || 0));
 }
+
+/** Mascara dados bancários: mostra apenas os últimos 3 caracteres. */
+export function maskAccount(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const clean = String(value).trim();
+  if (!clean) return null;
+  return clean.length <= 3 ? '••••' : `•••••${clean.slice(-3)}`;
+}

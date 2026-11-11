@@ -6,7 +6,8 @@ import { runWithTenant } from '@/lib/tenant-db';
 
 import { requireRhAccess, rhAccessResponse } from '@/lib/rh-access';
 
-import { assertDepartmentInTenant, assertPositionInTenant, assertShiftInTenant, rhAudit } from '@/lib/rh-service';
+import { assertDepartmentInTenant, assertPositionInTenant, assertShiftInTenant, maskAccount, rhAudit } from '@/lib/rh-service';
+import { hasRhPermission } from '@/lib/rh-policy';
 
 type RhContractType = 'INDEFINIDO' | 'TERMO_CERTO' | 'ESTAGIO' | 'PRESTACAO_SERVICOS';
 
@@ -45,6 +46,40 @@ function parseDate(value: unknown): Date | null | undefined {
 }
 
 
+
+export async function GET(_req: Request, { params }: Context) {
+
+  try {
+
+    const access = await requireRhAccess();
+
+    const { id } = await params;
+
+    const employee = (await runWithTenant(access.tenantId, (tx) => tx.rhEmployee.findFirst({
+
+      where: { id, tenantId: access.tenantId },
+
+      include: { department: { select: { id: true, name: true } }, position: { select: { id: true, title: true } }, shift: { select: { id: true, name: true, startTime: true, endTime: true } } },
+
+    }), { userId: access.userId })) as any;
+
+    if (!employee) return NextResponse.json({ error: 'Funcionário não encontrado.' }, { status: 404 });
+
+    const canSeeBank = hasRhPermission(access.permissions, 'employees:write');
+
+    const { pinHash, bankAccount, bankIban, ...rest } = employee;
+
+    return NextResponse.json({ ...rest, baseSalary: Number(rest.baseSalary), hasPin: Boolean(pinHash), bankAccount: canSeeBank ? bankAccount : maskAccount(bankAccount), bankIban: canSeeBank ? bankIban : maskAccount(bankIban) });
+
+  } catch (error) {
+
+    const { status, body } = rhAccessResponse(error);
+
+    return NextResponse.json(body, { status });
+
+  }
+
+}
 
 export async function PATCH(req: Request, { params }: Context) {
 

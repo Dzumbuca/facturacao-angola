@@ -6,7 +6,7 @@ import { runWithTenant } from '@/lib/tenant-db';
 
 import { requireRhAccess, rhAccessResponse } from '@/lib/rh-access';
 
-import { assertDepartmentInTenant, assertPositionInTenant, assertShiftInTenant, nextEmployeeNumber, rhAudit } from '@/lib/rh-service';
+import { assertDepartmentInTenant, assertPositionInTenant, assertShiftInTenant, maskAccount, nextEmployeeNumber, rhAudit } from '@/lib/rh-service';
 
 type RhContractType = 'INDEFINIDO' | 'TERMO_CERTO' | 'ESTAGIO' | 'PRESTACAO_SERVICOS';
 
