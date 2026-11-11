@@ -24,10 +24,17 @@ export default async function RhAttendancePage() {
     return { entries, employees };
   }, { userId: access.userId });
 
+  const now = new Date();
+  const monthFrom = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+  const monthTo = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()}`;
+
   return (
-    <AttendanceManager
-      entries={(data.entries as any[]).map((entry) => ({ ...entry, occurredAt: entry.occurredAt.toISOString(), lateMinutes: entry.type === 'ENTRADA' ? lateMinutesFor(entry.occurredAt, entry.employee.shift) : 0, shiftName: entry.employee.shift?.name ?? null }))}
-      employees={(data.employees as any[]).map(({ pinHash, ...employee }) => ({ ...employee, hasPin: Boolean(pinHash) }))}
-    />
+    <div className="space-y-4">
+      <div className="flex justify-end"><a href={`/api/rh/export/attendance?from=${monthFrom}&to=${monthTo}`} className="inline-flex min-h-9 items-center rounded-lg border border-[#cdddeb] bg-white px-3 text-xs font-semibold text-[#021f87]">Exportar CSV (mês)</a></div>
+      <AttendanceManager
+        entries={(data.entries as any[]).map((entry) => ({ ...entry, occurredAt: entry.occurredAt.toISOString(), lateMinutes: entry.type === 'ENTRADA' ? lateMinutesFor(entry.occurredAt, entry.employee.shift) : 0, shiftName: entry.employee.shift?.name ?? null }))}
+        employees={(data.employees as any[]).map(({ pinHash, ...employee }) => ({ ...employee, hasPin: Boolean(pinHash) }))}
+      />
+    </div>
   );
 }

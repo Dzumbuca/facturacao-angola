@@ -68,8 +68,8 @@ export default async function MyRhPage() {
       <section className="rounded-xl border border-[#e1e8f0] bg-white">
         <h2 className="border-b border-[#eef2f6] px-4 py-3 text-sm font-bold text-[#1c2d3f]">Recibos</h2>
         <div className="overflow-x-auto">
-          <table className="data-table min-w-[420px]"><thead><tr><th>Período</th><th>Líquido</th><th>Estado</th></tr></thead>
-            <tbody>{payslips.map((slip: any) => <tr key={slip.id}><td data-mobile-primary className="tabular-nums">{slip.run.period}</td><td className="tabular-nums">{money(slip.net)}</td><td>{slip.run.status}</td></tr>)}
+          <table className="data-table min-w-[420px]"><thead><tr><th>Período</th><th>Líquido</th><th>Estado</th><th>Recibo</th></tr></thead>
+            <tbody>{payslips.map((slip: any) => <tr key={slip.id}><td data-mobile-primary className="tabular-nums">{slip.run.period}</td><td className="tabular-nums">{money(slip.net)}</td><td>{slip.run.status}</td><td data-mobile-actions><a href={`/api/meu-rh/payslips/${slip.id}/pdf`} target="_blank" rel="noreferrer" className="text-xs font-semibold text-[#021f87]">PDF</a></td></tr>)}
               {payslips.length === 0 && <tr><td colSpan={3} className="px-4 py-8 text-center text-sm text-[#708195]">Sem recibos.</td></tr>}</tbody></table>
         </div>
       </section>

@@ -26,6 +26,7 @@ export default async function PayrollRunPage({ params }: { params: Promise<{ id:
         <p className="text-sm text-[#708195]">Folha de salários</p>
         <h1 className="mt-1 text-2xl font-bold text-[#1c2d3f]">{run.period}</h1>
         <p className="mt-1 text-sm text-[#607286]">Regras: {run.ruleset?.name ?? '—'} · Estado: {run.status}</p>
+      <a href={`/api/rh/payroll/runs/${id}/export`} className="mt-2 inline-flex min-h-9 items-center rounded-lg border border-[#cdddeb] bg-white px-3 text-xs font-semibold text-[#021f87]">Exportar CSV</a>
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -41,7 +42,7 @@ export default async function PayrollRunPage({ params }: { params: Promise<{ id:
 
       <div className="overflow-x-auto rounded-xl border border-[#e1e8f0] bg-white">
         <table className="data-table min-w-[760px]">
-          <thead><tr><th>Funcionário</th><th>Base</th><th>Subsídios</th><th>Bruto</th><th>INSS</th><th>IRT</th><th>Líquido</th></tr></thead>
+          <thead><tr><th>Funcionário</th><th>Base</th><th>Subsídios</th><th>Bruto</th><th>INSS</th><th>IRT</th><th>Líquido</th><th>Recibo</th></tr></thead>
           <tbody>
             {run.payslips.map((slip: any) => (
               <tr key={slip.id}>
@@ -52,6 +53,7 @@ export default async function PayrollRunPage({ params }: { params: Promise<{ id:
                 <td className="tabular-nums">{money(Number(slip.inss))}</td>
                 <td className="tabular-nums">{money(Number(slip.irt))}</td>
                 <td className="tabular-nums font-semibold">{money(Number(slip.net))}</td>
+                <td data-mobile-actions><a href={`/api/rh/payroll/payslips/${slip.id}/pdf`} target="_blank" rel="noreferrer" className="inline-flex min-h-9 items-center rounded-lg border border-[#cdddeb] px-3 text-xs font-semibold text-[#021f87]">PDF</a></td>
               </tr>
             ))}
           </tbody>

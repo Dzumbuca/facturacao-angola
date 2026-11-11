@@ -19,16 +19,19 @@ export default async function RhEmployeesPage() {
   }, { userId: access.userId });
 
   return (
-    <EmployeesManager
-      initialEmployees={(data.employees as any[]).map((employee) => ({
-        ...employee,
-        birthDate: employee.birthDate ? employee.birthDate.toISOString() : null,
-        hireDate: employee.hireDate.toISOString(),
-        baseSalary: Number(employee.baseSalary),
-      }))}
-      departments={data.departments}
-      positions={data.positions}
-      shifts={data.shifts as any}
-    />
+    <div className="space-y-4">
+      <div className="flex justify-end"><a href="/api/rh/export/employees" className="inline-flex min-h-9 items-center rounded-lg border border-[#cdddeb] bg-white px-3 text-xs font-semibold text-[#021f87]">Exportar CSV</a></div>
+      <EmployeesManager
+        initialEmployees={(data.employees as any[]).map((employee) => ({
+          ...employee,
+          birthDate: employee.birthDate ? employee.birthDate.toISOString() : null,
+          hireDate: employee.hireDate.toISOString(),
+          baseSalary: Number(employee.baseSalary),
+        }))}
+        departments={data.departments}
+        positions={data.positions}
+        shifts={data.shifts as any}
+      />
+    </div>
   );
 }
