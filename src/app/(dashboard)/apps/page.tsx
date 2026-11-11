@@ -1,6 +1,12 @@
 import { auth } from '@/lib/auth';
 import { listTenantApplications } from '@/lib/platform-apps';
 
+const APP_HREF: Record<string, string> = {
+  'machine-facturas': '/dashboard',
+  wms: '/warehouses',
+  rh: '/rh/dashboard',
+};
+
 export default async function MachineAppsPage({ searchParams }: { searchParams?: Promise<{ wms?: string; rh?: string }> }) {
   const params = searchParams ? await searchParams : {};
   const session = await auth();
@@ -29,7 +35,14 @@ export default async function MachineAppsPage({ searchParams }: { searchParams?:
             <p className="text-sm text-gray-500">{a.description}</p>
             <div className="mt-3">
               {a.enabled ? (
-                <span className="text-green-600 text-sm font-medium">Activa</span>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-green-600 text-sm font-medium">Activa</span>
+                  {APP_HREF[a.slug] && (
+                    <a href={APP_HREF[a.slug]} className="inline-flex min-h-9 items-center rounded-lg bg-[#021f87] px-3 text-xs font-semibold text-white">
+                      Abrir →
+                    </a>
+                  )}
+                </div>
               ) : (
                 <span className="text-gray-400 text-sm">Não contratada</span>
               )}
