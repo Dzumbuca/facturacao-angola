@@ -1,9 +1,9 @@
 import { runWithTenant } from '@/lib/tenant-db';
-import { requireRhAccess } from '@/lib/rh-access';
+import { requireRhPage } from '@/lib/rh-page';
 import { EmployeesManager } from '@/components/rh/employees-manager';
 
 export default async function RhEmployeesPage() {
-  const access = await requireRhAccess();
+  const access = await requireRhPage();
   const data = await runWithTenant(access.tenantId, async (tx) => {
     const [employees, departments, positions, shifts] = await Promise.all([
       tx.rhEmployee.findMany({

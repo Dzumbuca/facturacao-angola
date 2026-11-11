@@ -1,9 +1,9 @@
 import { runWithTenant } from '@/lib/tenant-db';
-import { requireRhAccess } from '@/lib/rh-access';
+import { requireRhPage } from '@/lib/rh-page';
 import { MembersManager } from '@/components/rh/members-manager';
 
 export default async function RhMembersPage() {
-  const access = await requireRhAccess('members:write');
+  const access = await requireRhPage('members:write');
   const members = await runWithTenant(access.tenantId, (tx) => tx.rhMember.findMany({
     where: { tenantId: access.tenantId },
     include: { user: { select: { email: true, name: true } } },

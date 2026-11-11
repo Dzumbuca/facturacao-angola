@@ -1,9 +1,9 @@
 import { runWithTenant } from '@/lib/tenant-db';
-import { requireRhAccess } from '@/lib/rh-access';
+import { requireRhPage } from '@/lib/rh-page';
 import { LeavesManager } from '@/components/rh/leaves-manager';
 
 export default async function RhLeavesPage() {
-  const access = await requireRhAccess();
+  const access = await requireRhPage();
   const year = new Date().getFullYear();
   const start = new Date(Date.UTC(year, 0, 1));
   const end = new Date(Date.UTC(year + 1, 0, 1));

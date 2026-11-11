@@ -1,9 +1,9 @@
-import { requireRhAccess } from '@/lib/rh-access';
+import { requireRhPage } from '@/lib/rh-page';
 import { runWithTenant } from '@/lib/tenant-db';
 import { RhSettingsForm } from '@/components/rh/settings-form';
 
 export default async function RhSettingsPage() {
-  const access = await requireRhAccess();
+  const access = await requireRhPage();
   const settings = (await runWithTenant(access.tenantId, (tx) => tx.rhSettings.findUnique({ where: { tenantId: access.tenantId } }), { userId: access.userId })) as { vacationDaysPerYear: number | null } | null;
   return (
     <div className="space-y-5">

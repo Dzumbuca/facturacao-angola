@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { runWithTenant } from '@/lib/tenant-db';
-import { requireRhAccess } from '@/lib/rh-access';
+import { requireRhPage } from '@/lib/rh-page';
 import { rhFullName } from '@/lib/rh-service';
 
 function money(value: number) {
@@ -8,7 +8,7 @@ function money(value: number) {
 }
 
 export default async function RhDashboardPage() {
-  const access = await requireRhAccess();
+  const access = await requireRhPage();
   const data = await runWithTenant(access.tenantId, async (tx) => {
     const now = new Date();
     const in30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);

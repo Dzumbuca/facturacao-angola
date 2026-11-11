@@ -1,14 +1,14 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { runWithTenant } from '@/lib/tenant-db';
-import { requireRhAccess } from '@/lib/rh-access';
+import { requireRhPage } from '@/lib/rh-page';
 
 function money(value: number) {
   return new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', maximumFractionDigits: 2 }).format(Number(value) || 0);
 }
 
 export default async function PayrollRunPage({ params }: { params: Promise<{ id: string }> }) {
-  const access = await requireRhAccess();
+  const access = await requireRhPage();
   const { id } = await params;
   const run = await runWithTenant(access.tenantId, (tx) => tx.rhPayrollRun.findFirst({
     where: { id, tenantId: access.tenantId },

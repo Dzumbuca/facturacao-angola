@@ -1,9 +1,9 @@
 import { runWithTenant } from '@/lib/tenant-db';
-import { requireRhAccess } from '@/lib/rh-access';
+import { requireRhPage } from '@/lib/rh-page';
 import { PayrollManager } from '@/components/rh/payroll-manager';
 
 export default async function RhPayrollPage() {
-  const access = await requireRhAccess();
+  const access = await requireRhPage();
   const data = await runWithTenant(access.tenantId, async (tx) => {
     const [rulesets, runs] = await Promise.all([
       tx.rhPayrollRuleSet.findMany({ where: { tenantId: access.tenantId }, orderBy: { effectiveFrom: 'desc' } }),

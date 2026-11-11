@@ -1,9 +1,9 @@
 import { runWithTenant } from '@/lib/tenant-db';
-import { requireRhAccess } from '@/lib/rh-access';
+import { requireRhPage } from '@/lib/rh-page';
 import { PaymentsManager } from '@/components/rh/payments-manager';
 
 export default async function RhPaymentsPage() {
-  const access = await requireRhAccess();
+  const access = await requireRhPage();
   const data = await runWithTenant(access.tenantId, async (tx) => {
     const [batches, runs] = await Promise.all([
       tx.rhPaymentBatch.findMany({
