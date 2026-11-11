@@ -2661,6 +2661,8 @@ model RhEmployee {
   timeEntries RhTimeEntry[]
   leaveRequests RhLeaveRequest[]
   documents     RhDocument[]
+  salaryChanges RhSalaryChange[]
+  offboarding   RhOffboarding?
   payslips      RhPayslip[]
   paymentItems  RhPaymentItem[]
 
@@ -3144,4 +3146,45 @@ model RhDocumentTemplateVersion {
 
   @@unique([templateId, version])
   @@index([tenantId, templateId])
+}
+
+
+// Ciclo de vida — histórico salarial e desligamento.
+enum RhOffboardingStatus {
+  EM_PROCESSO
+  CONCLUIDO
+}
+
+model RhSalaryChange {
+  id              String   @id @default(uuid())
+  tenantId        String
+  employeeId      String
+  oldSalary       Decimal  @db.Decimal(14, 2)
+  newSalary       Decimal  @db.Decimal(14, 2)
+  effectiveDate   DateTime
+  reason          String?
+  createdByUserId String?
+  createdAt       DateTime @default(now())
+
+  employee RhEmployee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, employeeId, effectiveDate])
+}
+
+model RhOffboarding {
+  id              String             @id @default(uuid())
+  tenantId        String
+  employeeId      String             @unique
+  reason          String
+  lastDay         DateTime
+  status          RhOffboardingStatus @default(CONCLUIDO)
+  notes           String?
+  revokeAccess    Boolean            @default(false)
+  decidedByUserId String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  employee RhEmployee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, status])
 }

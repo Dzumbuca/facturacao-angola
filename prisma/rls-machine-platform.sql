@@ -153,3 +153,15 @@ DROP POLICY IF EXISTS "rh_doc_template_version_isolation" ON "RhDocumentTemplate
 CREATE POLICY "rh_doc_template_version_isolation" ON "RhDocumentTemplateVersion" FOR ALL
   USING ("tenantId" = current_setting('app.tenant_id', true))
   WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+
+-- Ciclo de vida: histórico salarial e desligamentos.
+ALTER TABLE "RhSalaryChange" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_salary_change_isolation" ON "RhSalaryChange";
+CREATE POLICY "rh_salary_change_isolation" ON "RhSalaryChange" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+ALTER TABLE "RhOffboarding" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_offboarding_isolation" ON "RhOffboarding";
+CREATE POLICY "rh_offboarding_isolation" ON "RhOffboarding" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
