@@ -15,11 +15,8 @@ type RhEmployeeStatus = 'ACTIVO' | 'SUSPENSO' | 'FERIAS' | 'CESSAO' | 'INACTIVO'
 
 
 function serializeEmployee(employee: any) {
-
-  const { pinHash, ...rest } = employee;
-
-  return { ...rest, baseSalary: Number(rest.baseSalary), hasPin: Boolean(pinHash) };
-
+  const { pinHash, bankAccount, bankIban, ...rest } = employee;
+  return { ...rest, baseSalary: Number(rest.baseSalary), hasPin: Boolean(pinHash), bankAccount: maskAccount(bankAccount), bankIban: maskAccount(bankIban) };
 }
 
 
