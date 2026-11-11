@@ -13,7 +13,7 @@ import { visibleNavGroups } from '@/lib/navigation';
 
 type NavLink = { href: string; label: string; icon: string };
 const groups: { title: string; links: NavLink[] }[] = [
-  { title: 'Principal', links: [{ href: '/', label: 'Dashboard', icon: 'grid' }] },
+  { title: 'Principal', links: [{ href: '/', label: 'Dashboard', icon: 'grid' }, { href: '/apps', label: 'Aplicações', icon: 'grid' }] },
   { title: 'Documentos Empresariais', links: [{ href: '/documentos', label: 'Documentos', icon: 'file' }] },
   { title: 'Ferramentas', links: [{ href: '/ferramentas', label: 'Centro de ferramentas', icon: 'tools' }] },
   { title: 'Operações', links: [{ href: '/invoices', label: 'Facturas', icon: 'file' }, { href: '/customers', label: 'Clientes', icon: 'users' }, { href: '/produtos', label: 'Produtos e serviços', icon: 'box' }, { href: '/warehouses', label: 'Armazéns', icon: 'building' }] },
@@ -22,6 +22,7 @@ const groups: { title: string; links: NavLink[] }[] = [
 ];
 const titles: Record<string, string> = {
   '/': 'Dashboard',
+  '/apps': 'Aplicações',
   '/invoices': 'Facturas',
   '/invoices/new': 'Emitir fatura',
   '/ferramentas': 'Centro de ferramentas',
