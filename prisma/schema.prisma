@@ -146,6 +146,7 @@ model Tenant {
 
   rhTimeEntries            RhTimeEntry[]
   rhJobOpenings            RhJobOpening[]
+  rhPerformanceCycles      RhPerformanceCycle[]
   rhDevices                RhDevice[]
   rhDocumentTemplates      RhDocumentTemplate[]
   rhDocuments              RhDocument[]
@@ -2671,6 +2672,7 @@ model RhEmployee {
   justifications RhAbsenceJustification[]
   payslips      RhPayslip[]
   paymentItems  RhPaymentItem[]
+  performanceReviews RhPerformanceReview[]
 
 
 
@@ -3312,4 +3314,66 @@ model RhCandidateEvent {
   candidate RhCandidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, candidateId])
+}
+
+
+// Avaliação de desempenho.
+enum RhReviewCycleStatus {
+  ABERTO
+  FECHADO
+}
+
+enum RhReviewStatus {
+  PENDENTE
+  ENTREGUE
+  VALIDADO
+}
+
+model RhPerformanceCycle {
+  id        String             @id @default(uuid())
+  tenantId  String
+  name      String
+  startsAt  DateTime
+  endsAt    DateTime?
+  status    RhReviewCycleStatus @default(ABERTO)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  tenant   Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  criteria RhPerfCriterion[]
+  reviews  RhPerformanceReview[]
+
+  @@index([tenantId, status])
+}
+
+model RhPerfCriterion {
+  id       String @id @default(uuid())
+  tenantId String
+  cycleId  String
+  name     String
+  weight   Int    @default(1)
+  order    Int    @default(0)
+
+  cycle RhPerformanceCycle @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, cycleId, order])
+}
+
+model RhPerformanceReview {
+  id           String         @id @default(uuid())
+  tenantId     String
+  cycleId      String
+  employeeId   String
+  reviewerName String?
+  score        Int?
+  comments     String?
+  status       RhReviewStatus @default(PENDENTE)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  cycle    RhPerformanceCycle @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  employee RhEmployee         @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([cycleId, employeeId])
+  @@index([tenantId, cycleId, status])
 }

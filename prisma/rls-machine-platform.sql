@@ -194,3 +194,20 @@ DROP POLICY IF EXISTS "rh_candidate_event_isolation" ON "RhCandidateEvent";
 CREATE POLICY "rh_candidate_event_isolation" ON "RhCandidateEvent" FOR ALL
   USING ("tenantId" = current_setting('app.tenant_id', true))
   WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+
+-- Avaliação de desempenho.
+ALTER TABLE "RhPerformanceCycle" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_performance_cycle_isolation" ON "RhPerformanceCycle";
+CREATE POLICY "rh_performance_cycle_isolation" ON "RhPerformanceCycle" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+ALTER TABLE "RhPerfCriterion" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_perf_criterion_isolation" ON "RhPerfCriterion";
+CREATE POLICY "rh_perf_criterion_isolation" ON "RhPerfCriterion" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+ALTER TABLE "RhPerformanceReview" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_performance_review_isolation" ON "RhPerformanceReview";
+CREATE POLICY "rh_performance_review_isolation" ON "RhPerformanceReview" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
