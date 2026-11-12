@@ -6,6 +6,7 @@ import { maskAccount } from '@/lib/rh-service';
 import { hasRhPermission } from '@/lib/rh-policy';
 import { OffboardDialog } from '@/components/rh/offboard-dialog';
 import { DeductionsManager } from '@/components/rh/deductions-manager';
+import { SignedImage } from '@/components/rh/signed-image';
 
 function money(value: unknown) {
   return new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', maximumFractionDigits: 2 }).format(Number(value) || 0);
@@ -59,10 +60,18 @@ export default async function EmployeeDetailPage({ params }: { params: Promise<{
       )}
 
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
-        <div>
-          <p className="text-sm text-[#708195]">{e.employeeNumber} · {STATUS_LABEL[e.status] ?? e.status}</p>
-          <h1 className="mt-1 text-2xl font-bold text-[#1c2d3f]">{e.firstName} {e.lastName}</h1>
-          <p className="mt-1 text-sm text-[#607286]">{e.position?.title ?? '—'} · {e.department?.name ?? '—'} · {e.shift ? `${e.shift.name} ${e.shift.startTime}–${e.shift.endTime}` : 'Sem horário'}</p>
+        <div className="flex items-center gap-4">
+          <SignedImage
+            path={e.photoUrl}
+            alt={`${e.firstName} ${e.lastName}`}
+            className="h-20 w-20 rounded-full border border-[#e1e8f0] object-cover"
+            fallback={<div className="grid h-20 w-20 place-items-center rounded-full bg-[#eef2ff] text-xl font-bold text-[#021f87]">{e.firstName.charAt(0).toUpperCase()}{e.lastName.charAt(0).toUpperCase()}</div>}
+          />
+          <div>
+            <p className="text-sm text-[#708195]">{e.employeeNumber} · {STATUS_LABEL[e.status] ?? e.status}</p>
+            <h1 className="mt-1 text-2xl font-bold text-[#1c2d3f]">{e.firstName} {e.lastName}</h1>
+            <p className="mt-1 text-sm text-[#607286]">{e.position?.title ?? '—'} · {e.department?.name ?? '—'} · {e.shift ? `${e.shift.name} ${e.shift.startTime}–${e.shift.endTime}` : 'Sem horário'}</p>
+          </div>
         </div>
         {canWrite && !data.offboarding && (
           <OffboardDialog employeeId={id} employeeName={`${e.firstName} ${e.lastName}`} />
