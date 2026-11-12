@@ -45,7 +45,7 @@ export function RhShell({ children, canManageMembers = false }: { children: Reac
     <div className="min-h-dvh bg-[#f5f7fb] text-[#1c2d3f]">
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-[236px] flex-col border-r border-[#dfe7f0] bg-white px-4 py-5 md:flex">
         <Link href="/rh/dashboard" className="flex items-center gap-3 rounded-lg px-2">
-          <img src="/icons/rh-icon-192.png" width="40" height="40" alt="Machine RH" className="h-10 w-10 rounded-lg" />
+          <img src="/icons/rh-logo.png" alt="Machine RH" className="h-10 w-auto rounded-lg object-contain" />
           <span>
             <strong className="block text-[15px] tracking-[.04em] text-[#021f87]">MACHINE RH</strong>
             <span className="text-[10px] uppercase tracking-[.12em] text-[#708195]">Recursos Humanos</span>
@@ -92,7 +92,7 @@ export function RhShell({ children, canManageMembers = false }: { children: Reac
       <div className="md:ml-[236px]">
         <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-[#dfe7f0] bg-white/95 px-4 py-2.5 backdrop-blur md:px-7 md:py-3.5">
           <div className="flex min-w-0 items-center gap-2.5">
-            <img src="/icons/rh-icon-192.png" width="32" height="32" alt="Machine RH" className="h-8 w-8 rounded-md md:hidden" />
+            <img src="/icons/rh-logo.png" alt="Machine RH" className="h-8 w-auto object-contain md:hidden" />
             <div className="min-w-0">
               <p className="hidden text-[10px] font-semibold uppercase tracking-[.14em] text-[#8a99ab] sm:block">Machine RH</p>
               <p className="truncate text-sm font-bold text-[#1c2d3f] md:text-base">
