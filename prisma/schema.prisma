@@ -2028,6 +2028,12 @@ model SubscriptionPlan {
 
   priceYearly      Decimal?             @db.Decimal(12, 2)
 
+  priceQuarterly   Decimal?             @db.Decimal(12, 2)
+
+  priceSemiannual  Decimal?             @db.Decimal(12, 2)
+
+  previousPriceKz  Decimal?             @db.Decimal(12, 2)
+
   billingCycle     String               @default("MONTHLY")
 
   isBundle         Boolean              @default(false)

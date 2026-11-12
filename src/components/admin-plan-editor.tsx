@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { upsertCommercialPlan, togglePlanModule, setPlanLimit, setPlanCapability, setPlanActive } from '@/lib/admin-planos';
+import { upsertCommercialPlan, togglePlanModule, setPlanLimit, setPlanActive } from '@/lib/admin-planos';
+import { computePlanPricingSummary } from '@/lib/plan-pricing-comparison';
 
 type AdminPlan = {
   id: string; slug: string; name: string; description: string | null;
-  priceKz: number; priceYearly: number | null; isBundle: boolean; isActive: boolean;
+  priceKz: number; priceQuarterly: number | null; priceSemiannual: number | null; priceYearly: number | null;
+  previousPriceKz: number | null; billingCycle: string; isBundle: boolean; isActive: boolean;
   applications: { slug: string; name: string; isCore: boolean }[];
   limits: { metric: string; value: number | null }[];
   capabilities: { capability: string; enabled: boolean }[];
@@ -15,6 +17,7 @@ const METRICS = [
   ['max_warehouses', 'Máx. armazéns activos'],
   ['max_products', 'Máx. produtos'],
   ['max_clients', 'Máx. clientes'],
+  ['max_suppliers', 'Máx. fornecedores'],
   ['max_invoices_per_month', 'Máx. facturas/mês'],
 ] as const;
 
@@ -30,8 +33,21 @@ export function AdminPlanEditor({ plans, applications }: { plans: AdminPlan[]; a
   const [newBundle, setNewBundle] = useState(false);
   const [reason, setReason] = useState('');
 
+  const fmt = (value: number) => new Intl.NumberFormat('pt-AO').format(value);
+
   function priceText(p: AdminPlan) {
     return p.priceKz === 0 ? 'Gratuito' : `${new Intl.NumberFormat('pt-AO').format(p.priceKz)} Kz/mês`;
+  }
+
+  function equivalentMonthly(price: number | null, periods: number) {
+    if (price === null || !Number.isFinite(price)) return null;
+    return Math.round(price / periods);
+  }
+
+  function discountInfo(p: AdminPlan) {
+    const summary = computePlanPricingSummary({ priceKz: p.priceKz, previousPriceKz: p.previousPriceKz });
+    if (summary.discountSaving === null) return null;
+    return { saving: summary.discountSaving, pct: summary.discountPercentage ?? 0 };
   }
 
   async function run(key: string, fn: () => Promise<{ ok: boolean; message: string }>) {
@@ -57,7 +73,29 @@ export function AdminPlanEditor({ plans, applications }: { plans: AdminPlan[]; a
   async function savePlan(id: string, data: FormData) {
     const priceKz = Number(String(data.get('priceKz') ?? '').replace(',', '.'));
     if (!Number.isFinite(priceKz) || priceKz < 0) return setError('Preço inválido.');
-    await run('save-' + id, () => upsertCommercialPlan({ id, name: String(data.get('name') ?? ''), description: String(data.get('description') ?? ''), priceKz, isBundle: data.get('isBundle') === 'on' }));
+    const parseAnyPrice = (key: string): number | null => {
+      const raw = String(data.get(key) ?? '').trim();
+      if (!raw) return null;
+      const parsed = Number(raw.replace(',', '.'));
+      if (!Number.isFinite(parsed) || parsed < 0) throw new Error(`Valor inválido no preço: ${key}`);
+      return Math.round(parsed);
+    };
+    try {
+      const payload = {
+        id,
+        name: String(data.get('name') ?? ''),
+        description: String(data.get('description') ?? ''),
+        priceKz: Math.round(priceKz),
+        priceQuarterly: parseAnyPrice('priceQuarterly'),
+        priceSemiannual: parseAnyPrice('priceSemiannual'),
+        priceYearly: parseAnyPrice('priceYearly'),
+        previousPriceKz: parseAnyPrice('previousPriceKz'),
+        isBundle: data.get('isBundle') === 'on',
+      };
+      await run('save-' + id, () => upsertCommercialPlan(payload));
+    } catch (exception) {
+      setError(exception instanceof Error ? exception.message : 'Preço inválido.');
+    }
   }
 
   async function toggleApp(id: string, slug: string, enabled: boolean) {
@@ -86,7 +124,11 @@ export function AdminPlanEditor({ plans, applications }: { plans: AdminPlan[]; a
         {plans.map((plan) => (
           <section key={plan.id} className="rounded-xl border border-[#e1e8f0] bg-white p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div><h2 className="text-xl font-bold text-[#1c2d3f]">{plan.name}</h2><p className="text-sm text-[#607286]">{plan.slug} · {priceText(plan)} · {plan.isBundle ? 'Bundle' : 'Avulso'} · {plan.isActive ? 'Activo' : 'Desactivado'}</p></div>
+              <div><h2 className="text-xl font-bold text-[#1c2d3f]">{plan.name}</h2><p className="text-sm text-[#607286]">{plan.slug} · {priceText(plan)} · {plan.isBundle ? 'Bundle' : 'Avulso'} · {plan.isActive ? 'Activo' : 'Desactivado'}</p>
+            {plan.priceQuarterly !== null && <p className="text-xs text-[#708195]">Trimestral {fmt(plan.priceQuarterly)} (≡ {equivalentMonthly(plan.priceQuarterly, 3)} Kz/mês)</p>}
+            {plan.priceSemiannual !== null && <p className="text-xs text-[#708195]">Semestral {fmt(plan.priceSemiannual)} (≡ {equivalentMonthly(plan.priceSemiannual, 6)} Kz/mês)</p>}
+            {plan.priceYearly !== null && <p className="text-xs text-[#708195]">Anual {fmt(plan.priceYearly)} (≡ {equivalentMonthly(plan.priceYearly, 12)} Kz/mês)</p>}
+            {discountInfo(plan) && <p className="text-xs font-semibold text-[#248468]">Economia {fmt(discountInfo(plan)!.saving)} (−{discountInfo(plan)!.pct}%) · preço anterior {fmt(plan.previousPriceKz!)}</p>}</div>
               <button type="button" onClick={() => run('toggle-' + plan.id, () => setPlanActive(plan.id, !plan.isActive))} disabled={busy === 'toggle-' + plan.id} className="rounded-lg border border-[#cdddeb] px-3 py-2 text-xs font-semibold text-[#021f87] disabled:opacity-60">{plan.isActive ? 'Desactivar' : 'Activar'}</button>
             </div>
             <p className="mt-1 text-xs text-[#708195]">{plan.description}</p>
@@ -94,7 +136,13 @@ export function AdminPlanEditor({ plans, applications }: { plans: AdminPlan[]; a
             <form action={(d) => savePlan(plan.id, d)} className="mt-3 grid gap-2 rounded-xl border border-[#eef2f6] p-3">
               <label><span className="app-label">Nome</span><input name="name" defaultValue={plan.name} className="app-input" required /></label>
               <label><span className="app-label">Descrição</span><input name="description" defaultValue={plan.description ?? ''} className="app-input" /></label>
-              <label><span className="app-label">Preço Kz/mês</span><input name="priceKz" inputMode="decimal" defaultValue={String(plan.priceKz).replace('.', ',')} className="app-input" required /></label>
+              <label><span className="app-label">Preço mensal (Kz)</span><input name="priceKz" inputMode="decimal" defaultValue={String(plan.priceKz).replace('.', ',')} className="app-input" required /></label>
+              <div className="grid grid-cols-2 gap-2">
+                <label><span className="app-label">Preço trimestral</span><input name="priceQuarterly" inputMode="decimal" defaultValue={plan.priceQuarterly == null ? '' : String(plan.priceQuarterly).replace('.', ',')} placeholder="—" className="app-input" /></label>
+                <label><span className="app-label">Preço semestral</span><input name="priceSemiannual" inputMode="decimal" defaultValue={plan.priceSemiannual == null ? '' : String(plan.priceSemiannual).replace('.', ',')} placeholder="—" className="app-input" /></label>
+                <label><span className="app-label">Preço anual</span><input name="priceYearly" inputMode="decimal" defaultValue={plan.priceYearly == null ? '' : String(plan.priceYearly).replace('.', ',')} placeholder="—" className="app-input" /></label>
+                <label><span className="app-label">Preço anterior</span><input name="previousPriceKz" inputMode="decimal" defaultValue={plan.previousPriceKz == null ? '' : String(plan.previousPriceKz).replace('.', ',')} placeholder="—" className="app-input" /></label>
+              </div>
               <label className="flex items-center gap-2 text-xs text-[#52667a]">Bundle<input name="isBundle" type="checkbox" defaultChecked={plan.isBundle} /></label>
               <button type="submit" disabled={busy === 'save-' + plan.id} className="self-end rounded-lg bg-[#021f87] px-3 py-2 text-xs font-semibold text-white">{busy === 'save-' + plan.id ? 'A guardar…' : 'Guardar alterações'}</button>
             </form>

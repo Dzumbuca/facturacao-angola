@@ -78,7 +78,7 @@ describe('entitlements', () => {
   });
 
   describe('acesso ao WMS por pacote', () => {
-    const base = { maxStockProducts: null, maxProducts: null, maxClients: null, maxInvoicesPerMonth: null, capabilities: { transfers: false } };
+    const base = { maxStockProducts: null, maxProducts: null, maxClients: null, maxSuppliers: null, maxInvoicesPerMonth: null, capabilities: { transfers: false } };
 
     it('Grátis sem módulo → bloqueado', () => {
       expect(decideWmsAccess({ ...base, planSlug: 'gratis', maxWarehouses: 0, grandfathered: false }, false).allowed).toBe(false);

@@ -2,7 +2,6 @@
 
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyPrisma = any;
 import { requirePlatformPermission } from './admin-auth';
 import { validateAdminReason } from './admin-actions-core';
@@ -26,7 +25,11 @@ export async function listCommercialPlans() {
     name: plan.name,
     description: plan.description,
     priceKz: Number(plan.priceKz),
+    priceQuarterly: plan.priceQuarterly == null ? null : Number(plan.priceQuarterly),
+    priceSemiannual: plan.priceSemiannual == null ? null : Number(plan.priceSemiannual),
     priceYearly: plan.priceYearly == null ? null : Number(plan.priceYearly),
+    previousPriceKz: plan.previousPriceKz == null ? null : Number(plan.previousPriceKz),
+    billingCycle: plan.billingCycle,
     isBundle: plan.isBundle,
     isActive: plan.isActive,
     applications: plan.planApplications.map((pa: AnyPrisma) => ({ slug: pa.application.slug, name: pa.application.name, isCore: pa.application.isCore })),
@@ -42,7 +45,10 @@ export async function listApplications(): Promise<AdminPlanApp[]> {
 }
 
 export async function upsertCommercialPlan(input: {
-  id?: string; slug?: string; name: string; description: string; priceKz: number; billingCycle?: string; isBundle?: boolean;
+  id?: string; slug?: string; name: string; description: string;
+  priceKz: number; priceQuarterly?: number | null; priceSemiannual?: number | null;
+  priceYearly?: number | null; previousPriceKz?: number | null;
+  billingCycle?: string; isBundle?: boolean;
 }): Promise<ActionResult> {
   const actor = await requirePlatformPermission('companies.update');
   const reason = validateAdminReason('Plano comercial alterado');
@@ -54,7 +60,11 @@ export async function upsertCommercialPlan(input: {
       if (input.id) {
         const existing = await tx.subscriptionPlan.findUnique({ where: { id: input.id } });
         if (!existing) throw new Error('not-found');
-        const update: any = { name, description: input.description, priceKz: input.priceKz, isBundle: !!input.isBundle };
+        const update: any = { name, description: input.description, priceKz: input.priceKz, isBundle: !!input.isBundle,
+          priceQuarterly: input.priceQuarterly ?? null,
+          priceSemiannual: input.priceSemiannual ?? null,
+          priceYearly: input.priceYearly ?? null,
+          previousPriceKz: input.previousPriceKz ?? null };
         if (!existing.slug.startsWith('machine-')) {
           // slug nunca muda automaticamente (evita quebrar FK/assinaturas)
           if (input.slug?.trim() && input.slug.trim() !== existing.slug) return; // ignorar mudança silenciosa de slug
@@ -64,7 +74,7 @@ export async function upsertCommercialPlan(input: {
       } else {
         const slug = (input.slug ?? input.name).trim().toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '');
         if (!slug) throw new Error('slug inválido');
-        await tx.subscriptionPlan.create({ data: { slug, name, description: input.description, priceKz: input.priceKz, billingCycle: input.billingCycle ?? 'MONTHLY', isBundle: !!input.isBundle } });
+        await tx.subscriptionPlan.create({ data: { slug, name, description: input.description, priceKz: input.priceKz, billingCycle: input.billingCycle ?? 'MONTHLY', isBundle: !!input.isBundle, priceQuarterly: input.priceQuarterly ?? null, priceSemiannual: input.priceSemiannual ?? null, priceYearly: input.priceYearly ?? null, previousPriceKz: input.previousPriceKz ?? null } });
         const created = await tx.subscriptionPlan.findUnique({ where: { slug } });
         await tx.adminAuditLog.create({ data: { actorUserId: actor.id, action: 'PLAN_CREATED', resourceType: 'PLAN', resourceId: created?.id, reason, metadata: { name, slug, priceKz: input.priceKz } } });
       }

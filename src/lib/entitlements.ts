@@ -16,6 +16,7 @@ export type WmsLimits = {
   maxStockProducts: number | null;
   maxProducts: number | null;
   maxClients: number | null;
+  maxSuppliers: number | null;
   maxInvoicesPerMonth: number | null;
   capabilities: PlanCapabilities;
   grandfathered: boolean;
@@ -27,6 +28,7 @@ const GRANDFATHERED: WmsLimits = {
   maxStockProducts: null,
   maxProducts: null,
   maxClients: null,
+  maxSuppliers: null,
   maxInvoicesPerMonth: null,
   capabilities: { transfers: true },
   grandfathered: true,
@@ -38,6 +40,7 @@ const GRATIS: WmsLimits = {
   maxStockProducts: null,
   maxProducts: 30,
   maxClients: 30,
+  maxSuppliers: null,
   maxInvoicesPerMonth: 15,
   capabilities: { transfers: false },
   grandfathered: false,
@@ -61,6 +64,7 @@ function toLimits(plan: {
     maxStockProducts: valueOf('max_stock_products'),
     maxProducts: valueOf('max_products'),
     maxClients: valueOf('max_clients'),
+    maxSuppliers: valueOf('max_suppliers'),
     maxInvoicesPerMonth: valueOf('max_invoices_per_month'),
     capabilities: { transfers: capabilityOf('transfers') },
     grandfathered: false,
@@ -105,7 +109,7 @@ export async function getWarehouseLimitStatus(
   return { allowed: false, limit: limits.maxWarehouses, used };
 }
 
-export type CountLimitMetric = 'max_products' | 'max_clients';
+export type CountLimitMetric = 'max_products' | 'max_clients' | 'max_suppliers';
 
 export async function getCountLimitStatus(
   tx: any,
@@ -114,7 +118,7 @@ export async function getCountLimitStatus(
   used: number,
 ): Promise<{ allowed: true; limit: number | null } | { allowed: false; limit: number; used: number }> {
   const limits = await getTenantWmsLimits(tenantId, tx);
-  const limit = metric === 'max_products' ? limits.maxProducts : limits.maxClients;
+  const limit = metric === 'max_products' ? limits.maxProducts : metric === 'max_clients' ? limits.maxClients : limits.maxSuppliers;
   if (limit === null || used < limit) return { allowed: true, limit };
   return { allowed: false, limit, used };
 }
