@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { FormError } from '@/components/rh/form-kit';
 type Position = {
   id: string; title: string; code: string | null; level: number | null;
   departmentId: string | null;
@@ -67,7 +68,7 @@ export function PositionsManager({ positions, departments }: {
             <div><label htmlFor="pos-level" className="app-label">Nível</label><input id="pos-level" name="level" type="number" min="1" className="app-input" /></div>
             <div className="sm:col-span-2"><label htmlFor="pos-desc" className="app-label">Descrição</label><input id="pos-desc" name="description" className="app-input" /></div>
           </div>
-          {error && <p role="alert" className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-[#a83939]">{error}</p>}
+          <FormError>{error}</FormError>
           <div className="mt-3 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <button type="button" onClick={() => setOpen(false)} className="min-h-10 rounded-lg border border-[#cdddeb] px-4 text-sm font-semibold text-[#52667a]">Cancelar</button>
             <button type="submit" disabled={saving} className="min-h-10 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white disabled:opacity-60">{saving ? 'A guardar…' : 'Guardar'}</button>

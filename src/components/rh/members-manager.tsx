@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { FormError } from '@/components/rh/form-kit';
 type Member = { id: string; role: string; user: { email: string; name: string | null } };
 const ROLES: Record<string, string> = { ADMIN: 'Administrador RH', MANAGER: 'Gestor RH', FINANCE: 'Financeiro' };
 
@@ -61,7 +62,7 @@ export function MembersManager({ members }: { members: Member[] }) {
           <div><label htmlFor="member-role" className="app-label">Função</label><select id="member-role" className="app-input" value={role} onChange={(e) => setRole(e.target.value)}>{Object.entries(ROLES).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
         </div>
         {message && <p role="status" className="mt-2 text-xs font-medium text-[#267256]">{message}</p>}
-        {error && <p role="alert" className="mt-2 text-xs font-medium text-[#a83939]">{error}</p>}
+        <FormError>{error}</FormError>
         <div className="mt-3 flex justify-end"><button type="submit" disabled={saving} className="min-h-10 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white disabled:opacity-60">{saving ? 'A guardar…' : 'Atribuir função'}</button></div>
       </form>
 

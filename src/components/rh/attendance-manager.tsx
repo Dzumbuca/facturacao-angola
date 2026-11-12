@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { FormError } from '@/components/rh/form-kit';
 type Employee = { id: string; firstName: string; lastName: string; employeeNumber: string; hasPin: boolean };
 type Entry = {
   id: string; type: string; source: string; occurredAt: string; lateMinutes: number; shiftName: string | null;
@@ -104,7 +105,7 @@ export function AttendanceManager({ entries, employees }: { entries: Entry[]; em
           ))}
         </div>
         {message && <p role="status" className="mt-3 rounded-lg bg-[#eff9f4] px-3 py-2 text-sm font-medium text-[#267256]">{message}</p>}
-        {error && <p role="alert" className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-[#a83939]">{error}</p>}
+        <FormError>{error}</FormError>
       </section>
 
       <section className="rounded-xl border border-[#e1e8f0] bg-white">

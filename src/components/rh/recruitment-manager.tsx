@@ -4,6 +4,7 @@ import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
+import { FormError } from '@/components/rh/form-kit';
 const STATUS_LABEL: Record<string, string> = {
   ABERTA: 'Aberta', ENCERRADA: 'Encerrada', CANCELADA: 'Cancelada',
   RECEBIDA: 'Recebida', TRIAGEM: 'Triagem', ENTREVISTA: 'Entrevista',
@@ -151,7 +152,7 @@ export function RecruitmentManager({ openings, candidates, departments, position
         <p className="mt-1 text-sm text-[#607286]">Vagas → candidaturas → triagem → entrevista → avaliação → admissão.</p>
       </div>
 
-      {error && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-[#a83939]">{error}</p>}
+      <FormError>{error}</FormError>
 
       <div className="grid gap-5 lg:grid-cols-2">
         <form onSubmit={createOpening} className="rounded-xl border border-[#dfe7f0] bg-white p-4">

@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from 'react';
 
+import { FormError } from '@/components/rh/form-kit';
 type Cycle = { id: string; name: string; startsAt: string; endsAt: string | null };
 
 export function SelfAssessmentSection({ cycles, existing }: { cycles: Cycle[]; existing: Record<string, { selfScore: number | null; comments: string | null } | null> }) {
@@ -62,7 +63,7 @@ export function SelfAssessmentSection({ cycles, existing }: { cycles: Cycle[]; e
           <label htmlFor="sa-comments" className="app-label">Comentários</label>
           <textarea id="sa-comments" className="app-input min-h-20" value={comments} onChange={(e) => setComments(e.target.value)} placeholder="O que correu bem, o que pode melhorar…" />
         </div>
-        {error && <p role="alert" className="sm:col-span-2 text-xs font-medium text-[#a83939]">{error}</p>}
+        <FormError>{error}</FormError>
         {message && <p role="status" className="sm:col-span-2 text-xs font-medium text-[#267256]">{message}</p>}
         <div className="flex justify-end sm:col-span-2">
           <button type="submit" disabled={saving} className="min-h-10 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white disabled:opacity-60">{saving ? 'A guardar…' : 'Guardar autoavaliação'}</button>

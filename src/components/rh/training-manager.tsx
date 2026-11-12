@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { FormError } from '@/components/rh/form-kit';
 type Enrollment = { id: string; status: string; score: number | null; employee: { firstName: string; lastName: string; employeeNumber: string; position: { title: string } | null } };
 type Course = { id: string; title: string; trainerName: string | null; startDate: string; endDate: string | null; cargaHoras: number; location: string | null; status: string; enrollments: Enrollment[] };
 type Employee = { id: string; firstName: string; lastName: string; employeeNumber: string };
@@ -104,7 +105,7 @@ export function TrainingManager({ courses, employees, positions }: { courses: Co
         <p className="mt-1 text-sm text-[#607286]">Cursos, inscrições, participação e conclusão.</p>
       </div>
 
-      {error && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-[#a83939]">{error}</p>}
+      <FormError>{error}</FormError>
 
       <div className="grid gap-5 lg:grid-cols-2">
         <form onSubmit={createCourse} className="rounded-xl border border-[#dfe7f0] bg-white p-4">

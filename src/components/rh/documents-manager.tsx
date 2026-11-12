@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { FormError } from '@/components/rh/form-kit';
 type Document = {
   id: string; title: string; status: string; type: string; createdAt: string;
   employee: { id: string; firstName: string; lastName: string; employeeNumber: string } | null;
@@ -78,7 +79,7 @@ export function DocumentsManager({ documents, templates, employees }: {
           <div><label htmlFor="doc-title" className="app-label">Título (opcional)</label><input id="doc-title" className="app-input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Usa o nome do modelo" /></div>
         </div>
         {message && <p role="status" className="mt-3 rounded-lg bg-[#eff9f4] px-3 py-2 text-sm text-[#267256]">{message}</p>}
-        {error && <p role="alert" className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-[#a83939]">{error}</p>}
+        <FormError>{error}</FormError>
         <div className="mt-3 flex justify-end">
           <button type="submit" disabled={saving || templates.length === 0} className="min-h-10 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white disabled:opacity-50">{saving ? 'A gerar…' : 'Gerar rascunho'}</button>
         </div>

@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { FormError } from '@/components/rh/form-kit';
 type Device = { id: string; name: string; isActive: boolean; lastSeenAt: string | null; createdAt: string };
 
 function date(value: string | null) {
@@ -64,7 +65,7 @@ export function DevicesManager({ devices }: { devices: Device[] }) {
           <input id="device-name" className="app-input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Recepção, Loja 1…" required />
           <button type="submit" disabled={saving} className="min-h-11 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white disabled:opacity-60">{saving ? 'A registar…' : 'Registar dispositivo'}</button>
         </div>
-        {error && <p role="alert" className="mt-2 text-xs font-medium text-[#a83939]">{error}</p>}
+        <FormError>{error}</FormError>
       </form>
 
       {issued && (

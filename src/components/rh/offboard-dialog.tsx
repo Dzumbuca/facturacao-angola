@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { FormError } from '@/components/rh/form-kit';
 export function OffboardDialog({ employeeId, employeeName }: { employeeId: string; employeeName: string }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -71,7 +72,7 @@ export function OffboardDialog({ employeeId, employeeName }: { employeeId: strin
                 Revogar acesso ao portal se o funcionário tiver utilizador com o mesmo email.
               </label>
             </div>
-            {error && <p role="alert" className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-[#a83939]">{error}</p>}
+            <FormError>{error}</FormError>
             <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <button type="button" onClick={() => setOpen(false)} className="min-h-10 rounded-lg border border-[#cdddeb] px-4 text-sm font-semibold text-[#52667a]">Cancelar</button>
               <button type="submit" disabled={saving} className="min-h-10 rounded-lg bg-[#7a2f2f] px-4 text-sm font-semibold text-white disabled:opacity-60">{saving ? 'A desligar…' : 'Confirmar desligamento'}</button>

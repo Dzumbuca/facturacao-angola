@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
+import { FormError } from '@/components/rh/form-kit';
 const ACTIONS: { type: string; label: string; tone: string }[] = [
   { type: 'ENTRADA', label: 'Entrada', tone: 'bg-[#0f6b4f]' },
   { type: 'SAIDA_ALMOCO', label: 'Saída almoço', tone: 'bg-[#8a5a00]' },
@@ -76,7 +77,7 @@ export function KioskManager() {
           ))}
         </div>
         {message && <p role="status" className="mt-3 rounded-lg bg-[#eff9f4] px-3 py-2 text-sm font-medium text-[#267256]">{message}</p>}
-        {error && <p role="alert" className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-[#a83939]">{error}</p>}
+        <FormError>{error}</FormError>
       </div>
 
       <div className="rounded-xl border border-[#e1e8f0] bg-white p-4">

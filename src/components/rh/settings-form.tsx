@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from 'react';
 
+import { FormError } from '@/components/rh/form-kit';
 export function RhSettingsForm({ initial }: { initial: number | null }) {
   const [value, setValue] = useState(initial === null ? '' : String(initial));
   const [saving, setSaving] = useState(false);
@@ -36,7 +37,7 @@ export function RhSettingsForm({ initial }: { initial: number | null }) {
       </div>
       <p className="mt-2 text-xs text-[#708195]">Deixar vazio para não aplicar saldo (fica apenas o histórico de dias).</p>
       {message && <p role="status" className="mt-2 text-xs font-medium text-[#267256]">{message}</p>}
-      {error && <p role="alert" className="mt-2 text-xs font-medium text-[#a83939]">{error}</p>}
+      <FormError>{error}</FormError>
     </form>
   );
 }

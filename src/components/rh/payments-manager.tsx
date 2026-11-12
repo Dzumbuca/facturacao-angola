@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { FormError } from '@/components/rh/form-kit';
 type Batch = {
   id: string; provider: string; status: string; total: number; reference: string | null;
   run: { period: string; status: string }; _count: { items: number };
@@ -75,7 +76,7 @@ export function PaymentsManager({ batches, runs }: { batches: Batch[]; runs: Run
         </div>
         {runs.length === 0 && <p className="mt-2 text-xs text-[#8a5a00]">Não há processamentos aprovados disponíveis.</p>}
         {message && <p role="status" className="mt-2 text-xs font-medium text-[#267256]">{message}</p>}
-        {error && <p role="alert" className="mt-2 text-xs font-medium text-[#a83939]">{error}</p>}
+        <FormError>{error}</FormError>
         <div className="mt-3 flex justify-end"><button type="submit" disabled={saving || runs.length === 0} className="min-h-10 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white disabled:opacity-50">{saving ? 'A criar…' : 'Criar lote'}</button></div>
       </form>
 

@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { FormError } from '@/components/rh/form-kit';
 type Template = { id: string; name: string; type: string; body: string; isActive: boolean; version: number; legalStatus?: string };
 
 const TYPE_LABEL: Record<string, string> = {
@@ -89,7 +90,7 @@ export function TemplatesManager({ templates }: { templates: Template[] }) {
           <textarea id="tpl-body" className="app-input min-h-40 font-mono text-xs" value={body} onChange={(e) => setBody(e.target.value)} placeholder={'Ex.: A empresa {{empresa_nome}} (NIF {{empresa_nif}}) declara que {{funcionario_nome}}, BI {{funcionario_bi}}, exerce a função de {{cargo}}.'} required />
           <p className="mt-1 text-xs text-[#708195]">Variáveis: {'{{empresa_nome}}'}, {'{{empresa_nif}}'}, {'{{funcionario_nome}}'}, {'{{funcionario_bi}}'}, {'{{cargo}}'}, {'{{departamento}}'}, {'{{salario_base}}'}, {'{{data_inicio}}'}, {'{{data_fim}}'}.</p>
         </div>
-        {error && <p role="alert" className="mt-2 text-xs font-medium text-[#a83939]">{error}</p>}
+        <FormError>{error}</FormError>
         <div className="mt-3 flex justify-end">
           <button type="submit" disabled={saving} className="min-h-10 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white disabled:opacity-60">{saving ? 'A guardar…' : editing ? 'Guardar nova versão' : 'Guardar modelo'}</button>
         </div>

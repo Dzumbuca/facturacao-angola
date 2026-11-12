@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { FormError } from '@/components/rh/form-kit';
 type Deduction = { id: string; description: string; type: string; amount: number; remainingInstallments: number | null; active: boolean };
 
 const TYPE_LABEL: Record<string, string> = { ADIANTAMENTO: 'Adiantamento', EMPRESTIMO: 'Empréstimo', OUTRO: 'Outro' };
@@ -80,7 +81,7 @@ export function DeductionsManager({ employeeId, deductions, canWrite }: { employ
             <label htmlFor="ded-installments" className="app-label">Prestações (vazio = indefinido)</label>
             <input id="ded-installments" name="installments" type="number" min="1" className="app-input" placeholder="3" />
           </div>
-          {error && <p role="alert" className="sm:col-span-4 text-xs font-medium text-[#a83939]">{error}</p>}
+          <FormError>{error}</FormError>
           <div className="flex items-end justify-end sm:col-span-2">
             <button type="submit" disabled={busy === 'create'} className="min-h-10 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white disabled:opacity-60">{busy === 'create' ? 'A criar…' : 'Adicionar'}</button>
           </div>

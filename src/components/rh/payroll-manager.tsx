@@ -4,6 +4,7 @@ import { useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { FormError } from '@/components/rh/form-kit';
 type RuleSet = { id: string; name: string; effectiveFrom: string; status: string; legalStatus?: string };
 type Run = {
   id: string; period: string; status: string; totalGross: number; totalNet: number;
@@ -126,7 +127,7 @@ export function PayrollManager({ rulesets, runs }: { rulesets: RuleSet[]; runs: 
         <button type="button" onClick={() => setTab('rules')} className={`min-h-9 rounded-lg px-3 text-sm font-semibold ${tab === 'rules' ? 'bg-[#021f87] text-white' : 'border border-[#cdddeb] bg-white text-[#52667a]'}`}>Regras salariais</button>
       </div>
 
-      {error && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-[#a83939]">{error}</p>}
+      <FormError>{error}</FormError>
       {message && <p role="status" className="rounded-lg bg-[#eff9f4] px-3 py-2 text-sm text-[#267256]">{message}</p>}
 
       {tab === 'runs' && (

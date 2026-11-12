@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { FormError } from '@/components/rh/form-kit';
 type Notification = { id: string; title: string; body: string; readAt: string | null; createdAt: string };
 
 export function NotificationsManager({ items, unread }: { items: Notification[]; unread: number }) {
@@ -41,7 +42,7 @@ export function NotificationsManager({ items, unread }: { items: Notification[];
         </button>
       </div>
 
-      {error && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-[#a83939]">{error}</p>}
+      <FormError>{error}</FormError>
 
       <ul className="divide-y divide-[#eef2f6] overflow-hidden rounded-xl border border-[#e1e8f0] bg-white">
         {items.map((item) => (

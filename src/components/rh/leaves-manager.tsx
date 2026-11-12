@@ -3,6 +3,7 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { FormError } from '@/components/rh/form-kit';
 type Employee = { id: string; firstName: string; lastName: string; employeeNumber: string };
 type Leave = {
   id: string; type: string; status: string; startDate: string; endDate: string; days: number;
@@ -110,7 +111,7 @@ export function LeavesManager({ leaves, employees, vacationDaysPerYear }: {
           <div className="sm:col-span-2"><label htmlFor="leave-reason" className="app-label">Motivo</label><input id="leave-reason" className="app-input" value={reason} onChange={(e) => setReason(e.target.value)} /></div>
         </div>
         {message && <p role="status" className="mt-3 rounded-lg bg-[#eff9f4] px-3 py-2 text-sm text-[#267256]">{message}</p>}
-        {error && <p role="alert" className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-[#a83939]">{error}</p>}
+        <FormError>{error}</FormError>
         <div className="mt-3 flex justify-end">
           <button type="submit" disabled={saving} className="min-h-10 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white disabled:opacity-60">{saving ? 'A registar…' : 'Registar pedido'}</button>
         </div>

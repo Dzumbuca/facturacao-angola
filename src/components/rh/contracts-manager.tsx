@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { FormError } from '@/components/rh/form-kit';
 type Contract = {
   id: string; type: string; status: string; startDate: string; endDate: string | null;
   salary: number; notes: string | null;
@@ -84,7 +85,7 @@ export function ContractsManager({ contracts, employees }: {
             <div><label htmlFor="ct-salary" className="app-label">Salário (Kz) *</label><input id="ct-salary" name="salary" type="number" min="0" step="0.01" className="app-input tabular-nums" required /></div>
             <div><label htmlFor="ct-notes" className="app-label">Notas</label><input id="ct-notes" name="notes" className="app-input" /></div>
           </div>
-          {error && <p role="alert" className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-[#a83939]">{error}</p>}
+          <FormError>{error}</FormError>
           <div className="mt-3 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <button type="button" onClick={() => setOpen(false)} className="min-h-10 rounded-lg border border-[#cdddeb] px-4 text-sm font-semibold text-[#52667a]">Cancelar</button>
             <button type="submit" disabled={saving} className="min-h-10 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white disabled:opacity-60">{saving ? 'A guardar…' : 'Guardar'}</button>

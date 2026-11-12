@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { FormError } from '@/components/rh/form-kit';
 type Justification = {
   id: string;
   date: string;
@@ -55,7 +56,7 @@ export function JustificationsManager({ items }: { items: Justification[] }) {
         <p className="mt-1 text-sm text-[#607286]">Faltas, atrasos e saídas antecipadas submetidas pelos funcionários.</p>
       </div>
 
-      {error && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-[#a83939]">{error}</p>}
+      <FormError>{error}</FormError>
 
       <div className="overflow-x-auto rounded-xl border border-[#e1e8f0] bg-white">
         <table className="data-table min-w-[760px]">

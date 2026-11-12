@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { FormError } from '@/components/rh/form-kit';
 type Announcement = { id: string; title: string; body: string; priority: string; publishedAt: string; expiresAt: string | null };
 
 const PRIORITY: Record<string, string> = { BAIXA: 'Baixa', NORMAL: 'Normal', ALTA: 'Alta' };
@@ -46,7 +47,7 @@ export function AnnouncementsManager({ items }: { items: Announcement[] }) {
         <p className="mt-1 text-sm text-[#607286]">Avisos visíveis para todos os funcionários em Meu RH.</p>
       </div>
 
-      {error && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-[#a83939]">{error}</p>}
+      <FormError>{error}</FormError>
 
       <form onSubmit={submit} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
         <h2 className="text-sm font-bold text-[#1c2d3f]">Novo comunicado</h2>

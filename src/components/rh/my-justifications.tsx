@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from 'react';
 
+import { FormError } from '@/components/rh/form-kit';
 type Item = { id: string; date: string; type: string; reason: string; status: string; decisionNote: string | null };
 
 const STATUS: Record<string, string> = { PENDENTE: 'Pendente', APROVADO: 'Aprovado', REJEITADO: 'Rejeitado' };
@@ -73,7 +74,7 @@ export function MyJustifications({ items, canSubmit }: { items: Item[]; canSubmi
               <input id="mj-reason" name="reason" className="app-input" required maxLength={1000} />
             </div>
           </div>
-          {error && <p role="alert" className="mt-2 text-xs font-medium text-[#a83939]">{error}</p>}
+          <FormError>{error}</FormError>
           {message && <p role="status" className="mt-2 text-xs font-medium text-[#267256]">{message}</p>}
           <div className="mt-2 flex justify-end gap-2">
             <button type="button" onClick={() => setOpen(false)} className="min-h-9 rounded-lg border border-[#cdddeb] px-3 text-xs font-semibold text-[#52667a]">Cancelar</button>

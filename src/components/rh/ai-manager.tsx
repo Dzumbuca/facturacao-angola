@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from 'react';
 
+import { FormError } from '@/components/rh/form-kit';
 export function AiManager({ configured, provider }: { configured: boolean; provider: string | null }) {
   const [instruction, setInstruction] = useState('');
   const [context, setContext] = useState('');
@@ -51,7 +52,7 @@ export function AiManager({ configured, provider }: { configured: boolean; provi
           <label htmlFor="ai-instruction" className="app-label">O que deve ser escrito *</label>
           <textarea id="ai-instruction" className="app-input min-h-32" value={instruction} onChange={(e) => setInstruction(e.target.value)} placeholder="Ex.: Declaração de trabalho para efeitos bancários, com função, data de admissão e salário base." required />
         </div>
-        {error && <p role="alert" className="mt-2 text-xs font-medium text-[#a83939]">{error}</p>}
+        <FormError>{error}</FormError>
         <div className="mt-3 flex justify-end">
           <button type="submit" disabled={loading || !configured} className="min-h-10 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white disabled:opacity-50">{loading ? 'A gerar…' : 'Gerar rascunho'}</button>
         </div>
