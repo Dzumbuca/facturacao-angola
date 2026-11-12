@@ -148,6 +148,7 @@ model Tenant {
   rhJobOpenings            RhJobOpening[]
   rhPerformanceCycles      RhPerformanceCycle[]
   rhTrainingCourses        RhTrainingCourse[]
+  rhAnnouncements          RhAnnouncement[]
   rhDevices                RhDevice[]
   rhDocumentTemplates      RhDocumentTemplate[]
   rhDocuments              RhDocument[]
@@ -3457,4 +3458,22 @@ model RhEmployeeDeduction {
   employee RhEmployee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, employeeId, active])
+}
+
+
+// Comunicados internos.
+model RhAnnouncement {
+  id          String    @id @default(uuid())
+  tenantId    String
+  title       String
+  body        String
+  priority    String    @default("NORMAL")
+  publishedAt DateTime  @default(now())
+  expiresAt   DateTime?
+  createdByUserId String?
+  createdAt   DateTime  @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, publishedAt])
 }

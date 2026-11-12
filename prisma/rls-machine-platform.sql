@@ -230,3 +230,10 @@ DROP POLICY IF EXISTS "rh_employee_deduction_isolation" ON "RhEmployeeDeduction"
 CREATE POLICY "rh_employee_deduction_isolation" ON "RhEmployeeDeduction" FOR ALL
   USING ("tenantId" = current_setting('app.tenant_id', true))
   WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+
+-- Comunicados internos.
+ALTER TABLE "RhAnnouncement" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_announcement_isolation" ON "RhAnnouncement";
+CREATE POLICY "rh_announcement_isolation" ON "RhAnnouncement" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
