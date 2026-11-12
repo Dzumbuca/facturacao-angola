@@ -62,6 +62,7 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Employee | null>(null);
   const [generatedPin, setGeneratedPin] = useState<string | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [qr, setQr] = useState<{ svg: string; name: string; expiresAt: string } | null>(null);
@@ -98,6 +99,7 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
   async function handlePhotoUpload(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
+    setPhotoPreview(URL.createObjectURL(file));
     const formData = new FormData();
     formData.append('file', file);
     const response = await fetch('/api/rh/uploads', { method: 'POST', body: formData });
@@ -271,6 +273,12 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
   <label htmlFor="rh-photo-file" className="app-label">Fotografia (ficheiro)</label>
   <input id="rh-photo-file" type="file" accept="image/png,image/jpeg,image/webp" className="app-input" onChange={handlePhotoUpload} />
   <input id="rh-photo-url" name="photoUrl" className="app-input mt-2" placeholder="Ou cole um URL…" defaultValue={editing?.photoUrl ?? ''} />
+  {(photoPreview || editing?.photoUrl) && (
+    <div className="mt-2 flex items-center gap-3">
+      <img src={photoPreview ?? undefined} alt="Pré-visualização" className="h-16 w-16 rounded-full border border-[#e1e8f0] object-cover" />
+      <span className="text-xs text-[#607286]">Pré-visualização da fotografia</span>
+    </div>
+  )}
 </div>
               </FormSection>
 

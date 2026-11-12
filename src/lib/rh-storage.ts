@@ -94,7 +94,8 @@ export async function signReadUrl(path: string, ttlSeconds = 3600): Promise<stri
   if (!response.ok) return null;
   const data = (await response.json().catch(() => ({}))) as { signedURL?: string };
   if (!data?.signedURL) return null;
-  return `${config.supabaseUrl}${data.signedURL}`;
+  const suffix = data.signedURL.startsWith('/storage/v1') ? data.signedURL : `/storage/v1${data.signedURL.startsWith('/') ? '' : '/'}${data.signedURL}`;
+  return `${config.supabaseUrl}${suffix}`;
 }
 
 export type StoredObject = { path: string };
