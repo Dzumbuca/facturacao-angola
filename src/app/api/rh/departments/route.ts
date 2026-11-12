@@ -26,8 +26,20 @@ export async function POST(req: Request) {
     if (!name || name.length > 100) return NextResponse.json({ error: 'Nome do departamento inválido.' }, { status: 400 });
     const created = await runWithTenant(access.tenantId, async (tx) => {
       if (body.parentId) {
-        const parent = await tx.rhDepartment.findFirst({ where: { id: String(body.parentId), tenantId: access.tenantId }, select: { id: true } });
+        const parentId = String(body.parentId);
+        const parent = await tx.rhDepartment.findFirst({ where: { id: parentId, tenantId: access.tenantId }, select: { id: true } });
         if (!parent) throw new Error('PARENT_NOT_FOUND');
+
+        // Detecção de ciclo: sobe a cadeia de ancestrais do pai; se exceder 12 níveis ou repetir nó, é ciclo.
+        let cursor: string | null = parentId;
+        const seen = new Set<string>();
+        for (let depth = 0; depth < 12 && cursor; depth++) {
+          if (seen.has(cursor)) throw new Error('CICLO_DETETADO');
+          seen.add(cursor);
+          const next: { parentId: string | null } | null = await tx.rhDepartment.findFirst({ where: { id: cursor, tenantId: access.tenantId }, select: { parentId: true } });
+          cursor = next?.parentId ?? null;
+        }
+        if (cursor) throw new Error('CICLO_DETETADO');
       }
       const row = await tx.rhDepartment.create({
         data: {
@@ -46,6 +58,7 @@ export async function POST(req: Request) {
   } catch (error: any) {
     if (error?.code === 'P2002') return NextResponse.json({ error: 'Já existe um departamento com esse nome.' }, { status: 409 });
     if (error?.message === 'PARENT_NOT_FOUND') return NextResponse.json({ error: 'Departamento pai inválido.' }, { status: 400 });
+    if (error?.message === 'CICLO_DETETADO') return NextResponse.json({ error: 'Hierarquia inválida (ciclo detectado). Não podes tornar um departamento pai de um dos seus descendentes.' }, { status: 400 });
     const { status, body } = rhAccessResponse(error);
     return NextResponse.json(body, { status });
   }

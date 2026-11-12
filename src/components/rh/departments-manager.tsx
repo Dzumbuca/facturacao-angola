@@ -10,11 +10,49 @@ type Department = {
   _count: { employees: number; positions: number; children: number };
 };
 
+type OrderedDepartment = { department: Department; depth: number; cycle: boolean };
+
+/** Constrói árvore recursiva e devolve lista em ordem visual (raiz → filhos), detectando ciclos. */
+function buildOrdered(departments: Department[]): OrderedDepartment[] {
+  const byParent = new Map<string | null, Department[]>();
+  for (const department of departments) {
+    const key = department.parentId ?? null;
+    const list = byParent.get(key) ?? [];
+    list.push(department);
+    byParent.set(key, list);
+  }
+  for (const list of byParent.values()) list.sort((a, b) => a.name.localeCompare(b.name, 'pt-AO'));
+
+  const ordered: OrderedDepartment[] = [];
+  const inStack = new Set<string>();
+  const walk = (parentId: string | null, depth: number, ancestors: Set<string>) => {
+    const children = byParent.get(parentId) ?? [];
+    for (const department of children) {
+      if (ancestors.has(department.id)) {
+        ordered.push({ department, depth, cycle: true });
+        continue;
+      }
+      const nextAncestors = new Set(ancestors); nextAncestors.add(department.id);
+      ordered.push({ department, depth, cycle: false });
+      walk(department.id, depth + 1, nextAncestors);
+    }
+  };
+  walk(null, 0, new Set());
+  // ramos desconectados (ciclo) ainda aparecem
+  for (const department of departments) {
+    if (!ordered.some((item) => item.department.id === department.id)) {
+      ordered.push({ department, depth: 0, cycle: true });
+    }
+  }
+  return ordered;
+}
+
 export function DepartmentsManager({ departments }: { departments: Department[] }) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [open, setOpen] = useState(false);
+  const ordered = buildOrdered(departments);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -75,9 +113,15 @@ export function DepartmentsManager({ departments }: { departments: Department[] 
         <table className="data-table min-w-[640px]">
           <thead><tr><th>Departamento</th><th>Código</th><th>Responsável</th><th>Funcionários</th><th>Cargos</th><th>Sub-departamentos</th></tr></thead>
           <tbody>
-            {departments.map((department) => (
-              <tr key={department.id}>
-                <td data-mobile-primary className="font-semibold text-[#1c2d3f]">{department.name}</td>
+            {ordered.map(({ department, depth, cycle }) => (
+              <tr key={department.id} className={cycle ? 'bg-[#fdf3f3]' : ''}>
+                <td data-mobile-primary>
+                  <div className="flex items-center gap-2" style={{ paddingLeft: `${depth * 1.25}rem` }}>
+                    <span aria-hidden className="text-xs text-[#8a99ab]">{depth === 0 ? '■' : '└─'}</span>
+                    <span className="font-semibold text-[#1c2d3f]">{department.name}</span>
+                    <span className="rounded bg-[#eef4ff] px-1.5 py-0.5 text-[10px] font-semibold uppercase text-[#021f87]">{cycle ? 'ciclo' : depth === 0 ? 'raiz' : `N${depth}`}</span>
+                  </div>
+                </td>
                 <td className="font-mono text-xs text-[#607286]">{department.code || '—'}</td>
                 <td>{department.managerName || '—'}</td>
                 <td className="tabular-nums">{department._count.employees}</td>
@@ -85,7 +129,7 @@ export function DepartmentsManager({ departments }: { departments: Department[] 
                 <td className="tabular-nums">{department._count.children}</td>
               </tr>
             ))}
-            {departments.length === 0 && <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-[#708195]">Ainda não há departamentos.</td></tr>}
+            {departments.length === 0 && <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-[#708195]">Ainda não há departamentos. Cria primeiro um pai (ex.: «Angola») e depois os filhos (ex.: «Administração»).</td></tr>}
           </tbody>
         </table>
       </div>
