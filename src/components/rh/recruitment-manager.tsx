@@ -4,7 +4,7 @@ import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
+import { FormSection, FormField, FormActions, FormError, CalendarField } from '@/components/rh/form-kit';
 const STATUS_LABEL: Record<string, string> = {
   ABERTA: 'Aberta', ENCERRADA: 'Encerrada', CANCELADA: 'Cancelada',
   RECEBIDA: 'Recebida', TRIAGEM: 'Triagem', ENTREVISTA: 'Entrevista',
@@ -18,6 +18,7 @@ export function RecruitmentManager({ openings, candidates, departments, position
   const router = useRouter();
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [closingIso, setClosingIso] = useState('');
   const [openingId, setOpeningId] = useState<string>(openings[0]?.id ?? '');
   const [candidateStatus, setCandidateStatus] = useState<string>('ALL');
 
@@ -179,7 +180,7 @@ export function RecruitmentManager({ openings, candidates, departments, position
               <FormField label="Nº de vagas" name="jo-openings"><input id="jo-openings" name="openings" type="number" min={1} defaultValue={1} className="app-input" /></FormField>
             </div>
             <div>
-              <FormField label="Fecha a" name="jo-close"><input id="jo-close" name="closesAt" type="date" className="app-input" /></FormField>
+              <FormField label="Fecha a" name="jo-close"><CalendarField id="jo-close" name="closesAt" value={closingIso} onChange={setClosingIso} /></FormField>
             </div>
             <div className="sm:col-span-2">
               <FormField label="Requisitos" name="jo-req"><textarea id="jo-req" name="requirements" className="app-input min-h-20" /></FormField>

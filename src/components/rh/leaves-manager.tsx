@@ -3,7 +3,7 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
+import { FormSection, FormField, FormActions, FormError, CalendarField } from '@/components/rh/form-kit';
 type Employee = { id: string; firstName: string; lastName: string; employeeNumber: string };
 type Leave = {
   id: string; type: string; status: string; startDate: string; endDate: string; days: number;
@@ -117,10 +117,10 @@ export function LeavesManager({ leaves, employees, vacationDaysPerYear }: {
             </FormField>
           </div>
           <div>
-            <FormField label="Início" name="leave-start" required><input id="leave-start" type="date" className="app-input" value={startDate} onChange={(e) => setStartDate(e.target.value)} required /></FormField>
+            <FormField label="Início" name="leave-start" required><CalendarField id="leave-start" name="leave-start" value={startDate} onChange={setStartDate} required /></FormField>
           </div>
           <div>
-            <FormField label="Fim" name="leave-end" required><input id="leave-end" type="date" className="app-input" value={endDate} onChange={(e) => setEndDate(e.target.value)} required /></FormField>
+            <FormField label="Fim" name="leave-end" required><CalendarField id="leave-end" name="leave-end" value={endDate} onChange={setEndDate} required /></FormField>
           </div>
           <div className="sm:col-span-2">
             <FormField label="Motivo" name="leave-reason"><input id="leave-reason" className="app-input" value={reason} onChange={(e) => setReason(e.target.value)} /></FormField>

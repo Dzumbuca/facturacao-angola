@@ -3,12 +3,13 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { FormSection, FormField, FormError } from '@/components/rh/form-kit';
+import { FormSection, FormField, FormError, CalendarField } from '@/components/rh/form-kit';
 export function OffboardDialog({ employeeId, employeeName }: { employeeId: string; employeeName: string }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [lastDay, setLastDay] = useState('');
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -61,7 +62,7 @@ export function OffboardDialog({ employeeId, employeeName }: { employeeId: strin
                 </FormField>
               </div>
               <div>
-                <FormField label="Data efectiva" name="off-lastday" required><input id="off-lastday" name="lastDay" type="date" className="app-input" required /></FormField>
+                <FormField label="Data efectiva" name="off-lastday" required><CalendarField id="off-lastday" name="lastDay" value={lastDay} onChange={setLastDay} required /></FormField>
               </div>
               <div className="sm:col-span-2">
                 <FormField label="Notas" name="off-notes"><textarea id="off-notes" name="notes" className="app-input min-h-20" /></FormField>

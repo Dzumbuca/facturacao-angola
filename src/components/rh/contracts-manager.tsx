@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
+import { FormSection, FormField, FormActions, FormError, CurrencyInput, CalendarField } from '@/components/rh/form-kit';
 type Contract = {
   id: string; type: string; status: string; startDate: string; endDate: string | null;
   salary: number; notes: string | null;
@@ -32,6 +32,9 @@ export function ContractsManager({ contracts, employees }: {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [startIso, setStartIso] = useState('');
+  const [endIso, setEndIso] = useState('');
+  const [salaryValue, setSalaryValue] = useState<number | null>(null);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -95,13 +98,13 @@ export function ContractsManager({ contracts, employees }: {
               </FormField>
             </div>
             <div>
-              <FormField label="Início" name="ct-start" required><input id="ct-start" name="startDate" type="date" className="app-input" required /></FormField>
+              <FormField label="Início" name="ct-start" required><CalendarField id="ct-start" name="startDate" value={startIso} onChange={setStartIso} required /></FormField>
             </div>
             <div>
-              <FormField label="Fim" name="ct-end"><input id="ct-end" name="endDate" type="date" className="app-input" /></FormField>
+              <FormField label="Fim" name="ct-end"><CalendarField id="ct-end" name="endDate" value={endIso} onChange={setEndIso} /></FormField>
             </div>
             <div>
-              <FormField label="Salário (Kz)" name="ct-salary" required><input id="ct-salary" name="salary" type="number" min="0" step="0.01" className="app-input tabular-nums" required /></FormField>
+              <FormField label="Salário (Kz)" name="ct-salary" required><CurrencyInput id="ct-salary" name="salary" value={salaryValue} onChange={setSalaryValue} required /></FormField>
             </div>
             <div>
               <FormField label="Notas" name="ct-notes"><input id="ct-notes" name="notes" className="app-input" /></FormField>

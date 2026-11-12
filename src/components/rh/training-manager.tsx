@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
+import { FormSection, FormField, FormActions, FormError, CalendarField } from '@/components/rh/form-kit';
 type Enrollment = { id: string; status: string; score: number | null; employee: { firstName: string; lastName: string; employeeNumber: string; position: { title: string } | null } };
 type Course = { id: string; title: string; trainerName: string | null; startDate: string; endDate: string | null; cargaHoras: number; location: string | null; status: string; enrollments: Enrollment[] };
 type Employee = { id: string; firstName: string; lastName: string; employeeNumber: string };
@@ -15,6 +15,8 @@ export function TrainingManager({ courses, employees, positions }: { courses: Co
   const router = useRouter();
   const [error, setError] = useState('');
   const [busy, setBusy] = useState('');
+  const [startIso, setStartIso] = useState('');
+  const [endIso, setEndIso] = useState('');
   const [enrollCourseId, setEnrollCourseId] = useState(courses[0]?.id ?? '');
   const [enrollEmployeeId, setEnrollEmployeeId] = useState(employees[0]?.id ?? '');
 
@@ -118,10 +120,10 @@ export function TrainingManager({ courses, employees, positions }: { courses: Co
               <FormField label="Formador" name="tc-trainer"><input id="tc-trainer" name="trainerName" className="app-input" placeholder="Nome ou entidade" /></FormField>
             </div>
             <div>
-              <FormField label="Início" name="tc-start" required><input id="tc-start" name="startDate" type="date" className="app-input" required /></FormField>
+              <FormField label="Início" name="tc-start" required><CalendarField id="tc-start" name="startDate" value={startIso} onChange={setStartIso} required /></FormField>
             </div>
             <div>
-              <FormField label="Fim" name="tc-end"><input id="tc-end" name="endDate" type="date" className="app-input" /></FormField>
+              <FormField label="Fim" name="tc-end"><CalendarField id="tc-end" name="endDate" value={endIso} onChange={setEndIso} /></FormField>
             </div>
             <div>
               <FormField label="Horas" name="tc-hours"><input id="tc-hours" name="cargaHoras" type="number" min={1} defaultValue={8} className="app-input" /></FormField>

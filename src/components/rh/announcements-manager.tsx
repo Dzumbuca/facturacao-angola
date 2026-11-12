@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
+import { FormSection, FormField, FormActions, FormError, CalendarField } from '@/components/rh/form-kit';
 type Announcement = { id: string; title: string; body: string; priority: string; publishedAt: string; expiresAt: string | null };
 
 const PRIORITY: Record<string, string> = { BAIXA: 'Baixa', NORMAL: 'Normal', ALTA: 'Alta' };
@@ -13,6 +13,7 @@ export function AnnouncementsManager({ items }: { items: Announcement[] }) {
   const router = useRouter();
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [expiresIso, setExpiresIso] = useState('');
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -64,7 +65,7 @@ export function AnnouncementsManager({ items }: { items: Announcement[] }) {
             </FormField>
           </div>
           <div>
-            <FormField label="Válido até" name="an-expires" hint="Opcional"><input id="an-expires" name="expiresAt" type="date" className="app-input" /></FormField>
+            <FormField label="Válido até" name="an-expires" hint="Opcional"><CalendarField id="an-expires" name="expiresAt" value={expiresIso} onChange={setExpiresIso} /></FormField>
           </div>
           <div className="sm:col-span-2">
             <FormActions saving={busy} onCancel={() => {}} saveLabel={busy ? 'A publicar…' : 'Publicar'} />

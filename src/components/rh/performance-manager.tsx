@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
+import { FormSection, FormField, FormActions, FormError, CalendarField } from '@/components/rh/form-kit';
 type Criterion = { id: string; name: string; weight: number; order: number };
 type Review = { id: string; reviewerName: string | null; score: number | null; comments: string | null; status: string; employee: { firstName: string; lastName: string; employeeNumber: string; position: { title: string } | null } };
 type Cycle = { id: string; name: string; startsAt: string; endsAt: string | null; status: string; criteria: Criterion[]; reviews: Review[]; _count: { reviews: number } };
@@ -14,6 +14,8 @@ const TONE: Record<string, string> = { PENDENTE: 'bg-[#fff7e6] text-[#8a5a00]', 
 export function PerformanceManager({ cycles }: { cycles: Cycle[] }) {
   const router = useRouter();
   const [error, setError] = useState('');
+  const [startsAtIso, setStartsAtIso] = useState('');
+  const [endsAtIso, setEndsAtIso] = useState('');
   const [busy, setBusy] = useState('');
   const [drafts, setDrafts] = useState<Record<string, { score: string; comments: string; reviewerName: string }>>({});
 
@@ -114,10 +116,10 @@ export function PerformanceManager({ cycles }: { cycles: Cycle[] }) {
             <FormField label="Nome" name="pc-name" required><input id="pc-name" name="name" className="app-input" required placeholder="Ex.: Avaliação semestral 2026" /></FormField>
           </div>
           <div>
-            <FormField label="Início" name="pc-start" required><input id="pc-start" name="startsAt" type="date" className="app-input" required /></FormField>
+            <FormField label="Início" name="pc-start" required><CalendarField id="pc-start" name="startsAt" value={startsAtIso} onChange={setStartsAtIso} required /></FormField>
           </div>
           <div>
-            <FormField label="Fim" name="pc-end"><input id="pc-end" name="endsAt" type="date" className="app-input" /></FormField>
+            <FormField label="Fim" name="pc-end"><CalendarField id="pc-end" name="endsAt" value={endsAtIso} onChange={setEndsAtIso} /></FormField>
           </div>
           <div className="sm:col-span-3">
             <FormField label="Critérios" name="pc-criteria" hint="Um por linha, formato «nome|peso»">

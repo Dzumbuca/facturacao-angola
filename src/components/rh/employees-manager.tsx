@@ -3,7 +3,7 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { SignedImage } from '@/components/rh/signed-image';
-import { FormSection, FormActions, FormError } from '@/components/rh/form-kit';
+import { FormSection, FormActions, FormError, CurrencyInput, CalendarField } from '@/components/rh/form-kit';
 
 type Department = { id: string; name: string };
 type Position = { id: string; title: string; departmentId: string | null };
@@ -61,6 +61,9 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
   const [statusFilter, setStatusFilter] = useState('');
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Employee | null>(null);
+  const [hireDateIso, setHireDateIso] = useState('');
+  const [birthDateIso, setBirthDateIso] = useState('');
+  const [baseSalaryValue, setBaseSalaryValue] = useState<number | null>(null);
   const [generatedPin, setGeneratedPin] = useState<string | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -78,8 +81,8 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
     });
   }, [employees, query, statusFilter]);
 
-  function openCreate() { setEditing(null); setError(''); setQr(null); setOpen(true); }
-  function openEdit(employee: Employee) { setEditing(employee); setError(''); setQr(null); setOpen(true); }
+  function openCreate() { setEditing(null); setError(''); setQr(null); setHireDateIso(''); setBirthDateIso(''); setBaseSalaryValue(null); setOpen(true); }
+  function openEdit(employee: Employee) { setEditing(employee); setError(''); setQr(null); setHireDateIso(employee.hireDate?.slice(0,10) ?? ''); setBirthDateIso(employee.birthDate?.slice(0,10) ?? ''); setBaseSalaryValue(employee.baseSalary ?? null); setOpen(true); }
 
   async function loadQr() {
     if (!editing) return;
@@ -260,7 +263,7 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
                   <div><label htmlFor="rh-last" className="app-label">Apelido *</label><input id="rh-last" name="lastName" className="app-input" required defaultValue={editing?.lastName ?? ''} /></div>
                   <div><label htmlFor="rh-bi" className="app-label">BI</label><input id="rh-bi" name="bi" className="app-input" defaultValue={editing?.bi ?? ''} /></div>
                   <div><label htmlFor="rh-nif" className="app-label">NIF</label><input id="rh-nif" name="nif" className="app-input" defaultValue={editing?.nif ?? ''} /></div>
-                  <div><label htmlFor="rh-birth" className="app-label">Data de nascimento</label><input id="rh-birth" name="birthDate" type="date" className="app-input" defaultValue={editing?.birthDate?.slice(0, 10) ?? ''} /></div>
+                  <div><CalendarField id="rh-birth" name="birthDate" value={birthDateIso} onChange={setBirthDateIso} /></div>
                   <div><label htmlFor="rh-gender" className="app-label">Género</label><select id="rh-gender" name="gender" className="app-input" defaultValue={editing?.gender ?? ''}><option value="">Não indicado</option><option value="M">Masculino</option><option value="F">Feminino</option><option value="OUTRO">Outro</option></select></div>
               </FormSection>
 
@@ -287,9 +290,9 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
                   <div><label htmlFor="rh-dept" className="app-label">Departamento</label><select id="rh-dept" name="departmentId" className="app-input" defaultValue={editing?.departmentId ?? ''}><option value="">—</option>{departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}</select></div>
                   <div><label htmlFor="rh-pos" className="app-label">Cargo</label><select id="rh-pos" name="positionId" className="app-input" defaultValue={editing?.positionId ?? ''}><option value="">—</option>{positions.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}</select></div>
                   <div><label htmlFor="rh-shift" className="app-label">Horário</label><select id="rh-shift" name="shiftId" className="app-input" defaultValue={editing?.shiftId ?? ''}><option value="">—</option>{shifts.map((shift) => <option key={shift.id} value={shift.id}>{shift.name} ({shift.startTime}–{shift.endTime})</option>)}</select></div>
-                  <div><label htmlFor="rh-hire" className="app-label">Data de admissão *</label><input id="rh-hire" name="hireDate" type="date" className="app-input" required defaultValue={editing?.hireDate?.slice(0, 10) ?? ''} /></div>
+                  <div><CalendarField id="rh-hire" name="hireDate" value={hireDateIso} onChange={setHireDateIso} required /></div>
                   <div><label htmlFor="rh-contract" className="app-label">Tipo de contrato</label><select id="rh-contract" name="contractType" className="app-input" defaultValue={editing?.contractType ?? 'INDEFINIDO'}>{Object.entries(CONTRACT_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
-                  <div><label htmlFor="rh-salary" className="app-label">Salário-base (Kz) *</label><input id="rh-salary" name="baseSalary" type="number" min="0" step="0.01" className="app-input tabular-nums" required defaultValue={editing?.baseSalary ?? ''} /></div>
+                  <div><label htmlFor="rh-salary" className="app-label">Salário-base (Kz) *</label><CurrencyInput id="rh-salary" name="baseSalary" value={baseSalaryValue} onChange={setBaseSalaryValue} required /></div>
                   <div><label htmlFor="rh-status" className="app-label">Estado</label><select id="rh-status" name="status" className="app-input" defaultValue={editing?.status ?? 'ACTIVO'}>{Object.entries(STATUS_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
                   <div><label htmlFor="rh-pin" className="app-label">PIN do ponto <span className="font-normal text-[#708195]">{editing?.hasPin ? '(definido)' : '(gerar automático)'}</span></label><input id="rh-pin" name="pin" type="password" inputMode="numeric" maxLength={8} className="app-input tracking-[.3em]" placeholder={editing?.hasPin ? 'Deixar vazio para manter' : 'Deixar vazio = gera automaticamente'} /></div>
               </FormSection>

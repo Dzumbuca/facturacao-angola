@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from 'react';
 
-import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
+import { FormSection, FormField, FormActions, FormError, CalendarField } from '@/components/rh/form-kit';
 type Item = { id: string; date: string; type: string; reason: string; status: string; decisionNote: string | null };
 
 const STATUS: Record<string, string> = { PENDENTE: 'Pendente', APROVADO: 'Aprovado', REJEITADO: 'Rejeitado' };
@@ -12,6 +12,7 @@ const TONE: Record<string, string> = {
 
 export function MyJustifications({ items, canSubmit }: { items: Item[]; canSubmit: boolean }) {
   const [open, setOpen] = useState(false);
+  const [dateIso, setDateIso] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -57,7 +58,7 @@ export function MyJustifications({ items, canSubmit }: { items: Item[]; canSubmi
         <form onSubmit={submit} className="border-b border-[#eef2f6] bg-[#f9fbfe] px-4 py-3">
           <FormSection title="Nova justificação">
             <div>
-              <FormField label="Data" name="mj-date" required><input id="mj-date" name="date" type="date" className="app-input" required /></FormField>
+              <FormField label="Data" name="mj-date" required><CalendarField id="mj-date" name="date" value={dateIso} onChange={setDateIso} required /></FormField>
             </div>
             <div>
               <FormField label="Tipo" name="mj-type" required>

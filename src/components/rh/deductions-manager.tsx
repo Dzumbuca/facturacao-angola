@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
+import { FormSection, FormField, FormActions, FormError, CurrencyInput } from '@/components/rh/form-kit';
 type Deduction = { id: string; description: string; type: string; amount: number; remainingInstallments: number | null; active: boolean };
 
 const TYPE_LABEL: Record<string, string> = { ADIANTAMENTO: 'Adiantamento', EMPRESTIMO: 'Empréstimo', OUTRO: 'Outro' };
@@ -12,6 +12,7 @@ export function DeductionsManager({ employeeId, deductions, canWrite }: { employ
   const router = useRouter();
   const [error, setError] = useState('');
   const [busy, setBusy] = useState('');
+  const [amountValue, setAmountValue] = useState<number | null>(null);
 
   async function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -66,7 +67,7 @@ export function DeductionsManager({ employeeId, deductions, canWrite }: { employ
               <FormField label="Descrição" name="ded-desc" required><input id="ded-desc" name="description" className="app-input" required maxLength={200} placeholder="Ex.: Adiantamento salário Maio" /></FormField>
             </div>
             <div>
-              <FormField label="Valor (Kz)" name="ded-amount" required><input id="ded-amount" name="amount" type="number" min="0" step="0.01" className="app-input" required /></FormField>
+              <FormField label="Valor (Kz)" name="ded-amount" required><CurrencyInput id="ded-amount" name="amount" value={amountValue} onChange={setAmountValue} required /></FormField>
             </div>
             <div>
               <FormField label="Tipo" name="ded-type">
