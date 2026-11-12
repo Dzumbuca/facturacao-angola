@@ -25,10 +25,10 @@ export async function POST(req: Request) {
     const path = `${access.tenantId}/${safeName}`;
 
     const bucket = await ensureBucket();
-    if (!bucket.ok) return NextResponse.json({ code: bucket.error.split(':')[0], error: bucket.error }, { status: 502 });
+    if (!bucket.ok) return NextResponse.json({ code: 'BUCKET_ERROR', detail: bucket.error }, { status: 502 });
 
     const uploaded = await uploadToRhBucket({ tenantId: access.tenantId, path, buffer, contentType: file.type });
-    if ('error' in uploaded) return NextResponse.json({ code: uploaded.error.split(':')[0], error: uploaded.error }, { status: 502 });
+    if ('error' in uploaded) return NextResponse.json({ code: 'UPLOAD_ERROR', detail: uploaded.error }, { status: 502 });
     return NextResponse.json({ url: uploaded.url, path: uploaded.path }, { status: 201 });
   } catch (error) {
     const { status, body } = rhAccessResponse(error);

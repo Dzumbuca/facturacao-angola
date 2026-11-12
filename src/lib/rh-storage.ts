@@ -37,7 +37,7 @@ export async function ensureBucket(): Promise<{ ok: true } | { ok: false; error:
   // 409: bucket já existe.
   if (response.status === 409) return { ok: true };
   const text = await response.text().catch(() => '');
-  return { ok: false, error: `BUCKET_ERROR_${response.status}${text ? `: ${text.slice(0, 200)}` : ''}` };
+  return { ok: false, error: `BUCKET_${response.status}:${text.slice(0, 300)}` };
 }
 
 export async function uploadToRhBucket(input: { tenantId: string; path: string; buffer: Buffer; contentType: string }): Promise<{ url: string; path: string } | { error: string }> {
@@ -57,7 +57,7 @@ export async function uploadToRhBucket(input: { tenantId: string; path: string; 
   });
   if (!response.ok) {
     const text = await response.text().catch(() => '');
-    return { error: `UPLOAD_ERROR_${response.status}${text ? `: ${text.slice(0, 200)}` : ''}` };
+    return { error: `UPLOAD_${response.status}:${text.slice(0, 300)}` };
   }
   // Bucket público (padrão): URL pública; caso contrário, devolve path e usa signed URL.
   const publicUrl = `${config.supabaseUrl}/storage/v1/object/public/${config.bucket}/${input.path}`;
