@@ -53,14 +53,19 @@ const COMMERCIAL_PLANS: [string, string][] = [
 export function AdminCommercialPlanForm({ id, current, currentExpiry }: { id: string; current: string; currentExpiry?: string | null }) {
   const [planSlug, setPlanSlug] = useState(current);
   const [expiresAt, setExpiresAt] = useState(() => currentExpiry ? new Date(currentExpiry).toISOString().slice(0, 10) : '');
-  const action = async (_: State, data: FormData) => setTenantCommercialPlan(String(data.get('id')), String(data.get('value')), String(data.get('reason')), String(data.get('expiresAt') ?? ''));
+  const [perpetual, setPerpetual] = useState(false);
+  const action = async (_: State, data: FormData) => setTenantCommercialPlan(String(data.get('id')), String(data.get('value')), String(data.get('reason')), String(data.get('expiresAt') ?? ''), data.get('perpetual') === 'on');
   const [state, formAction, pending] = useActionState(action, initial);
   const isPaid = planSlug !== 'free';
   return <form action={formAction} onSubmit={(event) => { if (!window.confirm('Confirmas esta alteração comercial? A atribuição ficará auditada.')) event.preventDefault(); }} className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-[1fr_1fr_auto_auto]">
     <input type="hidden" name="id" value={id} />
     <label><span className="app-label">Plano Machine</span><select className="app-input" name="value" required value={planSlug} onChange={(e) => setPlanSlug(e.target.value)}>{COMMERCIAL_PLANS.map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select></label>
     <label><span className="app-label">Data de validade {isPaid ? '*' : ''}</span>
-      <div className="flex items-center gap-2"><input type="date" className="app-input" name="expiresAt" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} disabled={!isPaid} required={isPaid} aria-required={isPaid || undefined} />{!isPaid && <span className="text-xs text-slate-500">Free é permanente</span>}</div>
+      <div className="flex items-center gap-3">
+        <input type="date" className="app-input" name="expiresAt" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} disabled={!isPaid || perpetual} required={isPaid && !perpetual} aria-required={(isPaid && !perpetual) || undefined} />
+        {isPaid && <label className="flex items-center gap-1 whitespace-nowrap text-xs text-slate-600"><input type="checkbox" name="perpetual" checked={perpetual} onChange={(e) => setPerpetual(e.target.checked)} /> Perpétuo (decisão explícita)</label>}
+        {!isPaid && <span className="text-xs text-slate-500">Free é permanente</span>}
+      </div>
     </label>
     <label><span className="app-label">Motivo</span><input className="app-input" name="reason" minLength={5} maxLength={500} placeholder="Ex.: pagamento recebido" required /></label>
     <button disabled={pending} className="self-end rounded-lg bg-[#021f87] px-4 py-3 font-semibold text-white disabled:opacity-60">{pending ? 'A guardar…' : 'Guardar'}</button>

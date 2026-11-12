@@ -270,19 +270,20 @@ export async function reviewPlanPayment(id: string, decision: 'CONFIRMADO' | 'RE
 
 // Atribui um pacote comercial (Free / Stock / RH / Business) e liga os módulos certos.
 export type CommercialPlan = 'free' | 'stock' | 'rh' | 'business';
-export async function setTenantCommercialPlan(id: string, planSlug: CommercialPlan | string, rawReason: string, rawExpiresAt?: string | null): Promise<ActionResult> {
+export async function setTenantCommercialPlan(id: string, planSlug: CommercialPlan | string, rawReason: string, rawExpiresAt?: string | null, perpetuity = false): Promise<ActionResult> {
   const currentActor = await actor('companies.update');
   const reason = validateAdminReason(rawReason);
   const hasPlan = ['free', 'stock', 'rh', 'business'].includes(planSlug);
   const requiresExpiry = hasPlan && planSlug !== 'free';
   const cleanedExpiresAt = rawExpiresAt?.trim() || '';
   let endsAt: Date | null = null;
-  if (cleanedExpiresAt) {
+  if (perpetuity) endsAt = null;
+  else if (cleanedExpiresAt) {
     endsAt = new Date(cleanedExpiresAt);
     if (Number.isNaN(endsAt.getTime()) || endsAt.getTime() < Date.now() - 24 * 60 * 60 * 1000) return { ok: false, message: 'Data de validade inválida ou já expirada.' };
   }
   if (!currentActor || !validId(id) || !hasPlan || !reason) return failure;
-  if (requiresExpiry && !endsAt) return { ok: false, message: 'O plano Business/Stock/RH exige uma data de validade explícita.' };
+  if (requiresExpiry && !endsAt && !perpetuity) return { ok: false, message: 'O plano Stock/RH/Business exige uma data de validade ou decisão explícita de perpétuo.' };
   try {
     await db.$transaction(async (tx: any) => {
       const tenant = await tx.tenant.findUnique({ where: { id }, select: { id: true } });
@@ -304,7 +305,7 @@ export async function setTenantCommercialPlan(id: string, planSlug: CommercialPl
         });
       }
       await tx.tenant.update({ where: { id }, data: { plan: planSlug === 'free' ? 'FREE' : 'PRO', planExpiry: endsAt } });
-      await tx.adminAuditLog.create({ data: { actorUserId: currentActor.id, action: 'TENANT_PLAN_CHANGED', resourceType: 'TENANT', resourceId: id, reason, metadata: { plan: planSlug, expiresAt: endsAt ? endsAt.toISOString() : null, perpetual: endsAt === null } } });
+      await tx.adminAuditLog.create({ data: { actorUserId: currentActor.id, action: 'TENANT_PLAN_CHANGED', resourceType: 'TENANT', resourceId: id, reason, metadata: { plan: planSlug, expiresAt: endsAt ? endsAt.toISOString() : null, perpetual: perpetuity } } });
     }, { isolationLevel: 'Serializable' });
     revalidatePath('/admin'); revalidatePath('/admin/empresas'); revalidatePath(`/admin/empresas/${id}`); revalidatePath('/stock'); revalidatePath('/rh'); revalidatePath('/apps');
     return success;
