@@ -182,3 +182,44 @@ Cenários novos validados: mascaramento, histórico salarial, desligamento (201/
 | IA | Parcial | Preservado | **Parcialmente concluído** (chave) | E2E (503) |
 
 **Conclusão:** o Machine RH **não está 100% concluído**. Estão implementados e testados: privacidade, ciclo de vida, justificações, notificações, recibos PDF, exportações, recrutamento, desempenho, formação, descontos recorrentes, horas extra/faltas configuráveis e comunicados internos. Permanecem pendentes validação jurídica, notificações push, upload de ficheiros e escalas rotativas; EMIS depende de parceiro.
+
+## 20. Gates jurídicos, turnos nocturnos e uploads (staging, não em produção)
+
+Data: 2026-11-12 · Branch: `feat/machine-rh-staging-gates-storage` · **Sem migrations em produção**
+
+### O que foi implementado
+
+- **Gates jurídicos por módulo** (`RhPayrollRuleSet` e `RhDocumentTemplate`): `legalStatus` (PENDENTE por omissão), `legalDocumentUrl`, `legalValidatedBy`, `legalValidatedAt`.
+  - Endpoints `POST /api/rh/payroll/legal-validate` e `POST /api/rh/document-templates/legal-validate`:
+    exigem `settings:write`, evidência documental (URL) e nome/função de quem valida; regista auditoria (`RH_PAYROLL_RULESET_LEGAL_VALIDATED`, `RH_DOCUMENT_TEMPLATE_LEGAL_VALIDATED`).
+  - UI: botão **Validar** + badge **PENDENTE/VALIDADO** na lista de regras e modelos.
+  - **Nada foi marcado VALIDADO** sem evidência; defaults seguros.
+- **Turnos nocturnos pagos**: `RhShift.isNight` + `nightPremiumPercent` (0–100, omissão 0).
+  - `calculatePayslip` aceita `nightAllowance`; folhas calculadas somam o prémio se o funcionário estiver num turno nocturno.
+  - UI e API de criação de turno aceitam `isNight`/`nightPremiumPercent`; validação 0–100.
+  - **Nenhuma taxa foi inventada**; o prémio só se aplica se configurado pela empresa.
+- **Uploads reais**: API `POST /api/rh/uploads` + `src/lib/rh-storage.ts` (server-only, MIME PDF/PNG/JPEG/WebP, ≤10 MB).
+  - Sem variáveis configuradas → **503 `STORAGE_NOT_CONFIGURED`** (não finge guardar).
+  - `ensureBucket` cria o bucket `rh-uploads` se existir permissão.
+  - Detalhes de configuração em `docs/ops/SUPABASE-STORAGE-SETUP.md`.
+- **Migração**: `20261112080000_machine_rh_gates_shifts` (colunas novas, defaults seguros, **não aplicada em produção**).
+
+### O que continua pendente (fora de alcance sem terceiros)
+
+| Item | Motivo |
+|---|---|
+| Taxas INSS/IRT reais de Angola | Exigir validação legal e valores da empresa antes de aplicar; sistema mantém rulesets configuráveis com `VALIDADO` como estado opcional pós-revisão |
+| Validação jurídica assinada dos modelos | Exigir advogado; botão "Validar" é gate técnico, não parecer |
+| Bucket e policies reais no Supabase | Exigir acesso à conta; código pronto (`rh-storage.ts`) configurado acima |
+| EMIS / transferências reais | Fora de âmbito (explicitamente) |
+
+### Testes executados neste batch
+
+- `npx tsc --noEmit` → 0
+- `npm run lint` → 0
+- `npm run build` → OK
+- E2E em base descartável: **pendente para este batch**; a aplicar após aprovação do PR de staging.
+
+### Regra de ouro desta secção
+
+Nada ficou marcado **VALIDADO** sem evidência documental e aprovador identificado. O que falta tem de ser fornecido pelo cliente/jurídicos antes de ir a produção.
