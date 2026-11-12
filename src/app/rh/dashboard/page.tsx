@@ -43,10 +43,10 @@ export default async function RhDashboardPage() {
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {kpis.map((kpi, index) => (
           <Reveal key={kpi.label}>
-            <div className="rounded-xl border border-[#e1e8f0] bg-white p-4">
-              <p className="text-xs font-medium text-[#708195]">{kpi.label}</p>
-              <p className="mt-1 break-words text-xl font-bold tabular-nums text-[#1c2d3f]">{typeof kpi.value === 'number' ? <CountUp value={kpi.value} durationMs={800 + index * 120} /> : kpi.value}</p>
-              <p className="mt-0.5 text-[11px] text-[#8a99ab]">{kpi.hint}</p>
+            <div className="rounded-xl border border-[#1a3aa8]/20 bg-[#071e54] p-4 text-white shadow-[0_10px_30px_rgba(7,30,84,.28)]">
+              <p className="text-xs font-medium text-blue-100/80">{kpi.label}</p>
+              <p className="mt-1 break-words text-xl font-bold tabular-nums text-white">{typeof kpi.value === 'number' ? <CountUp value={kpi.value} durationMs={800 + index * 120} /> : kpi.value}</p>
+              <p className="mt-0.5 text-[11px] text-blue-100/60">{kpi.hint}</p>
             </div>
           </Reveal>
         ))}

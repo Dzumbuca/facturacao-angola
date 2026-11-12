@@ -1,5 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
+import { Onest } from "next/font/google";
+
+const onest = Onest({ subsets: ["latin"], weight: ["400", "500", "600", "700"], display: "swap" });
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -59,7 +62,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="pt-AO" className="h-full antialiased" suppressHydrationWarning>
+    <html lang="pt-AO" className={`h-full antialiased ${onest.className}`} suppressHydrationWarning>
       <body className="min-h-full flex flex-col">
         <Script id="theme-init" strategy="beforeInteractive">{`(() => { try { const key = 'machine-facturas-theme'; const saved = localStorage.getItem(key); const theme = saved === 'light' || saved === 'dark' ? saved : (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); document.documentElement.dataset.theme = theme; } catch { document.documentElement.dataset.theme = 'light'; } })();`}</Script>
         <Script id="sw-register" strategy="afterInteractive">{`if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js').catch(() => {}); }`}</Script>

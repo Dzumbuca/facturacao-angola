@@ -43,25 +43,25 @@ export function RhShell({ children, canManageMembers = false }: { children: Reac
 
   return (
     <div className="min-h-dvh bg-[#f5f7fb] text-[#1c2d3f]">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[236px] flex-col border-r border-[#dfe7f0] bg-white px-4 py-5 md:flex">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[236px] flex-col border-r border-[#071936] bg-[#0a1430] px-4 py-5 text-white md:flex">
         <Link href="/rh/dashboard" className="flex items-center gap-3 rounded-lg px-2">
-          <img src="/icons/rh-logo.png" alt="Machine RH" className="h-10 w-auto rounded-lg object-contain" />
+          <img src="/icons/rh-logo.png" alt="Machine RH" className="h-10 w-auto rounded-lg bg-white object-contain p-1" />
           <span>
-            <strong className="block text-[15px] tracking-[.04em] text-[#021f87]">MACHINE RH</strong>
-            <span className="text-[10px] uppercase tracking-[.12em] text-[#708195]">Recursos Humanos</span>
+            <strong className="block text-[15px] tracking-[.04em] text-white">MACHINE RH</strong>
+            <span className="text-[10px] uppercase tracking-[.12em] text-blue-200/70">Recursos Humanos</span>
           </span>
         </Link>
 
         <nav aria-label="Navegação Machine RH" className="mt-6 flex-1 space-y-5 overflow-y-auto">
           <div>
-            <p className="px-2 text-[10px] font-semibold uppercase tracking-[.16em] text-[#8a99ab]">Gestão</p>
+            <p className="px-2 text-[10px] font-semibold uppercase tracking-[.16em] text-blue-200/60">Gestão</p>
             <ul className="mt-2 space-y-1">
               {links.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
                     aria-current={isActive(link.href) ? 'page' : undefined}
-                    className={`flex min-h-10 items-center gap-3 rounded-lg px-3 text-[13px] transition ${isActive(link.href) ? 'bg-[#eef4ff] font-semibold text-[#021f87]' : 'text-[#4a5d70] hover:bg-[#f5f8fc]'}`}
+                    className={`flex min-h-10 items-center gap-3 rounded-lg px-3 text-[13px] transition ${isActive(link.href) ? 'bg-[#021f87] font-semibold text-white' : 'text-blue-100/80 hover:bg-white/5'}`}
                   >
                     <span aria-hidden="true" className="w-4 text-center">{link.icon}</span>{link.label}
                   </Link>
@@ -70,12 +70,12 @@ export function RhShell({ children, canManageMembers = false }: { children: Reac
             </ul>
           </div>
           <div>
-            <p className="px-2 text-[10px] font-semibold uppercase tracking-[.16em] text-[#8a99ab]">Brevemente</p>
+            <p className="px-2 text-[10px] font-semibold uppercase tracking-[.16em] text-blue-200/60">Brevemente</p>
             <ul className="mt-2 space-y-1">
               {futureLinks.map((link) => (
                 <li key={link.href}>
                   <span className="flex min-h-9 cursor-not-allowed items-center justify-between rounded-lg px-3 text-[13px] text-[#9aa8b8]">
-                    {link.label}<span className="rounded bg-[#f1f4f8] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide">Breve</span>
+                    {link.label}<span className="rounded bg-white/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-blue-100/60">Breve</span>
                   </span>
                 </li>
               ))}
@@ -83,9 +83,9 @@ export function RhShell({ children, canManageMembers = false }: { children: Reac
           </div>
         </nav>
 
-        <div className="mt-4 space-y-3 border-t border-[#e7edf3] pt-4">
+        <div className="mt-4 space-y-3 border-t border-white/10 pt-4">
           <RhPwa />
-          <Link href="/" className="block text-xs font-medium text-[#607286] hover:text-[#021f87]">← Voltar à Machine Facturas</Link>
+          <Link href="/" className="block text-xs font-medium text-blue-100/70 hover:text-white">← Voltar à Machine Facturas</Link>
         </div>
       </aside>
 
@@ -102,7 +102,7 @@ export function RhShell({ children, canManageMembers = false }: { children: Reac
           </div>
           <div className="flex items-center gap-2">
             <Link href="/" className="hidden rounded-lg border border-[#dfe7f0] px-3 py-1.5 text-xs font-medium text-[#52667a] hover:bg-[#f7f9fc] sm:inline-flex">Machine Facturas</Link>
-            <span className="hidden rounded-full bg-[#eef4ff] px-2.5 py-1 text-[11px] font-semibold text-[#021f87] sm:inline-flex">RH</span>
+            <span className="hidden rounded-full bg-[#021f87] px-2.5 py-1 text-[11px] font-semibold text-white sm:inline-flex">RH</span>
           </div>
         </header>
 

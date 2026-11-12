@@ -422,3 +422,7 @@ main :where(.grid) > * { min-width: 0; }
   --lumora-radius-pill: 9999px;
   --lumora-radius-card: 2rem;
 }
+:root {
+  --font-sans: Onest, "Segoe UI", Arial, sans-serif;
+}
+body { font-family: Onest, "Segoe UI", Arial, sans-serif; }

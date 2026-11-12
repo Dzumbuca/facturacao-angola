@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { FormError } from '@/components/rh/form-kit';
+import { CountUp } from '@/components/rh/count-up';
 type Employee = { id: string; firstName: string; lastName: string; employeeNumber: string; hasPin: boolean };
 type Entry = {
   id: string; type: string; source: string; occurredAt: string; lateMinutes: number; shiftName: string | null;
@@ -71,10 +72,10 @@ export function AttendanceManager({ entries, employees }: { entries: Entry[]; em
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="rounded-xl border border-[#e1e8f0] bg-white p-4"><p className="text-xs text-[#708195]">Presentes hoje</p><p className="mt-1 text-xl font-bold tabular-nums">{present}</p></div>
-        <div className="rounded-xl border border-[#e1e8f0] bg-white p-4"><p className="text-xs text-[#708195]">Marcações hoje</p><p className="mt-1 text-xl font-bold tabular-nums">{entries.length}</p></div>
+        <div className="rounded-xl border border-[#e1e8f0] bg-white p-4"><p className="text-xs text-[#708195]">Presentes hoje</p><p className="mt-1 text-xl font-bold tabular-nums"><CountUp value={present} durationMs={900} /></p></div>
+        <div className="rounded-xl border border-[#e1e8f0] bg-white p-4"><p className="text-xs text-[#708195]">Marcações hoje</p><p className="mt-1 text-xl font-bold tabular-nums"><CountUp value={entries.length} durationMs={900} /></p></div>
         <div className="rounded-xl border border-[#e1e8f0] bg-white p-4"><p className="text-xs text-[#708195]">Funcionários com PIN</p><p className="mt-1 text-xl font-bold tabular-nums">{employees.filter((e) => e.hasPin).length}</p></div>
-        <div className="rounded-xl border border-[#e1e8f0] bg-white p-4"><p className="text-xs text-[#708195]">Atrasados hoje</p><p className="mt-1 text-xl font-bold tabular-nums text-[#a83939]">{late}</p></div>
+        <div className="rounded-xl border border-[#e1e8f0] bg-white p-4"><p className="text-xs text-[#708195]">Atrasados hoje</p><p className="mt-1 text-xl font-bold tabular-nums text-[#a83939]"><CountUp value={late} durationMs={900} /></p></div>
       </div>
 
       <section className="rounded-xl border border-[#e1e8f0] bg-white p-5">
