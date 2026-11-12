@@ -3,6 +3,7 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { SignedImage } from '@/components/rh/signed-image';
+import { FormSection, FormActions, FormError } from '@/components/rh/form-kit';
 
 type Department = { id: string; name: string };
 type Position = { id: string; title: string; departmentId: string | null };
@@ -233,21 +234,18 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
               <button type="button" aria-label="Fechar" disabled={saving} onClick={() => setOpen(false)} className="flex h-10 w-10 items-center justify-center rounded-lg text-xl text-[#708195] hover:bg-[#f0f4f8]">×</button>
             </div>
             <form className="space-y-4" onSubmit={submit} key={editing?.id ?? 'novo'} noValidate>
-              <fieldset className="space-y-3">
-                <legend className="text-[11px] font-bold uppercase tracking-[.12em] text-[#8a99ab]">Identificação</legend>
-                <div className="grid gap-3 sm:grid-cols-2">
+              <FormSection title="Identificação pessoal">
+
                   <div><label htmlFor="rh-first" className="app-label">Nome *</label><input id="rh-first" name="firstName" className="app-input" required defaultValue={editing?.firstName ?? ''} /></div>
                   <div><label htmlFor="rh-last" className="app-label">Apelido *</label><input id="rh-last" name="lastName" className="app-input" required defaultValue={editing?.lastName ?? ''} /></div>
                   <div><label htmlFor="rh-bi" className="app-label">BI</label><input id="rh-bi" name="bi" className="app-input" defaultValue={editing?.bi ?? ''} /></div>
                   <div><label htmlFor="rh-nif" className="app-label">NIF</label><input id="rh-nif" name="nif" className="app-input" defaultValue={editing?.nif ?? ''} /></div>
                   <div><label htmlFor="rh-birth" className="app-label">Data de nascimento</label><input id="rh-birth" name="birthDate" type="date" className="app-input" defaultValue={editing?.birthDate?.slice(0, 10) ?? ''} /></div>
                   <div><label htmlFor="rh-gender" className="app-label">Género</label><select id="rh-gender" name="gender" className="app-input" defaultValue={editing?.gender ?? ''}><option value="">Não indicado</option><option value="M">Masculino</option><option value="F">Feminino</option><option value="OUTRO">Outro</option></select></div>
-                </div>
-              </fieldset>
+              </FormSection>
 
-              <fieldset className="space-y-3">
-                <legend className="text-[11px] font-bold uppercase tracking-[.12em] text-[#8a99ab]">Contacto</legend>
-                <div className="grid gap-3 sm:grid-cols-2">
+              <FormSection title="Contactos">
+
                   <div><label htmlFor="rh-email" className="app-label">Email</label><input id="rh-email" name="email" type="email" className="app-input" defaultValue={editing?.email ?? ''} /></div>
                   <div><label htmlFor="rh-phone" className="app-label">Telefone</label><input id="rh-phone" name="phone" className="app-input" defaultValue={editing?.phone ?? ''} /></div>
                   <div className="sm:col-span-2"><label htmlFor="rh-address" className="app-label">Morada</label><input id="rh-address" name="address" className="app-input" defaultValue={editing?.address ?? ''} /></div>
@@ -256,12 +254,10 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
   <input id="rh-photo-file" type="file" accept="image/png,image/jpeg,image/webp" className="app-input" onChange={handlePhotoUpload} />
   <input id="rh-photo-url" name="photoUrl" className="app-input mt-2" placeholder="Ou cole um URL…" defaultValue={editing?.photoUrl ?? ''} />
 </div>
-                </div>
-              </fieldset>
+              </FormSection>
 
-              <fieldset className="space-y-3">
-                <legend className="text-[11px] font-bold uppercase tracking-[.12em] text-[#8a99ab]">Vínculo profissional</legend>
-                <div className="grid gap-3 sm:grid-cols-2">
+              <FormSection title="Informação profissional">
+
                   <div><label htmlFor="rh-dept" className="app-label">Departamento</label><select id="rh-dept" name="departmentId" className="app-input" defaultValue={editing?.departmentId ?? ''}><option value="">—</option>{departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}</select></div>
                   <div><label htmlFor="rh-pos" className="app-label">Cargo</label><select id="rh-pos" name="positionId" className="app-input" defaultValue={editing?.positionId ?? ''}><option value="">—</option>{positions.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}</select></div>
                   <div><label htmlFor="rh-shift" className="app-label">Horário</label><select id="rh-shift" name="shiftId" className="app-input" defaultValue={editing?.shiftId ?? ''}><option value="">—</option>{shifts.map((shift) => <option key={shift.id} value={shift.id}>{shift.name} ({shift.startTime}–{shift.endTime})</option>)}</select></div>
@@ -270,8 +266,7 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
                   <div><label htmlFor="rh-salary" className="app-label">Salário-base (Kz) *</label><input id="rh-salary" name="baseSalary" type="number" min="0" step="0.01" className="app-input tabular-nums" required defaultValue={editing?.baseSalary ?? ''} /></div>
                   <div><label htmlFor="rh-status" className="app-label">Estado</label><select id="rh-status" name="status" className="app-input" defaultValue={editing?.status ?? 'ACTIVO'}>{Object.entries(STATUS_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
                   <div><label htmlFor="rh-pin" className="app-label">PIN do ponto <span className="font-normal text-[#708195]">{editing?.hasPin ? '(definido)' : '(opcional)'}</span></label><input id="rh-pin" name="pin" type="password" inputMode="numeric" maxLength={8} className="app-input tracking-[.3em]" placeholder={editing?.hasPin ? 'Deixar vazio para manter' : '4 a 8 dígitos'} /></div>
-                </div>
-              </fieldset>
+              </FormSection>
 
               {editing && (
                 <div className="rounded-lg border border-[#e1e8f0] bg-[#f8fafc] p-3">
@@ -292,20 +287,14 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
                 </div>
               )}
 
-              <fieldset className="space-y-3">
-                <legend className="text-[11px] font-bold uppercase tracking-[.12em] text-[#8a99ab]">Dados bancários (restrito)</legend>
-                <div className="grid gap-3 sm:grid-cols-3">
-                  <div><label htmlFor="rh-bank" className="app-label">Banco</label><input id="rh-bank" name="bankName" className="app-input" defaultValue={editing?.bankName ?? ''} /></div>
-                  <div><label htmlFor="rh-account" className="app-label">Conta</label><input id="rh-account" name="bankAccount" className="app-input" defaultValue={editing?.bankAccount ?? ''} /></div>
-                  <div><label htmlFor="rh-iban" className="app-label">IBAN</label><input id="rh-iban" name="bankIban" className="app-input" defaultValue={editing?.bankIban ?? ''} /></div>
-                </div>
-              </fieldset>
+              <FormSection title="Dados bancários (restrito)" description="Acesso restrito a perfis com escrita de funcionários.">
+                <div><label htmlFor="rh-bank" className="app-label">Banco</label><input id="rh-bank" name="bankName" className="app-input" defaultValue={editing?.bankName ?? ''} /></div>
+                <div><label htmlFor="rh-account" className="app-label">Conta</label><input id="rh-account" name="bankAccount" className="app-input" defaultValue={editing?.bankAccount ?? ''} /></div>
+                <div><label htmlFor="rh-iban" className="app-label">IBAN</label><input id="rh-iban" name="bankIban" className="app-input" defaultValue={editing?.bankIban ?? ''} /></div>
+              </FormSection>
 
-              {error && <p role="alert" className="rounded-lg border border-red-100 bg-red-50 px-3 py-2.5 text-sm text-[#a83939]">{error}</p>}
-              <div className="sticky bottom-0 -mx-5 -mb-5 mt-2 flex flex-col-reverse gap-2 border-t border-[#e7edf3] bg-white px-5 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-4 sm:static sm:mx-0 sm:mb-0 sm:flex-row sm:justify-end sm:px-0 sm:pb-0">
-                <button type="button" onClick={() => setOpen(false)} disabled={saving} className="min-h-11 rounded-lg border border-[#cdddeb] px-4 text-sm font-semibold text-[#52667a]">Cancelar</button>
-                <button type="submit" disabled={saving} className="min-h-11 rounded-lg bg-[#021f87] px-5 text-sm font-semibold text-white disabled:opacity-60">{saving ? 'A guardar…' : 'Guardar funcionário'}</button>
-              </div>
+              <FormError>{error}</FormError>
+              <FormActions saving={saving} onCancel={() => setOpen(false)} saveLabel={editing ? 'Guardar alterações' : 'Criar funcionário'} />
             </form>
           </section>
         </div>
