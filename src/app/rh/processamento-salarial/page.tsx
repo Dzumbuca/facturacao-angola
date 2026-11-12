@@ -19,7 +19,7 @@ export default async function RhPayrollPage() {
 
   return (
     <PayrollManager
-      rulesets={(data.rulesets as any[]).map((ruleset) => ({ ...ruleset, effectiveFrom: ruleset.effectiveFrom.toISOString() }))}
+      rulesets={(data.rulesets as any[]).map((ruleset) => ({ ...ruleset, effectiveFrom: ruleset.effectiveFrom.toISOString(), legalStatus: ruleset.legalStatus }))}
       runs={(data.runs as any[]).map((run) => ({
         ...run,
         totalGross: Number(run.totalGross), totalNet: Number(run.totalNet),

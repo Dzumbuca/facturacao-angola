@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 
 type Shift = {
   id: string; name: string; startTime: string; endTime: string;
-  toleranceMinutes: number; isActive: boolean;
+  toleranceMinutes: number; isActive: boolean; isNight: boolean; nightPremiumPercent: number;
   _count: { employees: number };
 };
 
@@ -29,6 +29,8 @@ export function ShiftsManager({ shifts }: { shifts: Shift[] }) {
           startTime: String(form.get('startTime') ?? ''),
           endTime: String(form.get('endTime') ?? ''),
           toleranceMinutes: String(form.get('toleranceMinutes') ?? '0'),
+          isNight: form.get('isNight') === 'on',
+          nightPremiumPercent: Number(form.get('nightPremiumPercent') ?? '0'),
         }),
       });
       const data = await response.json().catch(() => ({}));
@@ -60,6 +62,8 @@ export function ShiftsManager({ shifts }: { shifts: Shift[] }) {
             <div><label htmlFor="shift-start" className="app-label">Entrada *</label><input id="shift-start" name="startTime" type="time" className="app-input" required /></div>
             <div><label htmlFor="shift-end" className="app-label">Saída *</label><input id="shift-end" name="endTime" type="time" className="app-input" required /></div>
             <div><label htmlFor="shift-tol" className="app-label">Tolerância (min)</label><input id="shift-tol" name="toleranceMinutes" type="number" min="0" max="120" className="app-input" defaultValue="0" /></div>
+            <div className="flex items-end gap-2"><label className="flex items-center gap-2 text-sm font-medium text-[#52667a]"><input id="shift-night" name="isNight" type="checkbox" /> Nocturno</label></div>
+            <div><label htmlFor="shift-nightpct" className="app-label">Prémio nocturno (%)</label><input id="shift-nightpct" name="nightPremiumPercent" type="number" min="0" max="100" className="app-input" defaultValue="0" /></div>
           </div>
           {error && <p role="alert" className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-[#a83939]">{error}</p>}
           <div className="mt-3 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

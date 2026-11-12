@@ -89,7 +89,7 @@ function stopServer(child) {
   const server = spawn('npx', ['next', 'start', '-p', PORT], {
     cwd: ROOT,
     shell: true,
-    stdio: 'ignore',
+    stdio: 'inherit',
     // A suite faz >30 logins/min; elevar o rate limit só neste servidor de teste.
     env: { ...process.env, DATABASE_URL: databaseUrl, NEXTAUTH_URL: APP_URL, AUTH_RATE_LIMIT_MAX: '300' },
   });

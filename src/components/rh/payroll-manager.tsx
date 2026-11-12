@@ -4,7 +4,7 @@ import { useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-type RuleSet = { id: string; name: string; effectiveFrom: string; status: string };
+type RuleSet = { id: string; name: string; effectiveFrom: string; status: string; legalStatus?: string };
 type Run = {
   id: string; period: string; status: string; totalGross: number; totalNet: number;
   totalInss: number; totalIrt: number; ruleset: { name: string } | null; _count: { payslips: number };
@@ -27,6 +27,18 @@ function money(value: number) {
 export function PayrollManager({ rulesets, runs }: { rulesets: RuleSet[]; runs: Run[] }) {
   const router = useRouter();
   const [tab, setTab] = useState<'runs' | 'rules'>('runs');
+  async function validateRuleset(ruleset: RuleSet) {
+    const documentUrl = window.prompt('URL da evidência documental (parecer ou documento):');
+    const validatedByName = window.prompt('Validado por (nome e função):');
+    if (!documentUrl || !validatedByName) return;
+    const response = await fetch('/api/rh/payroll/legal-validate', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rulesetId: ruleset.id, documentUrl, validatedByName }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) window.alert(data?.error ?? 'Não foi possível validar.');
+    else router.refresh();
+  }
   const [period, setPeriod] = useState('');
   const [rulesetId, setRulesetId] = useState(rulesets[0]?.id ?? '');
   const [name, setName] = useState('');
@@ -185,9 +197,12 @@ export function PayrollManager({ rulesets, runs }: { rulesets: RuleSet[]; runs: 
           <div className="rounded-xl border border-[#e1e8f0] bg-white">
             <ul className="divide-y divide-[#eef2f6]">
               {rulesets.map((ruleset) => (
-                <li key={ruleset.id} className="flex items-center justify-between px-4 py-3">
+                <li key={ruleset.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
                   <div><p className="text-sm font-semibold text-[#1c2d3f]">{ruleset.name}</p><p className="text-xs text-[#708195]">Vigência {new Date(ruleset.effectiveFrom).toLocaleDateString('pt-AO')}</p></div>
-                  <span className="rounded-full bg-[#eff9f4] px-2 py-0.5 text-[11px] font-semibold text-[#267256]">{ruleset.status}</span>
+                  <div className="flex items-center gap-2">
+                    <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${ruleset.legalStatus === 'VALIDADO' ? 'bg-[#eff9f4] text-[#267256]' : 'bg-[#fff7e6] text-[#8a5a00]'}`}>{ruleset.legalStatus ?? 'PENDENTE'}</span>
+                    <button type="button" onClick={() => validateRuleset(ruleset)} className="min-h-9 rounded-lg border border-[#cdddeb] px-3 text-xs font-semibold text-[#021f87]">Validar</button>
+                  </div>
                 </li>
               ))}
               {rulesets.length === 0 && <li className="px-4 py-8 text-center text-sm text-[#708195]">Ainda não há regras.</li>}

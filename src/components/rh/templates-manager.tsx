@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
-type Template = { id: string; name: string; type: string; body: string; isActive: boolean; version: number };
+type Template = { id: string; name: string; type: string; body: string; isActive: boolean; version: number; legalStatus?: string };
 
 const TYPE_LABEL: Record<string, string> = {
   CONTRATO: 'Contrato', DECLARACAO_TRABALHO: 'Declaração de trabalho', DECLARACAO_RENDIMENTOS: 'Declaração de rendimentos',
@@ -42,6 +42,19 @@ export function TemplatesManager({ templates }: { templates: Template[] }) {
     } finally {
       setSaving(false);
     }
+  }
+
+  async function validateTemplate(template: Template) {
+    const documentUrl = window.prompt('URL da evidência documental (parecer ou documento):');
+    const validatedByName = window.prompt('Validado por (nome e função):');
+    if (!documentUrl || !validatedByName) return;
+    const response = await fetch('/api/rh/document-templates/legal-validate', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ templateId: template.id, documentUrl, validatedByName }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) window.alert(data?.error ?? 'Não foi possível validar.');
+    else router.refresh();
   }
 
   async function openHistory(template: Template) {
@@ -102,23 +115,25 @@ export function TemplatesManager({ templates }: { templates: Template[] }) {
 
       <div className="overflow-x-auto rounded-xl border border-[#e1e8f0] bg-white">
         <table className="data-table min-w-[720px]">
-          <thead><tr><th>Modelo</th><th>Tipo</th><th>Versão</th><th>Estado</th><th>Acções</th></tr></thead>
+          <thead><tr><th>Modelo</th><th>Tipo</th><th>Versão</th><th>Jurídico</th><th>Estado</th><th>Acções</th></tr></thead>
           <tbody>
             {templates.map((template) => (
               <tr key={template.id}>
                 <td data-mobile-primary className="font-semibold text-[#1c2d3f]">{template.name}</td>
                 <td>{TYPE_LABEL[template.type] ?? template.type}</td>
                 <td className="tabular-nums">v{template.version}</td>
+                <td><span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${template.legalStatus === 'VALIDADO' ? 'bg-[#eff9f4] text-[#267256]' : 'bg-[#fff7e6] text-[#8a5a00]'}`}>{template.legalStatus ?? 'PENDENTE'}</span></td>
                 <td><span className="rounded-full bg-[#eff9f4] px-2 py-0.5 text-[11px] font-semibold text-[#267256]">{template.isActive ? 'Activo' : 'Inactivo'}</span></td>
                 <td data-mobile-actions>
                   <div className="flex gap-2">
                     <button type="button" onClick={() => { setEditing(template); setName(template.name); setType(template.type); setBody(template.body); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="min-h-9 rounded-lg border border-[#cdddeb] px-3 text-xs font-semibold text-[#021f87]">Editar</button>
+                    <button type="button" onClick={() => validateTemplate(template)} className="min-h-9 rounded-lg border border-[#cdddeb] px-3 text-xs font-semibold text-[#021f87]">Validar</button>
                     <button type="button" onClick={() => openHistory(template)} className="min-h-9 rounded-lg border border-[#cdddeb] px-3 text-xs font-semibold text-[#52667a]">Histórico</button>
                   </div>
                 </td>
               </tr>
             ))}
-            {templates.length === 0 && <tr><td colSpan={5} className="px-4 py-10 text-center text-sm text-[#708195]">Ainda não há modelos.</td></tr>}
+            {templates.length === 0 && <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-[#708195]">Ainda não há modelos.</td></tr>}
           </tbody>
         </table>
       </div>
