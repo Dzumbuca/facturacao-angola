@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { FormError } from '@/components/rh/form-kit';
+import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
 type Enrollment = { id: string; status: string; score: number | null; employee: { firstName: string; lastName: string; employeeNumber: string; position: { title: string } | null } };
 type Course = { id: string; title: string; trainerName: string | null; startDate: string; endDate: string | null; cargaHoras: number; location: string | null; status: string; enrollments: Enrollment[] };
 type Employee = { id: string; firstName: string; lastName: string; employeeNumber: string };
@@ -110,29 +110,59 @@ export function TrainingManager({ courses, employees, positions }: { courses: Co
       <div className="grid gap-5 lg:grid-cols-2">
         <form onSubmit={createCourse} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
           <h2 className="text-sm font-bold text-[#1c2d3f]">Novo curso</h2>
-          <div className="mt-3 grid gap-3">
-            <div><label htmlFor="tc-title" className="app-label">Título *</label><input id="tc-title" name="title" className="app-input" required placeholder="Ex.: Segurança no trabalho" /></div>
-            <div><label htmlFor="tc-trainer" className="app-label">Formador</label><input id="tc-trainer" name="trainerName" className="app-input" placeholder="Nome ou entidade" /></div>
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div><label htmlFor="tc-start" className="app-label">Início *</label><input id="tc-start" name="startDate" type="date" className="app-input" required /></div>
-              <div><label htmlFor="tc-end" className="app-label">Fim</label><input id="tc-end" name="endDate" type="date" className="app-input" /></div>
-              <div><label htmlFor="tc-hours" className="app-label">Horas</label><input id="tc-hours" name="cargaHoras" type="number" min={1} defaultValue={8} className="app-input" /></div>
+          <FormSection title="Detalhes do curso">
+            <div className="sm:col-span-2">
+              <FormField label="Título" name="tc-title" required><input id="tc-title" name="title" className="app-input" required placeholder="Ex.: Segurança no trabalho" /></FormField>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div><label htmlFor="tc-location" className="app-label">Local</label><input id="tc-location" name="location" className="app-input" placeholder="Presencial / online" /></div>
-              <div><label htmlFor="tc-req" className="app-label">Exigido para cargo</label><select id="tc-req" name="requiredForPositionId" className="app-input"><option value="">—</option>{positions.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}</select></div>
+            <div className="sm:col-span-2">
+              <FormField label="Formador" name="tc-trainer"><input id="tc-trainer" name="trainerName" className="app-input" placeholder="Nome ou entidade" /></FormField>
             </div>
-          </div>
-          <div className="mt-3 flex justify-end"><button type="submit" disabled={busy === 'create'} className="min-h-10 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white disabled:opacity-60">{busy === 'create' ? 'A criar…' : 'Criar curso'}</button></div>
+            <div>
+              <FormField label="Início" name="tc-start" required><input id="tc-start" name="startDate" type="date" className="app-input" required /></FormField>
+            </div>
+            <div>
+              <FormField label="Fim" name="tc-end"><input id="tc-end" name="endDate" type="date" className="app-input" /></FormField>
+            </div>
+            <div>
+              <FormField label="Horas" name="tc-hours"><input id="tc-hours" name="cargaHoras" type="number" min={1} defaultValue={8} className="app-input" /></FormField>
+            </div>
+            <div>
+              <FormField label="Local" name="tc-location"><input id="tc-location" name="location" className="app-input" placeholder="Presencial / online" /></FormField>
+            </div>
+            <div className="sm:col-span-2">
+              <FormField label="Exigido para cargo" name="tc-req">
+                <select id="tc-req" name="requiredForPositionId" className="app-input">
+                  <option value="">—</option>{positions.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}
+                </select>
+              </FormField>
+            </div>
+            <div className="sm:col-span-2">
+              <FormActions saving={busy === 'create'} onCancel={() => {}} saveLabel={busy === 'create' ? 'A criar…' : 'Criar curso'} />
+            </div>
+          </FormSection>
         </form>
 
         <form onSubmit={enroll} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
           <h2 className="text-sm font-bold text-[#1c2d3f]">Inscrever funcionário</h2>
-          <div className="mt-3 grid gap-3">
-            <div><label htmlFor="te-course" className="app-label">Curso</label><select id="te-course" value={enrollCourseId} onChange={(e) => setEnrollCourseId(e.target.value)} className="app-input" required>{courses.map((c) => <option key={c.id} value={c.id}>{c.title} ({c.enrollments.length})</option>)}</select></div>
-            <div><label htmlFor="te-employee" className="app-label">Funcionário</label><select id="te-employee" value={enrollEmployeeId} onChange={(e) => setEnrollEmployeeId(e.target.value)} className="app-input" required>{employees.map((e) => <option key={e.id} value={e.id}>{e.firstName} {e.lastName} ({e.employeeNumber})</option>)}</select></div>
-          </div>
-          <div className="mt-3 flex justify-end"><button type="submit" disabled={busy === 'enroll' || courses.length === 0 || employees.length === 0} className="min-h-10 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white disabled:opacity-60">{busy === 'enroll' ? 'A inscrever…' : 'Inscrever'}</button></div>
+          <FormSection title="Inscrição">
+            <div className="sm:col-span-2">
+              <FormField label="Curso" name="te-course" required>
+                <select id="te-course" value={enrollCourseId} onChange={(e) => setEnrollCourseId(e.target.value)} className="app-input" required>
+                  {courses.map((c) => <option key={c.id} value={c.id}>{c.title} ({c.enrollments.length})</option>)}
+                </select>
+              </FormField>
+            </div>
+            <div className="sm:col-span-2">
+              <FormField label="Funcionário" name="te-employee" required>
+                <select id="te-employee" value={enrollEmployeeId} onChange={(e) => setEnrollEmployeeId(e.target.value)} className="app-input" required>
+                  {employees.map((e) => <option key={e.id} value={e.id}>{e.firstName} {e.lastName} ({e.employeeNumber})</option>)}
+                </select>
+              </FormField>
+            </div>
+            <div className="sm:col-span-2">
+              <FormActions saving={busy === 'enroll'} disabled={courses.length === 0 || employees.length === 0} onCancel={() => {}} saveLabel={busy === 'enroll' ? 'A inscrever…' : 'Inscrever'} />
+            </div>
+          </FormSection>
         </form>
       </div>
 

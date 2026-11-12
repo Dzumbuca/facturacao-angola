@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { FormError } from '@/components/rh/form-kit';
+import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
 type Criterion = { id: string; name: string; weight: number; order: number };
 type Review = { id: string; reviewerName: string | null; score: number | null; comments: string | null; status: string; employee: { firstName: string; lastName: string; employeeNumber: string; position: { title: string } | null } };
 type Cycle = { id: string; name: string; startsAt: string; endsAt: string | null; status: string; criteria: Criterion[]; reviews: Review[]; _count: { reviews: number } };
@@ -107,18 +107,27 @@ export function PerformanceManager({ cycles }: { cycles: Cycle[] }) {
 
       <FormError>{error}</FormError>
 
-      <form onSubmit={createCycle} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
+            <form onSubmit={createCycle} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
         <h2 className="text-sm font-bold text-[#1c2d3f]">Novo ciclo</h2>
-        <div className="mt-3 grid gap-3 sm:grid-cols-3">
-          <div className="sm:col-span-2"><label htmlFor="pc-name" className="app-label">Nome *</label><input id="pc-name" name="name" className="app-input" required placeholder="Ex.: Avaliação semestral 2026" /></div>
-          <div><label htmlFor="pc-start" className="app-label">Início *</label><input id="pc-start" name="startsAt" type="date" className="app-input" required /></div>
-          <div><label htmlFor="pc-end" className="app-label">Fim</label><input id="pc-end" name="endsAt" type="date" className="app-input" /></div>
-          <div className="sm:col-span-3">
-            <label htmlFor="pc-criteria" className="app-label">Critérios (um por linha, formato &quot;nome|peso&quot;)</label>
-            <textarea id="pc-criteria" name="criteria" className="app-input min-h-24 font-mono text-xs" placeholder={'Produtividade|2\nQualidade|2\nColaboração|1'} />
+        <FormSection title="Ciclo de avaliação">
+          <div className="sm:col-span-2">
+            <FormField label="Nome" name="pc-name" required><input id="pc-name" name="name" className="app-input" required placeholder="Ex.: Avaliação semestral 2026" /></FormField>
           </div>
-        </div>
-        <div className="mt-3 flex justify-end"><button type="submit" disabled={busy === 'create'} className="min-h-10 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white disabled:opacity-60">{busy === 'create' ? 'A criar…' : 'Criar ciclo'}</button></div>
+          <div>
+            <FormField label="Início" name="pc-start" required><input id="pc-start" name="startsAt" type="date" className="app-input" required /></FormField>
+          </div>
+          <div>
+            <FormField label="Fim" name="pc-end"><input id="pc-end" name="endsAt" type="date" className="app-input" /></FormField>
+          </div>
+          <div className="sm:col-span-3">
+            <FormField label="Critérios" name="pc-criteria" hint="Um por linha, formato «nome|peso»">
+              <textarea id="pc-criteria" name="criteria" className="app-input min-h-24 font-mono text-xs" placeholder={'Produtividade|2 | Qualidade|2 | Colaboração|1'} />
+            </FormField>
+          </div>
+          <div className="sm:col-span-3">
+            <FormActions saving={busy === 'create'} onCancel={() => {}} saveLabel={busy === 'create' ? 'A criar…' : 'Criar ciclo'} />
+          </div>
+        </FormSection>
       </form>
 
       {cycles.map((cycle) => (
