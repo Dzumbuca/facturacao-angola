@@ -88,9 +88,9 @@ export function formatPtValue(value: number | null | undefined, fractionDigits =
 }
 
 /** Input de número ao estilo Angola: 20.000,00. Controlado externamente. */
-export function CurrencyInput({ id, name, value, onChange, prefix = 'Kz', min = 0, required = false, disabled = false, ariaLabel }: {
+export function CurrencyInput({ id, name, value, onChange, prefix = 'Kz', required = false, disabled = false, ariaLabel }: {
   id?: string; name?: string; value: number | null; onChange: (value: number | null) => void;
-  prefix?: string; min?: number; required?: boolean; disabled?: boolean; ariaLabel?: string;
+  prefix?: string; required?: boolean; disabled?: boolean; ariaLabel?: string;
 }) {
   const defaultText = value === null ? '' : formatPtValue(value);
   return (
@@ -110,7 +110,7 @@ export function CurrencyInput({ id, name, value, onChange, prefix = 'Kz', min = 
           className="min-h-11 w-full bg-transparent text-right tabular-nums outline-none"
         />
       </label>
-      <input type="hidden" name={name} value={value === null ? '' : String(value)} />
+      <input type="hidden" name={name} value={value === null ? '' : String(value)} required={required} />
     </div>
   );
 }

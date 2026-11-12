@@ -4,7 +4,7 @@ import { useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
+import { FormSection, FormField, FormActions, FormError, CalendarField } from '@/components/rh/form-kit';
 type RuleSet = { id: string; name: string; effectiveFrom: string; status: string; legalStatus?: string };
 type Run = {
   id: string; period: string; status: string; totalGross: number; totalNet: number;
@@ -181,7 +181,7 @@ export function PayrollManager({ rulesets, runs }: { rulesets: RuleSet[]; runs: 
             <h2 className="text-sm font-bold text-[#1c2d3f]">Novo conjunto de regras</h2>
             <FormSection title="Definição das regras" description="Os valores são definidos pela empresa após validação jurídica. Nada fica VALIDADO sem evidência documental.">
               <div className="sm:col-span-2"><FormField label="Nome" name="rule-name" required><input id="rule-name" className="app-input" value={name} onChange={(e) => setName(e.target.value)} required /></FormField></div>
-              <div><FormField label="Vigência" name="rule-from" required><input id="rule-from" type="date" className="app-input" value={effectiveFrom} onChange={(e) => setEffectiveFrom(e.target.value)} required /></FormField></div>
+              <div><FormField label="Vigência" name="rule-from" required><CalendarField id="rule-from" name="rule-from" value={effectiveFrom} onChange={setEffectiveFrom} required /></FormField></div>
               <div><FormField label="INSS trabalhador (%)" name="rule-inss-emp"><input id="rule-inss-emp" type="number" min="0" max="100" step="0.01" className="app-input" value={inssEmployeeRate} onChange={(e) => setInssEmployeeRate(e.target.value)} required /></FormField></div>
               <div><FormField label="INSS entidade (%)" name="rule-inss-empr"><input id="rule-inss-empr" type="number" min="0" max="100" step="0.01" className="app-input" value={inssEmployerRate} onChange={(e) => setInssEmployerRate(e.target.value)} required /></FormField></div>
               <div><FormField label="Subsídio alimentação (Kz)" name="rule-food"><input id="rule-food" type="number" min="0" step="0.01" className="app-input" value={foodAllowance} onChange={(e) => setFoodAllowance(e.target.value)} required /></FormField></div>

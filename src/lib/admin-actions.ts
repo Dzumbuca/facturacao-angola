@@ -270,10 +270,19 @@ export async function reviewPlanPayment(id: string, decision: 'CONFIRMADO' | 'RE
 
 // Atribui um pacote comercial (Free / Stock / RH / Business) e liga os módulos certos.
 export type CommercialPlan = 'free' | 'stock' | 'rh' | 'business';
-export async function setTenantCommercialPlan(id: string, planSlug: CommercialPlan | string, rawReason: string): Promise<ActionResult> {
+export async function setTenantCommercialPlan(id: string, planSlug: CommercialPlan | string, rawReason: string, rawExpiresAt?: string | null): Promise<ActionResult> {
   const currentActor = await actor('companies.update');
   const reason = validateAdminReason(rawReason);
-  if (!currentActor || !validId(id) || !['free', 'stock', 'rh', 'business'].includes(planSlug) || !reason) return failure;
+  const hasPlan = ['free', 'stock', 'rh', 'business'].includes(planSlug);
+  const requiresExpiry = hasPlan && planSlug !== 'free';
+  const cleanedExpiresAt = rawExpiresAt?.trim() || '';
+  let endsAt: Date | null = null;
+  if (cleanedExpiresAt) {
+    endsAt = new Date(cleanedExpiresAt);
+    if (Number.isNaN(endsAt.getTime()) || endsAt.getTime() < Date.now() - 24 * 60 * 60 * 1000) return { ok: false, message: 'Data de validade inválida ou já expirada.' };
+  }
+  if (!currentActor || !validId(id) || !hasPlan || !reason) return failure;
+  if (requiresExpiry && !endsAt) return { ok: false, message: 'O plano Business/Stock/RH exige uma data de validade explícita.' };
   try {
     await db.$transaction(async (tx: any) => {
       const tenant = await tx.tenant.findUnique({ where: { id }, select: { id: true } });
@@ -282,7 +291,7 @@ export async function setTenantCommercialPlan(id: string, planSlug: CommercialPl
       if (!plan) throw new Error('plan-missing');
       await tx.tenantSubscription.deleteMany({ where: { tenantId: id } });
       await tx.tenantSubscription.create({
-        data: { tenantId: id, planId: plan.id, status: 'ACTIVE', startsAt: new Date(), endsAt: null, autoRenew: false },
+        data: { tenantId: id, planId: plan.id, status: 'ACTIVE', startsAt: new Date(), endsAt, autoRenew: false },
       });
       const apps = await tx.platformApplication.findMany({ where: { slug: { in: ['wms', 'rh'] } } });
       const enabledSlugs = planSlug === 'free' ? [] : planSlug === 'stock' ? ['wms'] : planSlug === 'rh' ? ['rh'] : ['wms', 'rh'];
@@ -294,8 +303,8 @@ export async function setTenantCommercialPlan(id: string, planSlug: CommercialPl
           create: { tenantId: id, applicationId: app.id, enabled, enabledAt: enabled ? new Date() : null, disabledAt: enabled ? null : new Date() },
         });
       }
-      await tx.tenant.update({ where: { id }, data: { plan: 'PRO', planExpiry: null } });
-      await tx.adminAuditLog.create({ data: { actorUserId: currentActor.id, action: 'TENANT_PLAN_CHANGED', resourceType: 'TENANT', resourceId: id, reason, metadata: { plan: planSlug } } });
+      await tx.tenant.update({ where: { id }, data: { plan: planSlug === 'free' ? 'FREE' : 'PRO', planExpiry: endsAt } });
+      await tx.adminAuditLog.create({ data: { actorUserId: currentActor.id, action: 'TENANT_PLAN_CHANGED', resourceType: 'TENANT', resourceId: id, reason, metadata: { plan: planSlug, expiresAt: endsAt ? endsAt.toISOString() : null, perpetual: endsAt === null } } });
     }, { isolationLevel: 'Serializable' });
     revalidatePath('/admin'); revalidatePath('/admin/empresas'); revalidatePath(`/admin/empresas/${id}`); revalidatePath('/stock'); revalidatePath('/rh'); revalidatePath('/apps');
     return success;

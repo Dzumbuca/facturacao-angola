@@ -132,7 +132,7 @@ export async function getAdminTenantDetail(id: string) {
     orderBy: { startsAt: 'desc' },
     include: { plan: { select: { slug: true, name: true } } },
   });
-  return tenant ? { ...tenant, commercialPlanSlug: sub?.plan?.slug ?? 'free', commercialPlanName: sub?.plan?.name ?? null } : null;
+  return tenant ? { ...tenant, commercialPlanSlug: sub?.plan?.slug ?? 'free', commercialPlanName: sub?.plan?.name ?? null, commercialPlanExpiry: sub?.endsAt?.toISOString() ?? null } : null;
 }
 
 export async function getAdminUserDetail(id: string) {
