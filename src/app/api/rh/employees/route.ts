@@ -5,6 +5,7 @@ import bcrypt from 'bcrypt';
 import { runWithTenant } from '@/lib/tenant-db';
 
 import { requireRhAccess, rhAccessResponse } from '@/lib/rh-access';
+import { sendEmployeeWelcomeEmail } from '@/lib/rh-welcome-email';
 
 import { assertDepartmentInTenant, assertPositionInTenant, assertShiftInTenant, maskAccount, nextEmployeeNumber, rhAudit } from '@/lib/rh-service';
 
@@ -207,9 +208,34 @@ export async function POST(req: Request) {
 
       await rhAudit(tx, { tenantId: access.tenantId, actorUserId: access.userId, action: 'RH_EMPLOYEE_CREATED', entity: 'RhEmployee', entityId: employee.id, metadata: { employeeNumber, firstName, lastName } });
 
-      return employee;
+      const [department, position, tenant] = await Promise.all([
+        departmentId ? tx.rhDepartment.findFirst({ where: { id: departmentId, tenantId: access.tenantId }, select: { name: true } }) : null,
+        positionId ? tx.rhPosition.findFirst({ where: { id: positionId, tenantId: access.tenantId }, select: { title: true } }) : null,
+        tx.tenant.findFirst({ where: { id: access.tenantId }, select: { name: true } }),
+      ]);
+
+      return { ...employee, department, position, tenant };
 
     }, { userId: access.userId });
+
+    // Envia email de boas-vindas (não bloqueia a criação se falhar)
+    const welcomeEmail = (created as any).email as string | null | undefined;
+    if (welcomeEmail) {
+      const departmentName = (created as any).department?.name ?? null;
+      const positionTitle = (created as any).position?.title ?? null;
+      const companyName = (created as any).tenant?.name ?? null;
+      sendEmployeeWelcomeEmail({
+        to: welcomeEmail,
+        firstName: (created as any).firstName,
+        lastName: (created as any).lastName,
+        employeeNumber: (created as any).employeeNumber,
+        hireDate: (created as any).hireDate ?? null,
+        departmentName,
+        positionTitle,
+        companyName,
+        tenantId: access.tenantId,
+      }).catch((e) => console.error('Welcome email failed:', e?.message ?? e));
+    }
 
 
 
