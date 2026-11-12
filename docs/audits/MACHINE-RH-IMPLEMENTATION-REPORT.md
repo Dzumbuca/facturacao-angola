@@ -206,10 +206,12 @@ Data: 2026-11-12 · PR #30 merged (`f3b7398`) · Migração `20261112080000_mach
 
 ### Activado na produção (2026-11-12)
 
+
 - Gates jurídicos visíveis em `/rh/processamento-salarial` e `/rh/modelos` (badge PENDENTE + botão Validar).
 - Todos os rulesets/modelos existentes continuam `PENDENTE` — **não foram marcados VALIDADO**.
 - Turno nocturno e prémio configuráveis em `/rh/assiduidade/turnos` (create form) e API `/api/rh/shifts`.
-- Endpoint de upload `POST /api/rh/uploads` — **só funcionará quando** `SUPABASE_SERVICE_ROLE_KEY` e o bucket `rh-uploads` (ou o definido em `SUPABASE_STORAGE_BUCKET_RH`) existirem na Vercel; sem isso, devolve 503 `STORAGE_NOT_CONFIGURED`.
+- Endpoint de upload `POST /api/rh/uploads` — **ACTIVO**: `SUPABASE_STORAGE_BUCKET_RH=rh-uploads` e `SUPABASE_SERVICE_ROLE_KEY` definidos na Vercel; bucket público criado no Storage de `dodoplzkmazdlrwqdmpp.supabase.co` (10 MB, PDF/PNG/JPEG/WebP). Formulários de fotografia de funcionário e CV de candidato passaram a enviar o ficheiro para o bucket e preencher a URL automaticamente.
+  - Nota: bucket público torna todas as fotos/CVs legíveis por quem obtiver o URL directo. Se quiseres fotos privadas, posso migrar para signed URLs (mesma código, bucket privado + URL assinada com expiração).
 - EMIS continua fora de âmbito (sem contrato com o banco).
 
 ### O que continua pendente (fora de alcance sem terceiros)
