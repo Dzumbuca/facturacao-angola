@@ -100,7 +100,7 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
     const response = await fetch('/api/rh/uploads', { method: 'POST', body: formData });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      alert('Não foi possível carregar a fotografia: ' + (data?.error ?? response.status));
+      alert('Não foi possível carregar a fotografia: ' + (data?.detail ?? data?.error ?? response.status));
       return;
     }
     const input = document.getElementById('rh-photo-url') as HTMLInputElement | null;

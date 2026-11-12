@@ -55,7 +55,7 @@ export function RecruitmentManager({ openings, candidates, departments, position
     const response = await fetch('/api/rh/uploads', { method: 'POST', body: formData });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      setError('Não foi possível carregar o CV: ' + (data?.error ?? response.status));
+      setError('Não foi possível carregar o CV: ' + (data?.detail ?? data?.error ?? response.status));
       return;
     }
     const input = document.getElementById('jc-cv-url') as HTMLInputElement | null;
