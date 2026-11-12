@@ -88,7 +88,7 @@ Núcleo RH, Machine Point (PIN/QR/dispositivos), documentos (modelos, PDF/DOCX, 
 | Suíte | Resultado |
 |---|---|
 | Unitários | **359 passaram** (68 ficheiros) |
-| E2E HTTP | **69 passaram** (14 ficheiros) |
+| E2E HTTP | **70 passaram** (15 ficheiros) |
 | Playwright | **27 passaram** (9 skipped por projectos não aplicáveis) |
 | Falhas | 0 |
 
