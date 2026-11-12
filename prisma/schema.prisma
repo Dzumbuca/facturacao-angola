@@ -145,6 +145,7 @@ model Tenant {
   rhContracts              RhContract[]
 
   rhTimeEntries            RhTimeEntry[]
+  rhJobOpenings            RhJobOpening[]
   rhDevices                RhDevice[]
   rhDocumentTemplates      RhDocumentTemplate[]
   rhDocuments              RhDocument[]
@@ -2548,6 +2549,8 @@ model RhDepartment {
 
   employees RhEmployee[]
 
+  jobOpenings RhJobOpening[]
+
 
 
   @@unique([tenantId, name])
@@ -2585,6 +2588,7 @@ model RhPosition {
   department RhDepartment? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
 
   employees  RhEmployee[]
+  jobOpenings RhJobOpening[]
 
 
 
@@ -3233,4 +3237,79 @@ model RhNotification {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, userId, readAt])
+}
+
+
+// Recrutamento e seleção.
+enum RhJobOpeningStatus {
+  ABERTA
+  ENCERRADA
+  CANCELADA
+}
+
+enum RhCandidateStatus {
+  RECEBIDA
+  TRIAGEM
+  ENTREVISTA
+  AVALIACAO
+  APROVADO
+  REJEITADO
+  ADMITIDO
+}
+
+model RhJobOpening {
+  id           String            @id @default(uuid())
+  tenantId     String
+  title        String
+  departmentId String?
+  positionId   String?
+  openings     Int               @default(1)
+  requirements String?
+  closesAt     DateTime?
+  status       RhJobOpeningStatus @default(ABERTA)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  tenant     Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  department RhDepartment? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  position   RhPosition?  @relation(fields: [positionId], references: [id], onDelete: SetNull)
+  candidates RhCandidate[]
+
+  @@index([tenantId, status])
+}
+
+model RhCandidate {
+  id          String            @id @default(uuid())
+  tenantId    String
+  jobOpeningId String
+  firstName   String
+  lastName    String
+  email       String
+  phone       String?
+  cvUrl       String?
+  notes       String?
+  status      RhCandidateStatus @default(RECEBIDA)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  jobOpening RhJobOpening @relation(fields: [jobOpeningId], references: [id], onDelete: Cascade)
+  events     RhCandidateEvent[]
+
+  @@index([tenantId, jobOpeningId, status])
+  @@index([tenantId, email])
+}
+
+model RhCandidateEvent {
+  id              String            @id @default(uuid())
+  tenantId        String
+  candidateId     String
+  fromStatus      RhCandidateStatus?
+  toStatus        RhCandidateStatus
+  note            String?
+  createdByUserId String?
+  createdAt       DateTime          @default(now())
+
+  candidate RhCandidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, candidateId])
 }

@@ -177,3 +177,20 @@ DROP POLICY IF EXISTS "rh_notification_isolation" ON "RhNotification";
 CREATE POLICY "rh_notification_isolation" ON "RhNotification" FOR ALL
   USING ("tenantId" = current_setting('app.tenant_id', true))
   WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+
+-- Recrutamento e seleção.
+ALTER TABLE "RhJobOpening" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_job_opening_isolation" ON "RhJobOpening";
+CREATE POLICY "rh_job_opening_isolation" ON "RhJobOpening" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+ALTER TABLE "RhCandidate" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_candidate_isolation" ON "RhCandidate";
+CREATE POLICY "rh_candidate_isolation" ON "RhCandidate" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+ALTER TABLE "RhCandidateEvent" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_candidate_event_isolation" ON "RhCandidateEvent";
+CREATE POLICY "rh_candidate_event_isolation" ON "RhCandidateEvent" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
