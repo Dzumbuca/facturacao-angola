@@ -4,7 +4,7 @@ import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-import { FormError } from '@/components/rh/form-kit';
+import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
 const STATUS_LABEL: Record<string, string> = {
   ABERTA: 'Aberta', ENCERRADA: 'Encerrada', CANCELADA: 'Cancelada',
   RECEBIDA: 'Recebida', TRIAGEM: 'Triagem', ENTREVISTA: 'Entrevista',
@@ -157,41 +157,74 @@ export function RecruitmentManager({ openings, candidates, departments, position
       <div className="grid gap-5 lg:grid-cols-2">
         <form onSubmit={createOpening} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
           <h2 className="text-sm font-bold text-[#1c2d3f]">Nova vaga</h2>
-          <div className="mt-3 grid gap-3">
-            <div><label htmlFor="jo-title" className="app-label">Título *</label><input id="jo-title" name="title" className="app-input" required /></div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div><label htmlFor="jo-dept" className="app-label">Departamento</label><select id="jo-dept" name="departmentId" className="app-input"><option value="">—</option>{departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}</select></div>
-              <div><label htmlFor="jo-pos" className="app-label">Cargo</label><select id="jo-pos" name="positionId" className="app-input"><option value="">—</option>{positions.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}</select></div>
+          <FormSection title="Dados da vaga">
+            <div className="sm:col-span-2">
+              <FormField label="Título" name="jo-title" required><input id="jo-title" name="title" className="app-input" required /></FormField>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div><label htmlFor="jo-openings" className="app-label">Nº de vagas</label><input id="jo-openings" name="openings" type="number" min={1} defaultValue={1} className="app-input" /></div>
-              <div><label htmlFor="jo-close" className="app-label">Fecha a</label><input id="jo-close" name="closesAt" type="date" className="app-input" /></div>
+            <div>
+              <FormField label="Departamento" name="jo-dept">
+                <select id="jo-dept" name="departmentId" className="app-input">
+                  <option value="">—</option>{departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+                </select>
+              </FormField>
             </div>
-            <div><label htmlFor="jo-req" className="app-label">Requisitos</label><textarea id="jo-req" name="requirements" className="app-input min-h-20" /></div>
-          </div>
-          <div className="mt-3 flex justify-end"><button type="submit" disabled={busy} className="min-h-10 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white disabled:opacity-60">{busy ? 'A criar…' : 'Criar vaga'}</button></div>
+            <div>
+              <FormField label="Cargo" name="jo-pos">
+                <select id="jo-pos" name="positionId" className="app-input">
+                  <option value="">—</option>{positions.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}
+                </select>
+              </FormField>
+            </div>
+            <div>
+              <FormField label="Nº de vagas" name="jo-openings"><input id="jo-openings" name="openings" type="number" min={1} defaultValue={1} className="app-input" /></FormField>
+            </div>
+            <div>
+              <FormField label="Fecha a" name="jo-close"><input id="jo-close" name="closesAt" type="date" className="app-input" /></FormField>
+            </div>
+            <div className="sm:col-span-2">
+              <FormField label="Requisitos" name="jo-req"><textarea id="jo-req" name="requirements" className="app-input min-h-20" /></FormField>
+            </div>
+            <div className="sm:col-span-2">
+              <FormActions saving={busy} onCancel={() => {}} saveLabel={busy ? 'A criar…' : 'Criar vaga'} />
+            </div>
+          </FormSection>
         </form>
 
         <form onSubmit={createCandidate} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
           <h2 className="text-sm font-bold text-[#1c2d3f]">Registar candidato</h2>
-          <div className="mt-3 grid gap-3">
-            <div><label htmlFor="jc-opening" className="app-label">Vaga</label><select id="jc-opening" value={openingId} onChange={(e) => setOpeningId(e.target.value)} className="app-input" required>{openings.map((o) => <option key={o.id} value={o.id}>{o.title} ({o.candidateCount})</option>)}</select></div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div><label htmlFor="jc-fn" className="app-label">Nome *</label><input id="jc-fn" name="firstName" className="app-input" required /></div>
-              <div><label htmlFor="jc-ln" className="app-label">Apelido *</label><input id="jc-ln" name="lastName" className="app-input" required /></div>
+          <FormSection title="Dados do candidato">
+            <div className="sm:col-span-2">
+              <FormField label="Vaga" name="jc-opening" required>
+                <select id="jc-opening" value={openingId} onChange={(e) => setOpeningId(e.target.value)} className="app-input" required>
+                  {openings.map((o) => <option key={o.id} value={o.id}>{o.title} ({o.candidateCount})</option>)}
+                </select>
+              </FormField>
             </div>
-            <div><label htmlFor="jc-email" className="app-label">Email *</label><input id="jc-email" name="email" type="email" className="app-input" required /></div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div><label htmlFor="jc-phone" className="app-label">Telefone</label><input id="jc-phone" name="phone" className="app-input" /></div>
-              <div>
-  <label htmlFor="jc-cv-file" className="app-label">CV (ficheiro)</label>
-  <input id="jc-cv-file" type="file" accept="application/pdf,image/png,image/jpeg" className="app-input" onChange={handleCvUpload} />
-  <input id="jc-cv-url" name="cvUrl" className="app-input mt-2" placeholder="Ou cole um URL…" />
-</div>
+            <div>
+              <FormField label="Nome" name="jc-fn" required><input id="jc-fn" name="firstName" className="app-input" required /></FormField>
             </div>
-            <div><label htmlFor="jc-notes" className="app-label">Notas</label><input id="jc-notes" name="notes" className="app-input" /></div>
-          </div>
-          <div className="mt-3 flex justify-end"><button type="submit" disabled={busy || openings.length === 0} className="min-h-10 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white disabled:opacity-60">{busy ? 'A registar…' : 'Registar'}</button></div>
+            <div>
+              <FormField label="Apelido" name="jc-ln" required><input id="jc-ln" name="lastName" className="app-input" required /></FormField>
+            </div>
+            <div className="sm:col-span-2">
+              <FormField label="Email" name="jc-email" required><input id="jc-email" name="email" type="email" className="app-input" required /></FormField>
+            </div>
+            <div>
+              <FormField label="Telefone" name="jc-phone"><input id="jc-phone" name="phone" className="app-input" /></FormField>
+            </div>
+            <div>
+              <FormField label="CV" name="jc-cv-file" hint="PDF, PNG ou JPEG · até 10 MB">
+                <input id="jc-cv-file" type="file" accept="application/pdf,image/png,image/jpeg" className="app-input" onChange={handleCvUpload} />
+                <input id="jc-cv-url" name="cvUrl" className="app-input mt-2" placeholder="Ou cole um URL…" />
+              </FormField>
+            </div>
+            <div className="sm:col-span-2">
+              <FormField label="Notas" name="jc-notes"><input id="jc-notes" name="notes" className="app-input" /></FormField>
+            </div>
+            <div className="sm:col-span-2">
+              <FormActions saving={busy} disabled={openings.length === 0} onCancel={() => {}} saveLabel={busy ? 'A registar…' : 'Registar'} />
+            </div>
+          </FormSection>
         </form>
       </div>
 
