@@ -147,6 +147,7 @@ model Tenant {
   rhTimeEntries            RhTimeEntry[]
   rhJobOpenings            RhJobOpening[]
   rhPerformanceCycles      RhPerformanceCycle[]
+  rhTrainingCourses        RhTrainingCourse[]
   rhDevices                RhDevice[]
   rhDocumentTemplates      RhDocumentTemplate[]
   rhDocuments              RhDocument[]
@@ -2670,6 +2671,7 @@ model RhEmployee {
   salaryChanges RhSalaryChange[]
   offboarding   RhOffboarding?
   justifications RhAbsenceJustification[]
+  trainingEnrollments RhTrainingEnrollment[]
   payslips      RhPayslip[]
   paymentItems  RhPaymentItem[]
   performanceReviews RhPerformanceReview[]
@@ -3376,4 +3378,57 @@ model RhPerformanceReview {
 
   @@unique([cycleId, employeeId])
   @@index([tenantId, cycleId, status])
+}
+
+
+// Formação profissional.
+enum RhTrainingStatus {
+  AGENDADO
+  EM_CURSO
+  CONCLUIDO
+  CANCELADO
+}
+
+enum RhEnrollmentStatus {
+  INSCRITO
+  CONCLUIDA
+  DESISTENTE
+}
+
+model RhTrainingCourse {
+  id                 String           @id @default(uuid())
+  tenantId           String
+  title              String
+  trainerName        String?
+  startDate          DateTime
+  endDate            DateTime?
+  cargaHoras         Int              @default(8)
+  location           String?
+  requiredForPositionId String?
+  status             RhTrainingStatus @default(AGENDADO)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  tenant     Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  enrollments RhTrainingEnrollment[]
+
+  @@index([tenantId, status, startDate])
+}
+
+model RhTrainingEnrollment {
+  id            String             @id @default(uuid())
+  tenantId      String
+  courseId      String
+  employeeId    String
+  status        RhEnrollmentStatus @default(INSCRITO)
+  score         Int?
+  certificateUrl String?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  course   RhTrainingCourse @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  employee RhEmployee       @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, employeeId])
+  @@index([tenantId, courseId, status])
 }

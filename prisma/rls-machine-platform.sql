@@ -211,3 +211,15 @@ DROP POLICY IF EXISTS "rh_performance_review_isolation" ON "RhPerformanceReview"
 CREATE POLICY "rh_performance_review_isolation" ON "RhPerformanceReview" FOR ALL
   USING ("tenantId" = current_setting('app.tenant_id', true))
   WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+
+-- Formação profissional.
+ALTER TABLE "RhTrainingCourse" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_training_course_isolation" ON "RhTrainingCourse";
+CREATE POLICY "rh_training_course_isolation" ON "RhTrainingCourse" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+ALTER TABLE "RhTrainingEnrollment" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_training_enrollment_isolation" ON "RhTrainingEnrollment";
+CREATE POLICY "rh_training_enrollment_isolation" ON "RhTrainingEnrollment" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
