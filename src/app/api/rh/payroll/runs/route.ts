@@ -82,10 +82,11 @@ export async function POST(req: Request) {
         });
         const nightAllowance = employee.shift?.isNight ? (baseSalary * (employee.shift.nightPremiumPercent ?? 0)) / 100 : 0;
         const calc = calculatePayslip({ baseSalary, config: parsed.config, extraDeductions, overtimePay: adjustments.overtimePay, absenceDeduction: adjustments.absenceDeduction, nightAllowance });
+        const { nightAllowance: _na, ...calcRest } = calc as any;
         return {
           tenantId: access.tenantId,
           employeeId: employee.id,
-          ...calc,
+          ...calcRest,
           lines: {
             irtBrackets: parsed.config.irtBrackets.length,
             extraDeductions,

@@ -36,7 +36,7 @@ function assertDisposable(url) {
 function run(cmd, args, extraEnv = {}) {
   const res = spawnSync(cmd, args, {
     cwd: ROOT,
-    stdio: 'inherit',
+    stdio: 'ignore',
     shell: true,
     env: { ...process.env, ...extraEnv },
   });
