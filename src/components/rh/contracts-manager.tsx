@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { FormError } from '@/components/rh/form-kit';
+import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
 type Contract = {
   id: string; type: string; status: string; startDate: string; endDate: string | null;
   salary: number; notes: string | null;
@@ -76,20 +76,39 @@ export function ContractsManager({ contracts, employees }: {
 
       {open && (
         <form onSubmit={submit} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="sm:col-span-2"><label htmlFor="ct-employee" className="app-label">Funcionário *</label><select id="ct-employee" name="employeeId" className="app-input" required><option value="">Selecionar</option>{employees.map((employee) => <option key={employee.id} value={employee.id}>{employee.firstName} {employee.lastName} ({employee.employeeNumber})</option>)}</select></div>
-            <div><label htmlFor="ct-type" className="app-label">Tipo *</label><select id="ct-type" name="type" className="app-input">{Object.entries(TYPE_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
-            <div><label htmlFor="ct-status" className="app-label">Estado</label><select id="ct-status" name="status" className="app-input" defaultValue="RASCUNHO">{Object.entries(STATUS_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
-            <div><label htmlFor="ct-start" className="app-label">Início *</label><input id="ct-start" name="startDate" type="date" className="app-input" required /></div>
-            <div><label htmlFor="ct-end" className="app-label">Fim</label><input id="ct-end" name="endDate" type="date" className="app-input" /></div>
-            <div><label htmlFor="ct-salary" className="app-label">Salário (Kz) *</label><input id="ct-salary" name="salary" type="number" min="0" step="0.01" className="app-input tabular-nums" required /></div>
-            <div><label htmlFor="ct-notes" className="app-label">Notas</label><input id="ct-notes" name="notes" className="app-input" /></div>
-          </div>
+          <FormSection title="Dados do contrato">
+            <div className="sm:col-span-2">
+              <FormField label="Funcionário" name="ct-employee" required>
+                <select id="ct-employee" name="employeeId" className="app-input" required>
+                  <option value="">Selecionar</option>{employees.map((employee) => <option key={employee.id} value={employee.id}>{employee.firstName} {employee.lastName} ({employee.employeeNumber})</option>)}
+                </select>
+              </FormField>
+            </div>
+            <div>
+              <FormField label="Tipo" name="ct-type" required>
+                <select id="ct-type" name="type" className="app-input">{Object.entries(TYPE_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+              </FormField>
+            </div>
+            <div>
+              <FormField label="Estado" name="ct-status">
+                <select id="ct-status" name="status" className="app-input" defaultValue="RASCUNHO">{Object.entries(STATUS_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+              </FormField>
+            </div>
+            <div>
+              <FormField label="Início" name="ct-start" required><input id="ct-start" name="startDate" type="date" className="app-input" required /></FormField>
+            </div>
+            <div>
+              <FormField label="Fim" name="ct-end"><input id="ct-end" name="endDate" type="date" className="app-input" /></FormField>
+            </div>
+            <div>
+              <FormField label="Salário (Kz)" name="ct-salary" required><input id="ct-salary" name="salary" type="number" min="0" step="0.01" className="app-input tabular-nums" required /></FormField>
+            </div>
+            <div>
+              <FormField label="Notas" name="ct-notes"><input id="ct-notes" name="notes" className="app-input" /></FormField>
+            </div>
+          </FormSection>
           <FormError>{error}</FormError>
-          <div className="mt-3 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <button type="button" onClick={() => setOpen(false)} className="min-h-10 rounded-lg border border-[#cdddeb] px-4 text-sm font-semibold text-[#52667a]">Cancelar</button>
-            <button type="submit" disabled={saving} className="min-h-10 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white disabled:opacity-60">{saving ? 'A guardar…' : 'Guardar'}</button>
-          </div>
+          <div className="mt-3"><FormActions saving={saving} onCancel={() => setOpen(false)} saveLabel={saving ? 'A guardar…' : 'Guardar'} /></div>
         </form>
       )}
 

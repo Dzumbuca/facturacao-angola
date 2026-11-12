@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { FormError } from '@/components/rh/form-kit';
+import { FormSection, FormField, FormError } from '@/components/rh/form-kit';
 export function OffboardDialog({ employeeId, employeeName }: { employeeId: string; employeeName: string }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -46,32 +46,31 @@ export function OffboardDialog({ employeeId, employeeName }: { employeeId: strin
           <form onSubmit={submit} className="w-full max-w-lg rounded-t-2xl bg-white p-5 sm:rounded-2xl">
             <h2 className="text-base font-bold text-[#1c2d3f]">Desligar {employeeName}</h2>
             <p className="mt-1 text-xs text-[#607286]">O histórico é preservado. Esta acção fica registada na auditoria.</p>
-            <div className="mt-4 space-y-3">
+            <FormSection title="Confirmar desligamento">
               <div>
-                <label htmlFor="off-reason" className="app-label">Motivo *</label>
-                <select id="off-reason" name="reason" className="app-input" required defaultValue="">
-                  <option value="" disabled>Selecionar</option>
-                  <option value="PEDIDO_DE_FUNCIONARIO">Pedido do funcionário</option>
-                  <option value="RESILIACAO_PELO_EMPREGADOR">Resiliação pelo empregador</option>
-                  <option value="FIM_DE_CONTRATO">Fim de contrato</option>
-                  <option value="REFORMA">Reforma</option>
-                  <option value="MUTUO_ACORDO">Mútuo acordo</option>
-                  <option value="OUTRO">Outro</option>
-                </select>
+                <FormField label="Motivo" name="off-reason" required>
+                  <select id="off-reason" name="reason" className="app-input" required defaultValue="">
+                    <option value="" disabled>Selecionar</option>
+                    <option value="PEDIDO_DE_FUNCIONARIO">Pedido do funcionário</option>
+                    <option value="RESILIACAO_PELO_EMPREGADOR">Resiliação pelo empregador</option>
+                    <option value="FIM_DE_CONTRATO">Fim de contrato</option>
+                    <option value="REFORMA">Reforma</option>
+                    <option value="MUTUO_ACORDO">Mútuo acordo</option>
+                    <option value="OUTRO">Outro</option>
+                  </select>
+                </FormField>
               </div>
               <div>
-                <label htmlFor="off-lastday" className="app-label">Data efectiva *</label>
-                <input id="off-lastday" name="lastDay" type="date" className="app-input" required />
+                <FormField label="Data efectiva" name="off-lastday" required><input id="off-lastday" name="lastDay" type="date" className="app-input" required /></FormField>
               </div>
-              <div>
-                <label htmlFor="off-notes" className="app-label">Notas</label>
-                <textarea id="off-notes" name="notes" className="app-input min-h-20" />
+              <div className="sm:col-span-2">
+                <FormField label="Notas" name="off-notes"><textarea id="off-notes" name="notes" className="app-input min-h-20" /></FormField>
               </div>
-              <label className="flex items-start gap-2 text-xs text-[#52667a]">
+              <label className="flex items-start gap-2 text-xs text-[#52667a] sm:col-span-2">
                 <input type="checkbox" name="revokeAccess" className="mt-0.5" />
                 Revogar acesso ao portal se o funcionário tiver utilizador com o mesmo email.
               </label>
-            </div>
+            </FormSection>
             <FormError>{error}</FormError>
             <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <button type="button" onClick={() => setOpen(false)} className="min-h-10 rounded-lg border border-[#cdddeb] px-4 text-sm font-semibold text-[#52667a]">Cancelar</button>

@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { FormError } from '@/components/rh/form-kit';
+import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
 type Member = { id: string; role: string; user: { email: string; name: string | null } };
 const ROLES: Record<string, string> = { ADMIN: 'Administrador RH', MANAGER: 'Gestor RH', FINANCE: 'Financeiro' };
 
@@ -57,13 +57,21 @@ export function MembersManager({ members }: { members: Member[] }) {
       </div>
 
       <form onSubmit={submit} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
-        <div className="grid gap-3 sm:grid-cols-3">
-          <div className="sm:col-span-2"><label htmlFor="member-email" className="app-label">Email do utilizador *</label><input id="member-email" type="email" className="app-input" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
-          <div><label htmlFor="member-role" className="app-label">Função</label><select id="member-role" className="app-input" value={role} onChange={(e) => setRole(e.target.value)}>{Object.entries(ROLES).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
-        </div>
+        <FormSection title="Adicionar membro RH">
+          <div className="sm:col-span-2">
+            <FormField label="Email do utilizador" name="member-email" required><input id="member-email" type="email" className="app-input" value={email} onChange={(e) => setEmail(e.target.value)} required /></FormField>
+          </div>
+          <div>
+            <FormField label="Função" name="member-role">
+              <select id="member-role" className="app-input" value={role} onChange={(e) => setRole(e.target.value)}>{Object.entries(ROLES).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+            </FormField>
+          </div>
+        </FormSection>
         {message && <p role="status" className="mt-2 text-xs font-medium text-[#267256]">{message}</p>}
         <FormError>{error}</FormError>
-        <div className="mt-3 flex justify-end"><button type="submit" disabled={saving} className="min-h-10 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white disabled:opacity-60">{saving ? 'A guardar…' : 'Atribuir função'}</button></div>
+        <div className="mt-3 flex justify-end">
+          <FormActions saving={saving} onCancel={() => {}} saveLabel={saving ? 'A guardar…' : 'Atribuir função'} />
+        </div>
       </form>
 
       <div className="overflow-x-auto rounded-xl border border-[#e1e8f0] bg-white">

@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { FormError } from '@/components/rh/form-kit';
+import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
 type Announcement = { id: string; title: string; body: string; priority: string; publishedAt: string; expiresAt: string | null };
 
 const PRIORITY: Record<string, string> = { BAIXA: 'Baixa', NORMAL: 'Normal', ALTA: 'Alta' };
@@ -51,15 +51,25 @@ export function AnnouncementsManager({ items }: { items: Announcement[] }) {
 
       <form onSubmit={submit} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
         <h2 className="text-sm font-bold text-[#1c2d3f]">Novo comunicado</h2>
-        <div className="mt-3 grid gap-3">
-          <div><label htmlFor="an-title" className="app-label">Título *</label><input id="an-title" name="title" className="app-input" required maxLength={200} /></div>
-          <div><label htmlFor="an-body" className="app-label">Conteúdo *</label><textarea id="an-body" name="body" className="app-input min-h-24" required maxLength={4000} /></div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div><label htmlFor="an-priority" className="app-label">Prioridade</label><select id="an-priority" name="priority" className="app-input" defaultValue="NORMAL"><option value="BAIXA">Baixa</option><option value="NORMAL">Normal</option><option value="ALTA">Alta</option></select></div>
-            <div><label htmlFor="an-expires" className="app-label">Válido até (opcional)</label><input id="an-expires" name="expiresAt" type="date" className="app-input" /></div>
+        <FormSection title="Detalhes do comunicado">
+          <div className="sm:col-span-2">
+            <FormField label="Título" name="an-title" required><input id="an-title" name="title" className="app-input" required maxLength={200} /></FormField>
           </div>
-        </div>
-        <div className="mt-3 flex justify-end"><button type="submit" disabled={busy} className="min-h-10 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white disabled:opacity-60">{busy ? 'A publicar…' : 'Publicar'}</button></div>
+          <div className="sm:col-span-2">
+            <FormField label="Conteúdo" name="an-body" required><textarea id="an-body" name="body" className="app-input min-h-24" required maxLength={4000} /></FormField>
+          </div>
+          <div>
+            <FormField label="Prioridade" name="an-priority">
+              <select id="an-priority" name="priority" className="app-input" defaultValue="NORMAL"><option value="BAIXA">Baixa</option><option value="NORMAL">Normal</option><option value="ALTA">Alta</option></select>
+            </FormField>
+          </div>
+          <div>
+            <FormField label="Válido até" name="an-expires" hint="Opcional"><input id="an-expires" name="expiresAt" type="date" className="app-input" /></FormField>
+          </div>
+          <div className="sm:col-span-2">
+            <FormActions saving={busy} onCancel={() => {}} saveLabel={busy ? 'A publicar…' : 'Publicar'} />
+          </div>
+        </FormSection>
       </form>
 
       <ul className="divide-y divide-[#eef2f6] overflow-hidden rounded-xl border border-[#e1e8f0] bg-white">

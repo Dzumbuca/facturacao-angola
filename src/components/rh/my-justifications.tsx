@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from 'react';
 
-import { FormError } from '@/components/rh/form-kit';
+import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
 type Item = { id: string; date: string; type: string; reason: string; status: string; decisionNote: string | null };
 
 const STATUS: Record<string, string> = { PENDENTE: 'Pendente', APROVADO: 'Aprovado', REJEITADO: 'Rejeitado' };
@@ -55,33 +55,31 @@ export function MyJustifications({ items, canSubmit }: { items: Item[]; canSubmi
 
       {open && canSubmit && (
         <form onSubmit={submit} className="border-b border-[#eef2f6] bg-[#f9fbfe] px-4 py-3">
-          <div className="grid gap-3 sm:grid-cols-3">
+          <FormSection title="Nova justificação">
             <div>
-              <label htmlFor="mj-date" className="app-label">Data *</label>
-              <input id="mj-date" name="date" type="date" className="app-input" required />
+              <FormField label="Data" name="mj-date" required><input id="mj-date" name="date" type="date" className="app-input" required /></FormField>
             </div>
             <div>
-              <label htmlFor="mj-type" className="app-label">Tipo *</label>
-              <select id="mj-type" name="type" className="app-input" defaultValue="FALTA">
-                <option value="FALTA">Falta</option>
-                <option value="ATRASO">Atraso</option>
-                <option value="SAIDA_ANTECIPADA">Saída antecipada</option>
-                <option value="OUTRO">Outro</option>
-              </select>
+              <FormField label="Tipo" name="mj-type" required>
+                <select id="mj-type" name="type" className="app-input" defaultValue="FALTA">
+                  <option value="FALTA">Falta</option>
+                  <option value="ATRASO">Atraso</option>
+                  <option value="SAIDA_ANTECIPADA">Saída antecipada</option>
+                  <option value="OUTRO">Outro</option>
+                </select>
+              </FormField>
             </div>
             <div>
-              <label htmlFor="mj-reason" className="app-label">Motivo *</label>
-              <input id="mj-reason" name="reason" className="app-input" required maxLength={1000} />
+              <FormField label="Motivo" name="mj-reason" required><input id="mj-reason" name="reason" className="app-input" required maxLength={1000} /></FormField>
             </div>
-          </div>
-          <FormError>{error}</FormError>
+            <div className="sm:col-span-3">
+              <FormError>{error}</FormError>
+              <div className="flex justify-end gap-2">
+                <FormActions saving={saving} onCancel={() => setOpen(false)} saveLabel={saving ? 'A submeter…' : 'Submeter'} />
+              </div>
+            </div>
+          </FormSection>
           {message && <p role="status" className="mt-2 text-xs font-medium text-[#267256]">{message}</p>}
-          <div className="mt-2 flex justify-end gap-2">
-            <button type="button" onClick={() => setOpen(false)} className="min-h-9 rounded-lg border border-[#cdddeb] px-3 text-xs font-semibold text-[#52667a]">Cancelar</button>
-            <button type="submit" disabled={saving} className="min-h-9 rounded-lg bg-[#021f87] px-3 text-xs font-semibold text-white disabled:opacity-50">
-              {saving ? 'A submeter…' : 'Submeter'}
-            </button>
-          </div>
         </form>
       )}
 

@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
+import { FormSection, FormActions, FormError } from '@/components/rh/form-kit';
 type Department = {
   id: string; name: string; code: string | null; managerName: string | null;
   parentId: string | null;

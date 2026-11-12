@@ -3,7 +3,7 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { FormError } from '@/components/rh/form-kit';
+import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
 type Employee = { id: string; firstName: string; lastName: string; employeeNumber: string };
 type Leave = {
   id: string; type: string; status: string; startDate: string; endDate: string; days: number;
@@ -103,17 +103,33 @@ export function LeavesManager({ leaves, employees, vacationDaysPerYear }: {
 
       <form onSubmit={submit} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
         <h2 className="text-sm font-bold text-[#1c2d3f]">Novo pedido</h2>
-        <div className="mt-3 grid gap-3 sm:grid-cols-4">
-          <div className="sm:col-span-2"><label htmlFor="leave-employee" className="app-label">Funcionário *</label><select id="leave-employee" className="app-input" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} required><option value="">Selecionar</option>{employees.map((employee) => <option key={employee.id} value={employee.id}>{employee.firstName} {employee.lastName} ({employee.employeeNumber})</option>)}</select></div>
-          <div><label htmlFor="leave-type" className="app-label">Tipo</label><select id="leave-type" className="app-input" value={type} onChange={(e) => setType(e.target.value)}>{Object.entries(TYPE_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
-          <div><label htmlFor="leave-start" className="app-label">Início *</label><input id="leave-start" type="date" className="app-input" value={startDate} onChange={(e) => setStartDate(e.target.value)} required /></div>
-          <div><label htmlFor="leave-end" className="app-label">Fim *</label><input id="leave-end" type="date" className="app-input" value={endDate} onChange={(e) => setEndDate(e.target.value)} required /></div>
-          <div className="sm:col-span-2"><label htmlFor="leave-reason" className="app-label">Motivo</label><input id="leave-reason" className="app-input" value={reason} onChange={(e) => setReason(e.target.value)} /></div>
-        </div>
+        <FormSection title="Dados do pedido">
+          <div className="sm:col-span-2">
+            <FormField label="Funcionário" name="leave-employee" required>
+              <select id="leave-employee" className="app-input" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} required>
+                <option value="">Selecionar</option>{employees.map((employee) => <option key={employee.id} value={employee.id}>{employee.firstName} {employee.lastName} ({employee.employeeNumber})</option>)}
+              </select>
+            </FormField>
+          </div>
+          <div>
+            <FormField label="Tipo" name="leave-type">
+              <select id="leave-type" className="app-input" value={type} onChange={(e) => setType(e.target.value)}>{Object.entries(TYPE_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+            </FormField>
+          </div>
+          <div>
+            <FormField label="Início" name="leave-start" required><input id="leave-start" type="date" className="app-input" value={startDate} onChange={(e) => setStartDate(e.target.value)} required /></FormField>
+          </div>
+          <div>
+            <FormField label="Fim" name="leave-end" required><input id="leave-end" type="date" className="app-input" value={endDate} onChange={(e) => setEndDate(e.target.value)} required /></FormField>
+          </div>
+          <div className="sm:col-span-2">
+            <FormField label="Motivo" name="leave-reason"><input id="leave-reason" className="app-input" value={reason} onChange={(e) => setReason(e.target.value)} /></FormField>
+          </div>
+        </FormSection>
         {message && <p role="status" className="mt-3 rounded-lg bg-[#eff9f4] px-3 py-2 text-sm text-[#267256]">{message}</p>}
         <FormError>{error}</FormError>
         <div className="mt-3 flex justify-end">
-          <button type="submit" disabled={saving} className="min-h-10 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white disabled:opacity-60">{saving ? 'A registar…' : 'Registar pedido'}</button>
+          <FormActions saving={saving} onCancel={() => {}} saveLabel={saving ? 'A registar…' : 'Registar pedido'} />
         </div>
       </form>
 

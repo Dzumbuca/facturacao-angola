@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
+import { FormSection, FormActions, FormError } from '@/components/rh/form-kit';
 type Shift = {
   id: string; name: string; startTime: string; endTime: string;
   toleranceMinutes: number; isActive: boolean; isNight: boolean; nightPremiumPercent: number;

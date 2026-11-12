@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { FormError } from '@/components/rh/form-kit';
+import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
 type Device = { id: string; name: string; isActive: boolean; lastSeenAt: string | null; createdAt: string };
 
 function date(value: string | null) {
@@ -60,11 +60,16 @@ export function DevicesManager({ devices }: { devices: Device[] }) {
       </div>
 
       <form onSubmit={create} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
-        <label htmlFor="device-name" className="app-label">Nome do terminal</label>
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <input id="device-name" className="app-input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Recepção, Loja 1…" required />
-          <button type="submit" disabled={saving} className="min-h-11 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white disabled:opacity-60">{saving ? 'A registar…' : 'Registar dispositivo'}</button>
-        </div>
+        <FormSection title="Registar dispositivo">
+          <div className="sm:col-span-2 flex flex-col gap-2 sm:flex-row sm:items-end">
+            <div className="flex-1">
+              <FormField label="Nome do terminal" name="device-name" required hint="Um terminal por quiosque registado">
+                <input id="device-name" className="app-input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Recepção, Loja 1…" required />
+              </FormField>
+            </div>
+            <FormActions saving={saving} onCancel={() => {}} saveLabel={saving ? 'A registar…' : 'Registar dispositivo'} />
+          </div>
+        </FormSection>
         <FormError>{error}</FormError>
       </form>
 

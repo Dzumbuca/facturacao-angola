@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from 'react';
 
-import { FormError } from '@/components/rh/form-kit';
+import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
 export function RhSettingsForm({ initial }: { initial: number | null }) {
   const [value, setValue] = useState(initial === null ? '' : String(initial));
   const [saving, setSaving] = useState(false);
@@ -30,11 +30,14 @@ export function RhSettingsForm({ initial }: { initial: number | null }) {
 
   return (
     <form onSubmit={submit} className="mt-3">
-      <label htmlFor="vacation-days" className="app-label">Direito anual de férias (dias)</label>
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <input id="vacation-days" type="number" min="0" max="365" className="app-input sm:max-w-40" value={value} onChange={(e) => setValue(e.target.value)} placeholder="Não definido" />
-        <button type="submit" disabled={saving} className="min-h-11 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white disabled:opacity-60">{saving ? 'A guardar…' : 'Guardar'}</button>
-      </div>
+      <FormSection title="Direito de férias">
+        <FormField label="Direito anual de férias" name="vacation-days" hint="Deixar vazio não aplica saldo">
+          <div className="flex gap-2">
+            <input id="vacation-days" type="number" min="0" max="365" className="app-input sm:max-w-40" value={value} onChange={(e) => setValue(e.target.value)} placeholder="Não definido" />
+            <FormActions saving={saving} onCancel={() => {}} saveLabel={saving ? 'A guardar…' : 'Guardar'} />
+          </div>
+        </FormField>
+      </FormSection>
       <p className="mt-2 text-xs text-[#708195]">Deixar vazio para não aplicar saldo (fica apenas o histórico de dias).</p>
       {message && <p role="status" className="mt-2 text-xs font-medium text-[#267256]">{message}</p>}
       <FormError>{error}</FormError>

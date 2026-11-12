@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { FormError } from '@/components/rh/form-kit';
+import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
 type Document = {
   id: string; title: string; status: string; type: string; createdAt: string;
   employee: { id: string; firstName: string; lastName: string; employeeNumber: string } | null;
@@ -73,15 +73,29 @@ export function DocumentsManager({ documents, templates, employees }: {
       </div>
 
       <form onSubmit={generate} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
-        <div className="grid gap-3 sm:grid-cols-3">
-          <div><label htmlFor="doc-template" className="app-label">Modelo *</label><select id="doc-template" className="app-input" value={templateId} onChange={(e) => setTemplateId(e.target.value)} required><option value="">Selecionar</option>{templates.map((template) => <option key={template.id} value={template.id}>{template.name}</option>)}</select></div>
-          <div><label htmlFor="doc-employee" className="app-label">Funcionário</label><select id="doc-employee" className="app-input" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)}><option value="">Sem funcionário</option>{employees.map((employee) => <option key={employee.id} value={employee.id}>{employee.firstName} {employee.lastName} ({employee.employeeNumber})</option>)}</select></div>
-          <div><label htmlFor="doc-title" className="app-label">Título (opcional)</label><input id="doc-title" className="app-input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Usa o nome do modelo" /></div>
-        </div>
+        <FormSection title="Gerar documento">
+          <div>
+            <FormField label="Modelo" name="doc-template" required>
+              <select id="doc-template" className="app-input" value={templateId} onChange={(e) => setTemplateId(e.target.value)} required>
+                <option value="">Selecionar</option>{templates.map((template) => <option key={template.id} value={template.id}>{template.name}</option>)}
+              </select>
+            </FormField>
+          </div>
+          <div>
+            <FormField label="Funcionário" name="doc-employee">
+              <select id="doc-employee" className="app-input" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)}>
+                <option value="">Sem funcionário</option>{employees.map((employee) => <option key={employee.id} value={employee.id}>{employee.firstName} {employee.lastName} ({employee.employeeNumber})</option>)}
+              </select>
+            </FormField>
+          </div>
+          <div>
+            <FormField label="Título" name="doc-title" hint="Usa o nome do modelo"><input id="doc-title" className="app-input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Usa o nome do modelo" /></FormField>
+          </div>
+        </FormSection>
         {message && <p role="status" className="mt-3 rounded-lg bg-[#eff9f4] px-3 py-2 text-sm text-[#267256]">{message}</p>}
         <FormError>{error}</FormError>
         <div className="mt-3 flex justify-end">
-          <button type="submit" disabled={saving || templates.length === 0} className="min-h-10 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white disabled:opacity-50">{saving ? 'A gerar…' : 'Gerar rascunho'}</button>
+          <FormActions saving={saving} disabled={templates.length === 0} onCancel={() => {}} saveLabel={saving ? 'A gerar…' : 'Gerar rascunho'} />
         </div>
       </form>
 

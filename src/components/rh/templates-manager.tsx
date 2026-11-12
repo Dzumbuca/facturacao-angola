@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { FormError } from '@/components/rh/form-kit';
+import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
 type Template = { id: string; name: string; type: string; body: string; isActive: boolean; version: number; legalStatus?: string };
 
 const TYPE_LABEL: Record<string, string> = {
@@ -81,18 +81,25 @@ export function TemplatesManager({ templates }: { templates: Template[] }) {
           <h2 className="text-sm font-bold text-[#1c2d3f]">{editing ? `Editar modelo (cria v${editing.version + 1})` : 'Novo modelo'}</h2>
           {editing && <button type="button" onClick={reset} className="text-xs font-semibold text-[#52667a]">Cancelar</button>}
         </div>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          <div><label htmlFor="tpl-name" className="app-label">Nome *</label><input id="tpl-name" className="app-input" value={name} onChange={(e) => setName(e.target.value)} required /></div>
-          <div><label htmlFor="tpl-type" className="app-label">Tipo</label><select id="tpl-type" className="app-input" value={type} onChange={(e) => setType(e.target.value)}>{Object.entries(TYPE_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
-        </div>
-        <div className="mt-3">
-          <label htmlFor="tpl-body" className="app-label">Conteúdo *</label>
-          <textarea id="tpl-body" className="app-input min-h-40 font-mono text-xs" value={body} onChange={(e) => setBody(e.target.value)} placeholder={'Ex.: A empresa {{empresa_nome}} (NIF {{empresa_nif}}) declara que {{funcionario_nome}}, BI {{funcionario_bi}}, exerce a função de {{cargo}}.'} required />
-          <p className="mt-1 text-xs text-[#708195]">Variáveis: {'{{empresa_nome}}'}, {'{{empresa_nif}}'}, {'{{funcionario_nome}}'}, {'{{funcionario_bi}}'}, {'{{cargo}}'}, {'{{departamento}}'}, {'{{salario_base}}'}, {'{{data_inicio}}'}, {'{{data_fim}}'}.</p>
-        </div>
+        <FormSection title="Detalhes do modelo">
+          <div>
+            <FormField label="Nome" name="tpl-name" required><input id="tpl-name" className="app-input" value={name} onChange={(e) => setName(e.target.value)} required /></FormField>
+          </div>
+          <div>
+            <FormField label="Tipo" name="tpl-type">
+              <select id="tpl-type" className="app-input" value={type} onChange={(e) => setType(e.target.value)}>{Object.entries(TYPE_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+            </FormField>
+          </div>
+          <div className="sm:col-span-2">
+            <FormField label="Conteúdo" name="tpl-body" required hint="Cada edição cria uma versão imutável">
+              <textarea id="tpl-body" className="app-input min-h-40 font-mono text-xs" value={body} onChange={(e) => setBody(e.target.value)} placeholder={'Ex.: A empresa {{empresa_nome}} (NIF {{empresa_nif}}) declara que {{funcionario_nome}}, BI {{funcionario_bi}}, exerce a função de {{cargo}}.'} required />
+            </FormField>
+          </div>
+        </FormSection>
+        <p className="mt-1 text-xs text-[#708195]">Variáveis: {'{{empresa_nome}}'}, {'{{empresa_nif}}'}, {'{{funcionario_nome}}'}, {'{{funcionario_bi}}'}, {'{{cargo}}'}, {'{{departamento}}'}, {'{{salario_base}}'}, {'{{data_inicio}}'}, {'{{data_fim}}'}.</p>
         <FormError>{error}</FormError>
         <div className="mt-3 flex justify-end">
-          <button type="submit" disabled={saving} className="min-h-10 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white disabled:opacity-60">{saving ? 'A guardar…' : editing ? 'Guardar nova versão' : 'Guardar modelo'}</button>
+          <FormActions saving={saving} onCancel={reset} saveLabel={saving ? 'A guardar…' : editing ? 'Guardar nova versão' : 'Guardar modelo'} />
         </div>
       </form>
 

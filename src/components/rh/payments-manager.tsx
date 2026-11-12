@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { FormError } from '@/components/rh/form-kit';
+import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
 type Batch = {
   id: string; provider: string; status: string; total: number; reference: string | null;
   run: { period: string; status: string }; _count: { items: number };
@@ -70,14 +70,26 @@ export function PaymentsManager({ batches, runs }: { batches: Batch[]; runs: Run
       </div>
 
       <form onSubmit={create} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
-        <div className="grid gap-3 sm:grid-cols-3">
-          <div className="sm:col-span-2"><label htmlFor="pay-run" className="app-label">Processamento aprovado *</label><select id="pay-run" className="app-input" value={runId} onChange={(e) => setRunId(e.target.value)} required><option value="">Selecionar</option>{runs.map((run) => <option key={run.id} value={run.id}>{run.period} — {money(run.totalNet)}</option>)}</select></div>
-          <div><label htmlFor="pay-provider" className="app-label">Canal</label><select id="pay-provider" className="app-input" value={provider} onChange={(e) => setProvider(e.target.value)}><option value="MANUAL">Manual</option><option value="EMIS">EMIS (abstração)</option></select></div>
-        </div>
-        {runs.length === 0 && <p className="mt-2 text-xs text-[#8a5a00]">Não há processamentos aprovados disponíveis.</p>}
-        {message && <p role="status" className="mt-2 text-xs font-medium text-[#267256]">{message}</p>}
-        <FormError>{error}</FormError>
-        <div className="mt-3 flex justify-end"><button type="submit" disabled={saving || runs.length === 0} className="min-h-10 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white disabled:opacity-50">{saving ? 'A criar…' : 'Criar lote'}</button></div>
+        <FormSection title="Criar lote de pagamentos">
+          <div className="sm:col-span-2">
+            <FormField label="Processamento aprovado" name="pay-run" required>
+              <select id="pay-run" className="app-input" value={runId} onChange={(e) => setRunId(e.target.value)} required>
+                <option value="">Selecionar</option>{runs.map((run) => <option key={run.id} value={run.id}>{run.period} — {money(run.totalNet)}</option>)}
+              </select>
+            </FormField>
+          </div>
+          <div>
+            <FormField label="Canal" name="pay-provider">
+              <select id="pay-provider" className="app-input" value={provider} onChange={(e) => setProvider(e.target.value)}><option value="MANUAL">Manual</option><option value="EMIS">EMIS (abstração)</option></select>
+            </FormField>
+          </div>
+          {runs.length === 0 && <p className="mt-2 text-xs text-[#8a5a00]">Não há processamentos aprovados disponíveis.</p>}
+          {message && <p role="status" className="mt-2 text-xs font-medium text-[#267256]">{message}</p>}
+          <FormError>{error}</FormError>
+          <div className="sm:col-span-3">
+            <FormActions saving={saving} disabled={runs.length === 0} onCancel={() => {}} saveLabel={saving ? 'A criar…' : 'Criar lote'} />
+          </div>
+        </FormSection>
       </form>
 
       <div className="overflow-x-auto rounded-xl border border-[#e1e8f0] bg-white">
