@@ -278,7 +278,9 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
   <input id="rh-photo-url" name="photoUrl" className="app-input mt-2" placeholder="Ou cole um URL…" defaultValue={editing?.photoUrl ?? ''} />
   {(photoPreview || editing?.photoUrl) && (
     <div className="mt-2 flex items-center gap-3">
-      <img src={photoPreview ?? undefined} alt="Pré-visualização" className="h-16 w-16 rounded-full border border-[#e1e8f0] object-cover" />
+      {photoPreview
+        ? <img src={photoPreview} alt="Pré-visualização da fotografia" className="h-16 w-16 rounded-full border border-[#e1e8f0] object-cover" />
+        : <SignedImage path={editing?.photoUrl} alt={editing ? `${editing.firstName} ${editing.lastName}` : 'Fotografia do funcionário'} className="h-16 w-16 rounded-full border border-[#e1e8f0] object-cover" fallback={<div className="grid h-16 w-16 place-items-center rounded-full bg-[#eef2ff] text-lg font-bold text-[#021f87]">{editing?.firstName.charAt(0).toUpperCase()}{editing?.lastName.charAt(0).toUpperCase()}</div>} />}
       <span className="text-xs text-[#607286]">Pré-visualização da fotografia</span>
     </div>
   )}
