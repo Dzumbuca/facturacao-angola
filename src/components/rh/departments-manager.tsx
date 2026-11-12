@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { FormError } from '@/components/rh/form-kit';
+import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
 type Department = {
   id: string; name: string; code: string | null; managerName: string | null;
   parentId: string | null;
@@ -57,18 +57,17 @@ export function DepartmentsManager({ departments }: { departments: Department[] 
 
       {open && (
         <form onSubmit={submit} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div><label htmlFor="dept-name" className="app-label">Nome *</label><input id="dept-name" name="name" className="app-input" required /></div>
-            <div><label htmlFor="dept-code" className="app-label">Código</label><input id="dept-code" name="code" className="app-input" /></div>
-            <div><label htmlFor="dept-manager" className="app-label">Responsável</label><input id="dept-manager" name="managerName" className="app-input" /></div>
-            <div><label htmlFor="dept-parent" className="app-label">Departamento pai</label><select id="dept-parent" name="parentId" className="app-input"><option value="">—</option>{departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}</select></div>
-            <div className="sm:col-span-2"><label htmlFor="dept-desc" className="app-label">Descrição</label><input id="dept-desc" name="description" className="app-input" /></div>
-          </div>
+          <FormSection title="Dados do departamento">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div><label htmlFor="dept-name" className="app-label">Nome *</label><input id="dept-name" name="name" className="app-input" required /></div>
+              <div><label htmlFor="dept-code" className="app-label">Código</label><input id="dept-code" name="code" className="app-input" /></div>
+              <div><label htmlFor="dept-manager" className="app-label">Responsável</label><input id="dept-manager" name="managerName" className="app-input" /></div>
+              <div><label htmlFor="dept-parent" className="app-label">Departamento pai</label><select id="dept-parent" name="parentId" className="app-input"><option value="">—</option>{departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}</select></div>
+              <div className="sm:col-span-2"><label htmlFor="dept-desc" className="app-label">Descrição</label><input id="dept-desc" name="description" className="app-input" /></div>
+            </div>
+          </FormSection>
           <FormError>{error}</FormError>
-          <div className="mt-3 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <button type="button" onClick={() => setOpen(false)} className="min-h-10 rounded-lg border border-[#cdddeb] px-4 text-sm font-semibold text-[#52667a]">Cancelar</button>
-            <button type="submit" disabled={saving} className="min-h-10 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white disabled:opacity-60">{saving ? 'A guardar…' : 'Guardar'}</button>
-          </div>
+          <div className="mt-3"><FormActions saving={saving} onCancel={() => setOpen(false)} saveLabel={saving ? "A guardar…" : "Guardar"} /></div>
         </form>
       )}
 

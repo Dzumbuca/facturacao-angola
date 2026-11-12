@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { FormError } from '@/components/rh/form-kit';
+import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
 type Shift = {
   id: string; name: string; startTime: string; endTime: string;
   toleranceMinutes: number; isActive: boolean; isNight: boolean; nightPremiumPercent: number;
@@ -58,19 +58,18 @@ export function ShiftsManager({ shifts }: { shifts: Shift[] }) {
 
       {open && (
         <form onSubmit={submit} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
-          <div className="grid gap-3 sm:grid-cols-4">
-            <div className="sm:col-span-2"><label htmlFor="shift-name" className="app-label">Nome *</label><input id="shift-name" name="name" className="app-input" placeholder="Turno geral" required /></div>
-            <div><label htmlFor="shift-start" className="app-label">Entrada *</label><input id="shift-start" name="startTime" type="time" className="app-input" required /></div>
-            <div><label htmlFor="shift-end" className="app-label">Saída *</label><input id="shift-end" name="endTime" type="time" className="app-input" required /></div>
-            <div><label htmlFor="shift-tol" className="app-label">Tolerância (min)</label><input id="shift-tol" name="toleranceMinutes" type="number" min="0" max="120" className="app-input" defaultValue="0" /></div>
-            <div className="flex items-end gap-2"><label className="flex items-center gap-2 text-sm font-medium text-[#52667a]"><input id="shift-night" name="isNight" type="checkbox" /> Nocturno</label></div>
-            <div><label htmlFor="shift-nightpct" className="app-label">Prémio nocturno (%)</label><input id="shift-nightpct" name="nightPremiumPercent" type="number" min="0" max="100" className="app-input" defaultValue="0" /></div>
-          </div>
+          <FormSection title="Horário / turno">
+            <div className="grid gap-3 sm:grid-cols-4">
+              <div className="sm:col-span-2"><label htmlFor="shift-name" className="app-label">Nome *</label><input id="shift-name" name="name" className="app-input" placeholder="Turno geral" required /></div>
+              <div><label htmlFor="shift-start" className="app-label">Entrada *</label><input id="shift-start" name="startTime" type="time" className="app-input" required /></div>
+              <div><label htmlFor="shift-end" className="app-label">Saída *</label><input id="shift-end" name="endTime" type="time" className="app-input" required /></div>
+              <div><label htmlFor="shift-tol" className="app-label">Tolerância (min)</label><input id="shift-tol" name="toleranceMinutes" type="number" min="0" max="120" className="app-input" defaultValue="0" /></div>
+              <div className="flex items-end gap-2"><label className="flex items-center gap-2 text-sm font-medium text-[#52667a]"><input id="shift-night" name="isNight" type="checkbox" /> Nocturno</label></div>
+              <div><label htmlFor="shift-nightpct" className="app-label">Prémio nocturno (%)</label><input id="shift-nightpct" name="nightPremiumPercent" type="number" min="0" max="100" className="app-input" defaultValue="0" /></div>
+            </div>
+          </FormSection>
           <FormError>{error}</FormError>
-          <div className="mt-3 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <button type="button" onClick={() => setOpen(false)} className="min-h-10 rounded-lg border border-[#cdddeb] px-4 text-sm font-semibold text-[#52667a]">Cancelar</button>
-            <button type="submit" disabled={saving} className="min-h-10 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white disabled:opacity-60">{saving ? 'A guardar…' : 'Guardar'}</button>
-          </div>
+          <div className="mt-3"><FormActions saving={saving} onCancel={() => setOpen(false)} saveLabel={saving ? "A guardar…" : "Guardar"} /></div>
         </form>
       )}
 
