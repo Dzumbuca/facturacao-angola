@@ -38,7 +38,7 @@ export function contentHash(content: string): string {
   return crypto.createHash('sha256').update(content).digest('hex');
 }
 
-export function renderPdf(input: { title: string; content: string; status: string }): Promise<Buffer> {
+export function renderPdf(input: { title: string; content: string; status: string; watermarkNote?: string }): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     try {
       const doc = new PDFDocument({ size: 'A4', margins: { top: 60, bottom: 60, left: 60, right: 60 } });
@@ -52,7 +52,7 @@ export function renderPdf(input: { title: string; content: string; status: strin
       doc.fontSize(10).fillColor('#1c2d3f').text(input.content, { align: 'justify', lineGap: 3 });
       if (input.status !== 'EMITIDO') {
         doc.moveDown(1.5);
-        doc.fontSize(10).fillColor('#b45309').text('RASCUNHO — documento não emitido. Requer validação humana antes da emissão.', { align: 'center' });
+        doc.fontSize(10).fillColor('#b45309').text(input.watermarkNote ?? 'RASCUNHO — documento não emitido. Requer validação humana antes da emissão.', { align: 'center' });
       }
       doc.end();
     } catch (error) {

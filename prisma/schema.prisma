@@ -145,6 +145,10 @@ model Tenant {
   rhContracts              RhContract[]
 
   rhTimeEntries            RhTimeEntry[]
+  rhJobOpenings            RhJobOpening[]
+  rhPerformanceCycles      RhPerformanceCycle[]
+  rhTrainingCourses        RhTrainingCourse[]
+  rhAnnouncements          RhAnnouncement[]
   rhDevices                RhDevice[]
   rhDocumentTemplates      RhDocumentTemplate[]
   rhDocuments              RhDocument[]
@@ -1542,6 +1546,7 @@ model User {
 
   tenantRole                TenantRole              @default(USER)
   rhMemberships             RhMember[]
+  rhNotifications           RhNotification[]
 
   status                    AccountStatus           @default(ACTIVE)
 
@@ -2547,6 +2552,8 @@ model RhDepartment {
 
   employees RhEmployee[]
 
+  jobOpenings RhJobOpening[]
+
 
 
   @@unique([tenantId, name])
@@ -2584,6 +2591,7 @@ model RhPosition {
   department RhDepartment? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
 
   employees  RhEmployee[]
+  jobOpenings RhJobOpening[]
 
 
 
@@ -2661,8 +2669,14 @@ model RhEmployee {
   timeEntries RhTimeEntry[]
   leaveRequests RhLeaveRequest[]
   documents     RhDocument[]
+  salaryChanges RhSalaryChange[]
+  offboarding   RhOffboarding?
+  justifications RhAbsenceJustification[]
+  trainingEnrollments RhTrainingEnrollment[]
+  deductions    RhEmployeeDeduction[]
   payslips      RhPayslip[]
   paymentItems  RhPaymentItem[]
+  performanceReviews RhPerformanceReview[]
 
 
 
@@ -3144,4 +3158,322 @@ model RhDocumentTemplateVersion {
 
   @@unique([templateId, version])
   @@index([tenantId, templateId])
+}
+
+
+// Ciclo de vida — histórico salarial e desligamento.
+enum RhOffboardingStatus {
+  EM_PROCESSO
+  CONCLUIDO
+}
+
+model RhSalaryChange {
+  id              String   @id @default(uuid())
+  tenantId        String
+  employeeId      String
+  oldSalary       Decimal  @db.Decimal(14, 2)
+  newSalary       Decimal  @db.Decimal(14, 2)
+  effectiveDate   DateTime
+  reason          String?
+  createdByUserId String?
+  createdAt       DateTime @default(now())
+
+  employee RhEmployee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, employeeId, effectiveDate])
+}
+
+model RhOffboarding {
+  id              String             @id @default(uuid())
+  tenantId        String
+  employeeId      String             @unique
+  reason          String
+  lastDay         DateTime
+  status          RhOffboardingStatus @default(CONCLUIDO)
+  notes           String?
+  revokeAccess    Boolean            @default(false)
+  decidedByUserId String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  employee RhEmployee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, status])
+}
+
+
+// Justificações de faltas e notificações internas.
+enum RhJustificationStatus {
+  PENDENTE
+  APROVADO
+  REJEITADO
+}
+
+model RhAbsenceJustification {
+  id              String                @id @default(uuid())
+  tenantId        String
+  employeeId      String
+  date            DateTime
+  type            String
+  reason          String
+  status          RhJustificationStatus @default(PENDENTE)
+  decisionNote    String?
+  decidedByUserId String?
+  createdByUserId String?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+
+  employee RhEmployee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, employeeId, date, type])
+  @@index([tenantId, status, date])
+}
+
+model RhNotification {
+  id         String    @id @default(uuid())
+  tenantId   String
+  userId     String
+  title      String
+  body       String
+  entityType String?
+  entityId   String?
+  readAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, userId, readAt])
+}
+
+
+// Recrutamento e seleção.
+enum RhJobOpeningStatus {
+  ABERTA
+  ENCERRADA
+  CANCELADA
+}
+
+enum RhCandidateStatus {
+  RECEBIDA
+  TRIAGEM
+  ENTREVISTA
+  AVALIACAO
+  APROVADO
+  REJEITADO
+  ADMITIDO
+}
+
+model RhJobOpening {
+  id           String            @id @default(uuid())
+  tenantId     String
+  title        String
+  departmentId String?
+  positionId   String?
+  openings     Int               @default(1)
+  requirements String?
+  closesAt     DateTime?
+  status       RhJobOpeningStatus @default(ABERTA)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  tenant     Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  department RhDepartment? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  position   RhPosition?  @relation(fields: [positionId], references: [id], onDelete: SetNull)
+  candidates RhCandidate[]
+
+  @@index([tenantId, status])
+}
+
+model RhCandidate {
+  id          String            @id @default(uuid())
+  tenantId    String
+  jobOpeningId String
+  firstName   String
+  lastName    String
+  email       String
+  phone       String?
+  cvUrl       String?
+  notes       String?
+  status      RhCandidateStatus @default(RECEBIDA)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  jobOpening RhJobOpening @relation(fields: [jobOpeningId], references: [id], onDelete: Cascade)
+  events     RhCandidateEvent[]
+
+  @@index([tenantId, jobOpeningId, status])
+  @@index([tenantId, email])
+}
+
+model RhCandidateEvent {
+  id              String            @id @default(uuid())
+  tenantId        String
+  candidateId     String
+  fromStatus      RhCandidateStatus?
+  toStatus        RhCandidateStatus
+  note            String?
+  createdByUserId String?
+  createdAt       DateTime          @default(now())
+
+  candidate RhCandidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, candidateId])
+}
+
+
+// Avaliação de desempenho.
+enum RhReviewCycleStatus {
+  ABERTO
+  FECHADO
+}
+
+enum RhReviewStatus {
+  PENDENTE
+  ENTREGUE
+  VALIDADO
+}
+
+model RhPerformanceCycle {
+  id        String             @id @default(uuid())
+  tenantId  String
+  name      String
+  startsAt  DateTime
+  endsAt    DateTime?
+  status    RhReviewCycleStatus @default(ABERTO)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  tenant   Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  criteria RhPerfCriterion[]
+  reviews  RhPerformanceReview[]
+
+  @@index([tenantId, status])
+}
+
+model RhPerfCriterion {
+  id       String @id @default(uuid())
+  tenantId String
+  cycleId  String
+  name     String
+  weight   Int    @default(1)
+  order    Int    @default(0)
+
+  cycle RhPerformanceCycle @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, cycleId, order])
+}
+
+model RhPerformanceReview {
+  id           String         @id @default(uuid())
+  tenantId     String
+  cycleId      String
+  employeeId   String
+  reviewerName String?
+  score        Int?
+  comments     String?
+  status       RhReviewStatus @default(PENDENTE)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  cycle    RhPerformanceCycle @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  employee RhEmployee         @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([cycleId, employeeId])
+  @@index([tenantId, cycleId, status])
+}
+
+
+// Formação profissional.
+enum RhTrainingStatus {
+  AGENDADO
+  EM_CURSO
+  CONCLUIDO
+  CANCELADO
+}
+
+enum RhEnrollmentStatus {
+  INSCRITO
+  CONCLUIDA
+  DESISTENTE
+}
+
+model RhTrainingCourse {
+  id                 String           @id @default(uuid())
+  tenantId           String
+  title              String
+  trainerName        String?
+  startDate          DateTime
+  endDate            DateTime?
+  cargaHoras         Int              @default(8)
+  location           String?
+  requiredForPositionId String?
+  status             RhTrainingStatus @default(AGENDADO)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  tenant     Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  enrollments RhTrainingEnrollment[]
+
+  @@index([tenantId, status, startDate])
+}
+
+model RhTrainingEnrollment {
+  id            String             @id @default(uuid())
+  tenantId      String
+  courseId      String
+  employeeId    String
+  status        RhEnrollmentStatus @default(INSCRITO)
+  score         Int?
+  certificateUrl String?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  course   RhTrainingCourse @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  employee RhEmployee       @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, employeeId])
+  @@index([tenantId, courseId, status])
+}
+
+
+// Descontos recorrentes do funcionário (adiantamentos, empréstimos).
+enum RhDeductionType {
+  ADIANTAMENTO
+  EMPRESTIMO
+  OUTRO
+}
+
+model RhEmployeeDeduction {
+  id                     String           @id @default(uuid())
+  tenantId               String
+  employeeId             String
+  description            String
+  type                   RhDeductionType  @default(OUTRO)
+  amount                 Decimal          @db.Decimal(14, 2)
+  remainingInstallments  Int?
+  active                 Boolean          @default(true)
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+
+  employee RhEmployee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, employeeId, active])
+}
+
+
+// Comunicados internos.
+model RhAnnouncement {
+  id          String    @id @default(uuid())
+  tenantId    String
+  title       String
+  body        String
+  priority    String    @default("NORMAL")
+  publishedAt DateTime  @default(now())
+  expiresAt   DateTime?
+  createdByUserId String?
+  createdAt   DateTime  @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, publishedAt])
 }

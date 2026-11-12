@@ -6,7 +6,7 @@ import { runWithTenant } from '@/lib/tenant-db';
 
 import { requireRhAccess, rhAccessResponse } from '@/lib/rh-access';
 
-import { assertDepartmentInTenant, assertPositionInTenant, assertShiftInTenant, nextEmployeeNumber, rhAudit } from '@/lib/rh-service';
+import { assertDepartmentInTenant, assertPositionInTenant, assertShiftInTenant, maskAccount, nextEmployeeNumber, rhAudit } from '@/lib/rh-service';
 
 type RhContractType = 'INDEFINIDO' | 'TERMO_CERTO' | 'ESTAGIO' | 'PRESTACAO_SERVICOS';
 
@@ -15,11 +15,8 @@ type RhEmployeeStatus = 'ACTIVO' | 'SUSPENSO' | 'FERIAS' | 'CESSAO' | 'INACTIVO'
 
 
 function serializeEmployee(employee: any) {
-
-  const { pinHash, ...rest } = employee;
-
-  return { ...rest, baseSalary: Number(rest.baseSalary), hasPin: Boolean(pinHash) };
-
+  const { pinHash, bankAccount, bankIban, ...rest } = employee;
+  return { ...rest, baseSalary: Number(rest.baseSalary), hasPin: Boolean(pinHash), bankAccount: maskAccount(bankAccount), bankIban: maskAccount(bankIban) };
 }
 
 
@@ -120,15 +117,15 @@ export async function POST(req: Request) {
 
     if (!firstName || !lastName || firstName.length > 80 || lastName.length > 80) {
 
-      return NextResponse.json({ error: 'Nome e apelido sÃ£o obrigatÃ³rios.' }, { status: 400 });
+      return NextResponse.json({ error: 'Nome e apelido são obrigatórios.' }, { status: 400 });
 
     }
 
-    if (!hireDate) return NextResponse.json({ error: 'Data de admissÃ£o invÃ¡lida.' }, { status: 400 });
+    if (!hireDate) return NextResponse.json({ error: 'Data de admissão inválida.' }, { status: 400 });
 
     if (!Number.isFinite(baseSalary) || baseSalary < 0) {
 
-      return NextResponse.json({ error: 'SalÃ¡rio-base invÃ¡lido.' }, { status: 400 });
+      return NextResponse.json({ error: 'Salário-base inválido.' }, { status: 400 });
 
     }
 
@@ -220,7 +217,7 @@ export async function POST(req: Request) {
 
     if (['DEPARTMENT_NOT_FOUND', 'POSITION_NOT_FOUND', 'SHIFT_NOT_FOUND'].includes(error?.message)) {
 
-      return NextResponse.json({ error: 'Departamento ou cargo invÃ¡lido.' }, { status: 400 });
+      return NextResponse.json({ error: 'Departamento ou cargo inválido.' }, { status: 400 });
 
     }
 

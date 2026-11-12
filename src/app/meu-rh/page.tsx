@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth';
 import { getSessionTenantId, getSessionUserId } from '@/lib/session';
 import { isApplicationEnabled } from '@/lib/platform-apps';
 import { runWithTenant } from '@/lib/tenant-db';
+import { MyJustifications } from '@/components/rh/my-justifications';
 
 function money(value: unknown) {
   return new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', maximumFractionDigits: 2 }).format(Number(value) || 0);
@@ -29,16 +30,19 @@ export default async function MyRhPage() {
     const now = new Date();
     const since = new Date(now.getTime() - 30 * 86_400_000);
     const yearStart = new Date(Date.UTC(now.getFullYear(), 0, 1));
-    const [attendance, payslips, leaves, documents] = await Promise.all([
+    const [attendance, payslips, leaves, documents, justifications, notifications, announcements] = await Promise.all([
       tx.rhTimeEntry.findMany({ where: { tenantId, employeeId: employee.id, occurredAt: { gte: since } }, orderBy: { occurredAt: 'desc' }, take: 60 }),
       tx.rhPayslip.findMany({ where: { tenantId, employeeId: employee.id }, include: { run: { select: { period: true, status: true } } }, orderBy: { createdAt: 'desc' }, take: 12 }),
       tx.rhLeaveRequest.findMany({ where: { tenantId, employeeId: employee.id, startDate: { gte: yearStart } }, orderBy: { startDate: 'desc' }, take: 20 }),
       tx.rhDocument.findMany({ where: { tenantId, employeeId: employee.id, status: 'EMITIDO' }, select: { id: true, title: true, issuedAt: true }, orderBy: { issuedAt: 'desc' }, take: 10 }),
+      tx.rhAbsenceJustification.findMany({ where: { tenantId, employeeId: employee.id }, orderBy: { date: 'desc' }, take: 30 }),
+      tx.rhNotification.findMany({ where: { tenantId, userId }, orderBy: { createdAt: 'desc' }, take: 20 }),
+      tx.rhAnnouncement.findMany({ where: { tenantId, publishedAt: { lte: new Date() }, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] }, orderBy: { publishedAt: 'desc' }, take: 10 }),
     ]);
-    return { user, employee, attendance, payslips, leaves, documents };
+    return { user, employee, attendance, payslips, leaves, documents, justifications, notifications, announcements };
   }, { userId });
 
-  const { employee, payslips = [], attendance = [], leaves = [], documents = [] } = data as any;
+  const { employee, payslips = [], attendance = [], leaves = [], documents = [], justifications = [], notifications = [], announcements = [] } = data as any;
   if (!employee) {
     return (
       <main className="mx-auto max-w-2xl px-4 py-16">
@@ -68,8 +72,8 @@ export default async function MyRhPage() {
       <section className="rounded-xl border border-[#e1e8f0] bg-white">
         <h2 className="border-b border-[#eef2f6] px-4 py-3 text-sm font-bold text-[#1c2d3f]">Recibos</h2>
         <div className="overflow-x-auto">
-          <table className="data-table min-w-[420px]"><thead><tr><th>Período</th><th>Líquido</th><th>Estado</th></tr></thead>
-            <tbody>{payslips.map((slip: any) => <tr key={slip.id}><td data-mobile-primary className="tabular-nums">{slip.run.period}</td><td className="tabular-nums">{money(slip.net)}</td><td>{slip.run.status}</td></tr>)}
+          <table className="data-table min-w-[420px]"><thead><tr><th>Período</th><th>Líquido</th><th>Estado</th><th>Recibo</th></tr></thead>
+            <tbody>{payslips.map((slip: any) => <tr key={slip.id}><td data-mobile-primary className="tabular-nums">{slip.run.period}</td><td className="tabular-nums">{money(slip.net)}</td><td>{slip.run.status}</td><td data-mobile-actions><a href={`/api/meu-rh/payslips/${slip.id}/pdf`} target="_blank" rel="noreferrer" className="text-xs font-semibold text-[#021f87]">PDF</a></td></tr>)}
               {payslips.length === 0 && <tr><td colSpan={3} className="px-4 py-8 text-center text-sm text-[#708195]">Sem recibos.</td></tr>}</tbody></table>
         </div>
       </section>
@@ -90,6 +94,39 @@ export default async function MyRhPage() {
             <tbody>{leaves.map((leave: any) => <tr key={leave.id}><td data-mobile-primary className="tabular-nums">{day(leave.startDate)} → {day(leave.endDate)}</td><td className="tabular-nums">{leave.days}</td><td>{leave.status}</td></tr>)}
               {leaves.length === 0 && <tr><td colSpan={3} className="px-4 py-8 text-center text-sm text-[#708195]">Sem pedidos.</td></tr>}</tbody></table>
         </div>
+      </section>
+
+      <MyJustifications
+        items={justifications.map((item: any) => ({ ...item, date: item.date.toISOString(), decisionNote: item.decisionNote ?? null }))}
+        canSubmit
+      />
+
+      {announcements.length > 0 && (
+        <section className="rounded-xl border border-[#f0dcb9] bg-[#fffdf5]">
+          <h2 className="border-b border-[#f0e3b9] px-4 py-3 text-sm font-bold text-[#5a4500]">Comunicados internos</h2>
+          <ul className="divide-y divide-[#f0e3b9]">
+            {announcements.map((item: any) => (
+              <li key={item.id} className="px-4 py-3">
+                <p className="text-sm font-semibold text-[#3a2f00]">{item.title}</p>
+                <p className="mt-0.5 whitespace-pre-wrap text-xs leading-5 text-[#5a4500]">{item.body}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <section className="rounded-xl border border-[#e1e8f0] bg-white">
+        <h2 className="border-b border-[#eef2f6] px-4 py-3 text-sm font-bold text-[#1c2d3f]">Notificações</h2>
+        <ul className="divide-y divide-[#eef2f6]">
+          {notifications.map((item: any) => (
+            <li key={item.id} className={`px-4 py-3 ${item.readAt ? '' : 'bg-[#f7faff]'}`}>
+              <p className="text-sm font-semibold text-[#1c2d3f]">{item.title}</p>
+              <p className="mt-0.5 text-xs text-[#52667a]">{item.body}</p>
+              <p className="mt-1 text-[11px] text-[#8a99ab]">{new Date(item.createdAt).toLocaleString('pt-AO')} · {item.readAt ? 'lida' : 'não lida'}</p>
+            </li>
+          ))}
+          {notifications.length === 0 && <li className="px-4 py-8 text-center text-sm text-[#708195]">Sem notificações.</li>}
+        </ul>
       </section>
 
       <section className="rounded-xl border border-[#e1e8f0] bg-white">

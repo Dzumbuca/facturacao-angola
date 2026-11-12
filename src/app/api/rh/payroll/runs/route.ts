@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { runWithTenant } from '@/lib/tenant-db';
 import { requireRhAccess, rhAccessResponse } from '@/lib/rh-access';
 import { rhAudit } from '@/lib/rh-service';
-import { calculatePayslip, parsePayrollConfig } from '@/lib/rh-payroll';
+import { notifyRhUsers } from '@/lib/rh-notify';
+import { calculatePayslip, parsePayrollConfig, computeTimeAdjustments, type TimeEntryLike } from '@/lib/rh-payroll';
 
 export async function GET() {
   try {
@@ -37,16 +38,62 @@ export async function POST(req: Request) {
 
       const parsed = parsePayrollConfig(ruleset.config);
       if ('error' in parsed) return { code: 'BAD_RULESET' as const, error: parsed.error };
+      const [year, monthNumber] = period.split('-').map(Number);
+      const rangeStart = new Date(Date.UTC(year, monthNumber - 1, 1, 0) - 3_600_000);
+      const rangeEnd = new Date(Date.UTC(year, monthNumber, 1, 0) - 3_600_000);
       const employees = (await tx.rhEmployee.findMany({
         where: { tenantId: access.tenantId, status: 'ACTIVO' },
-        select: { id: true, baseSalary: true },
+        select: { id: true, baseSalary: true, shift: { select: { startTime: true, endTime: true } } },
         orderBy: { employeeNumber: 'asc' },
       })) as any[];
       if (employees.length === 0) return { code: 'NO_EMPLOYEES' as const };
 
+      const deductionRows = await tx.rhEmployeeDeduction.findMany({
+        where: { tenantId: access.tenantId, active: true, employeeId: { in: employees.map((employee: any) => employee.id) } },
+        select: { employeeId: true, amount: true },
+      });
+      const timeEntries = (await tx.rhTimeEntry.findMany({
+        where: { tenantId: access.tenantId, employeeId: { in: employees.map((employee: any) => employee.id) }, occurredAt: { gte: rangeStart, lt: rangeEnd } },
+        select: { employeeId: true, type: true, occurredAt: true },
+      })) as Array<{ employeeId: string; type: TimeEntryLike['type']; occurredAt: Date }>;
+      const timeByEmployee = new Map<string, TimeEntryLike[]>();
+      for (const entry of timeEntries) {
+        const list = timeByEmployee.get(entry.employeeId) ?? [];
+        list.push(entry);
+        timeByEmployee.set(entry.employeeId, list);
+      }
+
+      const deductionByEmployee = new Map<string, number>();
+      for (const row of deductionRows as Array<{ employeeId: string; amount: unknown }>) {
+        deductionByEmployee.set(row.employeeId, (deductionByEmployee.get(row.employeeId) ?? 0) + Number(row.amount));
+      }
+
       const payslips = employees.map((employee: any) => {
-        const calc = calculatePayslip({ baseSalary: Number(employee.baseSalary), config: parsed.config });
-        return { tenantId: access.tenantId, employeeId: employee.id, ...calc, lines: { irtBrackets: parsed.config.irtBrackets.length } };
+        const baseSalary = Number(employee.baseSalary);
+        const extraDeductions = deductionByEmployee.get(employee.id) ?? 0;
+        const adjustments = computeTimeAdjustments({
+          baseSalary,
+          entries: timeByEmployee.get(employee.id) ?? [],
+          shift: employee.shift,
+          period,
+          monthlyHours: parsed.config.monthlyHours,
+          overtimeRatePercent: parsed.config.overtimeRatePercent,
+          absenceRatePercent: parsed.config.absenceRatePercent,
+        });
+        const calc = calculatePayslip({ baseSalary, config: parsed.config, extraDeductions, overtimePay: adjustments.overtimePay, absenceDeduction: adjustments.absenceDeduction });
+        return {
+          tenantId: access.tenantId,
+          employeeId: employee.id,
+          ...calc,
+          lines: {
+            irtBrackets: parsed.config.irtBrackets.length,
+            extraDeductions,
+            overtimeHours: adjustments.overtimeHours,
+            absenceHours: adjustments.absenceHours,
+            overtimePay: adjustments.overtimePay,
+            absenceDeduction: adjustments.absenceDeduction,
+          },
+        };
       });
       const totals = payslips.reduce((acc: any, slip: any) => ({
         gross: acc.gross + slip.gross,
@@ -69,7 +116,25 @@ export async function POST(req: Request) {
           payslips: { create: payslips },
         },
       });
-      await rhAudit(tx, { tenantId: access.tenantId, actorUserId: access.userId, action: 'RH_PAYROLL_CALCULATED', entity: 'RhPayrollRun', entityId: run.id, metadata: { period, rulesetId, employees: employees.length } });
+      // Amortiza prestações de adiantamentos/empréstimos nesta folha.
+      const installments = await tx.rhEmployeeDeduction.findMany({
+        where: { tenantId: access.tenantId, active: true, remainingInstallments: { not: null }, employeeId: { in: employees.map((employee: any) => employee.id) } },
+        select: { id: true, remainingInstallments: true },
+      });
+      for (const item of installments as Array<{ id: string; remainingInstallments: number | null }>) {
+        const remaining = Math.max(0, (item.remainingInstallments ?? 1) - 1);
+        await tx.rhEmployeeDeduction.update({ where: { id: item.id }, data: { remainingInstallments: remaining, active: remaining > 0 } });
+      }
+
+      await rhAudit(tx, { tenantId: access.tenantId, actorUserId: access.userId, action: 'RH_PAYROLL_CALCULATED', entity: 'RhPayrollRun', entityId: run.id, metadata: { period, rulesetId, employees: employees.length, installmentsAmortized: installments.length } });
+      await notifyRhUsers(tx, {
+        tenantId: access.tenantId,
+        roles: ['FINANCE', 'ADMIN'],
+        title: 'Folha salarial calculada',
+        body: `${period} · ${employees.length} funcionário(s) · líquido ${totals.net.toFixed(2)} Kz · aguarda aprovação`,
+        entityType: 'RhPayrollRun',
+        entityId: run.id,
+      });
       return { code: 'OK' as const, run };
     }, { userId: access.userId });
 

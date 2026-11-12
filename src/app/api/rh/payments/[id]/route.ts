@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { runWithTenant } from '@/lib/tenant-db';
 import { requireRhAccess, rhAccessResponse } from '@/lib/rh-access';
 import { rhAudit } from '@/lib/rh-service';
+import { notifyRhUsers } from '@/lib/rh-notify';
 
 type Context = { params: Promise<{ id: string }> };
 
@@ -29,7 +30,7 @@ export async function PATCH(req: Request, { params }: Context) {
     const target = body.status;
 
     const result = await runWithTenant(access.tenantId, async (tx) => {
-      const batch = await tx.rhPaymentBatch.findFirst({ where: { id, tenantId: access.tenantId } });
+      const batch = await tx.rhPaymentBatch.findFirst({ where: { id, tenantId: access.tenantId }, include: { run: { select: { period: true } } } });
       if (!batch) return { code: 'NOT_FOUND' as const };
       if (target === 'SENT' && batch.status === 'DRAFT') {
         const updated = await tx.rhPaymentBatch.update({ where: { id }, data: { status: 'SENT', sentAt: new Date(), reference: `MANUAL-${Date.now()}` } });
@@ -44,6 +45,14 @@ export async function PATCH(req: Request, { params }: Context) {
           await tx.rhPayrollRun.update({ where: { id: batch.runId }, data: { status: 'PAGO', paidAt: new Date() } });
         }
         await rhAudit(tx, { tenantId: access.tenantId, actorUserId: access.userId, action: `RH_PAYMENT_${target}`, entity: 'RhPaymentBatch', entityId: id, metadata: {} });
+        await notifyRhUsers(tx, {
+          tenantId: access.tenantId,
+          roles: ['FINANCE', 'ADMIN'],
+          title: target === 'CONFIRMED' ? 'Pagamento de salários confirmado' : 'Pagamento de salários falhado',
+          body: `Lote #${id.slice(0, 8)} · ${batch.run.period}`,
+          entityType: 'RhPaymentBatch',
+          entityId: id,
+        });
         return { code: 'OK' as const, batch: updated };
       }
       return { code: 'INVALID_TRANSITION' as const, from: batch.status, to: target };

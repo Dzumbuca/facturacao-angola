@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState, type FormEvent } from 'react';
+import Link from 'next/link';
 
 type Department = { id: string; name: string };
 type Position = { id: string; title: string; departmentId: string | null };
@@ -179,7 +180,7 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
             {filtered.map((employee) => (
               <tr key={employee.id}>
                 <td data-mobile-primary>
-                  <span className="block font-semibold text-[#1c2d3f]">{employee.firstName} {employee.lastName}</span>
+                  <Link href={`/rh/funcionarios/${employee.id}`} className="block font-semibold text-[#1c2d3f] underline-offset-2 hover:underline">{employee.firstName} {employee.lastName}</Link>
                   <span className="block text-xs text-[#708195]">{employee.email || '—'}</span>
                 </td>
                 <td className="font-mono text-xs text-[#607286]">{employee.employeeNumber}</td>

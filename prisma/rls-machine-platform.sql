@@ -153,3 +153,87 @@ DROP POLICY IF EXISTS "rh_doc_template_version_isolation" ON "RhDocumentTemplate
 CREATE POLICY "rh_doc_template_version_isolation" ON "RhDocumentTemplateVersion" FOR ALL
   USING ("tenantId" = current_setting('app.tenant_id', true))
   WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+
+-- Ciclo de vida: histórico salarial e desligamentos.
+ALTER TABLE "RhSalaryChange" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_salary_change_isolation" ON "RhSalaryChange";
+CREATE POLICY "rh_salary_change_isolation" ON "RhSalaryChange" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+ALTER TABLE "RhOffboarding" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_offboarding_isolation" ON "RhOffboarding";
+CREATE POLICY "rh_offboarding_isolation" ON "RhOffboarding" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+
+-- Justificações e notificações.
+ALTER TABLE "RhAbsenceJustification" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_absence_justification_isolation" ON "RhAbsenceJustification";
+CREATE POLICY "rh_absence_justification_isolation" ON "RhAbsenceJustification" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+ALTER TABLE "RhNotification" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_notification_isolation" ON "RhNotification";
+CREATE POLICY "rh_notification_isolation" ON "RhNotification" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+
+-- Recrutamento e seleção.
+ALTER TABLE "RhJobOpening" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_job_opening_isolation" ON "RhJobOpening";
+CREATE POLICY "rh_job_opening_isolation" ON "RhJobOpening" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+ALTER TABLE "RhCandidate" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_candidate_isolation" ON "RhCandidate";
+CREATE POLICY "rh_candidate_isolation" ON "RhCandidate" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+ALTER TABLE "RhCandidateEvent" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_candidate_event_isolation" ON "RhCandidateEvent";
+CREATE POLICY "rh_candidate_event_isolation" ON "RhCandidateEvent" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+
+-- Avaliação de desempenho.
+ALTER TABLE "RhPerformanceCycle" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_performance_cycle_isolation" ON "RhPerformanceCycle";
+CREATE POLICY "rh_performance_cycle_isolation" ON "RhPerformanceCycle" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+ALTER TABLE "RhPerfCriterion" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_perf_criterion_isolation" ON "RhPerfCriterion";
+CREATE POLICY "rh_perf_criterion_isolation" ON "RhPerfCriterion" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+ALTER TABLE "RhPerformanceReview" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_performance_review_isolation" ON "RhPerformanceReview";
+CREATE POLICY "rh_performance_review_isolation" ON "RhPerformanceReview" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+
+-- Formação profissional.
+ALTER TABLE "RhTrainingCourse" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_training_course_isolation" ON "RhTrainingCourse";
+CREATE POLICY "rh_training_course_isolation" ON "RhTrainingCourse" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+ALTER TABLE "RhTrainingEnrollment" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_training_enrollment_isolation" ON "RhTrainingEnrollment";
+CREATE POLICY "rh_training_enrollment_isolation" ON "RhTrainingEnrollment" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+
+-- Descontos recorrentes.
+ALTER TABLE "RhEmployeeDeduction" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_employee_deduction_isolation" ON "RhEmployeeDeduction";
+CREATE POLICY "rh_employee_deduction_isolation" ON "RhEmployeeDeduction" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+
+-- Comunicados internos.
+ALTER TABLE "RhAnnouncement" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_announcement_isolation" ON "RhAnnouncement";
+CREATE POLICY "rh_announcement_isolation" ON "RhAnnouncement" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));

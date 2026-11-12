@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { runWithTenant } from '@/lib/tenant-db';
 import { requireRhAccess, rhAccessResponse } from '@/lib/rh-access';
 import { rhAudit } from '@/lib/rh-service';
+import { findUserForEmployee, notifyRhUsers } from '@/lib/rh-notify';
 
 const DECISIONS = ['APROVADO', 'REJEITADO', 'CANCELADO'] as const;
 type Context = { params: Promise<{ id: string }> };
@@ -27,6 +28,19 @@ export async function PATCH(req: Request, { params }: Context) {
         },
       });
       await rhAudit(tx, { tenantId: access.tenantId, actorUserId: access.userId, action: `RH_LEAVE_${body.status}`, entity: 'RhLeaveRequest', entityId: id, metadata: { decision: body.status } });
+
+      const employee = await tx.rhEmployee.findFirst({ where: { id: updated.employeeId, tenantId: access.tenantId }, select: { email: true } });
+      const employeeUserId = await findUserForEmployee(tx, access.tenantId, employee?.email ?? null);
+      if (employeeUserId) {
+        await notifyRhUsers(tx, {
+          tenantId: access.tenantId,
+          userIds: [employeeUserId],
+          title: body.status === 'APROVADO' ? 'Pedido de férias aprovado' : 'Pedido de férias rejeitado',
+          body: `Período: ${updated.startDate.toISOString().slice(0, 10)} → ${updated.endDate.toISOString().slice(0, 10)} (${updated.days} dia(s))${updated.decisionNote ? ` · Nota: ${updated.decisionNote}` : ''}`,
+          entityType: 'RhLeaveRequest',
+          entityId: id,
+        });
+      }
       return { code: 'OK' as const, updated };
     }, { userId: access.userId });
 
