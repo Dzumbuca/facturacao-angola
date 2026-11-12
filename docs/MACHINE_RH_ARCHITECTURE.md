@@ -102,6 +102,10 @@ Assistente apenas com leitura e geração de rascunhos; nunca aprova pagamentos,
 | Payroll Connect: lotes, estados, idempotência (sem transferência real) | **Implementado e testado** |
 | Self-service do funcionário (`/meu-rh`): recibos, ponto, férias e documentos próprios | **Implementado e testado** |
 | Assistente IA de rascunhos (Groq free/OpenRouter free, revisão humana) | **Implementado** (requer chave) |
+| Privacidade de dados bancários (mascaramento + acesso restrito) | **Implementado e testado** |
+| Ciclo de vida: histórico salarial e desligamento estruturado | **Implementado e testado** |
+| Justificações de faltas e notificações internas | **Implementado e testado** |
+| Recibos de vencimento em PDF e exportações CSV | **Implementado e testado** |
 | Transferências bancárias reais (EMIS) | **Pendente** |
 | Matriz RBAC fina (RH_ADMIN, FINANCE, MANAGER, EMPLOYEE) | **Pendente** |
 | Migração de produção | **Não executada** (requer aprovação) |

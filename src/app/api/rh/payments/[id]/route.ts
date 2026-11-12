@@ -30,7 +30,7 @@ export async function PATCH(req: Request, { params }: Context) {
     const target = body.status;
 
     const result = await runWithTenant(access.tenantId, async (tx) => {
-      const batch = await tx.rhPaymentBatch.findFirst({ where: { id, tenantId: access.tenantId } });
+      const batch = await tx.rhPaymentBatch.findFirst({ where: { id, tenantId: access.tenantId }, include: { run: { select: { period: true } } } });
       if (!batch) return { code: 'NOT_FOUND' as const };
       if (target === 'SENT' && batch.status === 'DRAFT') {
         const updated = await tx.rhPaymentBatch.update({ where: { id }, data: { status: 'SENT', sentAt: new Date(), reference: `MANUAL-${Date.now()}` } });

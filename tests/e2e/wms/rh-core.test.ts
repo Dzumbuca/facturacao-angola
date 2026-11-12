@@ -568,4 +568,120 @@ describe('Machine RH - núcleo e isolamento entre empresas', () => {
     expect(response.status).toBe(503);
     expect((await response.json()).code).toBe('AI_NOT_CONFIGURED');
   });
+
+  it('dados bancários mascarados na lista e completos no detalhe', async () => {
+    const admin = await login();
+    await authenticatedFetch(`/api/rh/employees/${employeeId}`, admin, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bankAccount: '0012345678', bankIban: 'AO06000400001234567890123' }),
+    });
+    const list = await authenticatedFetch('/api/rh/employees', admin);
+    const listData = await list.json();
+    const row = listData.find((item: any) => item.id === employeeId);
+    expect(row.bankAccount).toBe('•••••678');
+    expect(row.bankIban).toMatch(/^•/);
+
+    const detail = await authenticatedFetch(`/api/rh/employees/${employeeId}`, admin);
+    const detailData = await detail.json();
+    expect(detailData.bankAccount).toBe('0012345678');
+    expect(detailData.bankIban).toBe('AO06000400001234567890123');
+  });
+
+  it('histórico salarial e desligamento estruturado', async () => {
+    const admin = await login();
+    const patch = await authenticatedFetch(`/api/rh/employees/${employeeId}`, admin, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ baseSalary: 400000, salaryReason: 'Ajuste E2E' }),
+    });
+    expect(patch.status).toBe(200);
+
+    const salaryChanges = await prisma.rhSalaryChange.findMany({
+      where: { tenantId: tenantAId, employeeId },
+      orderBy: { effectiveDate: 'desc' },
+    });
+    expect(salaryChanges.length).toBe(1);
+    expect(Number(salaryChanges[0].newSalary)).toBe(400000);
+    expect(salaryChanges[0].reason).toBe('Ajuste E2E');
+
+    const offboard = await authenticatedFetch(`/api/rh/employees/${employeeId}/offboard`, admin, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reason: 'FIM_DE_CONTRATO', lastDay: '2026-12-31', revokeAccess: false }),
+    });
+    expect(offboard.status).toBe(201);
+    expect((await offboard.json()).reason).toBe('FIM_DE_CONTRATO');
+
+    const duplicate = await authenticatedFetch(`/api/rh/employees/${employeeId}/offboard`, admin, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reason: 'OUTRO', lastDay: '2026-12-31' }),
+    });
+    expect(duplicate.status).toBe(409);
+
+    const sessionB = await login('e2e-other@machinefacturas.test');
+    const foreign = await authenticatedFetch(`/api/rh/employees/${employeeId}/offboard`, sessionB, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reason: 'OUTRO', lastDay: '2026-12-31' }),
+    });
+    expect(foreign.status).toBe(404);
+  });
+
+  it('justificações: criar, aprovar e notificar', async () => {
+    const admin = await login();
+    const create = await authenticatedFetch('/api/rh/justifications', admin, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ employeeId, type: 'FALTA', reason: 'Consulta médica E2E', date: '2026-05-04' }),
+    });
+    expect(create.status).toBe(201);
+    const justification = await create.json();
+
+    const approve = await authenticatedFetch(`/api/rh/justifications/${justification.id}`, admin, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'APROVADO', decisionNote: 'Justificado' }),
+    });
+    expect(approve.status).toBe(200);
+    expect((await approve.json()).status).toBe('APROVADO');
+
+    const list = await authenticatedFetch('/api/rh/justifications', admin);
+    const listData = await list.json();
+    expect(listData.some((item: any) => item.id === justification.id)).toBe(true);
+  });
+
+  it('portal submete justificação e vê notificações', async () => {
+    const viewer = await login(viewerEmail, PASSWORD);
+    const submit = await authenticatedFetch('/api/meu-rh/justifications', viewer, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'ATRASO', reason: 'Trânsito E2E', date: '2026-05-05' }),
+    });
+    expect(submit.status).toBe(201);
+
+    const own = await authenticatedFetch('/api/meu-rh/justifications', viewer);
+    expect(own.status).toBe(200);
+    const ownData = await own.json();
+    expect(ownData.some((item: any) => item.reason === 'Trânsito E2E')).toBe(true);
+
+    const admin = await login();
+    const notifications = await authenticatedFetch('/api/rh/notifications', admin);
+    expect(notifications.status).toBe(200);
+    const notificationsData = await notifications.json();
+    expect(notificationsData.items.length).toBeGreaterThan(0);
+    const read = await authenticatedFetch('/api/rh/notifications/read', admin, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}),
+    });
+    expect(read.status).toBe(200);
+  });
+
+  it('exportações CSV e recibo PDF respondem com os formatos correctos', async () => {
+    const admin = await login();
+    const employeesCsv = await authenticatedFetch('/api/rh/export/employees', admin);
+    expect(employeesCsv.status).toBe(200);
+    expect(employeesCsv.headers.get('content-type')).toContain('text/csv');
+    const employeesText = await employeesCsv.text();
+    expect(employeesText).toContain('numero');
+
+    const attendanceCsv = await authenticatedFetch('/api/rh/export/attendance', admin);
+    expect(attendanceCsv.status).toBe(200);
+    expect(attendanceCsv.headers.get('content-type')).toContain('text/csv');
+
+    const missingPayslip = await authenticatedFetch('/api/rh/payroll/payslips/nao-existe/pdf', admin);
+    expect(missingPayslip.status).toBe(404);
+  });
 });
