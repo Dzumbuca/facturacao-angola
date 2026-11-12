@@ -168,7 +168,7 @@ Cenários novos validados: mascaramento, histórico salarial, desligamento (201/
 | Contratos | Parcial | Preservado; alertas no dashboard | **Parcialmente concluído** | E2E |
 | Assiduidade/ponto | Concluído | Preservado + justificações | **Concluído** (falta cálculo de faltas/horas extra) | E2E |
 | Férias/licenças | Concluído | Preservado + notificações | **Concluído** | E2E |
-| Payroll | Concluído | + recibos PDF + descontos recorrentes | **Concluído** (falta horas extra) | Unit + E2E |
+| Payroll | Concluído | + recibos PDF + descontos recorrentes + horas extra/faltas calculadas | **Concluído** | Unit + E2E |
 | Pagamentos | Parcial | Preservado + notificações | **Parcialmente concluído** (EMIS pendente) | E2E |
 | Documentos | Concluído | Preservado | **Concluído** | E2E |
 | Notificações | Pendente | RhNotification + eventos + UI | **Concluído** | E2E |
@@ -179,4 +179,4 @@ Cenários novos validados: mascaramento, histórico salarial, desligamento (201/
 | Segurança/RLS/auditoria | Concluído | Reforço de privacidade + auditoria verificada | **Concluído** | Unit + E2E |
 | IA | Parcial | Preservado | **Parcialmente concluído** (chave) | E2E (503) |
 
-**Conclusão:** o Machine RH **não está 100% concluído**. Estão implementados e testados: privacidade, ciclo de vida, justificações, notificações, recibos PDF, exportações, recrutamento, desempenho, formação e descontos recorrentes (adiantamentos/empréstimos). Permanecem pendentes horas extra/faltas, validação jurídica, notificações push e upload de ficheiros; EMIS depende de parceiro.
+**Conclusão:** o Machine RH **não está 100% concluído**. Estão implementados e testados: privacidade, ciclo de vida, justificações, notificações, recibos PDF, exportações, recrutamento, desempenho, formação, descontos recorrentes e horas extra/faltas configuráveis (sobre regra nos rulesets, omissão 0). Permanecem pendentes validação jurídica, notificações push, upload de ficheiros e escalas rotativas; EMIS depende de parceiro.
