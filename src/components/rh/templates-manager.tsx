@@ -127,7 +127,6 @@ export function TemplatesManager({ templates }: { templates: Template[] }) {
                 <td data-mobile-actions>
                   <div className="flex gap-2">
                     <button type="button" onClick={() => { setEditing(template); setName(template.name); setType(template.type); setBody(template.body); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="min-h-9 rounded-lg border border-[#cdddeb] px-3 text-xs font-semibold text-[#021f87]">Editar</button>
-                    <button type="button" onClick={() => validateTemplate(template)} className="min-h-9 rounded-lg border border-[#cdddeb] px-3 text-xs font-semibold text-[#52667a]">Validar</button>
                     <button type="button" onClick={() => validateTemplate(template)} className="min-h-9 rounded-lg border border-[#cdddeb] px-3 text-xs font-semibold text-[#021f87]">Validar</button>
                     <button type="button" onClick={() => openHistory(template)} className="min-h-9 rounded-lg border border-[#cdddeb] px-3 text-xs font-semibold text-[#52667a]">Histórico</button>
                   </div>
