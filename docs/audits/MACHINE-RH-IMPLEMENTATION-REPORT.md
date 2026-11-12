@@ -66,6 +66,7 @@ Núcleo RH, Machine Point (PIN/QR/dispositivos), documentos (modelos, PDF/DOCX, 
 | `20261112020000_machine_rh_recruitment` | RhJobOpening, RhCandidate, RhCandidateEvent + RLS |
 | `20261112030000_machine_rh_performance` | RhPerformanceCycle, RhPerfCriterion, RhPerformanceReview + RLS |
 | `20261112040000_machine_rh_training` | RhTrainingCourse, RhTrainingEnrollment + RLS |
+| `20261112050000_machine_rh_deductions` | RhEmployeeDeduction + RLS |
 
 ## 8. Alterações de segurança
 
@@ -87,7 +88,7 @@ Núcleo RH, Machine Point (PIN/QR/dispositivos), documentos (modelos, PDF/DOCX, 
 | Suíte | Resultado |
 |---|---|
 | Unitários | **359 passaram** (68 ficheiros) |
-| E2E HTTP | **67 passaram** (13 ficheiros) |
+| E2E HTTP | **69 passaram** (14 ficheiros) |
 | Playwright | **27 passaram** (9 skipped por projectos não aplicáveis) |
 | Falhas | 0 |
 
@@ -167,7 +168,7 @@ Cenários novos validados: mascaramento, histórico salarial, desligamento (201/
 | Contratos | Parcial | Preservado; alertas no dashboard | **Parcialmente concluído** | E2E |
 | Assiduidade/ponto | Concluído | Preservado + justificações | **Concluído** (falta cálculo de faltas/horas extra) | E2E |
 | Férias/licenças | Concluído | Preservado + notificações | **Concluído** | E2E |
-| Payroll | Concluído | Preservado + recibos PDF | **Concluído** (falta adiantamentos/horas extra) | Unit + E2E |
+| Payroll | Concluído | + recibos PDF + descontos recorrentes | **Concluído** (falta horas extra) | Unit + E2E |
 | Pagamentos | Parcial | Preservado + notificações | **Parcialmente concluído** (EMIS pendente) | E2E |
 | Documentos | Concluído | Preservado | **Concluído** | E2E |
 | Notificações | Pendente | RhNotification + eventos + UI | **Concluído** | E2E |
@@ -178,4 +179,4 @@ Cenários novos validados: mascaramento, histórico salarial, desligamento (201/
 | Segurança/RLS/auditoria | Concluído | Reforço de privacidade + auditoria verificada | **Concluído** | Unit + E2E |
 | IA | Parcial | Preservado | **Parcialmente concluído** (chave) | E2E (503) |
 
-**Conclusão:** o Machine RH **não está 100% concluído**. Estão implementados e testados: privacidade, ciclo de vida, justificações, notificações, recibos PDF, exportações, recrutamento, avaliação de desempenho e formação profissional. Permanecem pendentes adiantamentos, horas extra/faltas, validação jurídica e notificações push; EMIS depende de parceiro.
+**Conclusão:** o Machine RH **não está 100% concluído**. Estão implementados e testados: privacidade, ciclo de vida, justificações, notificações, recibos PDF, exportações, recrutamento, desempenho, formação e descontos recorrentes (adiantamentos/empréstimos). Permanecem pendentes horas extra/faltas, validação jurídica, notificações push e upload de ficheiros; EMIS depende de parceiro.
