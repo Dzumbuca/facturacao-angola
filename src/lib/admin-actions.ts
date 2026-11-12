@@ -313,6 +313,46 @@ export async function setTenantCommercialPlan(id: string, planSlug: CommercialPl
 }
 
 // Activa/desactiva o módulo RH (Machine RH) para uma empresa.
+export async function renewCommercialPlan(id: string, months: number, rawReason: string): Promise<ActionResult> {
+  const currentActor = await actor('companies.update');
+  const reason = validateAdminReason(rawReason);
+  if (!currentActor || !validId(id) || ![1, 3, 6, 12].includes(months) || !reason) return failure;
+  // planSlug ausente: manter o actual; só renovar a data.
+  try {
+    await db.$transaction(async (tx: any) => {
+      const tenant = await tx.tenant.findUnique({ where: { id }, select: { id: true } });
+      if (!tenant) throw new Error('not-found');
+      const sub = await tx.tenantSubscription.findFirst({ where: { tenantId: id }, orderBy: { startsAt: 'desc' } });
+      if (!sub) throw new Error('no-subscription');
+      const currentEndsAt = sub.endsAt ? new Date(sub.endsAt) : new Date();
+      const base = currentEndsAt < new Date() ? new Date() : currentEndsAt;
+      const nextEndsAt = new Date(base);
+      nextEndsAt.setUTCMonth(nextEndsAt.getUTCMonth() + months);
+      await tx.tenantSubscription.update({ where: { id: sub.id }, data: { endsAt: nextEndsAt, updatedAt: new Date() } });
+      // re-enable apps the plan allows
+      const plan = await tx.subscriptionPlan.findUnique({ where: { id: sub.planId } });
+      if (!plan || plan.slug === 'free') {
+        await tx.tenant.update({ where: { id }, data: { plan: 'FREE', planExpiry: nextEndsAt } });
+      } else {
+        await tx.tenant.update({ where: { id }, data: { plan: 'PRO', planExpiry: nextEndsAt } });
+      }
+      const apps = await tx.platformApplication.findMany({ where: { slug: { in: ['wms', 'rh'] } } });
+      const planApps = await tx.planApplication.findMany({ where: { planId: plan?.id ?? '' } });
+      const slugs = new Set(planApps.map((pa: any) => pa.applicationId));
+      for (const app of apps) {
+        await tx.tenantApplication.upsert({
+          where: { tenantId_applicationId: { tenantId: id, applicationId: app.id } },
+          update: { enabled: slugs.has(app.id), enabledAt: slugs.has(app.id) ? new Date() : null, disabledAt: slugs.has(app.id) ? null : new Date() },
+          create: { tenantId: id, applicationId: app.id, enabled: slugs.has(app.id), enabledAt: slugs.has(app.id) ? new Date() : null, disabledAt: slugs.has(app.id) ? null : new Date() },
+        });
+      }
+      await tx.adminAuditLog.create({ data: { actorUserId: currentActor.id, action: 'TENANT_PLAN_RENEWED', resourceType: 'TENANT', resourceId: id, reason, metadata: { months, previousEndsAt: sub.endsAt?.toISOString() ?? null, nextEndsAt: nextEndsAt.toISOString(), plan: plan?.slug ?? null } } });
+    }, { isolationLevel: 'Serializable' });
+    revalidatePath('/admin'); revalidatePath('/admin/empresas'); revalidatePath(`/admin/empresas/${id}`); revalidatePath('/stock'); revalidatePath('/rh');
+    return success;
+  } catch { return failure; }
+}
+
 export async function setTenantRhEnabled(id: string, enabled: boolean, rawReason: string): Promise<ActionResult> {
   const currentActor = await actor('companies.update');
   const reason = validateAdminReason(rawReason);

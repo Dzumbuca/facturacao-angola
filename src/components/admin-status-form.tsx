@@ -1,6 +1,6 @@
 'use client';
 import { useActionState, useState } from 'react';
-import { setTenantStatus, setUserStatus, setTenantRole, setPlatformRole, setTenantPlan, setTenantWmsEnabled, setTenantPackage, setTenantCommercialPlan, setTenantRhEnabled } from '@/lib/admin-actions';
+import { setTenantStatus, setUserStatus, setTenantRole, setPlatformRole, setTenantPlan, setTenantWmsEnabled, setTenantPackage, setTenantCommercialPlan, setTenantRhEnabled, renewCommercialPlan } from '@/lib/admin-actions';
 
 type State = { ok: boolean; message: string };
 const initial: State = { ok: false, message: '' };
@@ -49,6 +49,26 @@ const COMMERCIAL_PLANS: [string, string][] = [
   ['rh', 'RH — Free + Machine RH (3.500 Kz/mês)'],
   ['business', 'Business — Free + Stock + RH (5.000 Kz/mês)'],
 ];
+
+export function AdminRenewForm({ id, currentExpiry }: { id: string; currentExpiry: string | null }) {
+  const [state, formAction, pending] = useActionState(async (_: State, data: FormData) => {
+    return renewCommercialPlan(String(data.get('id')), Number(data.get('months')), String(data.get('reason')));
+  }, initial);
+  const nextMonth = (() => {
+    if (!currentExpiry) return null;
+    const d = new Date(currentExpiry);
+    d.setUTCMonth(d.getUTCMonth() + 1);
+    return d.toISOString().slice(0, 10);
+  })();
+  return <form action={formAction} onSubmit={(event) => { if (!window.confirm('Renovar plano da empresa?')) event.preventDefault(); }} className="mt-3 grid gap-3 rounded-xl border border-[#e1e8f0] bg-white p-4 sm:grid-cols-[1fr_auto_auto_auto]">
+    <input type="hidden" name="id" value={id} />
+    <div><span className="app-label">Validade actual</span><p className="mt-1 text-sm font-semibold text-[#1c2d3f]">{currentExpiry ? new Date(currentExpiry).toLocaleDateString('pt-AO', { timeZone: 'Africa/Luanda' }) : 'Perpétuo'}</p>{nextMonth && <p className="text-xs text-[#708195]">Renovar até {nextMonth}</p>}</div>
+    <label><span className="app-label">Renovar por</span><select className="app-input" name="months" defaultValue="1"><option value="1">1 mês</option><option value="3">3 meses</option><option value="6">6 meses</option><option value="12">12 meses</option></select></label>
+    <label><span className="app-label">Motivo</span><input className="app-input" name="reason" placeholder="Ex.: renovação paga" minLength={5} maxLength={500} required /></label>
+    <button disabled={pending} className="self-end rounded-lg bg-[#021f87] px-4 py-3 font-semibold text-white disabled:opacity-60">{pending ? 'A guardar…' : 'Renovar'}</button>
+    {state.message && <p role="status" className={state.ok ? 'text-sm text-emerald-700 sm:col-span-4' : 'text-sm text-red-700 sm:col-span-4'}>{state.message}</p>}
+  </form>;
+}
 
 export function AdminCommercialPlanForm({ id, current, currentExpiry }: { id: string; current: string; currentExpiry?: string | null }) {
   const [planSlug, setPlanSlug] = useState(current);

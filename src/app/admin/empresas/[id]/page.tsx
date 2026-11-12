@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { getAdminTenantDetail } from '@/lib/admin-data';
 import { listTenantApplications } from '@/lib/platform-apps';
 import { isApplicationEnabled } from '@/lib/platform-apps';
-import { AdminStatusForm, AdminPlanForm, AdminWmsForm, AdminCommercialPlanForm, AdminModuleForm } from '@/components/admin-status-form';
+import { AdminStatusForm, AdminPlanForm, AdminWmsForm, AdminCommercialPlanForm, AdminModuleForm, AdminRenewForm } from '@/components/admin-status-form';
 import { AdminStatusBadge } from '@/components/admin-ui';
 
 export default async function AdminCompanyDetail({ params }: { params: Promise<{ id: string }> }) {
@@ -27,6 +27,7 @@ export default async function AdminCompanyDetail({ params }: { params: Promise<{
     <p className="mb-3 text-sm text-slate-600">FREE = facturação grátis para sempre; Stock, RH e Business envolvem os módulos Armazém/Stock e Machine RH. O plano fica associado à empresa; é reversível e auditado.</p>
     <p className="mb-3 text-sm text-slate-600">Plano pago exige <strong>data de validade explícita</strong>. Ao expirar os módulos pagos são desactivados automaticamente; os dados do cliente ficam sempre guardados.</p>
     <AdminCommercialPlanForm id={tenant.id} current={planSlug} currentExpiry={tenant.commercialPlanExpiry} />
+    <AdminRenewForm id={tenant.id} currentExpiry={tenant.commercialPlanExpiry} />
     <h2 className="mb-3 mt-7 text-xl font-bold">Armazém e Stock</h2>
     <p className="mb-3 text-sm text-slate-600">Dados preservados para sempre; desactivar bloqueia apenas o acesso.</p>
     <AdminModuleForm id={tenant.id} module="wms" current={wmsModuleEnabled} />
