@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { runWithTenant } from '@/lib/tenant-db';
 import { requireRhAccess, rhAccessResponse } from '@/lib/rh-access';
 import { rhAudit } from '@/lib/rh-service';
+import { notifyRhUsers } from '@/lib/rh-notify';
 import { calculatePayslip, parsePayrollConfig } from '@/lib/rh-payroll';
 
 export async function GET() {
@@ -70,6 +71,14 @@ export async function POST(req: Request) {
         },
       });
       await rhAudit(tx, { tenantId: access.tenantId, actorUserId: access.userId, action: 'RH_PAYROLL_CALCULATED', entity: 'RhPayrollRun', entityId: run.id, metadata: { period, rulesetId, employees: employees.length } });
+      await notifyRhUsers(tx, {
+        tenantId: access.tenantId,
+        roles: ['FINANCE', 'ADMIN'],
+        title: 'Folha salarial calculada',
+        body: `${period} · ${employees.length} funcionário(s) · líquido ${totals.net.toFixed(2)} Kz · aguarda aprovação`,
+        entityType: 'RhPayrollRun',
+        entityId: run.id,
+      });
       return { code: 'OK' as const, run };
     }, { userId: access.userId });
 

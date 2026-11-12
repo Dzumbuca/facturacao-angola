@@ -1542,6 +1542,7 @@ model User {
 
   tenantRole                TenantRole              @default(USER)
   rhMemberships             RhMember[]
+  rhNotifications           RhNotification[]
 
   status                    AccountStatus           @default(ACTIVE)
 
@@ -2663,6 +2664,7 @@ model RhEmployee {
   documents     RhDocument[]
   salaryChanges RhSalaryChange[]
   offboarding   RhOffboarding?
+  justifications RhAbsenceJustification[]
   payslips      RhPayslip[]
   paymentItems  RhPaymentItem[]
 
@@ -3187,4 +3189,48 @@ model RhOffboarding {
   employee RhEmployee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, status])
+}
+
+
+// Justificações de faltas e notificações internas.
+enum RhJustificationStatus {
+  PENDENTE
+  APROVADO
+  REJEITADO
+}
+
+model RhAbsenceJustification {
+  id              String                @id @default(uuid())
+  tenantId        String
+  employeeId      String
+  date            DateTime
+  type            String
+  reason          String
+  status          RhJustificationStatus @default(PENDENTE)
+  decisionNote    String?
+  decidedByUserId String?
+  createdByUserId String?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+
+  employee RhEmployee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, employeeId, date, type])
+  @@index([tenantId, status, date])
+}
+
+model RhNotification {
+  id         String    @id @default(uuid())
+  tenantId   String
+  userId     String
+  title      String
+  body       String
+  entityType String?
+  entityId   String?
+  readAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, userId, readAt])
 }

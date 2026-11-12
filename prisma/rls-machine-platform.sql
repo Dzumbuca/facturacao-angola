@@ -165,3 +165,15 @@ DROP POLICY IF EXISTS "rh_offboarding_isolation" ON "RhOffboarding";
 CREATE POLICY "rh_offboarding_isolation" ON "RhOffboarding" FOR ALL
   USING ("tenantId" = current_setting('app.tenant_id', true))
   WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+
+-- Justificações e notificações.
+ALTER TABLE "RhAbsenceJustification" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_absence_justification_isolation" ON "RhAbsenceJustification";
+CREATE POLICY "rh_absence_justification_isolation" ON "RhAbsenceJustification" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+ALTER TABLE "RhNotification" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_notification_isolation" ON "RhNotification";
+CREATE POLICY "rh_notification_isolation" ON "RhNotification" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));

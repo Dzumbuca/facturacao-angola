@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { runWithTenant } from '@/lib/tenant-db';
 import { requireRhAccess, rhAccessResponse } from '@/lib/rh-access';
 import { rhAudit } from '@/lib/rh-service';
+import { notifyRhUsers } from '@/lib/rh-notify';
 type RhLeaveType = 'FERIAS' | 'LICENCA' | 'DISPENSA' | 'DOENCA' | 'OUTRA';
 type RhLeaveStatus = 'PENDENTE' | 'APROVADO' | 'REJEITADO' | 'CANCELADO';
 
@@ -59,7 +60,7 @@ export async function POST(req: Request) {
     if (days < 1 || days > 365) return NextResponse.json({ error: 'Período inválido.' }, { status: 400 });
 
     const created = await runWithTenant(access.tenantId, async (tx) => {
-      const employee = await tx.rhEmployee.findFirst({ where: { id: employeeId, tenantId: access.tenantId }, select: { id: true } });
+      const employee = await tx.rhEmployee.findFirst({ where: { id: employeeId, tenantId: access.tenantId }, select: { id: true, firstName: true, lastName: true } });
       if (!employee) throw new Error('EMPLOYEE_NOT_FOUND');
       const overlap = await tx.rhLeaveRequest.findFirst({
         where: {
@@ -76,6 +77,14 @@ export async function POST(req: Request) {
         data: { tenantId: access.tenantId, employeeId, type, startDate, endDate, days, reason: body.reason?.trim() || null },
       });
       await rhAudit(tx, { tenantId: access.tenantId, actorUserId: access.userId, action: 'RH_LEAVE_CREATED', entity: 'RhLeaveRequest', entityId: row.id, metadata: { employeeId, type, days } });
+      await notifyRhUsers(tx, {
+        tenantId: access.tenantId,
+        roles: ['MANAGER', 'ADMIN'],
+        title: 'Novo pedido de férias',
+        body: `${employee.firstName} ${employee.lastName} · ${days} dia(s) a partir de ${startDate.toISOString().slice(0, 10)}`,
+        entityType: 'RhLeaveRequest',
+        entityId: row.id,
+      });
       return row;
     }, { userId: access.userId });
 
