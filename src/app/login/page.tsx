@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { RhLoader } from '@/components/rh/rh-loader';
 import { FormEvent, useEffect, useState } from 'react';
 
 export default function LoginPage() {
@@ -37,6 +38,7 @@ export default function LoginPage() {
 
   return (
     <main className="relative flex min-h-screen items-stretch bg-[#f3f6fa] text-[#1c2d3f] md:p-6">
+      <RhLoader />
       <div className="auth-theme-control"><ThemeToggle compact /></div>
       <div className="mx-auto flex w-full max-w-6xl overflow-hidden bg-white md:min-h-[min(760px,calc(100vh-3rem))] md:rounded-3xl md:border md:border-[#e2e9f1] md:shadow-[0_20px_60px_rgba(25,52,80,.09)]">
       <aside className="relative hidden w-[42%] flex-col justify-between overflow-hidden bg-[#102b46] p-10 text-white md:flex lg:p-14">

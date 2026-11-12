@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { runWithTenant } from '@/lib/tenant-db';
 import { requireRhPage } from '@/lib/rh-page';
 import { rhFullName } from '@/lib/rh-service';
+import { CountUp } from '@/components/rh/count-up';
+import { Reveal } from '@/components/rh/reveal';
 
 function money(value: number) {
   return new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', maximumFractionDigits: 0 }).format(value || 0);
@@ -39,12 +41,14 @@ export default async function RhDashboardPage() {
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {kpis.map((kpi) => (
-          <div key={kpi.label} className="rounded-xl border border-[#e1e8f0] bg-white p-4">
-            <p className="text-xs font-medium text-[#708195]">{kpi.label}</p>
-            <p className="mt-1 break-words text-xl font-bold tabular-nums text-[#1c2d3f]">{kpi.value}</p>
-            <p className="mt-0.5 text-[11px] text-[#8a99ab]">{kpi.hint}</p>
-          </div>
+        {kpis.map((kpi, index) => (
+          <Reveal key={kpi.label}>
+            <div className="rounded-xl border border-[#e1e8f0] bg-white p-4">
+              <p className="text-xs font-medium text-[#708195]">{kpi.label}</p>
+              <p className="mt-1 break-words text-xl font-bold tabular-nums text-[#1c2d3f]">{typeof kpi.value === 'number' ? <CountUp value={kpi.value} durationMs={800 + index * 120} /> : kpi.value}</p>
+              <p className="mt-0.5 text-[11px] text-[#8a99ab]">{kpi.hint}</p>
+            </div>
+          </Reveal>
         ))}
       </div>
 

@@ -411,3 +411,14 @@ main :where(.grid) > * { min-width: 0; }
 :root[data-theme="dark"] table.responsive-table tr { background: var(--surface); }
 
 
+
+:root {
+  --lumora-accent: var(--blue);
+  --lumora-accent-strong: #021f87;
+  --lumora-ink: #0a0a0a;
+  --lumora-surface: #eef2ff;
+  --lumora-surface-2: #e6ebf5;
+  --lumora-line: rgba(230, 229, 226, .7);
+  --lumora-radius-pill: 9999px;
+  --lumora-radius-card: 2rem;
+}
