@@ -67,6 +67,7 @@ Núcleo RH, Machine Point (PIN/QR/dispositivos), documentos (modelos, PDF/DOCX, 
 | `20261112030000_machine_rh_performance` | RhPerformanceCycle, RhPerfCriterion, RhPerformanceReview + RLS |
 | `20261112040000_machine_rh_training` | RhTrainingCourse, RhTrainingEnrollment + RLS |
 | `20261112050000_machine_rh_deductions` | RhEmployeeDeduction + RLS |
+| `20261112060000_machine_rh_announcements` | RhAnnouncement + RLS |
 
 ## 8. Alterações de segurança
 
@@ -88,7 +89,7 @@ Núcleo RH, Machine Point (PIN/QR/dispositivos), documentos (modelos, PDF/DOCX, 
 | Suíte | Resultado |
 |---|---|
 | Unitários | **359 passaram** (68 ficheiros) |
-| E2E HTTP | **70 passaram** (15 ficheiros) |
+| E2E HTTP | **72 passaram** (16 ficheiros) |
 | Playwright | **27 passaram** (9 skipped por projectos não aplicáveis) |
 | Falhas | 0 |
 
@@ -179,4 +180,4 @@ Cenários novos validados: mascaramento, histórico salarial, desligamento (201/
 | Segurança/RLS/auditoria | Concluído | Reforço de privacidade + auditoria verificada | **Concluído** | Unit + E2E |
 | IA | Parcial | Preservado | **Parcialmente concluído** (chave) | E2E (503) |
 
-**Conclusão:** o Machine RH **não está 100% concluído**. Estão implementados e testados: privacidade, ciclo de vida, justificações, notificações, recibos PDF, exportações, recrutamento, desempenho, formação, descontos recorrentes e horas extra/faltas configuráveis (sobre regra nos rulesets, omissão 0). Permanecem pendentes validação jurídica, notificações push, upload de ficheiros e escalas rotativas; EMIS depende de parceiro.
+**Conclusão:** o Machine RH **não está 100% concluído**. Estão implementados e testados: privacidade, ciclo de vida, justificações, notificações, recibos PDF, exportações, recrutamento, desempenho, formação, descontos recorrentes, horas extra/faltas configuráveis e comunicados internos. Permanecem pendentes validação jurídica, notificações push, upload de ficheiros e escalas rotativas; EMIS depende de parceiro.
