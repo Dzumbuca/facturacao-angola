@@ -61,6 +61,7 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
   const [statusFilter, setStatusFilter] = useState('');
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Employee | null>(null);
+  const [generatedPin, setGeneratedPin] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [qr, setQr] = useState<{ svg: string; name: string; expiresAt: string } | null>(null);
@@ -156,8 +157,12 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
       setEmployees((current) => editing
         ? current.map((item) => item.id === normalized.id ? normalized : item)
         : [...current, normalized]);
-      setOpen(false);
-      setEditing(null);
+      if (!editing && data.generatedPin) {
+        setGeneratedPin(String(data.generatedPin));
+      } else {
+        setOpen(false);
+        setEditing(null);
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -223,7 +228,20 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
         </table>
       </div>
 
-      {open && (
+      {generatedPin && (
+        <div role="dialog" aria-modal="true" aria-labelledby="rh-pin-title" className="fixed inset-0 z-[60] flex items-end justify-center bg-[#102b46]/50 p-0 backdrop-blur-[2px] sm:items-center sm:p-5">
+          <div className="w-full max-w-md rounded-t-2xl bg-white p-6 shadow-2xl sm:rounded-2xl">
+            <h2 id="rh-pin-title" className="text-lg font-bold text-[#1c2d3f]">Funcionário criado</h2>
+            <p className="mt-1 text-sm text-[#607286]">O PIN do ponto gerado automaticamente é mostrado uma única vez. Anota-o agora e entrega ao funcionário.</p>
+            <div className="mt-4 rounded-lg border border-[#e1e8f0] bg-[#f8fafc] p-4 text-center">
+              <span className="text-[11px] font-bold uppercase tracking-[.12em] text-[#8a99ab]">PIN do ponto</span>
+              <p className="mt-1 text-3xl font-bold tracking-[.3em] text-[#021f87]">{generatedPin}</p>
+            </div>
+            <button type="button" onClick={() => { setGeneratedPin(null); setOpen(false); setEditing(null); }} className="mt-4 min-h-11 w-full rounded-lg bg-[#021f87] text-sm font-semibold text-white">Fechar</button>
+          </div>
+        </div>
+      )}
+      {open && !generatedPin && (
         <div className="fixed inset-0 z-[60] flex items-end justify-center bg-[#102b46]/50 p-0 backdrop-blur-[2px] sm:items-center sm:p-5" onMouseDown={(e) => { if (e.target === e.currentTarget && !saving) setOpen(false); }}>
           <section role="dialog" aria-modal="true" aria-labelledby="rh-employee-title" className="max-h-[92dvh] w-full overflow-y-auto overscroll-contain rounded-t-2xl bg-white p-5 shadow-2xl sm:max-w-2xl sm:rounded-2xl sm:p-7">
             <div className="mb-4 flex items-start justify-between gap-4">
@@ -265,7 +283,7 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
                   <div><label htmlFor="rh-contract" className="app-label">Tipo de contrato</label><select id="rh-contract" name="contractType" className="app-input" defaultValue={editing?.contractType ?? 'INDEFINIDO'}>{Object.entries(CONTRACT_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
                   <div><label htmlFor="rh-salary" className="app-label">Salário-base (Kz) *</label><input id="rh-salary" name="baseSalary" type="number" min="0" step="0.01" className="app-input tabular-nums" required defaultValue={editing?.baseSalary ?? ''} /></div>
                   <div><label htmlFor="rh-status" className="app-label">Estado</label><select id="rh-status" name="status" className="app-input" defaultValue={editing?.status ?? 'ACTIVO'}>{Object.entries(STATUS_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
-                  <div><label htmlFor="rh-pin" className="app-label">PIN do ponto <span className="font-normal text-[#708195]">{editing?.hasPin ? '(definido)' : '(opcional)'}</span></label><input id="rh-pin" name="pin" type="password" inputMode="numeric" maxLength={8} className="app-input tracking-[.3em]" placeholder={editing?.hasPin ? 'Deixar vazio para manter' : '4 a 8 dígitos'} /></div>
+                  <div><label htmlFor="rh-pin" className="app-label">PIN do ponto <span className="font-normal text-[#708195]">{editing?.hasPin ? '(definido)' : '(gerar automático)'}</span></label><input id="rh-pin" name="pin" type="password" inputMode="numeric" maxLength={8} className="app-input tracking-[.3em]" placeholder={editing?.hasPin ? 'Deixar vazio para manter' : 'Deixar vazio = gera automaticamente'} /></div>
               </FormSection>
 
               {editing && (

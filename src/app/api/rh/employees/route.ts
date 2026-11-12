@@ -133,11 +133,13 @@ export async function POST(req: Request) {
 
     const status = STATUSES.includes(body.status) ? body.status : 'ACTIVO';
 
-    const pin = typeof body.pin === 'string' ? body.pin.trim() : '';
+    const rawPin = typeof body.pin === 'string' ? body.pin.trim() : '';
 
-    if (pin && !/^\d{4,8}$/.test(pin)) return NextResponse.json({ error: 'O PIN deve ter 4 a 8 dígitos.' }, { status: 400 });
+    if (rawPin && !/^\d{4,8}$/.test(rawPin)) return NextResponse.json({ error: 'O PIN deve ter 4 a 8 dígitos.' }, { status: 400 });
 
-    const pinHash = pin ? await bcrypt.hash(pin, 10) : null;
+    const pin = rawPin || String(Math.floor(100000 + Math.random() * 900000));
+    const generatedPin = rawPin ? null : pin;
+    const pinHash = await bcrypt.hash(pin, 10);
 
 
 
@@ -211,7 +213,7 @@ export async function POST(req: Request) {
 
 
 
-    return NextResponse.json(serializeEmployee(created), { status: 201 });
+    return NextResponse.json({ ...serializeEmployee(created), ...(generatedPin ? { generatedPin } : {}) }, { status: 201 });
 
   } catch (error: any) {
 
