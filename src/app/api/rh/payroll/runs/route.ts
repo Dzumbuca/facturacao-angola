@@ -43,7 +43,7 @@ export async function POST(req: Request) {
       const rangeEnd = new Date(Date.UTC(year, monthNumber, 1, 0) - 3_600_000);
       const employees = (await tx.rhEmployee.findMany({
         where: { tenantId: access.tenantId, status: 'ACTIVO' },
-        select: { id: true, baseSalary: true, shift: { select: { startTime: true, endTime: true } } },
+        select: { id: true, baseSalary: true, shift: { select: { startTime: true, endTime: true, isNight: true, nightPremiumPercent: true } } },
         orderBy: { employeeNumber: 'asc' },
       })) as any[];
       if (employees.length === 0) return { code: 'NO_EMPLOYEES' as const };
@@ -80,7 +80,8 @@ export async function POST(req: Request) {
           overtimeRatePercent: parsed.config.overtimeRatePercent,
           absenceRatePercent: parsed.config.absenceRatePercent,
         });
-        const calc = calculatePayslip({ baseSalary, config: parsed.config, extraDeductions, overtimePay: adjustments.overtimePay, absenceDeduction: adjustments.absenceDeduction });
+        const nightAllowance = employee.shift?.isNight ? (baseSalary * (employee.shift.nightPremiumPercent ?? 0)) / 100 : 0;
+        const calc = calculatePayslip({ baseSalary, config: parsed.config, extraDeductions, overtimePay: adjustments.overtimePay, absenceDeduction: adjustments.absenceDeduction, nightAllowance });
         return {
           tenantId: access.tenantId,
           employeeId: employee.id,

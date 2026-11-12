@@ -69,7 +69,7 @@ export function calculateIrt(taxable: number, brackets: PayrollConfig['irtBracke
   return Math.max(0, round2((taxable * bracket.rate) / 100 - bracket.deduction));
 }
 
-export function calculatePayslip(input: { baseSalary: number; config: PayrollConfig; extraDeductions?: number; overtimePay?: number; absenceDeduction?: number }) {
+export function calculatePayslip(input: { baseSalary: number; config: PayrollConfig; extraDeductions?: number; overtimePay?: number; absenceDeduction?: number; nightAllowance?: number }) {
   const base = round2(Math.max(0, input.baseSalary));
   const allowances = round2(input.config.foodAllowance + input.config.transportAllowance);
   const overtime = round2(Math.max(0, input.overtimePay ?? 0));
@@ -79,8 +79,13 @@ export function calculatePayslip(input: { baseSalary: number; config: PayrollCon
   const inss = round2((taxableBase * input.config.inssEmployeeRate) / 100);
   const irt = calculateIrt(round2(taxableBase - inss), input.config.irtBrackets);
   const otherDeductions = round2(Math.max(0, input.extraDeductions ?? 0));
-  const net = round2(taxableBase - inss - irt - otherDeductions);
-  return { baseSalary: base, allowances, overtime, absences, gross, inss, irt, otherDeductions, net };
+  const nightAllowance = round2(Math.max(0, input.nightAllowance ?? 0));
+  const adjustedGross = round2(gross + nightAllowance);
+  const taxableBaseNight = round2(Math.max(0, adjustedGross - absences));
+  const inssNight = round2((taxableBaseNight * input.config.inssEmployeeRate) / 100);
+  const irtNight = calculateIrt(round2(taxableBaseNight - inssNight), input.config.irtBrackets);
+  const net = round2(taxableBaseNight - inssNight - irtNight - otherDeductions);
+  return { baseSalary: base, allowances, overtime, absences, nightAllowance, gross: adjustedGross, inss: inssNight, irt: irtNight, otherDeductions, net };
 }
 
 export type TimeEntryLike = { type: 'ENTRADA' | 'SAIDA_ALMOCO' | 'REGRESSO_ALMOCO' | 'SAIDA'; occurredAt: Date | string };

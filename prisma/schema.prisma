@@ -2842,12 +2842,14 @@ model RhTimeEntry {
 
 // Machine Point — horários/turnos.
 model RhShift {
-  id               String   @id @default(uuid())
-  tenantId         String
-  name             String
-  startTime        String
-  endTime          String
-  toleranceMinutes Int      @default(0)
+  id                     String   @id @default(uuid())
+  tenantId               String
+  name                   String
+  startTime              String
+  endTime                String
+  toleranceMinutes       Int      @default(0)
+  isNight                Boolean  @default(false)
+  nightPremiumPercent    Int      @default(0)
   isActive         Boolean  @default(true)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
@@ -2998,13 +3000,17 @@ enum RhPayrollStatus {
 }
 
 model RhPayrollRuleSet {
-  id            String    @id @default(uuid())
-  tenantId      String
-  name          String
-  effectiveFrom DateTime
-  effectiveTo   DateTime?
-  status        String    @default("DRAFT")
-  config        Json
+  id                  String    @id @default(uuid())
+  tenantId            String
+  name                String
+  effectiveFrom       DateTime
+  effectiveTo         DateTime?
+  status              String    @default("DRAFT")
+  config              Json
+  legalStatus         String    @default("PENDENTE")
+  legalDocumentUrl    String?
+  legalValidatedBy    String?
+  legalValidatedAt    DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
