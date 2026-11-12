@@ -68,6 +68,7 @@ Núcleo RH, Machine Point (PIN/QR/dispositivos), documentos (modelos, PDF/DOCX, 
 | `20261112040000_machine_rh_training` | RhTrainingCourse, RhTrainingEnrollment + RLS |
 | `20261112050000_machine_rh_deductions` | RhEmployeeDeduction + RLS |
 | `20261112060000_machine_rh_announcements` | RhAnnouncement + RLS |
+| `20261112070000_machine_rh_self_assessment` | RhPerformanceReviewSelfAssessment + RLS |
 
 ## 8. Alterações de segurança
 
@@ -89,7 +90,7 @@ Núcleo RH, Machine Point (PIN/QR/dispositivos), documentos (modelos, PDF/DOCX, 
 | Suíte | Resultado |
 |---|---|
 | Unitários | **359 passaram** (68 ficheiros) |
-| E2E HTTP | **72 passaram** (16 ficheiros) |
+| E2E HTTP | **73 passaram** (17 ficheiros) |
 | Playwright | **27 passaram** (9 skipped por projectos não aplicáveis) |
 | Falhas | 0 |
 
@@ -124,7 +125,7 @@ Cenários novos validados: mascaramento, histórico salarial, desligamento (201/
 | Módulo | Estado | Motivo |
 |---|---|---|
 | Recrutamento e seleção (vagas, candidatos, admissão) | **Implementado e testado** nesta sessão — conversão candidato aprovado → funcionário com employeeNumber | E2E |
-| Avaliação de desempenho (ciclos, critérios, pontuação, validação) | **Implementado e testado** nesta sessão | E2E |
+| Avaliação de desempenho (ciclos, critérios, pontuação, validação, **autoavaliação no Meu RH**) | **Implementado e testado** | E2E |
 | Formação profissional | Pendente | Não iniciado |
 | Comunicação interna (comunicados) | Parcial | Notificações implementadas; comunicados/avisos ainda não |
 | Adiantamentos e empréstimos | Pendente | Não iniciado |
