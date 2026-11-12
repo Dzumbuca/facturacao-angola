@@ -8,7 +8,7 @@ describe('parsePayrollConfig', () => {
     irtBrackets: [{ upTo: 100000, rate: 0, deduction: 0 }, { upTo: null, rate: 10, deduction: 0 }],
   };
   it('aceita configuração válida', () => {
-    expect(parsePayrollConfig(valid)).toEqual({ config: { ...valid } });
+    expect(parsePayrollConfig(valid)).toEqual({ config: { ...valid, monthlyHours: 220, overtimeRatePercent: 0, absenceRatePercent: 0 } });
   });
   it('rejeita taxas fora de 0-100', () => {
     expect(parsePayrollConfig({ ...valid, inssEmployeeRate: 101 })).toHaveProperty('error');
@@ -93,5 +93,42 @@ describe('maskAccount', () => {
     expect(maskAccount('abc')).toBe('••••');
     expect(maskAccount(null)).toBeNull();
     expect(maskAccount('')).toBeNull();
+  });
+});
+
+import { computeTimeAdjustments, businessDaysInMonth } from './rh-payroll';
+
+describe('computeTimeAdjustments', () => {
+  const day = (iso: string) => [iso.replace('T08:00', 'T08:00:00+01:00')];
+  const entriesAt = (date: string) => [
+    { type: 'ENTRADA' as const, occurredAt: `${date}T08:00:00+01:00` },
+    { type: 'SAIDA_ALMOCO' as const, occurredAt: `${date}T12:30:00+01:00` },
+    { type: 'REGRESSO_ALMOCO' as const, occurredAt: `${date}T13:30:00+01:00` },
+    { type: 'SAIDA' as const, occurredAt: `${date}T17:00:00+01:00` },
+  ];
+  const fullMonth = () => {
+    const list: any[] = [];
+    for (let d = 1; d <= 31; d += 1) {
+      const weekday = new Date(2026, 4, d).getDay();
+      if (weekday === 0 || weekday === 6) continue;
+      list.push(...entriesAt(`2026-05-${String(d).padStart(2, '0')}`));
+    }
+    return list;
+  };
+
+  it('conta dias úteis correctamente', () => {
+    expect(businessDaysInMonth('2026-05')).toBe(21);
+  });
+  it('sem regras configuradas nada é aplicado', () => {
+    const result = computeTimeAdjustments({ baseSalary: 450000, entries: fullMonth(), shift: { startTime: '08:00', endTime: '17:00' }, period: '2026-05' });
+    expect(result.overtimeHours).toBe(0);
+    expect(result.absenceHours).toBe(21);
+    expect(result.absenceDeduction).toBe(0);
+  });
+  it('paga horas extra e desconta faltas com taxas configuradas', () => {
+    const result = computeTimeAdjustments({ baseSalary: 450000, entries: fullMonth(), shift: { startTime: '08:00', endTime: '17:00' }, period: '2026-05', overtimeRatePercent: 50, absenceRatePercent: 100 });
+    expect(result.absenceHours).toBe(21);
+    expect(result.absenceDeduction).toBeCloseTo(42954.55, 2);
+    expect(result.overtimePay).toBe(0);
   });
 });

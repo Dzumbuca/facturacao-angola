@@ -3,7 +3,7 @@ import { runWithTenant } from '@/lib/tenant-db';
 import { requireRhAccess, rhAccessResponse } from '@/lib/rh-access';
 import { rhAudit } from '@/lib/rh-service';
 import { notifyRhUsers } from '@/lib/rh-notify';
-import { calculatePayslip, parsePayrollConfig } from '@/lib/rh-payroll';
+import { calculatePayslip, parsePayrollConfig, computeTimeAdjustments, type TimeEntryLike } from '@/lib/rh-payroll';
 
 export async function GET() {
   try {
@@ -38,9 +38,12 @@ export async function POST(req: Request) {
 
       const parsed = parsePayrollConfig(ruleset.config);
       if ('error' in parsed) return { code: 'BAD_RULESET' as const, error: parsed.error };
+      const [year, monthNumber] = period.split('-').map(Number);
+      const rangeStart = new Date(Date.UTC(year, monthNumber - 1, 1, 0) - 3_600_000);
+      const rangeEnd = new Date(Date.UTC(year, monthNumber, 1, 0) - 3_600_000);
       const employees = (await tx.rhEmployee.findMany({
         where: { tenantId: access.tenantId, status: 'ACTIVO' },
-        select: { id: true, baseSalary: true },
+        select: { id: true, baseSalary: true, shift: { select: { startTime: true, endTime: true } } },
         orderBy: { employeeNumber: 'asc' },
       })) as any[];
       if (employees.length === 0) return { code: 'NO_EMPLOYEES' as const };
@@ -49,15 +52,48 @@ export async function POST(req: Request) {
         where: { tenantId: access.tenantId, active: true, employeeId: { in: employees.map((employee: any) => employee.id) } },
         select: { employeeId: true, amount: true },
       });
+      const timeEntries = (await tx.rhTimeEntry.findMany({
+        where: { tenantId: access.tenantId, employeeId: { in: employees.map((employee: any) => employee.id) }, occurredAt: { gte: rangeStart, lt: rangeEnd } },
+        select: { employeeId: true, type: true, occurredAt: true },
+      })) as Array<{ employeeId: string; type: TimeEntryLike['type']; occurredAt: Date }>;
+      const timeByEmployee = new Map<string, TimeEntryLike[]>();
+      for (const entry of timeEntries) {
+        const list = timeByEmployee.get(entry.employeeId) ?? [];
+        list.push(entry);
+        timeByEmployee.set(entry.employeeId, list);
+      }
+
       const deductionByEmployee = new Map<string, number>();
       for (const row of deductionRows as Array<{ employeeId: string; amount: unknown }>) {
         deductionByEmployee.set(row.employeeId, (deductionByEmployee.get(row.employeeId) ?? 0) + Number(row.amount));
       }
 
       const payslips = employees.map((employee: any) => {
+        const baseSalary = Number(employee.baseSalary);
         const extraDeductions = deductionByEmployee.get(employee.id) ?? 0;
-        const calc = calculatePayslip({ baseSalary: Number(employee.baseSalary), config: parsed.config, extraDeductions });
-        return { tenantId: access.tenantId, employeeId: employee.id, ...calc, lines: { irtBrackets: parsed.config.irtBrackets.length, extraDeductions } };
+        const adjustments = computeTimeAdjustments({
+          baseSalary,
+          entries: timeByEmployee.get(employee.id) ?? [],
+          shift: employee.shift,
+          period,
+          monthlyHours: parsed.config.monthlyHours,
+          overtimeRatePercent: parsed.config.overtimeRatePercent,
+          absenceRatePercent: parsed.config.absenceRatePercent,
+        });
+        const calc = calculatePayslip({ baseSalary, config: parsed.config, extraDeductions, overtimePay: adjustments.overtimePay, absenceDeduction: adjustments.absenceDeduction });
+        return {
+          tenantId: access.tenantId,
+          employeeId: employee.id,
+          ...calc,
+          lines: {
+            irtBrackets: parsed.config.irtBrackets.length,
+            extraDeductions,
+            overtimeHours: adjustments.overtimeHours,
+            absenceHours: adjustments.absenceHours,
+            overtimePay: adjustments.overtimePay,
+            absenceDeduction: adjustments.absenceDeduction,
+          },
+        };
       });
       const totals = payslips.reduce((acc: any, slip: any) => ({
         gross: acc.gross + slip.gross,
