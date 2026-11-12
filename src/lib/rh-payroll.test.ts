@@ -99,7 +99,6 @@ describe('maskAccount', () => {
 import { computeTimeAdjustments, businessDaysInMonth } from './rh-payroll';
 
 describe('computeTimeAdjustments', () => {
-  const day = (iso: string) => [iso.replace('T08:00', 'T08:00:00+01:00')];
   const entriesAt = (date: string) => [
     { type: 'ENTRADA' as const, occurredAt: `${date}T08:00:00+01:00` },
     { type: 'SAIDA_ALMOCO' as const, occurredAt: `${date}T12:30:00+01:00` },

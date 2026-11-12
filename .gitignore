@@ -171,3 +171,6 @@ dsh-*.py
 *.pre-refactor
 *.rebuild
 *.fixed
+
+# Local npm cache (Windows EPERM workaround)
+.npm-cache/

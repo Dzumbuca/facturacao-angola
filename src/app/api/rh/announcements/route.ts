@@ -5,7 +5,7 @@ import { rhAudit } from '@/lib/rh-service';
 
 const PRIORITIES = ['BAIXA', 'NORMAL', 'ALTA'] as const;
 
-export async function GET(req: Request) {
+export async function GET(_req: Request) {
   try {
     const access = await requireRhAccess();
     const now = new Date();

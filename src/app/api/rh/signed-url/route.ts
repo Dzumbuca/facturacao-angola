@@ -5,7 +5,7 @@ import { signReadUrl } from '@/lib/rh-storage';
 /** Gera um signed URL de leitura (uma hora) para um path no bucket privado. */
 export async function GET(req: Request) {
   try {
-    const access = await requireRhAccess();
+    await requireRhAccess();
     const url = new URL(req.url);
     const path = url.searchParams.get('path');
     if (!path) return NextResponse.json({ error: 'path obrigatório.' }, { status: 400 });
