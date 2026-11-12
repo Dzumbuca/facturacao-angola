@@ -47,7 +47,23 @@ export function RecruitmentManager({ openings, candidates, departments, position
     }
   }
 
-  async function createCandidate(event: FormEvent<HTMLFormElement>) {
+  async function handleCvUpload(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await fetch('/api/rh/uploads', { method: 'POST', body: formData });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      setError('Não foi possível carregar o CV: ' + (data?.error ?? response.status));
+      return;
+    }
+    const input = document.getElementById('jc-cv-url') as HTMLInputElement | null;
+    if (input) input.value = data.url;
+    event.target.value = '';
+  }
+
+    async function createCandidate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     setBusy(true); setError('');
@@ -166,7 +182,11 @@ export function RecruitmentManager({ openings, candidates, departments, position
             <div><label htmlFor="jc-email" className="app-label">Email *</label><input id="jc-email" name="email" type="email" className="app-input" required /></div>
             <div className="grid gap-3 sm:grid-cols-2">
               <div><label htmlFor="jc-phone" className="app-label">Telefone</label><input id="jc-phone" name="phone" className="app-input" /></div>
-              <div><label htmlFor="jc-cv" className="app-label">CV (URL)</label><input id="jc-cv" name="cvUrl" className="app-input" placeholder="https://…" /></div>
+              <div>
+  <label htmlFor="jc-cv-file" className="app-label">CV (ficheiro)</label>
+  <input id="jc-cv-file" type="file" accept="application/pdf,image/png,image/jpeg" className="app-input" onChange={handleCvUpload} />
+  <input id="jc-cv-url" name="cvUrl" className="app-input mt-2" placeholder="Ou cole um URL…" />
+</div>
             </div>
             <div><label htmlFor="jc-notes" className="app-label">Notas</label><input id="jc-notes" name="notes" className="app-input" /></div>
           </div>

@@ -92,7 +92,23 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
     }
   }
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
+  async function handlePhotoUpload(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await fetch('/api/rh/uploads', { method: 'POST', body: formData });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      alert('Não foi possível carregar a fotografia: ' + (data?.error ?? response.status));
+      return;
+    }
+    const input = document.getElementById('rh-photo-url') as HTMLInputElement | null;
+    if (input) input.value = data.url;
+    event.target.value = '';
+  }
+
+    async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const payload: Record<string, unknown> = {
@@ -230,7 +246,11 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
                   <div><label htmlFor="rh-email" className="app-label">Email</label><input id="rh-email" name="email" type="email" className="app-input" defaultValue={editing?.email ?? ''} /></div>
                   <div><label htmlFor="rh-phone" className="app-label">Telefone</label><input id="rh-phone" name="phone" className="app-input" defaultValue={editing?.phone ?? ''} /></div>
                   <div className="sm:col-span-2"><label htmlFor="rh-address" className="app-label">Morada</label><input id="rh-address" name="address" className="app-input" defaultValue={editing?.address ?? ''} /></div>
-                  <div className="sm:col-span-2"><label htmlFor="rh-photo" className="app-label">Fotografia (URL)</label><input id="rh-photo" name="photoUrl" className="app-input" placeholder="https://…" defaultValue={editing?.photoUrl ?? ''} /></div>
+                  <div className="sm:col-span-2">
+  <label htmlFor="rh-photo-file" className="app-label">Fotografia (ficheiro)</label>
+  <input id="rh-photo-file" type="file" accept="image/png,image/jpeg,image/webp" className="app-input" onChange={handlePhotoUpload} />
+  <input id="rh-photo-url" name="photoUrl" className="app-input mt-2" placeholder="Ou cole um URL…" defaultValue={editing?.photoUrl ?? ''} />
+</div>
                 </div>
               </fieldset>
 
