@@ -9,6 +9,7 @@ const primaryCatalog: AdminLink[] = [
   { href: '/admin', label: 'Visão geral', icon: 'grid', permission: 'dashboard.read' },
   { href: '/admin/empresas', label: 'Empresas', icon: 'building', permission: 'companies.read' },
   { href: '/admin/utilizadores', label: 'Utilizadores', icon: 'users', permission: 'users.read' },
+  { href: '/admin/planos', label: 'Planos', icon: 'grid', permission: 'companies.update' },
   { href: '/admin/pagamentos', label: 'Pagamentos', icon: 'wallet', permission: 'companies.read' },
 ];
 

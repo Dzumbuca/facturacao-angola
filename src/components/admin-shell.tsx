@@ -5,7 +5,8 @@ import { AdminMobileNav } from '@/components/admin-mobile-nav';
 import { ResponsiveTables } from '@/components/responsive-tables';
 
 const links = [
-  ['/admin', 'Visão geral', 'dashboard.read'], ['/admin/empresas', 'Empresas', 'companies.read'], ['/admin/pagamentos', 'Pagamentos de planos', 'companies.read'], ['/admin/utilizadores', 'Utilizadores', 'users.read'],
+  ['/admin', 'Visão geral', 'dashboard.read'], ['/admin/empresas', 'Empresas', 'companies.read'], ['/admin/planos', 'Planos comerciais', 'companies.update'],
+  ['/admin/pagamentos', 'Pagamentos de planos', 'companies.read'], ['/admin/utilizadores', 'Utilizadores', 'users.read'],
   ['/admin/equipa', 'Equipa de gestão', 'team.read'], ['/admin/documentos', 'Documentos', 'documents.read'], ['/admin/emails', 'Emails', 'emails.read'], ['/admin/auditoria', 'Auditoria', 'audit.read'], ['/admin/sistema', 'Sistema', 'system.read'], ['/admin/configuracoes', 'Configurações', 'settings.read'],
 ];
 
