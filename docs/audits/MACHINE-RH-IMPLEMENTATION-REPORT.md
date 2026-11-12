@@ -183,9 +183,9 @@ Cenários novos validados: mascaramento, histórico salarial, desligamento (201/
 
 **Conclusão:** o Machine RH **não está 100% concluído**. Estão implementados e testados: privacidade, ciclo de vida, justificações, notificações, recibos PDF, exportações, recrutamento, desempenho, formação, descontos recorrentes, horas extra/faltas configuráveis e comunicados internos. Permanecem pendentes validação jurídica, notificações push, upload de ficheiros e escalas rotativas; EMIS depende de parceiro.
 
-## 20. Gates jurídicos, turnos nocturnos e uploads (staging, não em produção)
+## 20. Gates jurídicos, turnos nocturnos e uploads (ACTIVO em produção — 2026-11-12)
 
-Data: 2026-11-12 · Branch: `feat/machine-rh-staging-gates-storage` · **Sem migrations em produção**
+Data: 2026-11-12 · PR #30 merged (`f3b7398`) · Migração `20261112080000_machine_rh_gates_shifts` aplicada em produção · Deploy Vercel Ready.
 
 ### O que foi implementado
 
@@ -203,6 +203,14 @@ Data: 2026-11-12 · Branch: `feat/machine-rh-staging-gates-storage` · **Sem mig
   - `ensureBucket` cria o bucket `rh-uploads` se existir permissão.
   - Detalhes de configuração em `docs/ops/SUPABASE-STORAGE-SETUP.md`.
 - **Migração**: `20261112080000_machine_rh_gates_shifts` (colunas novas, defaults seguros, **não aplicada em produção**).
+
+### Activado na produção (2026-11-12)
+
+- Gates jurídicos visíveis em `/rh/processamento-salarial` e `/rh/modelos` (badge PENDENTE + botão Validar).
+- Todos os rulesets/modelos existentes continuam `PENDENTE` — **não foram marcados VALIDADO**.
+- Turno nocturno e prémio configuráveis em `/rh/assiduidade/turnos` (create form) e API `/api/rh/shifts`.
+- Endpoint de upload `POST /api/rh/uploads` — **só funcionará quando** `SUPABASE_SERVICE_ROLE_KEY` e o bucket `rh-uploads` (ou o definido em `SUPABASE_STORAGE_BUCKET_RH`) existirem na Vercel; sem isso, devolve 503 `STORAGE_NOT_CONFIGURED`.
+- EMIS continua fora de âmbito (sem contrato com o banco).
 
 ### O que continua pendente (fora de alcance sem terceiros)
 
