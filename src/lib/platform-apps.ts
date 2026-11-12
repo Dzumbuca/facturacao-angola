@@ -33,3 +33,12 @@ export async function listTenantApplications(tenantId: string) {
   }));
 }
 
+
+/** Mapeamento do slug do módulo para o módulo do Machine (usado em gates). */
+export const MACHINE_APPLICATION_MAP: Record<string, string> = {
+  rh: 'machine-rh',
+  stock: 'wms',
+  'machine-rh': 'machine-rh',
+  wms: 'wms',
+  'machine-facturas': 'machine-facturas',
+};

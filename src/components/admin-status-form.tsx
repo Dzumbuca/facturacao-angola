@@ -1,6 +1,6 @@
 'use client';
 import { useActionState } from 'react';
-import { setTenantStatus, setUserStatus, setTenantRole, setPlatformRole, setTenantPlan, setTenantWmsEnabled, setTenantPackage } from '@/lib/admin-actions';
+import { setTenantStatus, setUserStatus, setTenantRole, setPlatformRole, setTenantPlan, setTenantWmsEnabled, setTenantPackage, setTenantCommercialPlan, setTenantRhEnabled } from '@/lib/admin-actions';
 
 type State = { ok: boolean; message: string };
 const initial: State = { ok: false, message: '' };
@@ -41,6 +41,28 @@ export function AdminWmsForm({ id, current }: { id: string; current: boolean }) 
   const action = async (_: State, data: FormData) => setTenantWmsEnabled(String(data.get('id')), data.get('value') === 'ON', String(data.get('reason')));
   const options: [string, string][] = [[current ? 'ON' : 'OFF', current ? 'Manter: activo' : 'Manter: inactivo'], ['ON', 'Activar Armazém e Stock'], ['OFF', 'Desactivar Armazém e Stock']];
   return <StatusForm key={`wms-${current}`} action={action} id={id} title="Módulo Armazém e Stock" options={options} />;
+}
+
+const COMMERCIAL_PLANS: [string, string][] = [
+  ['free', 'Free — Facturação grátis para sempre'],
+  ['stock', 'Stock — Free + Armazém e Stock (2.500 Kz/mês)'],
+  ['rh', 'RH — Free + Machine RH (3.500 Kz/mês)'],
+  ['business', 'Business — Free + Stock + RH (5.000 Kz/mês)'],
+];
+
+export function AdminCommercialPlanForm({ id, current }: { id: string; current: string }) {
+  const action = async (_: State, data: FormData) => setTenantCommercialPlan(String(data.get('id')), String(data.get('value')), String(data.get('reason')));
+  const options: [string, string][] = [[current, `Manter: ${COMMERCIAL_PLANS.find(([v]) => v === current)?.[1] ?? current}`], ...COMMERCIAL_PLANS];
+  return <StatusForm key={`commercial-${current}`} action={action} id={id} title="Plano Machine" options={options} />;
+}
+
+export function AdminModuleForm({ id, module, current }: { id: string; module: 'rh' | 'wms'; current: boolean }) {
+  const action = async (_: State, data: FormData) => {
+    if (module === 'rh') return setTenantRhEnabled(String(data.get('id')), data.get('value') === 'ON', String(data.get('reason')));
+    return setTenantWmsEnabled(String(data.get('id')), data.get('value') === 'ON', String(data.get('reason')));
+  };
+  const options: [string, string][] = [[current ? 'ON' : 'OFF', current ? 'Manter: activo' : 'Manter: inactivo'], ['ON', `Activar ${module === 'rh' ? 'Machine RH' : 'Armazém e Stock'}`], ['OFF', `Desactivar ${module === 'rh' ? 'Machine RH' : 'Armazém e Stock'}`]];
+  return <StatusForm key={`module-${module}-${current}`} action={action} id={id} title={module === 'rh' ? 'Módulo Machine RH' : 'Módulo Armazém e Stock'} options={options} />;
 }
 
 export function AdminPackageForm({ id, current }: { id: string; current: string }) {

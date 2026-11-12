@@ -1,9 +1,10 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getAdminTenantDetail } from '@/lib/admin-data';
+import { listTenantApplications } from '@/lib/platform-apps';
 import { isApplicationEnabled } from '@/lib/platform-apps';
 import { getTenantWmsLimits } from '@/lib/entitlements';
-import { AdminStatusForm, AdminPlanForm, AdminWmsForm, AdminPackageForm } from '@/components/admin-status-form';
+import { AdminStatusForm, AdminPlanForm, AdminWmsForm, AdminPackageForm, AdminCommercialPlanForm, AdminModuleForm } from '@/components/admin-status-form';
 import { AdminStatusBadge } from '@/components/admin-ui';
 
 export default async function AdminCompanyDetail({ params }: { params: Promise<{ id: string }> }) {
@@ -11,6 +12,12 @@ export default async function AdminCompanyDetail({ params }: { params: Promise<{
   let tenant;
   try { tenant = await getAdminTenantDetail(id); } catch { return <p role="alert">Não foi possível carregar a empresa.</p>; }
   if (!tenant) notFound();
+  const apps = await listTenantApplications(tenant.id);
+  const currentRh = apps.find((a: any) => a.slug === 'rh');
+  const currentWms = apps.find((a: any) => a.slug === 'wms');
+  const rhEnabled = !!currentRh?.enabled;
+  const wmsModuleEnabled = !!currentWms?.enabled;
+  const planSlug = (tenant as any).commercialPlanSlug ?? 'free';
   const [wmsEnabled, wmsLimits] = await Promise.all([
     isApplicationEnabled(tenant.id, 'wms'),
     getTenantWmsLimits(tenant.id),
@@ -20,7 +27,15 @@ export default async function AdminCompanyDetail({ params }: { params: Promise<{
     <h2 className="mb-3 mt-7 text-xl font-bold">Estado da empresa</h2><AdminStatusForm target="tenant" id={tenant.id} current={tenant.status} />
     <h2 className="mb-3 mt-7 text-xl font-bold">Plano comercial</h2><p className="mb-3 text-sm text-slate-600">Empresas no plano Grátis veem anúncios no painel; Pro não vê. Marca Pro quando confirmares o pagamento.</p><p className="mb-2 text-sm text-slate-600">Validade actual: {tenant.planExpiry ? new Date(tenant.planExpiry).toLocaleDateString('pt-AO', { timeZone: 'Africa/Luanda' }) : 'Sem prazo (Grátis ou legado)'}</p><AdminPlanForm id={tenant.id} current={tenant.plan} />
     <h2 className="mb-3 mt-7 text-xl font-bold">Módulo Armazém e Stock</h2><p className="mb-3 text-sm text-slate-600">Activa ou desactiva o acesso ao módulo de armazém e stock. Os dados do cliente são sempre preservados; desactivar bloqueia apenas o acesso.</p><AdminWmsForm id={tenant.id} current={wmsEnabled} />
-    <h2 className="mb-3 mt-7 text-xl font-bold">Pacote comercial (WMS)</h2><p className="mb-3 text-sm text-slate-600">Pacote actual: <strong>{wmsLimits.planSlug}</strong>{wmsLimits.grandfathered ? ' (legado, sem limites)' : ''}. O pacote define o limite de armazéns; alterações são auditadas.</p><AdminPackageForm id={tenant.id} current={wmsLimits.planSlug} />
+    <h2 className="mb-3 mt-7 text-xl font-bold">Plano Machine (comercial)</h2>
+    <p className="mb-3 text-sm text-slate-600">FREE = facturação grátis para sempre; Stock, RH e Business envolvem os módulos Armazém/Stock e Machine RH. O plano fica associado à empresa; é reversível e auditado.</p>
+    <AdminCommercialPlanForm id={tenant.id} current={planSlug} />
+    <h2 className="mb-3 mt-7 text-xl font-bold">Armazém e Stock</h2>
+    <p className="mb-3 text-sm text-slate-600">Dados preservados para sempre; desactivar bloqueia apenas o acesso.</p>
+    <AdminModuleForm id={tenant.id} module="wms" current={wmsModuleEnabled} />
+    <h2 className="mb-3 mt-7 text-xl font-bold">Machine RH</h2>
+    <p className="mb-3 text-sm text-slate-600">Activamos este módulo apenas nos planos RH e Business; para além disso pode ser concedido como acesso experimental.</p>
+    <AdminModuleForm id={tenant.id} module="rh" current={rhEnabled} />
   </div>;
 }
 function Info({ label, value }: { label: string; value: unknown }) { return <div><dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</dt><dd className="mt-1 break-words">{value == null || value === '' ? '—' : String(value)}</dd></div>; }

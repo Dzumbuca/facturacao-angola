@@ -267,3 +267,72 @@ export async function reviewPlanPayment(id: string, decision: 'CONFIRMADO' | 'RE
     return decision === 'CONFIRMADO' ? { ok: true, message: 'Pagamento confirmado e pacote activado.' } : { ok: true, message: 'Pagamento rejeitado.' };
   } catch { return failure; }
 }
+
+// Atribui um pacote comercial (Free / Stock / RH / Business) e liga os módulos certos.
+export type CommercialPlan = 'free' | 'stock' | 'rh' | 'business';
+export async function setTenantCommercialPlan(id: string, planSlug: CommercialPlan | string, rawReason: string): Promise<ActionResult> {
+  const currentActor = await actor('companies.update');
+  const reason = validateAdminReason(rawReason);
+  if (!currentActor || !validId(id) || !['free', 'stock', 'rh', 'business'].includes(planSlug) || !reason) return failure;
+  try {
+    await db.$transaction(async (tx: any) => {
+      const tenant = await tx.tenant.findUnique({ where: { id }, select: { id: true } });
+      if (!tenant) throw new Error('not-found');
+      const plan = await tx.subscriptionPlan.findUnique({ where: { slug: planSlug } });
+      if (!plan) throw new Error('plan-missing');
+      await tx.tenantSubscription.deleteMany({ where: { tenantId: id } });
+      await tx.tenantSubscription.create({
+        data: { tenantId: id, planId: plan.id, status: 'ACTIVE', startsAt: new Date(), endsAt: null, autoRenew: false },
+      });
+      const apps = await tx.platformApplication.findMany({ where: { slug: { in: ['wms', 'rh'] } } });
+      const enabledSlugs = planSlug === 'free' ? [] : planSlug === 'stock' ? ['wms'] : planSlug === 'rh' ? ['rh'] : ['wms', 'rh'];
+      for (const app of apps) {
+        const enabled = enabledSlugs.includes(app.slug);
+        await tx.tenantApplication.upsert({
+          where: { tenantId_applicationId: { tenantId: id, applicationId: app.id } },
+          update: { enabled, enabledAt: enabled ? new Date() : null, disabledAt: enabled ? null : new Date() },
+          create: { tenantId: id, applicationId: app.id, enabled, enabledAt: enabled ? new Date() : null, disabledAt: enabled ? null : new Date() },
+        });
+      }
+      await tx.tenant.update({ where: { id }, data: { plan: 'PRO', planExpiry: null } });
+      await tx.adminAuditLog.create({ data: { actorUserId: currentActor.id, action: 'TENANT_PLAN_CHANGED', resourceType: 'TENANT', resourceId: id, reason, metadata: { plan: planSlug } } });
+    }, { isolationLevel: 'Serializable' });
+    revalidatePath('/admin'); revalidatePath('/admin/empresas'); revalidatePath(`/admin/empresas/${id}`); revalidatePath('/stock'); revalidatePath('/rh'); revalidatePath('/apps');
+    return success;
+  } catch { return failure; }
+}
+
+// Activa/desactiva o módulo RH (Machine RH) para uma empresa.
+export async function setTenantRhEnabled(id: string, enabled: boolean, rawReason: string): Promise<ActionResult> {
+  const currentActor = await actor('companies.update');
+  const reason = validateAdminReason(rawReason);
+  if (!currentActor || !validId(id) || typeof enabled !== 'boolean' || !reason) return failure;
+  try {
+    await db.$transaction(async (tx: any) => {
+      const tenant = await tx.tenant.findUnique({ where: { id }, select: { id: true } });
+      if (!tenant) throw new Error('not-found');
+      const app = await tx.platformApplication.findUnique({ where: { slug: 'rh' } });
+      if (!app) throw new Error('app-missing');
+      const existing = await tx.tenantApplication.findUnique({
+        where: { tenantId_applicationId: { tenantId: id, applicationId: app.id } },
+      });
+      await tx.tenantApplication.upsert({
+        where: { tenantId_applicationId: { tenantId: id, applicationId: app.id } },
+        update: { enabled, enabledAt: enabled ? new Date() : null, disabledAt: enabled ? null : new Date() },
+        create: { tenantId: id, applicationId: app.id, enabled, enabledAt: enabled ? new Date() : null, disabledAt: enabled ? null : new Date() },
+      });
+      await tx.adminAuditLog.create({
+        data: {
+          actorUserId: currentActor.id,
+          action: enabled ? 'TENANT_RH_ENABLED' : 'TENANT_RH_DISABLED',
+          resourceType: 'TENANT',
+          resourceId: id,
+          reason,
+          metadata: { previous: !!existing?.enabled, next: enabled },
+        },
+      });
+    }, { isolationLevel: 'Serializable' });
+    revalidatePath('/admin'); revalidatePath('/admin/empresas'); revalidatePath(`/admin/empresas/${id}`); revalidatePath('/rh'); revalidatePath('/apps');
+    return success;
+  } catch { return failure; }
+}
