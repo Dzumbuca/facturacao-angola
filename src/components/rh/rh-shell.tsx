@@ -4,29 +4,32 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { RhPwa } from './rh-pwa';
+import { DashboardIcon, IconBuilding, IconBriefcase, IconFileText, IconClock, IconCalendar, IconCoffee, IconPhone, IconCpu, IconSparkles, IconCurrency, IconCheckSquare, IconMail, IconMegaphone, IconUsersGroup, IconCog, IconUsers } from './icons';
 import { ResponsiveTables } from '@/components/responsive-tables';
 
-const activeLinks = [
-  { href: '/rh/dashboard', label: 'Dashboard', icon: '◫' },
-  { href: '/rh/funcionarios', label: 'Funcionários', icon: '◉' },
-  { href: '/rh/departamentos', label: 'Departamentos', icon: '▤' },
-  { href: '/rh/cargos', label: 'Cargos', icon: '◇' },
-  { href: '/rh/contratos', label: 'Contratos', icon: '▧' },
-  { href: '/rh/assiduidade', label: 'Assiduidade', icon: '◷' },
-  { href: '/rh/horarios', label: 'Horários', icon: '◔' },
-  { href: '/rh/ferias', label: 'Férias', icon: '☀' },
-  { href: '/rh/ponto', label: 'Quiosque', icon: '▣' },
-  { href: '/rh/dispositivos', label: 'Dispositivos', icon: '⌨' },
-  { href: '/rh/documentos', label: 'Documentos', icon: '▤' },
-  { href: '/rh/ia', label: 'Assistente IA', icon: '✦' },
-  { href: '/rh/modelos', label: 'Modelos', icon: '✎' },
-  { href: '/rh/processamento-salarial', label: 'Processamento', icon: '₵' },
-  { href: '/rh/pagamentos', label: 'Pagamentos', icon: '⇄' },
-  { href: '/rh/justificacoes', label: 'Justificações', icon: '☑' },
-  { href: '/rh/notificacoes', label: 'Notificações', icon: '✉' },
-  { href: '/rh/comunicados', label: 'Comunicados', icon: '📣' },
-  { href: '/rh/equipa', label: 'Equipa', icon: '♟' },
-  { href: '/rh/configuracoes', label: 'Configurações', icon: '⚙' },
+import type { ComponentType, SVGProps } from 'react';
+type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
+const activeLinks: { href: string; label: string; icon: IconComponent }[] = [
+  { href: '/rh/dashboard', label: 'Dashboard', icon: DashboardIcon },
+  { href: '/rh/funcionarios', label: 'Funcionários', icon: IconUsers },
+  { href: '/rh/departamentos', label: 'Departamentos', icon: IconBuilding },
+  { href: '/rh/cargos', label: 'Cargos', icon: IconBriefcase },
+  { href: '/rh/contratos', label: 'Contratos', icon: IconFileText },
+  { href: '/rh/assiduidade', label: 'Assiduidade', icon: IconClock },
+  { href: '/rh/horarios', label: 'Horários', icon: IconCalendar },
+  { href: '/rh/ferias', label: 'Férias', icon: IconCoffee },
+  { href: '/rh/ponto', label: 'Quiosque', icon: IconCpu },
+  { href: '/rh/dispositivos', label: 'Dispositivos', icon: IconPhone },
+  { href: '/rh/documentos', label: 'Documentos', icon: IconFileText },
+  { href: '/rh/ia', label: 'Assistente IA', icon: IconSparkles },
+  { href: '/rh/modelos', label: 'Modelos', icon: IconFileText },
+  { href: '/rh/processamento-salarial', label: 'Processamento', icon: IconCurrency },
+  { href: '/rh/pagamentos', label: 'Pagamentos', icon: IconSparkles },
+  { href: '/rh/justificacoes', label: 'Justificações', icon: IconCheckSquare },
+  { href: '/rh/notificacoes', label: 'Notificações', icon: IconMail },
+  { href: '/rh/comunicados', label: 'Comunicados', icon: IconMegaphone },
+  { href: '/rh/equipa', label: 'Equipa', icon: IconUsersGroup },
+  { href: '/rh/configuracoes', label: 'Configurações', icon: IconCog },
 ];
 
 const futureLinks = [
@@ -40,6 +43,11 @@ export function RhShell({ children, canManageMembers = false }: { children: Reac
   const links = activeLinks.filter((link) => link.href !== '/rh/equipa' || canManageMembers);
   const pathname = usePathname();
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+
+  const LinkIcon = ({ link }: { link: (typeof activeLinks)[number] }) => {
+    const Icon = link.icon;
+    return <Icon className="h-4 w-4 shrink-0" aria-hidden />;
+  };
 
   return (
     <div className="min-h-dvh bg-[#f5f7fb] text-[#1c2d3f]">
@@ -63,7 +71,7 @@ export function RhShell({ children, canManageMembers = false }: { children: Reac
                     aria-current={isActive(link.href) ? 'page' : undefined}
                     className={`flex min-h-10 items-center gap-3 rounded-lg px-3 text-[13px] transition ${isActive(link.href) ? 'bg-[#021f87] font-semibold text-white' : 'text-blue-100/80 hover:bg-white/5'}`}
                   >
-                    <span aria-hidden="true" className="w-4 text-center">{link.icon}</span>{link.label}
+                    <LinkIcon link={link} />{link.label}
                   </Link>
                 </li>
               ))}
@@ -117,7 +125,7 @@ export function RhShell({ children, canManageMembers = false }: { children: Reac
             aria-current={isActive(link.href) ? 'page' : undefined}
             className={`flex min-h-14 flex-col items-center justify-center gap-0.5 text-[10px] font-medium ${isActive(link.href) ? 'text-[#021f87]' : 'text-[#708195]'}`}
           >
-            <span aria-hidden="true" className="text-base">{link.icon}</span>
+            <LinkIcon link={link} />
             {link.label}
           </Link>
         ))}
