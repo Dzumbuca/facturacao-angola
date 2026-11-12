@@ -100,9 +100,8 @@ export function RhShell({ children, canManageMembers = false }: { children: Reac
       <div className="md:ml-[236px]">
         <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-[#dfe7f0] bg-white/95 px-4 py-2.5 backdrop-blur md:px-7 md:py-3.5">
           <div className="flex min-w-0 items-center gap-2.5">
-            <img src="/icons/rh-logo.png" alt="Machine RH" className="h-9 w-auto rounded-md bg-[#0a1430] object-contain p-1 md:h-10" />
             <div className="min-w-0">
-              <p className="hidden text-[10px] font-semibold uppercase tracking-[.14em] text-[#021f87] sm:block">Machine RH</p>
+              <p className="hidden text-[10px] font-semibold uppercase tracking-[.14em] text-[#8a99ab] sm:block">Machine RH</p>
               <p className="truncate text-sm font-bold text-[#0a1430] md:text-base">
                 {links.find((l) => isActive(l.href))?.label ?? 'Recursos Humanos'}
               </p>
