@@ -59,7 +59,7 @@ export function RecruitmentManager({ openings, candidates, departments, position
       return;
     }
     const input = document.getElementById('jc-cv-url') as HTMLInputElement | null;
-    if (input) input.value = data.url;
+    if (input) input.value = data.path;
     event.target.value = '';
   }
 

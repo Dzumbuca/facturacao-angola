@@ -104,7 +104,7 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
       return;
     }
     const input = document.getElementById('rh-photo-url') as HTMLInputElement | null;
-    if (input) input.value = data.url;
+    if (input) input.value = data.path;
     event.target.value = '';
   }
 

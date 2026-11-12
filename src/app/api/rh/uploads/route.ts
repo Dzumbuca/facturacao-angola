@@ -29,7 +29,7 @@ export async function POST(req: Request) {
 
     const uploaded = await uploadToRhBucket({ tenantId: access.tenantId, path, buffer, contentType: file.type });
     if ('error' in uploaded) return NextResponse.json({ code: 'UPLOAD_ERROR', detail: uploaded.error }, { status: 502 });
-    return NextResponse.json({ url: uploaded.url, path: uploaded.path }, { status: 201 });
+    return NextResponse.json({ path: uploaded.path }, { status: 201 });
   } catch (error) {
     const { status, body } = rhAccessResponse(error);
     return NextResponse.json(body, { status });

@@ -21,10 +21,9 @@ No `.env.local` (dev) e na Vercel (Preview/Production):
    - Public: **ON** (se quiseres servir os ficheiros por URL pública; caso contrário mantém privado e usa signed URLs)
    - File size limit: 10 MB
    - MIME types: `application/pdf, image/png, image/jpeg, image/webp`
-2. Aplicar as três políticas/owners listadas abaixo via SQL no SQL Editor (apenas o service role acede; o bucket pode ser privado se manteres **Public: OFF** e usares signed URLs):
-   ```sql
-   -- O acesso é exclusivo do service_role; não crear policies públicas.
-   ```
+2. **Bucket PRIVADO** (public: OFF). O bucket público expõe fotos/CVs com URL directa — não usar.
+   - Acesso é exclusivo do service_role; o upload/signed URL é feito no servidor.
+   - Clientes só veem o bucket via endpoint `GET /api/rh/signed-url?path=...` (requer sessão RH).
 3. No Vercel, adicionar as três variáveis acima e re-deploy (ou apenas correr `next build` fora de horário de pico).
 4. Testar:
    - `curl -X POST -H "Authorization: Bearer <service_role_key>" https://<projeto>.supabase.co/storage/v1/bucket` → verás `rh-uploads` na lista.
@@ -38,3 +37,8 @@ No `.env.local` (dev) e na Vercel (Preview/Production):
   - cria o bucket automaticamente se não existir (ensureBucket);
   - devolve URL pública ou erro explícito (`STORAGE_NOT_CONFIGURED`, `BUCKET_ERROR_*`).
 - Antes de usar, preencher as variáveis. Se faltarem, o endpoint responde **503** com `STORAGE_NOT_CONFIGURED` — **nunca finge que guardou**.
+
+## Upload de ficheiros
+
+- Upload via POST /api/rh/uploads (bucket privado; devolve path).
+- Preview/download via GET /api/rh/signed-url?path=... (1h, requer sessão RH).
