@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { runWithTenant } from '@/lib/tenant-db';
 import { requireRhAccess, rhAccessResponse } from '@/lib/rh-access';
 import { rhAudit } from '@/lib/rh-service';
-import { notifyRhUsers } from '@/lib/rh-notify';
 
 const ENROLLMENT_STATUSES = ['CONCLUIDA', 'DESISTENTE'] as const;
 type Context = { params: Promise<{ id: string }> };

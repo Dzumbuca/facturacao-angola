@@ -5,7 +5,6 @@ import { rhAudit } from '@/lib/rh-service';
 import { notifyRhUsers } from '@/lib/rh-notify';
 
 const CANDIDATE_STATUSES = ['RECEBIDA', 'TRIAGEM', 'ENTREVISTA', 'AVALIACAO', 'APROVADO', 'REJEITADO', 'ADMITIDO'] as const;
-type CandidateStatus = (typeof CANDIDATE_STATUSES)[number];
 
 export async function GET(req: Request) {
   try {

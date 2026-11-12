@@ -5,6 +5,7 @@ import { requireRhPage } from '@/lib/rh-page';
 import { maskAccount } from '@/lib/rh-service';
 import { hasRhPermission } from '@/lib/rh-policy';
 import { OffboardDialog } from '@/components/rh/offboard-dialog';
+import { DeductionsManager } from '@/components/rh/deductions-manager';
 
 function money(value: unknown) {
   return new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', maximumFractionDigits: 2 }).format(Number(value) || 0);
@@ -23,7 +24,7 @@ export default async function EmployeeDetailPage({ params }: { params: Promise<{
   const data = await runWithTenant(access.tenantId, async (tx) => {
     const yearStart = new Date(Date.UTC(new Date().getFullYear(), 0, 1));
     const since = new Date(Date.now() - 30 * 86_400_000);
-    const [employee, contracts, salaryChanges, attendance, leaves, documents, offboarding] = await Promise.all([
+    const [employee, contracts, salaryChanges, attendance, leaves, documents, offboarding, deductions] = await Promise.all([
       tx.rhEmployee.findFirst({
         where: { id, tenantId: access.tenantId },
         include: { department: { select: { name: true } }, position: { select: { title: true } }, shift: { select: { name: true, startTime: true, endTime: true } } },
@@ -34,8 +35,9 @@ export default async function EmployeeDetailPage({ params }: { params: Promise<{
       tx.rhLeaveRequest.findMany({ where: { tenantId: access.tenantId, employeeId: id, startDate: { gte: yearStart } }, orderBy: { startDate: 'desc' } }),
       tx.rhDocument.findMany({ where: { tenantId: access.tenantId, employeeId: id }, orderBy: { createdAt: 'desc' }, take: 20 }),
       tx.rhOffboarding.findUnique({ where: { employeeId: id } }),
+      tx.rhEmployeeDeduction.findMany({ where: { tenantId: access.tenantId, employeeId: id }, orderBy: [{ active: 'desc' }, { createdAt: 'desc' }] }),
     ]);
-    return { employee, contracts, salaryChanges, attendance, leaves, documents, offboarding };
+    return { employee, contracts, salaryChanges, attendance, leaves, documents, offboarding, deductions };
   }, { userId: access.userId }) as any;
 
   if (!data.employee) notFound();
@@ -123,6 +125,12 @@ export default async function EmployeeDetailPage({ params }: { params: Promise<{
           </table>
         </div>
       </section>
+
+      <DeductionsManager
+        employeeId={id}
+        deductions={(data.deductions as any[]).map((d) => ({ ...d, amount: Number(d.amount) }))}
+        canWrite={canWrite}
+      />
 
       <div className="grid gap-5 lg:grid-cols-2">
         <section className="rounded-xl border border-[#e1e8f0] bg-white">

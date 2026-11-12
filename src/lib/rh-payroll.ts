@@ -52,12 +52,13 @@ export function calculateIrt(taxable: number, brackets: PayrollConfig['irtBracke
   return Math.max(0, round2((taxable * bracket.rate) / 100 - bracket.deduction));
 }
 
-export function calculatePayslip(input: { baseSalary: number; config: PayrollConfig }) {
+export function calculatePayslip(input: { baseSalary: number; config: PayrollConfig; extraDeductions?: number }) {
   const base = round2(Math.max(0, input.baseSalary));
   const allowances = round2(input.config.foodAllowance + input.config.transportAllowance);
   const gross = round2(base + allowances);
   const inss = round2((gross * input.config.inssEmployeeRate) / 100);
   const irt = calculateIrt(round2(gross - inss), input.config.irtBrackets);
-  const net = round2(gross - inss - irt);
-  return { baseSalary: base, allowances, gross, inss, irt, net };
+  const otherDeductions = round2(Math.max(0, input.extraDeductions ?? 0));
+  const net = round2(gross - inss - irt - otherDeductions);
+  return { baseSalary: base, allowances, gross, inss, irt, otherDeductions, net };
 }

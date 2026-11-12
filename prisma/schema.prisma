@@ -2672,6 +2672,7 @@ model RhEmployee {
   offboarding   RhOffboarding?
   justifications RhAbsenceJustification[]
   trainingEnrollments RhTrainingEnrollment[]
+  deductions    RhEmployeeDeduction[]
   payslips      RhPayslip[]
   paymentItems  RhPaymentItem[]
   performanceReviews RhPerformanceReview[]
@@ -3431,4 +3432,29 @@ model RhTrainingEnrollment {
 
   @@unique([courseId, employeeId])
   @@index([tenantId, courseId, status])
+}
+
+
+// Descontos recorrentes do funcionário (adiantamentos, empréstimos).
+enum RhDeductionType {
+  ADIANTAMENTO
+  EMPRESTIMO
+  OUTRO
+}
+
+model RhEmployeeDeduction {
+  id                     String           @id @default(uuid())
+  tenantId               String
+  employeeId             String
+  description            String
+  type                   RhDeductionType  @default(OUTRO)
+  amount                 Decimal          @db.Decimal(14, 2)
+  remainingInstallments  Int?
+  active                 Boolean          @default(true)
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+
+  employee RhEmployee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, employeeId, active])
 }

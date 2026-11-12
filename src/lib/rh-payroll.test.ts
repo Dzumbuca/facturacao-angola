@@ -55,6 +55,11 @@ describe('calculatePayslip', () => {
     expect(slip.irt).toBe(35405);
     expect(slip.net).toBe(318645);
   });
+  it('desconta adiantamentos/empréstimos do líquido', () => {
+    const slip = calculatePayslip({ baseSalary: 350000, config, extraDeductions: 50000 });
+    expect(slip.otherDeductions).toBe(50000);
+    expect(slip.net).toBe(268645);
+  });
   it('arredonda a 2 casas decimais', () => {
     const slip = calculatePayslip({ baseSalary: 1000.555, config });
     expect(slip.baseSalary).toBe(1000.56);

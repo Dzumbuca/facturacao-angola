@@ -3,7 +3,7 @@ import { runWithTenant } from '@/lib/tenant-db';
 import { requireRhAccess, rhAccessResponse } from '@/lib/rh-access';
 import { rhAudit } from '@/lib/rh-service';
 
-export async function GET(req: Request) {
+export async function GET(_req: Request) {
   try {
     const access = await requireRhAccess();
     const cycles = (await runWithTenant(access.tenantId, (tx) => tx.rhPerformanceCycle.findMany({

@@ -223,3 +223,10 @@ DROP POLICY IF EXISTS "rh_training_enrollment_isolation" ON "RhTrainingEnrollmen
 CREATE POLICY "rh_training_enrollment_isolation" ON "RhTrainingEnrollment" FOR ALL
   USING ("tenantId" = current_setting('app.tenant_id', true))
   WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+
+-- Descontos recorrentes.
+ALTER TABLE "RhEmployeeDeduction" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_employee_deduction_isolation" ON "RhEmployeeDeduction";
+CREATE POLICY "rh_employee_deduction_isolation" ON "RhEmployeeDeduction" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));

@@ -45,9 +45,19 @@ export async function POST(req: Request) {
       })) as any[];
       if (employees.length === 0) return { code: 'NO_EMPLOYEES' as const };
 
+      const deductionRows = await tx.rhEmployeeDeduction.findMany({
+        where: { tenantId: access.tenantId, active: true, employeeId: { in: employees.map((employee: any) => employee.id) } },
+        select: { employeeId: true, amount: true },
+      });
+      const deductionByEmployee = new Map<string, number>();
+      for (const row of deductionRows as Array<{ employeeId: string; amount: unknown }>) {
+        deductionByEmployee.set(row.employeeId, (deductionByEmployee.get(row.employeeId) ?? 0) + Number(row.amount));
+      }
+
       const payslips = employees.map((employee: any) => {
-        const calc = calculatePayslip({ baseSalary: Number(employee.baseSalary), config: parsed.config });
-        return { tenantId: access.tenantId, employeeId: employee.id, ...calc, lines: { irtBrackets: parsed.config.irtBrackets.length } };
+        const extraDeductions = deductionByEmployee.get(employee.id) ?? 0;
+        const calc = calculatePayslip({ baseSalary: Number(employee.baseSalary), config: parsed.config, extraDeductions });
+        return { tenantId: access.tenantId, employeeId: employee.id, ...calc, lines: { irtBrackets: parsed.config.irtBrackets.length, extraDeductions } };
       });
       const totals = payslips.reduce((acc: any, slip: any) => ({
         gross: acc.gross + slip.gross,
@@ -70,7 +80,17 @@ export async function POST(req: Request) {
           payslips: { create: payslips },
         },
       });
-      await rhAudit(tx, { tenantId: access.tenantId, actorUserId: access.userId, action: 'RH_PAYROLL_CALCULATED', entity: 'RhPayrollRun', entityId: run.id, metadata: { period, rulesetId, employees: employees.length } });
+      // Amortiza prestações de adiantamentos/empréstimos nesta folha.
+      const installments = await tx.rhEmployeeDeduction.findMany({
+        where: { tenantId: access.tenantId, active: true, remainingInstallments: { not: null }, employeeId: { in: employees.map((employee: any) => employee.id) } },
+        select: { id: true, remainingInstallments: true },
+      });
+      for (const item of installments as Array<{ id: string; remainingInstallments: number | null }>) {
+        const remaining = Math.max(0, (item.remainingInstallments ?? 1) - 1);
+        await tx.rhEmployeeDeduction.update({ where: { id: item.id }, data: { remainingInstallments: remaining, active: remaining > 0 } });
+      }
+
+      await rhAudit(tx, { tenantId: access.tenantId, actorUserId: access.userId, action: 'RH_PAYROLL_CALCULATED', entity: 'RhPayrollRun', entityId: run.id, metadata: { period, rulesetId, employees: employees.length, installmentsAmortized: installments.length } });
       await notifyRhUsers(tx, {
         tenantId: access.tenantId,
         roles: ['FINANCE', 'ADMIN'],
