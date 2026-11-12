@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 const modules = [
+  { href: '/stock/fornecedores', title: 'Fornecedores', desc: 'Lista e criação de fornecedores (limite por pacote).' },
   { href: '/stock/compras', title: 'Compras e receções', desc: 'Ordens de compra e receção no armazém.' },
   { href: '/stock/recepcoes', title: 'Receções', desc: 'Histórico de receções por armazém.' },
   { href: '/stock/lotes', title: 'Lotes e validades', desc: 'Consulta e registo de lotes.' },
