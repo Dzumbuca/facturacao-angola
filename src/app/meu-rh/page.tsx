@@ -4,6 +4,7 @@ import { getSessionTenantId, getSessionUserId } from '@/lib/session';
 import { isApplicationEnabled } from '@/lib/platform-apps';
 import { runWithTenant } from '@/lib/tenant-db';
 import { MyJustifications } from '@/components/rh/my-justifications';
+import { SelfAssessmentSection } from '@/components/rh/self-assessment-section';
 
 function money(value: unknown) {
   return new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', maximumFractionDigits: 2 }).format(Number(value) || 0);
@@ -30,7 +31,7 @@ export default async function MyRhPage() {
     const now = new Date();
     const since = new Date(now.getTime() - 30 * 86_400_000);
     const yearStart = new Date(Date.UTC(now.getFullYear(), 0, 1));
-    const [attendance, payslips, leaves, documents, justifications, notifications, announcements] = await Promise.all([
+    const [attendance, payslips, leaves, documents, justifications, notifications, announcements, openCycles] = await Promise.all([
       tx.rhTimeEntry.findMany({ where: { tenantId, employeeId: employee.id, occurredAt: { gte: since } }, orderBy: { occurredAt: 'desc' }, take: 60 }),
       tx.rhPayslip.findMany({ where: { tenantId, employeeId: employee.id }, include: { run: { select: { period: true, status: true } } }, orderBy: { createdAt: 'desc' }, take: 12 }),
       tx.rhLeaveRequest.findMany({ where: { tenantId, employeeId: employee.id, startDate: { gte: yearStart } }, orderBy: { startDate: 'desc' }, take: 20 }),
@@ -38,11 +39,16 @@ export default async function MyRhPage() {
       tx.rhAbsenceJustification.findMany({ where: { tenantId, employeeId: employee.id }, orderBy: { date: 'desc' }, take: 30 }),
       tx.rhNotification.findMany({ where: { tenantId, userId }, orderBy: { createdAt: 'desc' }, take: 20 }),
       tx.rhAnnouncement.findMany({ where: { tenantId, publishedAt: { lte: new Date() }, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] }, orderBy: { publishedAt: 'desc' }, take: 10 }),
+      tx.rhPerformanceCycle.findMany({ where: { tenantId, status: 'ABERTO' }, select: { id: true, name: true, startsAt: true, endsAt: true }, orderBy: { createdAt: 'desc' } }),
     ]);
-    return { user, employee, attendance, payslips, leaves, documents, justifications, notifications, announcements };
+    const selfAssessments = openCycles.length
+      ? await tx.rhPerformanceReviewSelfAssessment.findMany({ where: { tenantId, cycleId: { in: openCycles.map((c: any) => c.id) }, employeeId: employee.id } })
+      : [];
+    return { user, employee, attendance, payslips, leaves, documents, justifications, notifications, announcements, openCycles, selfAssessments };
   }, { userId });
 
-  const { employee, payslips = [], attendance = [], leaves = [], documents = [], justifications = [], notifications = [], announcements = [] } = data as any;
+  const { employee, payslips = [], attendance = [], leaves = [], documents = [], justifications = [], notifications = [], announcements = [], openCycles = [], selfAssessments = [] } = data as any;
+  const existingSelfAssessment = Object.fromEntries((selfAssessments as any[]).map((row) => [row.cycleId, { selfScore: row.selfScore, comments: row.comments }]));
   if (!employee) {
     return (
       <main className="mx-auto max-w-2xl px-4 py-16">
@@ -113,6 +119,13 @@ export default async function MyRhPage() {
             ))}
           </ul>
         </section>
+      )}
+
+      {openCycles.length > 0 && (
+        <SelfAssessmentSection
+          cycles={openCycles.map((cycle: any) => ({ ...cycle, startsAt: cycle.startsAt.toISOString(), endsAt: cycle.endsAt ? cycle.endsAt.toISOString() : null }))}
+          existing={existingSelfAssessment}
+        />
       )}
 
       <section className="rounded-xl border border-[#e1e8f0] bg-white">

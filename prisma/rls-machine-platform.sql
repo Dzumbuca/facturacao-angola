@@ -237,3 +237,10 @@ DROP POLICY IF EXISTS "rh_announcement_isolation" ON "RhAnnouncement";
 CREATE POLICY "rh_announcement_isolation" ON "RhAnnouncement" FOR ALL
   USING ("tenantId" = current_setting('app.tenant_id', true))
   WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));
+
+-- Self-assessment.
+ALTER TABLE "RhPerformanceReviewSelfAssessment" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rh_performance_self_assessment_isolation" ON "RhPerformanceReviewSelfAssessment";
+CREATE POLICY "rh_performance_self_assessment_isolation" ON "RhPerformanceReviewSelfAssessment" FOR ALL
+  USING ("tenantId" = current_setting('app.tenant_id', true))
+  WITH CHECK ("tenantId" = current_setting('app.tenant_id', true));

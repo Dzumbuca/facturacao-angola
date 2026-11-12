@@ -2677,6 +2677,7 @@ model RhEmployee {
   payslips      RhPayslip[]
   paymentItems  RhPaymentItem[]
   performanceReviews RhPerformanceReview[]
+  selfAssessments RhPerformanceReviewSelfAssessment[]
 
 
 
@@ -3346,6 +3347,7 @@ model RhPerformanceCycle {
   tenant   Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   criteria RhPerfCriterion[]
   reviews  RhPerformanceReview[]
+  selfAssessments RhPerformanceReviewSelfAssessment[]
 
   @@index([tenantId, status])
 }
@@ -3476,4 +3478,24 @@ model RhAnnouncement {
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, publishedAt])
+}
+
+
+// Autoavaliação do funcionário (self-assessment).
+model RhPerformanceReviewSelfAssessment {
+  id          String   @id @default(uuid())
+  tenantId    String
+  cycleId     String
+  employeeId  String
+  selfScore   Int?
+  comments    String?
+  submittedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cycle    RhPerformanceCycle @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  employee RhEmployee        @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([cycleId, employeeId])
+  @@index([tenantId, cycleId])
 }
