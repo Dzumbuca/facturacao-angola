@@ -93,7 +93,23 @@ async function main() {
       update: { enabled: planSeed.transfers },
       create: { planId: plan.id, capability: 'transfers', enabled: planSeed.transfers },
     });
+    // Ligar o plano aos módulos: empresarial inclui WMS + RH; basico/profissional só WMS.
+    const linkedSlugs = planSeed.slug === 'empresarial' ? ['wms', 'rh'] : planSeed.slug === 'gratis' ? [] : ['wms'];
+    for (const slug of linkedSlugs) {
+      const app = await prisma.platformApplication.findUnique({ where: { slug } });
+      if (!app) continue;
+      await prisma.planApplication.upsert({
+        where: { planId_applicationId: { planId: plan.id, applicationId: app.id } },
+        update: {},
+        create: { planId: plan.id, applicationId: app.id },
+      });
+    }
   }
+
+  // Sem subscrição por omissão: o acesso é controlado pelo interruptor de módulo
+  // (TenantApplication) e pela validade quando exista subscrição.
+  // Limpar subscrições residuais de execuções anteriores (seed idempotente).
+  await prisma.tenantSubscription.deleteMany({ where: { tenantId: { in: [tenantA, tenantB] } } });
 
   const upsertUser = async (email, tenantId) => prisma.user.upsert({
     where: { email },

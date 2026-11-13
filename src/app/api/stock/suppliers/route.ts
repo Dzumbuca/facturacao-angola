@@ -9,7 +9,7 @@ export async function GET() {
   const tenantId = getSessionTenantId(session);
   if (!tenantId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const suppliers = await runWithTenant(tenantId, async (tx) => {
-    return tx.supplier.findMany({ where: { tenantId }, orderBy: { name: 'asc' }, select: { id: true, name: true, nif: true, email: true, phone: true } });
+    return tx.supplier.findMany({ where: { tenantId }, orderBy: { name: 'asc' }, select: { id: true, name: true, nif: true, email: true, contact: true, address: true } });
   }, { userId: getSessionUserId(session) });
   return NextResponse.json(suppliers);
 }

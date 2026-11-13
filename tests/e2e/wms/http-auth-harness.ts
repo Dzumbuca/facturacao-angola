@@ -1,6 +1,6 @@
 // tests/e2e/wms/http-auth-harness.ts
-// Harness HTTP de autenticacao real contra NextAuth (staging).
-// Requer o servidor Next.js em execucao (npm run dev com .env.playwright).
+// Harness HTTP: autenticação real contra NextAuth contra um servidor já em execução.
+// Requer o servidor Next.js em execucao (E2E_PORT default 3002).
 
 const BASE_URL = process.env.APP_URL || 'http://localhost:3002';
 const DEFAULT_EMAIL = 'e2e-test@machinefacturas.test';
@@ -11,11 +11,26 @@ export interface AuthSession {
   csrfToken: string;
 }
 
+function extractCookieNameValuePairs(setCookieHeader: string | null | undefined): string[] {
+  if (!setCookieHeader) return [];
+  // Next.js/Node liga várias Set-Cookie pelo separador ', ' quando não há aspas.
+  // Para tratar correctamente, dividimos por '", "' e por '","'.
+  // Porém a maioria de valores JWT não contém vírgulas sem aspas;
+  // o problema estava apenas na Expires=Sat, 12 Dec...que contém vírgula não aspasficada.
+  // Para testes de auth, preferimos separar manualmente por segmentos de cookie.
+  const parts = setCookieHeader.split(/,(?=\s*[A-Za-z_][A-Za-z0-9_.-]*=)/);
+  const pairs: string[] = [];
+  for (const part of parts) {
+    const first = part.split(';')[0].trim();
+    if (first) pairs.push(first);
+  }
+  return pairs;
+}
+
 export async function getCsrfToken(): Promise<string> {
   const res = await fetch(`${BASE_URL}/api/auth/csrf`);
   const json = await res.json();
   const setCookie = res.headers.get('set-cookie') || '';
-  // store cookie for subsequent calls
   (global as any).__csrfCookie = setCookie;
   return json.csrfToken;
 }
@@ -24,8 +39,7 @@ export async function login(email: string = DEFAULT_EMAIL, password: string = DE
   const csrfToken = await getCsrfToken();
   const csrfCookie = (global as any).__csrfCookie || '';
 
-  // Extract just name=value pairs from csrf cookie header
-  const csrfPairs = csrfCookie.split(',').map((c: string) => c.split(';')[0].trim()).filter(Boolean);
+  const csrfPairs = extractCookieNameValuePairs(csrfCookie);
 
   const body = new URLSearchParams({
     csrfToken,
@@ -46,12 +60,12 @@ export async function login(email: string = DEFAULT_EMAIL, password: string = DE
   });
 
   const loginSetCookie = res.headers.get('set-cookie') || '';
-  const sessionPairs = loginSetCookie.split(',').map((c: string) => c.split(';')[0].trim()).filter(Boolean);
+  const sessionPairs = extractCookieNameValuePairs(loginSetCookie);
 
-  // Merge, deduplicating by cookie name
   const cookieMap = new Map<string, string>();
   for (const pair of [...csrfPairs, ...sessionPairs]) {
-    const name = pair.split('=')[0];
+    const nameValue = pair.split('=');
+    const name = nameValue[0].trim();
     cookieMap.set(name, pair);
   }
   const allCookies = Array.from(cookieMap.values()).join('; ');

@@ -1,21 +1,5 @@
 ﻿import { prisma } from './prisma';
 
-/** Verifica se existe subscrição activa, válida e que inclui o módulo. */
-async function subscriptionGrantsApp(tenantId: string, slug: string): Promise<boolean> {
-  const app = await prisma.platformApplication.findUnique({ where: { slug } });
-  if (!app) return false;
-  const subs = await prisma.tenantSubscription.findMany({
-    where: { tenantId, status: 'ACTIVE' },
-    include: { plan: { include: { planApplications: true } } },
-  });
-  for (const sub of subs) {
-    const notExpired = !sub.endsAt || sub.endsAt.getTime() > Date.now();
-    if (!notExpired) continue;
-    if (sub.plan.planApplications.some((pa: any) => pa.applicationId === app.id)) return true;
-  }
-  return false;
-}
-
 export async function isApplicationEnabled(tenantId: string, slug: string): Promise<boolean> {
   const app = await prisma.platformApplication.findUnique({ where: { slug } });
   if (!app || app.status !== 'ACTIVE') return false;
@@ -28,12 +12,20 @@ export async function isApplicationEnabled(tenantId: string, slug: string): Prom
     if (!ta) return true;
     return !!ta.enabled;
   }
-  // Módulos pagos: exige (a) módulo registado/activo para o tenant e (b) subscrição válida que inclui o app.
+  // Módulos pagos: o interruptor por tenant decide o acesso.
+  // A subscrição serve para a VALIDADE: se existir uma subscrição expirada,
+  // os módulos pagos ficam bloqueados (os dados preservam-se).
   const ta = await prisma.tenantApplication.findUnique({
     where: { tenantId_applicationId: { tenantId, applicationId: app.id } },
   });
   if (!ta?.enabled) return false;
-  return subscriptionGrantsApp(tenantId, slug);
+  const subscription = await prisma.tenantSubscription.findFirst({
+    where: { tenantId },
+    orderBy: { startsAt: 'desc' },
+  });
+  if (!subscription) return true; // legado/activacao manual sem prazo
+  if (subscription.endsAt && subscription.endsAt.getTime() <= Date.now()) return false; // expirada
+  return true;
 }
 
 export async function listTenantApplications(tenantId: string) {
