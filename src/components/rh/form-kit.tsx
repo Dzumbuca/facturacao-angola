@@ -2,9 +2,9 @@ import { type ReactNode, useState } from 'react';
 
 /** Secção premium: cartão branco com título, ícone e conteúdo consistente. */
 export function FormSection({ title, description, children, tone = 'default' }: { title: string; description?: string; children: ReactNode; tone?: 'default' | 'soft' | 'danger' }) {
-  const toneClass = tone === 'soft' ? 'bg-[#fbfcfe] border-[#e6eaf0]' : tone === 'danger' ? 'bg-[#fff7f7] border-[#f0dada]' : 'bg-white border-[#e6eaf0]';
+  const toneClass = tone === 'soft' ? 'bg-[#fbfcfe] border-[#e6eaf0] dark:bg-[#111f35] dark:border-[#1e2a44]' : tone === 'danger' ? 'bg-[#fff7f7] border-[#f0dada] dark:bg-red-950/30 dark:border-[#3a1e1e]' : 'bg-white border-[#e6eaf0] dark:bg-[#0d1627] dark:border-[#1e2a44]';
   return (
-    <fieldset className={`space-y-4 rounded-[18px] border ${toneClass} p-4 shadow-[0_10px_28px_rgba(18,36,68,.05)] sm:p-5`}>
+    <fieldset className={`space-y-4 rounded-[18px] border ${toneClass} dark:border-[#1e2a44] dark:bg-[#0d1526] p-4 shadow-[0_10px_28px_rgba(18,36,68,.05)] sm:p-5`}>
       <legend className="flex items-center gap-2 px-2 text-[11px] font-extrabold uppercase tracking-[.12em] text-[#52667a]">{title}</legend>
       {description && <p className="text-xs leading-5 text-[#8094a9]">{description}</p>}
       <div className="grid gap-4 sm:grid-cols-2">{children}</div>
@@ -60,11 +60,11 @@ export function FormLoading({ label = 'A carregar…' }: { label?: string }) {
 
 /** Input standard com consistentee EC. */
 export function FormInput({ id, name, className, ...props }: React.InputHTMLAttributes<HTMLInputElement>) {
-  return <input id={id} name={name} className={`app-input ${className ?? ''}`} {...props} />;
+  return <input id={id} name={name} className={`app-input ${className ?? ''} dark:bg-[#111f35] dark:border-[#1e2a44] dark:text-slate-100`} {...props} />;
 }
 
 export function FormSelect({ id, name, className, ...props }: React.SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select id={id} name={name} className={`app-input ${className ?? ''}`} {...props} />;
+  return <select id={id} name={name} className={`app-input ${className ?? ''} dark:bg-[#111f35] dark:border-[#1e2a44] dark:text-slate-100`} {...props} />;
 }
 
 export function FormTextarea({ id, name, className, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
