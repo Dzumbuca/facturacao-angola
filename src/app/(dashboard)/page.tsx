@@ -93,11 +93,7 @@ export default async function DashboardPage({ searchParams }: Props) {
       </div>
     </PremiumHero>
 
-    <section aria-label="Acções rápidas" className="grid gap-3 sm:grid-cols-4">
-      <Link href="/invoices/new" className="order-first col-span-2 flex items-center justify-between gap-4 rounded-[18px] border border-[#021f87]/25 bg-gradient-to-br from-[#021f87] to-[#0634b8] p-4 text-white shadow-[var(--shadow-cta)] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-cta)] sm:col-span-2">
-        <span><span className="block text-[10px] font-extrabold uppercase tracking-[.16em] text-[#b9d0ff]">Acção principal</span><span className="mt-1 block text-lg font-extrabold">Nova factura</span><span className="mt-1 block text-[11px] leading-4 text-[#b9d0ff]/90">Emita uma factura oficial em minutos</span></span>
-        <span aria-hidden="true" className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/10"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg></span>
-      </Link>
+    <section aria-label="Atalhos" className="grid gap-3 sm:grid-cols-3">
       <Link href="/customers" className="flex items-center justify-between gap-3 rounded-[18px] border border-[var(--line)] bg-[var(--surface)] p-4 text-[var(--text)] shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5 hover:border-[#021f87]/30">
         <span><span className="block text-[10px] font-extrabold uppercase tracking-[.16em] text-[var(--text-muted)]">Clientes</span><span className="mt-1 block text-sm font-bold">Novo cliente</span><span className="mt-1 block text-[10px] text-[var(--text-muted)]">Registre informações completas</span></span>
         <span className="tabular-nums text-lg font-extrabold text-[#021f87]">{totalCustomers}</span>
@@ -118,6 +114,7 @@ export default async function DashboardPage({ searchParams }: Props) {
       <div><label className="app-label" htmlFor="to">Até</label><input id="to" name="to" type="date" defaultValue={query.to} className="app-input" /></div>
       <input type="hidden" name="metric" value={selectedMetric} />
       <button className="min-h-11 rounded-[12px] border border-[var(--line)] bg-[var(--surface)] px-4 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-raised)]">Aplicar</button>
+      <Link href="/?period=thisMonth" className="min-h-11 inline-flex items-center justify-center rounded-[12px] px-4 text-sm font-semibold text-[var(--text-muted)] transition hover:text-[var(--text)]">Limpar</Link>
       <span className="col-span-2 text-xs text-[var(--text-muted)] sm:col-span-4 sm:text-right">Datas no fuso Africa/Luanda · valores em AOA</span>
     </form>
 
