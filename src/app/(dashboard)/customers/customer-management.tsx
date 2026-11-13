@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+
+const SearchIcon = (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>);
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -12,7 +14,9 @@ export function CustomerManagement({ initialCustomers }: { initialCustomers: Cus
   const [isOpen, setIsOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
+  const [query, setQuery] = useState('');
   const [notice, setNotice] = useState('');
+  const visible = customers.filter((c) => !query.trim() || [c.name, c.nif ?? '', c.email ?? '', c.address ?? ''].join(' ').toLowerCase().includes(query.trim().toLowerCase()));
 
   function openCreate() {
     setEditing(null);
@@ -100,23 +104,34 @@ export function CustomerManagement({ initialCustomers }: { initialCustomers: Cus
 
       <Card>
         <CardHeader>
-          <CardTitle>Listagem de clientes <span className="ml-2 rounded-full bg-[#eff4f8] px-2 py-1 align-middle text-xs font-semibold text-[#617488]">{customers.length}</span></CardTitle>
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div><CardTitle>Listagem de clientes</CardTitle><p className="mt-1 text-xs text-[var(--text-muted)]">{customers.length} {customers.length === 1 ? 'cliente' : 'clientes'} registado{customers.length === 1 ? '' : 's'}</p></div>
+            <label className="relative block w-full sm:w-72">
+              <span className="sr-only">Pesquisar clientes</span>
+              <span aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">{SearchIcon}</span>
+              <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Pesquisar por nome, NIF, email..." autoComplete="off" className="app-input h-11 pl-10" aria-label="Pesquisar clientes" />
+            </label>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-0">
-            {customers.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-[#d7e1eb] bg-[#f8fafc] px-5 py-12 text-center"><p className="font-semibold text-[#344a60]">Nenhum cliente cadastrado.</p><p className="mt-1 text-sm text-[#708195]">Use “Novo Cliente” para registar o primeiro cliente.</p></div>
+            {visible.length === 0 ? (
+              <div className="rounded-[16px] border border-dashed border-[var(--line)] bg-[var(--surface-raised)] px-5 py-12 text-center"><p className="font-semibold text-[var(--text)]">{query ? 'Nenhum cliente corresponde à pesquisa.' : 'Nenhum cliente cadastrado.'}</p><p className="mt-1 text-sm text-[var(--text-muted)]">{query ? 'Experimenta outra palavra.' : 'Use “Novo Cliente” para registar o primeiro cliente.'}</p></div>
             ) : (
-              customers.map((customer) => (
-                <div key={customer.id} className="flex flex-col justify-between gap-2 border-b border-[#e7edf3] py-4 last:border-0 sm:flex-row sm:items-center">
-                  <div className="min-w-0">
-                    <span className="font-semibold text-[#263c52]">{customer.name}</span>
-                    <span className="ml-3 text-sm text-[#708195]">NIF: {customer.nif || 'Sem NIF'}</span>
-                    {customer.email && <span className="ml-3 hidden text-sm text-[#708195] lg:inline">{customer.email}</span>}
+              visible.map((customer) => (
+                <div key={customer.id} className="flex flex-col justify-between gap-3 border-b border-[var(--line)] py-4 last:border-0 sm:flex-row sm:items-center">
+                  <div className="flex min-w-0 items-start gap-3">
+                    <span aria-hidden="true" className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[var(--surface-raised)] text-xs font-extrabold uppercase text-[var(--text-muted)]">{customer.name.split(/\s+/).slice(0, 2).map(p => p[0] ?? '').join('').toUpperCase()}</span>
+                    <div className="min-w-0">
+                      <span className="font-semibold text-[var(--text)]">{customer.name}</span>
+                      <span className="ml-3 text-sm text-[var(--text-muted)]">NIF:</span>{' '}
+                      {customer.nif ? <span className="text-sm font-medium text-[var(--text)]">{customer.nif}</span> : <span className="inline-flex items-center gap-1 rounded-full border border-[#f6d37a] bg-[#fdf6e9] px-2 py-0.5 text-[10px] font-bold uppercase text-[#8a5a10]">Sem NIF</span>}
+                      {customer.email && <span className="ml-3 hidden text-sm text-[var(--text-muted)] xl:inline">{customer.email}</span>}
+                    </div>
                   </div>
                   <div className="flex shrink-0 gap-2">
-                    <button type="button" onClick={() => openEdit(customer)} className="rounded-lg border border-[#cdddeb] px-3 py-1.5 text-sm font-semibold text-[#2878d0] transition hover:bg-[#f0f6fc]">Editar</button>
-                    <button type="button" onClick={() => handleDelete(customer)} className="rounded-lg border border-[#f0d3d3] px-3 py-1.5 text-sm font-semibold text-[#a83939] transition hover:bg-[#fdf3f3]">Apagar</button>
+                    <button type="button" onClick={() => openEdit(customer)} className="rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3 py-2 text-xs font-semibold text-[var(--blue)] transition hover:border-[var(--blue)] hover:text-[var(--blue)]">Editar</button>
+                    <button type="button" onClick={() => handleDelete(customer)} className="rounded-lg border border-[#f0d3d3] bg-[var(--surface)] px-3 py-2 text-xs font-semibold text-[var(--danger)] transition hover:bg-[#fdf2f2]">Apagar</button>
                   </div>
                 </div>
               ))
