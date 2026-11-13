@@ -4,7 +4,7 @@ import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { FormSection, FormField, FormActions, FormError, CurrencyInput } from '@/components/rh/form-kit';
-import { RhModuleHero } from '@/components/rh/premium-kit';
+import { RhModuleHero, FormSplit, FormSidebar } from '@/components/rh/premium-kit';
 type Deduction = { id: string; description: string; type: string; amount: number; remainingInstallments: number | null; active: boolean };
 
 const TYPE_LABEL: Record<string, string> = { ADIANTAMENTO: 'Adiantamento', EMPRESTIMO: 'Empréstimo', OUTRO: 'Outro' };
@@ -14,6 +14,7 @@ export function DeductionsManager({ employeeId, deductions, canWrite }: { employ
   const [error, setError] = useState('');
   const [busy, setBusy] = useState('');
   const [amountValue, setAmountValue] = useState<number | null>(null);
+  const [deductionType, setDeductionType] = useState('ADIANTAMENTO');
 
   async function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -70,6 +71,7 @@ export function DeductionsManager({ employeeId, deductions, canWrite }: { employ
 
       {canWrite && (
         <form onSubmit={create} className="border-b border-[#eef2f6] bg-[#f9fbfe] px-4 py-4">
+          <FormSplit main={<>
           <FormSection title="Novo desconto recorrente">
             <div className="sm:col-span-2">
               <FormField label="Descrição" name="ded-desc" required><input id="ded-desc" name="description" className="app-input" required maxLength={200} placeholder="Ex.: Adiantamento salário Maio" /></FormField>
@@ -79,7 +81,7 @@ export function DeductionsManager({ employeeId, deductions, canWrite }: { employ
             </div>
             <div>
               <FormField label="Tipo" name="ded-type">
-                <select id="ded-type" name="type" className="app-input" defaultValue="ADIANTAMENTO">
+                <select id="ded-type" name="type" className="app-input" value={deductionType} onChange={(e) => setDeductionType(e.target.value)}>
                   <option value="ADIANTAMENTO">Adiantamento</option>
                   <option value="EMPRESTIMO">Empréstimo</option>
                   <option value="OUTRO">Outro</option>
@@ -94,6 +96,11 @@ export function DeductionsManager({ employeeId, deductions, canWrite }: { employ
               <FormActions saving={busy === 'create'} onCancel={() => { /* noop */ }} saveLabel={busy === 'create' ? 'A criar…' : 'Adicionar'} />
             </div>
           </FormSection>
+          </>}
+          sidebar={<FormSidebar title="Resumo do desconto" progress={(amountValue != null ? 40 : 0) + (deductionType ? 30 : 0) + 30} lines={[
+            { label: 'Tipo', value: ({ ADIANTAMENTO: 'Adiantamento', EMPRESTIMO: 'Empréstimo', OUTRO: 'Outro' } as any)[deductionType] ?? deductionType },
+            { label: 'Valor', value: amountValue != null ? new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', maximumFractionDigits: 0 }).format(amountValue) : undefined },
+          ]} footer={<p className="text-[11px] leading-5 text-[#8094a9]">O desconto é aplicado no processamento seguinte ao registo.</p>} />} />
         </form>
       )}
 

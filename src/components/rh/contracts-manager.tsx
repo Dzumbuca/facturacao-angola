@@ -4,7 +4,7 @@ import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { FormSection, FormField, FormActions, FormError, CurrencyInput, CalendarField } from '@/components/rh/form-kit';
-import { RhModuleHero } from '@/components/rh/premium-kit';
+import { RhModuleHero, FormSplit, FormSidebar } from '@/components/rh/premium-kit';
 type Contract = {
   id: string; type: string; status: string; startDate: string; endDate: string | null;
   salary: number; notes: string | null;
@@ -36,6 +36,8 @@ export function ContractsManager({ contracts, employees }: {
   const [startIso, setStartIso] = useState('');
   const [endIso, setEndIso] = useState('');
   const [salaryValue, setSalaryValue] = useState<number | null>(null);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
+  const [selectedType, setSelectedType] = useState('INDEFINIDO');
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -78,18 +80,19 @@ export function ContractsManager({ contracts, employees }: {
       />
 
       {open && (
-        <form onSubmit={submit} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
+        <form onSubmit={submit} className="rounded-[18px] border border-[#e4e9f0] bg-white p-4 shadow-[0_12px_28px_rgba(18,36,68,.06)]">
+          <FormSplit main={<>
           <FormSection title="Dados do contrato">
             <div className="sm:col-span-2">
               <FormField label="Funcionário" name="ct-employee" required>
-                <select id="ct-employee" name="employeeId" className="app-input" required>
+                <select id="ct-employee" name="employeeId" className="app-input" required value={selectedEmployeeId} onChange={(e) => setSelectedEmployeeId(e.target.value)}>
                   <option value="">Selecionar</option>{employees.map((employee) => <option key={employee.id} value={employee.id}>{employee.firstName} {employee.lastName} ({employee.employeeNumber})</option>)}
                 </select>
               </FormField>
             </div>
             <div>
               <FormField label="Tipo" name="ct-type" required>
-                <select id="ct-type" name="type" className="app-input">{Object.entries(TYPE_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+                <select id="ct-type" name="type" className="app-input" value={selectedType} onChange={(e) => setSelectedType(e.target.value)}>{Object.entries(TYPE_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
               </FormField>
             </div>
             <div>
@@ -111,6 +114,14 @@ export function ContractsManager({ contracts, employees }: {
             </div>
           </FormSection>
           <FormError>{error}</FormError>
+          </>}
+          sidebar={<FormSidebar title="Resumo do contrato" progress={(selectedEmployeeId ? 20 : 0) + (selectedType ? 15 : 0) + (startIso ? 25 : 0) + (endIso ? 20 : 0) + (salaryValue != null ? 20 : 0)} lines={[
+            { label: 'Funcionário', value: employees.find((e) => e.id === selectedEmployeeId) ? `${employees.find((e) => e.id === selectedEmployeeId)!.firstName} ${employees.find((e) => e.id === selectedEmployeeId)!.lastName}` : undefined },
+            { label: 'Tipo', value: TYPE_LABEL[selectedType] },
+            { label: 'Início', value: startIso || undefined },
+            { label: 'Fim', value: endIso || undefined },
+            { label: 'Salário', value: salaryValue != null ? new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', maximumFractionDigits: 0 }).format(salaryValue) : undefined },
+          ]} footer={<p className="text-[11px] leading-5 text-[#8094a9]">A percentagem reflecte campos-chave preenchidos. O contrato só é válido com Funcionário, Início e Salário.</p>} />} />
           <div className="mt-3"><FormActions saving={saving} onCancel={() => setOpen(false)} saveLabel={saving ? 'A guardar…' : 'Guardar'} /></div>
         </form>
       )}

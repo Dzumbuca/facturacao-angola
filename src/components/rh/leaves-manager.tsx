@@ -3,7 +3,7 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { RhModuleHero } from '@/components/rh/premium-kit';
+import { RhModuleHero, FormSplit, FormSidebar } from '@/components/rh/premium-kit';
 import { FormSection, FormField, FormActions, FormError, CalendarField } from '@/components/rh/form-kit';
 type Employee = { id: string; firstName: string; lastName: string; employeeNumber: string };
 type Leave = {
@@ -103,7 +103,8 @@ export function LeavesManager({ leaves, employees, vacationDaysPerYear }: {
         <div className="rounded-xl border border-[#e1e8f0] bg-white p-4"><p className="text-xs text-[#708195]">Saldo</p><p className={`mt-1 text-xl font-bold tabular-nums ${balance !== null && balance < 0 ? 'text-[#a83939]' : ''}`}>{balance === null ? '—' : `${balance} d`}</p></div>
       </div>
 
-      <form onSubmit={submit} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
+      <form onSubmit={submit} className="rounded-[18px] border border-[#e4e9f0] bg-white p-4 shadow-[0_12px_28px_rgba(18,36,68,.06)]">
+        <FormSplit main={<>
         <h2 className="text-sm font-bold text-[#1c2d3f]">Novo pedido</h2>
         <FormSection title="Dados do pedido">
           <div className="sm:col-span-2">
@@ -133,6 +134,15 @@ export function LeavesManager({ leaves, employees, vacationDaysPerYear }: {
         <div className="mt-3 flex justify-end">
           <FormActions saving={saving} onCancel={() => {}} saveLabel={saving ? 'A registar…' : 'Registar pedido'} />
         </div>
+        </>}
+        sidebar={<FormSidebar title="Resumo do pedido" progress={(type ? 20 : 0) + (startDate ? 25 : 0) + (endDate ? 25 : 0) + (employeeId ? 30 : 0)} lines={[
+          { label: 'Tipo', value: (TYPE_LABEL as any)[type] ?? type },
+          { label: 'Funcionário', value: employees.find((e) => e.id === employeeId) ? `${employees.find((e) => e.id === employeeId)!.firstName} ${employees.find((e) => e.id === employeeId)!.lastName}` : undefined },
+          { label: 'Dias', value: startDate && endDate ? String(Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / 86_400_000) + 1) : undefined },
+          { label: 'Início', value: startDate || undefined },
+          { label: 'Fim', value: endDate || undefined },
+          { label: 'Saldo', value: balance === null ? '—' : `${balance} d` },
+        ]} footer={<p className="text-[11px] leading-5 text-[#8094a9]">A percentagem reflecte campos preenchidos. O saldo só é aplicado quando o pedido for aprovado.</p>} />} />
       </form>
 
       <div className="overflow-x-auto rounded-xl border border-[#e1e8f0] bg-white">
