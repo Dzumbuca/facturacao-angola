@@ -29,6 +29,9 @@ export function ProductManagement({ initialProducts, wmsEnabled }: { initialProd
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [query, setQuery] = useState('');
+
+  const visible = products.filter((c) => !query.trim() || [c.name, c.codigo ?? '', c.marca ?? '', c.categoria].join(' ').toLowerCase().includes(query.trim().toLowerCase()));
 
   function openCreate() {
     setEditing(null);
@@ -127,26 +130,45 @@ export function ProductManagement({ initialProducts, wmsEnabled }: { initialProd
       {error && !isOpen && <p role="alert" className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-[#a83939]">{error}</p>}
 
       <Card>
-        <CardHeader><CardTitle>Lista de produtos e artigos <span className="ml-2 rounded-full bg-[#eff4f8] px-2 py-1 align-middle text-xs font-semibold text-[#617488]">{products.length}</span></CardTitle></CardHeader>
+        <CardHeader>
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div><CardTitle>Lista de produtos e artigos</CardTitle><p className="mt-1 text-xs text-[var(--text-muted)]">{products.length} {products.length === 1 ? 'produto' : 'produtos'} registado{products.length === 1 ? '' : 's'}</p></div>
+            <label className="relative block w-full sm:w-72">
+              <span className="sr-only">Pesquisar produtos</span>
+              <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Pesquisar por nome, código, marca..." autoComplete="off" className="app-input h-11 pl-10" aria-label="Pesquisar produtos" />
+            </label>
+          </div>
+        </CardHeader>
         <CardContent>
-          {products.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-[#d7e1eb] bg-[#f8fafc] px-5 py-12 text-center"><p className="font-semibold text-[#344a60]">Nenhum produto registado.</p><p className="mt-1 text-sm text-[#708195]">Use “Novo produto” para registar o primeiro produto.</p></div>
+          {visible.length === 0 ? (
+            <div className="rounded-[16px] border border-dashed border-[var(--line)] bg-[var(--surface-raised)] px-5 py-10 text-center"><p className="font-semibold text-[var(--text)]">{query ? 'Nenhum produto corresponde à pesquisa.' : 'Nenhum produto registado.'}</p><p className="mt-1 text-sm text-[var(--text-muted)]">{query ? 'Experimenta outra palavra.' : 'Use “Novo produto” para registar o primeiro produto.'}</p></div>
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-[#e1e8f0]">
+            <div className="overflow-x-auto rounded-[16px] border border-[var(--line)]">
               <table className="data-table min-w-[760px]">
-                <thead><tr><th>Nome</th><th>Código</th><th>Marca</th><th>Preço (Kz)</th>{wmsEnabled && <th>Stock</th>}<th>Categoria</th><th>Acções</th></tr></thead>
+                <thead><tr><th>Nome</th><th>Código</th>{<th>Marca</th>}<th className="text-right">Preço (Kz)</th>{wmsEnabled && <th className="text-right">Stock</th>}<th>Categoria</th><th className="text-right">Acções</th></tr></thead>
                 <tbody>
-                  {products.map((product) => <tr key={product.id} className="transition hover:bg-[#f8fafc]">
-                    <td data-mobile-primary className="font-semibold text-[#263c52]">{product.name}</td>
-                    <td className="font-mono text-xs text-[#64768a]">{product.codigo || 'SEM-COD'}</td>
-                    <td className="text-[#607286]">{product.marca || '—'}</td>
-                    <td className="tabular-nums font-medium">{product.price.toFixed(2)}</td>
-                    {wmsEnabled && <td className="tabular-nums">{product.stock}</td>}
-                    <td className="text-[#607286]">{product.categoria}</td>
+                  {visible.map((product) => <tr key={product.id} className="transition hover:bg-[var(--surface-raised)]">
+                    <td data-mobile-primary className="font-semibold text-[var(--text)]">
+                      <div className="flex items-center gap-3">
+                        <span aria-hidden="true" className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-[var(--surface-raised)] ring-1 ring-[var(--line)] text-[var(--text-muted)]">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 6l9 7 9-7"/></svg>
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block truncate font-semibold text-[var(--text)]">{product.name}</span>
+                          <span className="mt-0.5 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">SKU · {product.codigo || 'SEM-COD'}</span>
+                        </span>
+                      </div>
+                    </td>
+                    <td className="font-mono text-[11px] text-[var(--text-muted)]">{product.codigo || 'SEM-COD'}</td>
+                    <td className="text-[var(--text-muted)]">{product.marca || '—'}</td>
+                    <td className="text-right tabular-nums font-bold text-[var(--text)]">{new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', maximumFractionDigits: 0 }).format(product.price)}</td>
+                    {wmsEnabled && <td className="text-right tabular-nums text-[var(--text)]">{product.stock}</td>}
+                    <td className="text-[var(--text-muted)]">{product.categoria}</td>
                     <td data-mobile-actions>
-                      <div className="flex gap-2">
-                        <button type="button" onClick={() => openEdit(product)} className="rounded-lg border border-[#cdddeb] px-3 py-1.5 text-sm font-semibold text-[#2878d0] transition hover:bg-[#f0f6fc]">Editar</button>
-                        <button type="button" onClick={() => handleDelete(product)} className="rounded-lg border border-[#f0d3d3] px-3 py-1.5 text-sm font-semibold text-[#a83939] transition hover:bg-[#fdf3f3]">Apagar</button>
+                      <div className="flex justify-end gap-2">
+                        <button type="button" onClick={() => openEdit(product)} className="rounded-[10px] border border-[var(--line)] bg-[var(--surface)] px-3 py-2 text-xs font-semibold text-[var(--blue)] transition hover:border-[var(--blue)]">Editar</button>
+                        <button type="button" onClick={() => handleDelete(product)} className="rounded-[10px] border border-[#f0d3d3] bg-[var(--surface)] px-3 py-2 text-xs font-semibold text-[var(--danger)] transition hover:bg-[#fdf2f2]">Apagar</button>
                       </div>
                     </td>
                   </tr>)}
