@@ -100,19 +100,11 @@ export default async function DashboardPage({ searchParams }: Props) {
       <span className="col-span-2 text-xs text-[var(--text-muted)] sm:col-span-4 sm:text-right">Datas no fuso Africa/Luanda · valores em AOA</span>
     </form>
 
-    <section aria-label="Indicadores principais" className="grid grid-cols-1 gap-4 sm:auto-rows-fr sm:grid-cols-12 sm:gap-5">
-      <article className="sm:col-span-8 sm:row-span-2">
-        <PremiumKpi label="Facturação do período" value={money(metrics.invoiced)} detail={metrics.invoicedChangePercent != null ? `${metrics.invoicedChangePercent >= 0 ? '+' : ''}${metrics.invoicedChangePercent.toFixed(1)}% face ao período anterior (${money(metrics.invoicedPrevious)})` : 'Sem base de comparação'} tone="primary" />
-      </article>
-      <article className="sm:col-span-4">
-        <PremiumKpi label="Total recebido" value={money(metrics.received)} detail="Pagamentos confirmados" tone="success" />
-      </article>
-      <article className="sm:col-span-4">
-        <PremiumKpi label="Por receber" value={money(metrics.outstanding)} detail="Saldo das facturas do período" tone="warning" />
-      </article>
-      <article className="sm:col-span-4">
-        <PremiumKpi label="Em atraso" value={money(metrics.overdue)} detail={metrics.dueSoon > 0 ? `${money(metrics.dueSoon)} a vencer esta semana` : 'Saldo vencido'} tone="danger" />
-      </article>
+    <section aria-label="Indicadores principais" className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4 lg:gap-5">
+      <PremiumKpi label="Facturação do período" value={money(metrics.invoiced)} detail={metrics.invoicedChangePercent != null ? `${metrics.invoicedChangePercent >= 0 ? '+' : ''}${metrics.invoicedChangePercent.toFixed(1)}% vs ant. (${money(metrics.invoicedPrevious)})` : 'Sem base de comparação'} tone="primary" />
+      <PremiumKpi label="Total recebido" value={money(metrics.received)} detail="Pagamentos confirmados" tone="success" />
+      <PremiumKpi label="Por receber" value={money(metrics.outstanding)} detail="Saldo do período" tone="warning" />
+      <PremiumKpi label="Em atraso" value={money(metrics.overdue)} detail={metrics.dueSoon > 0 ? `${money(metrics.dueSoon)} a vencer em 7d` : 'Saldo vencido'} tone="danger" />
     </section>
 
     <section aria-label="Análise financeira" className="grid gap-6 xl:grid-cols-[minmax(0,1.8fr)_minmax(260px,.72fr)]">
