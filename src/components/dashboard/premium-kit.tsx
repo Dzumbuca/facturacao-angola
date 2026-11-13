@@ -52,10 +52,10 @@ export function PremiumBalance({ label, amount, trend, sublabel }: { label: stri
       <div className="pointer-events-none absolute -right-10 -top-16 h-48 w-48 rounded-full bg-[radial-gradient(circle,_rgba(120,170,255,.35),_transparent_70%)]" />
       <div className="pointer-events-none absolute -bottom-12 -left-10 h-44 w-44 rounded-full bg-[radial-gradient(circle,_rgba(60,210,255,.28),_transparent_70%)]" />
       <div className="relative">
-        <p className="text-[10px] font-extrabold uppercase tracking-[.16em] text-[#a9c4ff]">{label}</p>
-        <p className="tabular-nums mt-2 text-[30px] font-extrabold tracking-[-.03em] text-white sm:text-[36px]">{amount}</p>
+        <p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-[#e8efff]">{label}</p>
+        <p className="tabular-nums mt-2 text-[32px] font-black leading-none tracking-[-.04em] tracking-[-.035em] text-white drop-shadow-[0_2px_8px_rgba(0,0,0,.45)] sm:text-[42px]">{amount}</p>
         <div className="mt-2 flex items-center justify-between gap-2">
-          {trend && <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] font-semibold text-[#8ee0b8]">{trend}</span>}
+          {trend && <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/15 px-2.5 py-0.5 text-[10px] font-semibold text-[#a8fccb] ring-1 ring-white/10">{trend}</span>}
           {sublabel && <span className="text-[10px] uppercase tracking-[.1em] text-[#a4b8dc]">{sublabel}</span>}
         </div>
       </div>
