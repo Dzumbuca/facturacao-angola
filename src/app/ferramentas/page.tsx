@@ -87,15 +87,18 @@ export default async function CentroFerramentasPage() {
         <h2 id="aprende-title" className="text-[10px] font-extrabold uppercase tracking-[.16em] text-[var(--text-muted)]">Aprende e pratica</h2>
         <div className="mt-2 grid gap-3 sm:grid-cols-3">
           {[
-            { href: '/guias/emitir-facturas', title: 'Como emitir facturas', desc: 'O fluxo completo de emissão, da criação ao envio.', tag: 'Guia' },
-            { href: '/guias/saft', title: 'SAFT-AO', desc: 'Como gerar e submeter o ficheiro de auditoria.', tag: 'Guia' },
-            { href: '/academia', title: 'Academia Machine', desc: 'Artigos e explicações para empresas angolanas.', tag: 'Academia' },
+            { href: '/guias/emitir-facturas', title: 'Como emitir facturas', desc: 'O fluxo completo de emissão, da criação ao envio.', tag: 'Guia', accent: '#021f87', icon: (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>) },
+            { href: '/guias/saft', title: 'SAFT-AO', desc: 'Como gerar e submeter o ficheiro de auditoria.', tag: 'Guia', accent: '#267256', icon: (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7h18M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/></svg>) },
+            { href: '/academia', title: 'Academia Machine', desc: 'Artigos e explicações para empresas angolanas.', tag: 'Academia', accent: '#5b34d6', icon: (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19h16M6 16V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v11"/><path d="M8 8h6M8 12h6"/></svg>) },
           ].map((item) => (
-            <Link key={item.href} href={item.href} className="group rounded-[18px] border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] transition hover:-translate-y-[1px] hover:border-[#021f87]">
-              <p className="text-[10px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">{item.tag}</p>
-              <p className="mt-0.5 font-extrabold text-[var(--text)] transition group-hover:text-[#021f87] dark:group-hover:text-[#8aa4ff]">{item.title}</p>
-              <p className="mt-1.5 text-[12px] leading-5 text-[var(--text-muted)]">{item.desc}</p>
-              <p className="mt-3 text-xs font-semibold text-[#021f87] underline underline-offset-2 dark:text-[#8aa4ff]">Ler conteúdo →</p>
+            <Link key={item.href} href={item.href} className="group flex items-start gap-3 rounded-[18px] border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] transition hover:-translate-y-[1px] hover:border-[#021f87]">
+              <span aria-hidden="true" className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] ring-1 ring-[var(--line)]" style={{ color: item.accent, background: `${item.accent}14` }}>{item.icon}</span>
+              <span className="min-w-0">
+                <span className="text-[10px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">{item.tag}</span>
+                <span className="mt-0.5 block font-extrabold text-[var(--text)] transition group-hover:text-[#021f87] dark:group-hover:text-[#8aa4ff]">{item.title}</span>
+                <span className="mt-1 block text-[13px] leading-5 text-[var(--text-muted)]">{item.desc}</span>
+                <span className="mt-2 inline-block text-xs font-semibold text-[#021f87] underline underline-offset-2 dark:text-[#8aa4ff]">Ler conteúdo →</span>
+              </span>
             </Link>
           ))}
         </div>

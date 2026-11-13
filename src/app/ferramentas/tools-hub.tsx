@@ -38,9 +38,9 @@ export function ToolsHub({ ferramentas }: { ferramentas: FerramentaResumo[] }) {
           { label: 'Em desenvolvimento', value: emBreve, sub: 'próximamente' },
         ]).map((item) => (
           <div key={item.label} className="rounded-[14px] border border-[var(--line)] bg-[var(--surface-raised)] px-3 py-3 text-center sm:px-4">
-            <p className="text-[9px] font-bold uppercase tracking-[.12em] text-[var(--text-muted)]">{item.label}</p>
+            <p className="text-[10px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">{item.label}</p>
             <p className="tabular-nums mt-0.5 text-xl font-extrabold text-[var(--text)] sm:text-2xl">{item.value}</p>
-            <p className="text-[9px] font-medium uppercase tracking-wide text-[var(--text-muted)]">{item.sub}</p>
+            <p className="text-[10px] font-medium uppercase tracking-wide text-[var(--text-muted)]">{item.sub}</p>
           </div>
         ))}
       </section>
@@ -104,7 +104,7 @@ export function ToolsHub({ ferramentas }: { ferramentas: FerramentaResumo[] }) {
                   {ready ? (
                     <Link href={ferramenta.href as string} className="inline-flex min-h-12 w-full items-center justify-center rounded-[12px] bg-[#021f87] px-4 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#0634b8]">Abrir ferramenta →</Link>
                   ) : (
-                    <span className="inline-flex w-full items-center justify-center gap-2 rounded-[12px] border border-[var(--line)] bg-[var(--surface-raised)] px-4 py-2.5 text-[11px] font-bold uppercase tracking-[.1em] text-[var(--text-muted)]" title="Esta ferramenta está em desenvolvimento">
+                    <span className="inline-flex w-full items-center justify-center gap-2 rounded-[12px] border border-[#f6d37a] bg-[#fdf6e9] px-4 py-2.5 text-[11px] font-bold uppercase tracking-[.1em] text-[#8a5a10] dark:border-[#3a2f10] dark:bg-[#2b2110] dark:text-[#fbbf24]" title="Esta ferramenta está em desenvolvimento">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
                       Em breve
                     </span>
