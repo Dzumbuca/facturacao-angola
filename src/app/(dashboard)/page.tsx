@@ -67,33 +67,39 @@ export default async function DashboardPage({ searchParams }: Props) {
 
   return <div className="dashboard-view space-y-7 pb-8">
     <PremiumHero>
-      <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
-        <div className="max-w-2xl">
-          <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+        <div className="max-w-3xl">
+          <div className="flex flex-wrap items-center gap-3">
             <span className="kpi-pill">MACHINE FACTURAS</span>
             <span className="kpi-pill">{rangeLabel}</span>
           </div>
-          <h1 className="mt-4 text-3xl font-extrabold leading-[1.05] tracking-[-.04em] text-white sm:text-4xl">{tenant.name}, que bom ver o seu negócio hoje.</h1>
-          <p className="mt-3 text-sm leading-6 text-[#a9c4ff]">Aqui está a visão consolidada da actividade do período. Emita facturas, acompanhe recebimentos e veja onde o dinheiro está — tudo num só sítio.</p>
+          <h1 className="mt-4 text-2xl font-extrabold leading-[1.08] tracking-[-.04em] text-white sm:text-3xl lg:text-[36px]">
+            Olá, {tenant.name}.<br />
+            <span className="text-[#9dc4ff]">Aqui está a saúde financeira da sua empresa hoje.</span>
+          </h1>
+          <p className="mt-3 text-sm leading-6 text-[#a9c4ff]">Visão consolidada do período. Emita facturas, acompanhe recebimentos e identifique pagamentos em atraso.</p>
         </div>
-        <div className="flex shrink-0 flex-col items-end gap-3 sm:flex-row sm:items-end">
-          <PremiumBalance label="Facturação do período" amount={money(metrics.invoiced)} trend={metrics.invoicedChangePercent != null ? `${metrics.invoicedChangePercent >= 0 ? '+' : ''}${metrics.invoicedChangePercent.toFixed(1)}% vs período anterior` : 'Sem histórico anterior'} sublabel="Total emitido" />
-          <Link href="/invoices/new" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-white px-5 text-sm font-extrabold text-[#041f52] transition hover:-translate-y-0.5 hover:bg-[#e8edff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"><span aria-hidden="true">＋</span> Nova factura</Link>
-          <Link href="/reports" className="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/20 bg-white/5 px-5 text-sm font-semibold text-white transition hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Relatórios</Link>
-        </div>
+        <PremiumBalance label="Facturação no período" amount={money(metrics.invoiced)} trend={metrics.invoicedChangePercent != null ? `${metrics.invoicedChangePercent >= 0 ? '+' : ''}${metrics.invoicedChangePercent.toFixed(1)}% vs ant.` : 'Sem histórico'} />
       </div>
     </PremiumHero>
 
-    <section aria-label="Atalhos para ferramentas empresariais" className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-      {[
-        { href: '/ferramentas/factura-proforma', title: 'Criar proforma', detail: 'Antes da factura definitiva' },
-        { href: '/ferramentas/orcamento-pdf', title: 'Fazer orçamento', detail: 'Preparar uma proposta' },
-        { href: '/ferramentas/recibos', title: 'Emitir recibo', detail: 'Registar um pagamento' },
-        { href: '/ferramentas/mapa-despesas', title: 'Organizar despesas', detail: 'Consultar o mapa mensal' },
-      ].map((shortcut) => <Link key={shortcut.href} href={shortcut.href} className="dashboard-shortcut rounded-xl border border-[#e2e9f1] bg-white p-3 transition hover:border-[#2878d0] hover:bg-[#f7f9fc] sm:p-4">
-        <span className="block text-sm font-semibold text-[#26354a]">{shortcut.title}</span>
-        <span className="mt-1 block text-xs leading-5 text-[#708195]">{shortcut.detail}</span>
-      </Link>)}
+    <section aria-label="Acções rápidas" className="grid gap-3 sm:grid-cols-4">
+      <Link href="/invoices/new" className="order-first col-span-2 flex items-center justify-between gap-4 rounded-[18px] border border-[#021f87]/25 bg-gradient-to-br from-[#021f87] to-[#0634b8] p-4 text-white shadow-[0_16px_36px_rgba(2,31,135,.3)] transition hover:-translate-y-0.5 hover:shadow-[0_20px_44px_rgba(2,31,135,.35)] sm:col-span-2">
+        <span><span className="block text-[10px] font-extrabold uppercase tracking-[.16em] text-[#b9d0ff]">Acção principal</span><span className="mt-1 block text-lg font-extrabold">Nova factura</span><span className="mt-1 block text-[11px] leading-4 text-[#b9d0ff]/90">Emita uma factura oficial em minutos</span></span>
+        <span aria-hidden="true" className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/10"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg></span>
+      </Link>
+      <Link href="/customers" className="flex items-center justify-between gap-3 rounded-[18px] border border-[var(--line)] bg-[var(--surface)] p-4 text-[var(--text)] shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5 hover:border-[#021f87]/30">
+        <span><span className="block text-[10px] font-extrabold uppercase tracking-[.16em] text-[var(--text-muted)]">Clientes</span><span className="mt-1 block text-sm font-bold">Novo cliente</span><span className="mt-1 block text-[10px] text-[var(--text-muted)]">Registre informações completas</span></span>
+        <span className="tabular-nums text-lg font-extrabold text-[#021f87]">{totalCustomers}</span>
+      </Link>
+      <Link href="/produtos" className="flex items-center justify-between gap-3 rounded-[18px] border border-[var(--line)] bg-[var(--surface)] p-4 text-[var(--text)] shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5 hover:border-[#021f87]/30">
+        <span><span className="block text-[10px] font-extrabold uppercase tracking-[.16em] text-[var(--text-muted)]">Catálogo</span><span className="mt-1 block text-sm font-bold">Novo produto</span><span className="mt-1 block text-[10px] text-[var(--text-muted)]">Adicione produtos e serviços</span></span>
+        <span className="tabular-nums text-lg font-extrabold text-[#021f87]">{totalProducts}</span>
+      </Link>
+      <Link href="/reports" className="flex items-center gap-3 rounded-[18px] border border-[var(--line)] bg-[var(--surface)] p-4 text-[var(--text)] shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5 hover:border-[#021f87]/30">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#eef2ff] text-[#021f87]"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19h16M4 15l6-6 4 4 6-8"/></svg></span>
+        <span><span className="block text-[10px] font-extrabold uppercase tracking-[.16em] text-[var(--text-muted)]">Análise</span><span className="mt-1 block text-sm font-bold">Consultar relatórios</span></span>
+      </Link>
     </section>
 
     <form action="/" method="get" className="grid grid-cols-2 items-end gap-3 sm:grid-cols-[minmax(130px,1fr)_minmax(130px,1fr)_minmax(130px,1fr)_auto]">
@@ -101,85 +107,62 @@ export default async function DashboardPage({ searchParams }: Props) {
       <div><label className="app-label" htmlFor="from">De</label><input id="from" name="from" type="date" defaultValue={query.from} className="app-input" /></div>
       <div><label className="app-label" htmlFor="to">Até</label><input id="to" name="to" type="date" defaultValue={query.to} className="app-input" /></div>
       <input type="hidden" name="metric" value={selectedMetric} />
-      <button className="min-h-11 rounded-md border border-[#cbd3de] bg-white px-4 text-sm font-semibold text-[#344256] transition-colors hover:bg-[#f5f7fa]">Aplicar</button>
-      <span className="col-span-2 text-xs text-[#7b8796] sm:col-span-4 sm:text-right">Datas no fuso Africa/Luanda · valores em AOA</span>
+      <button className="min-h-11 rounded-[12px] border border-[var(--line)] bg-[var(--surface)] px-4 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-raised)]">Aplicar</button>
+      <span className="col-span-2 text-xs text-[var(--text-muted)] sm:col-span-4 sm:text-right">Datas no fuso Africa/Luanda · valores em AOA</span>
     </form>
 
-    <section aria-label="Indicadores de facturação" className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-      {dashboardIndicators.map((indicator) => {
-        const toneMap: Record<string, 'primary' | 'success' | 'warning' | 'danger'> = {
-          'Facturas emitidas': 'primary',
-          'Pagas': 'success',
-          'Pendentes': 'warning',
-          'Vencidas': 'danger',
-        };
-        return <PremiumKpi key={indicator.label} label={indicator.label} value={indicator.value} detail={indicator.detail} tone={toneMap[indicator.label] ?? 'neutral' as any} />;
-      })}
+    <section aria-label="Indicadores principais" className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+      <PremiumKpi label="Facturação do período" value={money(metrics.invoiced)} detail={metrics.invoicedChangePercent != null ? `${metrics.invoicedChangePercent >= 0 ? '+' : ''}${metrics.invoicedChangePercent.toFixed(1)}% face ao período anterior (${money(metrics.invoicedPrevious)})` : 'Sem base de comparação'} tone="primary" />
+      <PremiumKpi label="Total recebido" value={money(metrics.received)} detail="Pagamentos confirmados" tone="success" />
+      <PremiumKpi label="Por receber" value={money(metrics.outstanding)} detail="Saldo das facturas do período" tone="warning" />
+      <PremiumKpi label="Em atraso" value={money(metrics.overdue)} detail={metrics.dueSoon > 0 ? `${money(metrics.dueSoon)} a vencer esta semana` : 'Saldo vencido'} tone="danger" />
     </section>
 
-    <section aria-label="Desempenho financeiro" className="grid gap-7 xl:grid-cols-[minmax(0,1.8fr)_minmax(250px,.72fr)]">
-      <article className="dashboard-panel min-w-0 px-4 py-6 sm:px-7 sm:py-7">
-        <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
-          <div><p className="text-[11px] font-bold uppercase tracking-[.15em] text-[#69788c]">Total facturado</p><p className="mt-3 tabular-nums text-[36px] font-semibold leading-none tracking-[-.045em] text-[#142238] sm:text-[44px]">{money(metrics.invoiced)}</p><div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-            {metrics.invoicedChangePercent === null ? <span className="text-[#778496]">Sem base para comparar com o período anterior</span> : <><span className={`font-bold ${metrics.invoicedChangePercent >= 0 ? 'text-[#227958]' : 'text-[#ad4444]'}`}>{metrics.invoicedChangePercent >= 0 ? '↑' : '↓'} {Math.abs(metrics.invoicedChangePercent).toLocaleString('pt-AO', { maximumFractionDigits: 1 })}%</span><span className="text-[#778496]">face ao período anterior · {money(metrics.invoicedPrevious)}</span></>}
-          </div></div>
-          <div className="flex w-fit rounded-md border border-[#e0e5eb] p-1" aria-label="Métrica do gráfico">
-            <Link href={chartHref('invoices')} aria-current={selectedMetric === 'invoices' ? 'page' : undefined} className={`rounded px-3 py-2 text-xs font-semibold transition-colors ${selectedMetric === 'invoices' ? 'bg-[#021F87] text-white' : 'text-[#627187] hover:bg-[#f3f5f8]'}`}>Facturação</Link>
-            <Link href={chartHref('receipts')} aria-current={selectedMetric === 'receipts' ? 'page' : undefined} className={`rounded px-3 py-2 text-xs font-semibold transition-colors ${selectedMetric === 'receipts' ? 'bg-[#021F87] text-white' : 'text-[#627187] hover:bg-[#f3f5f8]'}`}>Recebimentos</Link>
+    <section aria-label="Análise financeira" className="grid gap-6 xl:grid-cols-[minmax(0,1.8fr)_minmax(260px,.72fr)]">
+      <article className="dashboard-panel min-w-0">
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[.15em] text-[var(--text-muted)]">Evolução</p>
+            <p className="mt-2 tabular-nums text-[32px] font-semibold leading-none tracking-[-.045em] text-[var(--text)] sm:text-[40px]">{money(metrics.invoiced)}</p>
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+              {metrics.invoicedChangePercent === null ? <span className="text-[var(--text-muted)]">Sem base para comparar</span> : <><span className={`font-bold ${metrics.invoicedChangePercent >= 0 ? 'text-[#227958]' : 'text-[#ad4444]'}`}>{metrics.invoicedChangePercent >= 0 ? '↑' : '↓'} {Math.abs(metrics.invoicedChangePercent).toLocaleString('pt-AO', { maximumFractionDigits: 1 })}%</span><span className="text-[var(--text-muted)]">face ao período anterior</span></>}
+            </div>
+          </div>
+          <div className="flex w-fit rounded-[12px] border border-[var(--line)] p-1" aria-label="Métrica do gráfico">
+            <Link href={chartHref('invoices')} aria-current={selectedMetric === 'invoices' ? 'page' : undefined} className={`rounded-[8px] px-3 py-2 text-xs font-semibold transition ${selectedMetric === 'invoices' ? 'bg-[#021f87] text-white shadow-sm' : 'text-[var(--text-muted)] hover:bg-[var(--surface-raised)]'}`}>Facturação</Link>
+            <Link href={chartHref('receipts')} aria-current={selectedMetric === 'receipts' ? 'page' : undefined} className={`rounded-[8px] px-3 py-2 text-xs font-semibold transition ${selectedMetric === 'receipts' ? 'bg-[#021f87] text-white shadow-sm' : 'text-[var(--text-muted)] hover:bg-[var(--surface-raised)]'}`}>Recebimentos</Link>
           </div>
         </div>
-        <div className="mt-6 flex items-center gap-2 text-xs text-[#68778a]"><span className={`h-2 w-2 rounded-full ${selectedMetric === 'receipts' ? 'bg-[#248468]' : 'bg-[#021F87]'}`} />{metricLabel}<span aria-hidden="true">·</span>{rangeLabel}</div>
-        <div className="mt-3"><FinancialLineChart points={chart} label={metricLabel} color={metricColor} /></div>
+        <div className="mt-5 flex flex-wrap items-center gap-3 border-b border-[var(--line)] pb-4 text-xs text-[var(--text-muted)]"><span className="inline-flex items-center gap-2"><span className={`h-2 w-2 rounded-full ${selectedMetric === 'receipts' ? 'bg-[#248468]' : 'bg-[#021f87]'}`} />{metricLabel}</span><span>·</span><span>{rangeLabel}</span></div>
+        <div className="mt-4"><FinancialLineChart points={chart} label={metricLabel} color={metricColor} /></div>
       </article>
 
-      <div className="dashboard-panel flex flex-col divide-y divide-[#e5e9ef] px-5 sm:px-6">
-        <article className="py-5"><p className="text-[11px] font-bold uppercase tracking-[.14em] text-[#69788c]">Recebido</p><p className="mt-2 tabular-nums text-[25px] font-semibold tracking-[-.03em] text-[#227958]">{money(metrics.received)}</p><p className="mt-1 text-xs text-[#788596]">Pagamentos confirmados no período</p></article>
-        <article className="py-5"><p className="text-[11px] font-bold uppercase tracking-[.14em] text-[#69788c]">Por receber</p><p className="mt-2 tabular-nums text-[25px] font-semibold tracking-[-.03em] text-[#26354a]">{money(metrics.outstanding)}</p><p className="mt-1 text-xs text-[#788596]">Saldo das facturas do período</p></article>
-        <article className="py-5"><p className="text-[11px] font-bold uppercase tracking-[.14em] text-[#69788c]">Em atraso</p><p className={`mt-2 tabular-nums text-[25px] font-semibold tracking-[-.03em] ${metrics.overdue > 0 ? 'text-[#ad4444]' : 'text-[#26354a]'}`}>{money(metrics.overdue)}</p><p className="mt-1 text-xs text-[#788596]">{metrics.dueSoon > 0 ? `${money(metrics.dueSoon)} vence nos próximos 7 dias` : 'Saldo com vencimento ultrapassado'}</p></article>
+      <div className="dashboard-panel flex flex-col gap-4">
+        <article><p className="text-[11px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">Recebido</p><p className="mt-2 tabular-nums text-[26px] font-semibold tracking-[-.03em] text-[#227958]">{money(metrics.received)}</p><p className="mt-1 text-xs text-[var(--text-muted)]">Confirmados no período</p></article>
+        <article className="border-t border-[var(--line)] pt-4"><p className="text-[11px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">Por receber</p><p className="mt-2 tabular-nums text-[26px] font-semibold tracking-[-.03em] text-[var(--text)]">{money(metrics.outstanding)}</p><p className="mt-1 text-xs text-[var(--text-muted)]">Saldo das facturas do período</p></article>
+        <article className="border-t border-[var(--line)] pt-4"><p className="text-[11px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">Em atraso</p><p className={`mt-2 tabular-nums text-[26px] font-semibold tracking-[-.03em] ${metrics.overdue > 0 ? 'text-[#ad4444]' : 'text-[var(--text)]'}`}>{money(metrics.overdue)}</p><p className="mt-1 text-xs text-[var(--text-muted)]">{metrics.dueSoon > 0 ? `${money(metrics.dueSoon)} vence em 7 dias` : 'Saldo com vencimento ultrapassado'}</p></article>
       </div>
     </section>
 
-    <section className="grid gap-8 border-t border-[#dce2e9] pt-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,.9fr)]">
-      <article>
-        <div className="flex items-end justify-between gap-3"><div><p className="text-[11px] font-bold uppercase tracking-[.14em] text-[#69788c]">Carteira</p><h3 className="mt-1 text-lg font-semibold tracking-tight text-[#19283d]">Situação dos documentos</h3></div><Link href="/invoices" className="text-xs font-semibold text-[#021F87] hover:underline">Ver facturas</Link></div>
-        <div className="mt-5 space-y-4">{stateRows.map((row) => <Link key={row.key} href={filterHref(row.key)} className="group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#021F87]">
-          <span className="flex items-center gap-2 text-sm text-[#455469]"><span className="h-2 w-2 rounded-full" style={{ backgroundColor: stateColors[row.key] }} />{row.label}</span><span className="tabular-nums text-sm font-semibold text-[#26354a]">{row.count}</span>
-          <span className="col-span-2 h-[5px] overflow-hidden rounded-sm bg-[#e9edf2]"><span className="block h-full rounded-sm transition-[width] duration-500 motion-reduce:transition-none" style={{ width: `${Math.max(row.count ? 2 : 0, row.count / totalStates * 100)}%`, backgroundColor: stateColors[row.key] }} /></span>
-        </Link>)}</div>
-        <p className="mt-4 text-[11px] text-[#8490a0]">{metrics.invoiceCount} facturas emitidas no período seleccionado</p>
-      </article>
-
-      <article className="border-t border-[#dce2e9] pt-5 lg:border-l lg:border-t-0 lg:pl-7 lg:pt-0">
-        <div><p className="text-[11px] font-bold uppercase tracking-[.14em] text-[#69788c]">Entradas de caixa</p><h3 className="mt-1 text-lg font-semibold tracking-tight text-[#19283d]">Recebimentos por método</h3><p className="mt-1 text-xs text-[#788596]">Confirmados e pendentes, apresentados separadamente</p></div>
-        {metrics.paymentMethods.length ? <div className="mt-5 space-y-4">{metrics.paymentMethods.map((method) => {
-          const share = metrics.received > 0 ? method.confirmed / metrics.received * 100 : 0;
-          return <div key={method.method}>
-            <div className="flex flex-wrap items-baseline justify-between gap-2"><span className="text-sm font-medium text-[#3a4a5f]">{methodNames[method.method] ?? method.method}</span><span className="tabular-nums text-sm font-semibold text-[#227958]">{money(method.confirmed)}</span></div>
-            <div className="mt-2 h-[5px] rounded-sm bg-[#e9edf2]"><div className="h-full rounded-sm bg-[#248468]" style={{ width: `${share}%` }} /></div>
-            <div className="mt-1 flex justify-between text-[11px] text-[#7a8796]"><span>{share ? `${share.toLocaleString('pt-AO', { maximumFractionDigits: 1 })}% dos recebimentos confirmados` : 'Sem recebimentos confirmados'}</span>{method.pending > 0 && <span>Pendente: {money(method.pending)}</span>}</div>
-          </div>;
-        })}</div> : <div className="mt-5 border-l-2 border-[#cbd3de] py-2 pl-4"><p className="text-sm font-medium text-[#47576b]">Ainda sem recebimentos neste período</p><p className="mt-1 text-xs leading-5 text-[#7a8796]">Quando confirmar pagamentos, verá aqui os métodos e os respectivos valores. Pagamentos pendentes não contam como dinheiro recebido.</p></div>}
-        {metrics.pendingTotal > 0 && <p className="mt-4 border-t border-[#e5e9ef] pt-3 text-xs text-[#7b6570]">Total pendente de confirmação: <strong className="tabular-nums">{money(metrics.pendingTotal)}</strong></p>}
-      </article>
-    </section>
-
-    <section className="grid gap-8 border-t border-[#dce2e9] pt-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(280px,.55fr)]">
-      <article className="min-w-0">
-        <div className="flex items-end justify-between gap-3"><div><p className="text-[11px] font-bold uppercase tracking-[.14em] text-[#69788c]">Registo</p><h3 className="mt-1 text-lg font-semibold tracking-tight text-[#19283d]">Actividade recente</h3></div><Link href="/invoices" className="text-xs font-semibold text-[#021F87] hover:underline">Todas as facturas</Link></div>
-        {metrics.recentInvoices.length ? <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[590px] text-left text-sm"><thead><tr className="border-b border-[#dce2e9] text-[10px] font-bold uppercase tracking-[.12em] text-[#778496]"><th className="py-3 pr-4">Documento / cliente</th><th className="py-3 pr-4">Data</th><th className="py-3 pr-4 text-right">Valor</th><th className="py-3 text-right">Estado</th></tr></thead><tbody>{metrics.recentInvoices.map((invoice) => {
+    <section className="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(280px,.7fr)]">
+      <article className="dashboard-panel min-w-0 overflow-hidden">
+        <div className="flex items-end justify-between gap-3"><div><p className="text-[11px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">Actividade</p><h3 className="mt-1 text-base font-semibold tracking-tight text-[var(--text)]">Actividade recente</h3></div><Link href="/invoices" className="text-xs font-semibold text-[#021f87] hover:underline">Ver todas →</Link></div>
+        {metrics.recentInvoices.length ? <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[590px] text-left text-sm"><thead><tr className="border-b border-[var(--line)] text-[10px] font-bold uppercase tracking-[.12em] text-[var(--text-muted)]"><th className="py-3 pr-4">Documento / cliente</th><th className="py-3 pr-4">Data</th><th className="py-3 pr-4 text-right">Valor</th><th className="py-3 text-right">Estado</th></tr></thead><tbody>{metrics.recentInvoices.map((invoice) => {
           const confirmed = invoice.payments.filter((payment) => payment.status === 'CONFIRMED').reduce((sum, payment) => sum + Number(payment.amount), 0);
           const state = getInvoiceState(invoice, confirmed);
-          return <tr key={invoice.id} className="border-b border-[#edf0f4] last:border-0 hover:bg-[#f8f9fb]"><td className="py-3 pr-4"><Link href={`/invoices/${invoice.id}`} className="font-semibold text-[#26354a] hover:text-[#021F87] hover:underline">{invoice.number ?? invoice.id.slice(0, 8).toUpperCase()}</Link><span className="mt-1 block max-w-[240px] truncate text-xs text-[#798698]">{invoice.customer?.name ?? 'Adquirente'}</span></td><td className="py-3 pr-4 text-xs text-[#667589]">{new Intl.DateTimeFormat('pt-AO', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Africa/Luanda' }).format(invoice.issuedAt)}</td><td className="py-3 pr-4 text-right tabular-nums font-semibold text-[#28374c]">{money(Number(invoice.total))}</td><td className="py-3 text-right"><span className={`inline-flex items-center gap-1.5 text-xs font-medium ${state === 'OVERDUE' ? 'text-[#ad4444]' : state === 'PAID' ? 'text-[#227958]' : 'text-[#69788c]'}`}><span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: stateColors[state] ?? '#748397' }} />{labels[state]}</span></td></tr>;
-        })}</tbody></table></div> : <p className="mt-4 border-y border-[#e5e9ef] py-8 text-center text-sm text-[#778496]">Ainda não existem facturas neste período. <Link href="/invoices/new" className="font-semibold text-[#021F87] underline underline-offset-4">Emitir a primeira factura</Link></p>}
+          return <tr key={invoice.id} className="border-b border-[var(--line)] transition-colors last:border-0 hover:bg-[var(--surface-raised)]"><td className="py-3 pr-4"><Link href={`/invoices/${invoice.id}`} className="font-semibold text-[var(--text)] hover:text-[#021f87] hover:underline">{invoice.number ?? invoice.id.slice(0, 8).toUpperCase()}</Link><span className="mt-1 block max-w-[220px] truncate text-xs text-[var(--text-muted)]">{invoice.customer?.name ?? 'Adquirente'}</span></td><td className="py-3 pr-4 text-xs text-[var(--text-muted)]">{new Intl.DateTimeFormat('pt-AO', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Africa/Luanda' }).format(invoice.issuedAt)}</td><td className="py-3 pr-4 text-right tabular-nums font-bold text-[var(--text)]">{money(Number(invoice.total))}</td><td className="py-3 text-right"><span className={`inline-flex items-center gap-1.5 text-xs font-semibold ${state === 'OVERDUE' ? 'text-[#ad4444]' : state === 'PAID' ? 'text-[#227958]' : 'text-[var(--text-muted)]'}`}><span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: stateColors[state] ?? '#748397' }} />{labels[state]}</span></td></tr>;
+        })}</tbody></table></div> : <p className="mt-4 border-y border-[var(--line)] py-8 text-center text-sm text-[var(--text-muted)]">Sem facturas neste período. <Link href="/invoices/new" className="font-semibold text-[#021f87] underline underline-offset-4">Emitir a primeira factura</Link></p>}
       </article>
 
-      <aside className="border-t border-[#dce2e9] pt-5 xl:border-l xl:border-t-0 xl:pl-7 xl:pt-0" aria-labelledby="alerts-title">
-        <p className="text-[11px] font-bold uppercase tracking-[.14em] text-[#69788c]">Acompanhamento</p><h3 id="alerts-title" className="mt-1 text-lg font-semibold tracking-tight text-[#19283d]">Atenção necessária</h3>
-        {alerts.length ? <ul className="mt-4 divide-y divide-[#e5e9ef]">{alerts.map((alert) => <li key={alert.title} className="flex items-start justify-between gap-3 py-3 first:pt-0"><span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${alert.tone === 'danger' ? 'bg-[#bb4848]' : alert.tone === 'warning' ? 'bg-[#bd7b24]' : 'bg-[#9aa6b5]'}`} /><div className="min-w-0 flex-1"><p className="text-sm leading-5 text-[#38495e]">{alert.title}</p><Link href={alert.href} className="mt-1 inline-block text-xs font-semibold text-[#021F87] hover:underline">{alert.action}</Link></div></li>)}</ul> : <p className="mt-4 border-l-2 border-[#248468] py-2 pl-4 text-sm text-[#4f665f]">Sem situações a exigir atenção.</p>}
-        <div className="mt-5 grid grid-cols-3 border-t border-[#e5e9ef] pt-4 text-center">
-          <Link href="/customers" className="px-2 py-1 hover:bg-[#f5f7fa]"><span className="block text-[10px] text-[#7b8796]">Clientes</span><span className="mt-1 block tabular-nums text-base font-semibold text-[#26354a]">{totalCustomers}</span></Link>
-          <Link href="/produtos" className="border-l border-[#e5e9ef] px-2 py-1 hover:bg-[#f5f7fa]"><span className="block text-[10px] text-[#7b8796]">Artigos</span><span className="mt-1 block tabular-nums text-base font-semibold text-[#26354a]">{totalProducts}</span></Link>
-          <Link href="/invoices?tab=drafts" className="border-l border-[#e5e9ef] px-2 py-1 hover:bg-[#f5f7fa]"><span className="block text-[10px] text-[#7b8796]">Rascunhos</span><span className="mt-1 block tabular-nums text-base font-semibold text-[#26354a]">{draftCount}</span></Link>
+      <aside className="dashboard-panel flex flex-col justify-between" aria-labelledby="alerts-title">
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">Acompanhamento</p><h3 id="alerts-title" className="mt-1 text-base font-semibold tracking-tight text-[var(--text)]">Atenção necessária</h3>
+          {alerts.length ? <ul className="mt-3 divide-y divide-[var(--line)]">{alerts.map((alert) => <li key={alert.title} className="flex items-start gap-3 py-3 first:pt-0"><span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${alert.tone === 'danger' ? 'bg-[#bb4848]' : alert.tone === 'warning' ? 'bg-[#bd7b24]' : 'bg-[#9aa6b5]'}`} /><div className="min-w-0 flex-1"><p className="text-sm leading-5 text-[var(--text)]">{alert.title}</p><Link href={alert.href} className="mt-1 inline-block text-xs font-semibold text-[#021f87] hover:underline">{alert.action}</Link></div></li>)}</ul> : <p className="mt-3 rounded-lg border border-[#c7e5d1] bg-[#eff9f4] px-3 py-3 text-sm font-medium text-[#1e5e38]">Tudo certo — sem situações a exigir atenção.</p>}
+        </div>
+        <div className="mt-5 grid grid-cols-3 divide-x divide-[var(--line)] rounded-[14px] border border-[var(--line)] bg-[var(--surface-raised)] text-center">
+          <Link href="/customers" className="px-2 py-3 transition hover:bg-[var(--surface)]"><span className="block text-[10px] uppercase text-[var(--text-muted)]">Clientes</span><span className="mt-1 block tabular-nums text-base font-extrabold text-[var(--text)]">{totalCustomers}</span></Link>
+          <Link href="/produtos" className="px-2 py-3 transition hover:bg-[var(--surface)]"><span className="block text-[10px] uppercase text-[var(--text-muted)]">Artigos</span><span className="mt-1 block tabular-nums text-base font-extrabold text-[var(--text)]">{totalProducts}</span></Link>
+          <Link href="/invoices?tab=drafts" className="px-2 py-3 transition hover:bg-[var(--surface)]"><span className="block text-[10px] uppercase text-[var(--text-muted)]">Rascunhos</span><span className="mt-1 block tabular-nums text-base font-extrabold text-[var(--text)]">{draftCount}</span></Link>
         </div>
       </aside>
     </section>
