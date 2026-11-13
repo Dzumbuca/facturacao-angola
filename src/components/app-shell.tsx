@@ -13,6 +13,7 @@ import { visibleNavGroups } from '@/lib/navigation';
 import { Assistant } from '@/components/assistant/assistant';
 import { GlobalSearch } from '@/components/global-search';
 import { NotificationsBell } from '@/components/notifications-bell';
+import { ShellAside, ShellTopbar, ShellMain } from '@/components/system/shell';
 
 type NavLink = { href: string; label: string; icon: string };
 const groups: { title: string; links: NavLink[] }[] = [
@@ -43,7 +44,7 @@ export function AppShell({ children, platformAdmin = false, plan = 'FREE', adHtm
 
   return (
     <div className="min-h-dvh">
-      <aside aria-label="Menu principal" className="group fixed inset-y-0 left-0 z-40 hidden w-[76px] flex-col overflow-hidden border-r border-white/5 bg-gradient-to-b from-[#06122b] via-[#071936] to-[#0b2240] px-2 py-3 text-white transition-[width] duration-200 md:flex lg:w-[248px] lg:px-4 lg:py-5">
+      <ShellAside tone="navy" width="w-[76px] lg:w-[248px]" className="group px-2 py-3 transition-[width] duration-200 lg:px-4 lg:py-5">
         <Link href="/" className="mb-4 flex shrink-0 items-center gap-3 rounded-xl px-2 py-1" aria-label="Machine Facturas, início">
           <img src="/logo.png" width="800" height="600" alt="Facturação" className="h-9 w-auto max-w-[44px] rounded-lg bg-white object-contain px-1 py-1 md:max-w-[52px] lg:max-w-[92px]" />
           <span className="hidden leading-tight lg:block"><strong className="block text-[13px] tracking-[.12em]">MACHINE FACTURAS</strong><span className="text-[9px] uppercase tracking-[.1em] text-slate-400">Gestão financeira</span></span>
@@ -80,34 +81,23 @@ export function AppShell({ children, platformAdmin = false, plan = 'FREE', adHtm
             </div>
           </div>}
         </div>
-      </aside>
+      </ShellAside>
 
       <div className="min-w-0 md:ml-[76px] lg:ml-[248px]">
-        <header className="sticky top-0 z-30 border-b border-[#e6ebf3] dark:border-[#1e2a44] bg-white/90 backdrop-blur-xl dark:bg-[#050e20]/90 dark:border-[#1e2a44]">
-          <div className="mx-auto flex h-12 max-w-[1440px] items-center gap-3 px-4 md:h-16 md:px-8">
-            <div className="flex min-w-0 items-center gap-2.5">
-              <img src="/logo.png" width="800" height="600" alt="Facturação" className="h-7 w-auto max-w-[64px] shrink-0 rounded-md bg-white object-contain px-1 py-0.5 md:hidden" />
-              <div className="min-w-0">
-                <p className="hidden text-[9px] font-extrabold uppercase tracking-[.16em] text-[#8494a9] sm:block">Facturação Angola</p>
-                <h1 className="truncate text-[13px] font-bold leading-none text-[#0f223c] md:text-base">{title}</h1>
-              </div>
-            </div>
-            <div className="hidden min-w-0 flex-1 justify-center md:flex">
-              <GlobalSearch />
-            </div>
-            <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
-              <NotificationsBell />
-              <ThemeToggle compact />
-            </div>
-          </div>
-          <div className="border-t border-[#eef2f7] bg-[#f8fafc]/80 px-4 py-2 backdrop-blur-md md:hidden">
-            <GlobalSearch />
-          </div>
-        </header>
+        <ShellTopbar
+          tone="navy"
+          eyebrow="Facturação Angola"
+          title={title}
+          brand={<img src="/logo.png" width="800" height="600" alt="Facturação" className="h-7 w-auto max-w-[64px] shrink-0 rounded-md bg-white object-contain px-1 py-0.5 md:hidden" />}
+          right={<div className="flex shrink-0 items-center gap-1.5 sm:gap-2"><NotificationsBell /><ThemeToggle compact /></div>}
+        />
+        <div className="border-b border-[#eef2f7] bg-[#f8fafc]/80 px-4 py-2 backdrop-blur-md md:hidden">
+          <GlobalSearch />
+        </div>
 
         {adHtml && plan !== 'PRO' && (pathname === '/' || pathname.startsWith('/ferramentas')) && <div className="mx-auto max-w-4xl px-4 pt-4 md:hidden"><div className="overflow-hidden rounded-xl bg-white p-2"><AdHtml html={adHtml} /></div></div>}
 
-        <main className="mx-auto w-full max-w-[1440px] px-4 pb-36 pt-5 md:px-8 md:pb-10 md:pt-8">{children}</main>
+        <ShellMain maxWidth="max-w-[1440px]" className="pb-36 md:pb-10">{children}</ShellMain>
       </div>
 
       <Assistant />

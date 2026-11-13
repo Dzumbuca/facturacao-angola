@@ -10,6 +10,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 
 import type { ComponentType, SVGProps } from 'react';
 import { Assistant } from '@/components/assistant/assistant';
+import { ShellAside, ShellTopbar, ShellMain } from '@/components/system/shell';
 type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
 const activeLinks: { href: string; label: string; icon: IconComponent }[] = [
   { href: '/rh/dashboard', label: 'Dashboard', icon: DashboardIcon },
@@ -53,7 +54,7 @@ export function RhShell({ children, canManageMembers = false }: { children: Reac
 
   return (
     <div className="min-h-dvh bg-[#f5f7fb] text-[#1c2d3f] dark:bg-[#050e20] dark:text-slate-100">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[236px] flex-col border-r border-white/5 bg-gradient-to-b from-[#040d26] via-[#081830] to-[#0c2548] px-4 py-5 text-white md:flex">
+      <ShellAside tone="navy" width="md:w-[236px]">
         <Link href="/rh/dashboard" className="flex items-center gap-3 rounded-lg px-2">
           <img src="/icons/rh-logo.png" alt="Machine RH" className="h-10 w-auto rounded-lg bg-white object-contain p-1" />
           <span>
@@ -97,26 +98,21 @@ export function RhShell({ children, canManageMembers = false }: { children: Reac
           <RhPwa />
           <Link href="/" className="block text-xs font-medium text-blue-100/70 hover:text-white">← Voltar à Machine Facturas</Link>
         </div>
-      </aside>
+      </ShellAside>
 
       <div className="md:ml-[236px]">
-        <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-[#dfe7f0] bg-white/95 px-4 py-2.5 backdrop-blur md:px-7 md:py-3.5">
-          <div className="flex min-w-0 items-center gap-2.5">
-            <div className="min-w-0">
-              <p className="hidden text-[10px] font-semibold uppercase tracking-[.14em] text-[#8a99ab] sm:block">Machine RH</p>
-              <p className="truncate text-sm font-bold text-[#0a1430] md:text-base">
-                {links.find((l) => isActive(l.href))?.label ?? 'Recursos Humanos'}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
+        <ShellTopbar
+          tone="navy"
+          eyebrow="Machine RH"
+          title={links.find((l) => isActive(l.href))?.label ?? 'Recursos Humanos'}
+          right={<>
             <ThemeToggle compact />
-            <Link href="/" className="hidden rounded-lg border border-[#dfe7f0] px-3 py-1.5 text-xs font-medium text-[#52667a] hover:bg-[#f7f9fc] dark:border-[#1e2a44] dark:text-[#a8b6cb] dark:hover:bg-[#111f35] sm:inline-flex">Machine Facturas</Link>
+            <Link href="/" className="hidden rounded-lg border border-[#dfe7f0] px-3 py-1.5 text-xs font-medium text-[#52667a] hover:bg-[#f7f9fc] dark:border-[#1e2a44] dark:text-[#a8b6cb] dark:hover:bg-[#111f35] sm:inline-flex">Facturas</Link>
             <span className="hidden rounded-full bg-[#021f87] px-2.5 py-1 text-[11px] font-semibold text-white dark:bg-[#1b3a7a] sm:inline-flex">RH</span>
-          </div>
-        </header>
+          </>}
+        />
 
-        <main className="mx-auto w-full max-w-[1280px] px-4 pb-28 pt-5 md:px-7 md:pb-10 md:pt-7">{children}</main>
+        <ShellMain maxWidth="max-w-[1280px]">{children}</ShellMain>
       </div>
 
       <nav aria-label="Navegação móvel Machine RH" className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-[#dfe7f0] bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
