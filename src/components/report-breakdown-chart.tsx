@@ -2,7 +2,7 @@
 
 type Kind = 'invoices' | 'receipts' | 'debt' | 'customers' | 'products';
 type Row = (string | number | null)[];
-const money = (value: number) => new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', maximumFractionDigits: 0 }).format(value);
+const money = (value: number) => new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'Kz', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
 const states: Record<string, string> = { ISSUED: 'Emitida', PARTIALLY_PAID: 'Parcialmente paga', PAID: 'Paga', OVERDUE: 'Vencida', PENDING: 'Pendente', CONFIRMED: 'Confirmado', CANCELLED: 'Cancelado', REVERSED: 'Estornado' };
 
 export function ReportBreakdownChart({ kind, headers, rows }: { kind: Kind; headers: string[]; rows: Row[] }) {
@@ -18,13 +18,13 @@ export function ReportBreakdownChart({ kind, headers, rows }: { kind: Kind; head
   }
   const categories = [...grouped].map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value).slice(0, kind === 'customers' || kind === 'products' ? 6 : 8);
   const max = Math.max(...categories.map((category) => category.value), 1);
-  const valueLabel = headers[amountIndex] ?? 'Valor (AOA)';
+  const valueLabel = (headers[amountIndex] ?? 'Valor (Kz)').replace(/\(AOA\)/gi, '(Kz)');
   const heading = kind === 'invoices' ? 'Facturação por estado' : kind === 'receipts' ? 'Registos por método e estado' : kind === 'debt' ? 'Saldo por antiguidade' : kind === 'customers' ? 'Facturação por cliente' : 'Artigos com maior facturação';
 
   return <section aria-labelledby="report-chart-title" className="border-y border-[#dce2e9] py-5">
     <div className="mb-5 flex flex-wrap items-baseline justify-between gap-2"><div><p className="text-[10px] font-bold uppercase tracking-[.14em] text-[#718095]">Distribuição</p><h3 id="report-chart-title" className="mt-1 text-base font-semibold text-[#1d2b40]">{heading}</h3></div><span className="text-[11px] text-[#7c8999]">{valueLabel} · valores reais do relatório</span></div>
     <div className="space-y-3.5">{categories.map(({ label, value }) => <div key={label} className="grid grid-cols-[minmax(110px,190px)_minmax(60px,1fr)_auto] items-center gap-3 text-xs">
-      <span className="truncate text-[#4a596d]" title={label}>{label}</span><div className="h-2 overflow-hidden rounded-sm bg-[#e9edf2]"><div className={`h-full rounded-sm ${kind === 'receipts' && label.includes('Confirmado') ? 'bg-[#248468]' : kind === 'debt' ? 'bg-[#bc7c2b]' : 'bg-[#021F87]'}`} style={{ width: `${value > 0 ? Math.max(value / max * 100, 1.5) : 0}%` }} /></div><span className="min-w-24 text-right tabular-nums font-semibold text-[#344358]">{money(value)}</span>
+      <span className="truncate text-[#4a596d]" title={label}>{label}</span><div className="h-2 overflow-hidden rounded-sm bg-[#e9edf2]"><div className={`h-full rounded-sm ${kind === 'receipts' && label.includes('Confirmado') ? 'bg-[#248468]' : kind === 'debt' ? 'bg-[#bc7c2b]' : label.toLowerCase().includes('paga') || label.toLowerCase().includes('parcial') ? 'bg-emerald-500' : label.toLowerCase().includes('vencid') ? 'bg-amber-500' : label.toLowerCase().includes('cancel') ? 'bg-slate-400' : 'bg-[#021F87]'}`} style={{ width: `${value > 0 ? Math.max(value / max * 100, 1.5) : 0}%` }} /></div><span className="min-w-24 text-right tabular-nums font-semibold text-[#344358]">{money(value)}</span>
     </div>)}</div>
     <details className="mt-4 text-xs text-[#667589]"><summary className="w-fit cursor-pointer underline decoration-[#aeb8c5] underline-offset-4">Ver valores em tabela</summary><div className="mt-2 space-y-1">{categories.map((category) => <p key={category.label} className="flex justify-between gap-3"><span>{category.label}</span><span className="tabular-nums">{money(category.value)}</span></p>)}</div></details>
   </section>;

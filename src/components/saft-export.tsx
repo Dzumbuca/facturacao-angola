@@ -26,7 +26,7 @@ export function SaftExport() {
     </div>
     <a
       href={`/api/invoices/generate-saft?month=${month}&year=${year}`}
-      className="inline-flex min-h-11 items-center rounded-xl bg-[#2878d0] px-5 text-sm font-semibold text-white transition hover:bg-[#216bbd]"
+      className="inline-flex min-h-11 items-center rounded-xl bg-[#021f87] px-5 text-sm font-semibold text-white transition hover:bg-[#011566]"
     >Descarregar SAFT-AO</a>
   </div>;
 }
