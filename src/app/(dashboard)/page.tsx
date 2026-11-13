@@ -7,7 +7,7 @@ import { getTenantPeriodMetrics } from '@/lib/financial-metrics';
 import { parseReportPeriod, type ReportPeriodQuery } from '@/lib/report-period';
 import { getInvoiceState } from '@/lib/invoice-state';
 import { FinancialLineChart } from '@/components/financial-line-chart';
-import { PremiumHero, PremiumKpi } from '@/components/dashboard/premium-kit';
+import { PremiumHero, PremiumKpi, PremiumBalance } from '@/components/dashboard/premium-kit';
 
 type Props = { searchParams: Promise<{ period?: string; from?: string; to?: string; metric?: string }> };
 const money = (amount: number) => new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', maximumFractionDigits: 0 }).format(amount);
@@ -76,7 +76,8 @@ export default async function DashboardPage({ searchParams }: Props) {
           <h1 className="mt-4 text-3xl font-extrabold leading-[1.05] tracking-[-.04em] text-white sm:text-4xl">{tenant.name}, que bom ver o seu negócio hoje.</h1>
           <p className="mt-3 text-sm leading-6 text-[#a9c4ff]">Aqui está a visão consolidada da actividade do período. Emita facturas, acompanhe recebimentos e veja onde o dinheiro está — tudo num só sítio.</p>
         </div>
-        <div className="flex shrink-0 gap-2">
+        <div className="flex shrink-0 flex-col items-end gap-3 sm:flex-row sm:items-end">
+          <PremiumBalance label="Facturação do período" amount={money(metrics.invoiced)} trend={metrics.invoicedChangePercent != null ? `${metrics.invoicedChangePercent >= 0 ? '+' : ''}${metrics.invoicedChangePercent.toFixed(1)}% vs período anterior` : 'Sem histórico anterior'} sublabel="Total emitido" />
           <Link href="/invoices/new" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-white px-5 text-sm font-extrabold text-[#041f52] transition hover:-translate-y-0.5 hover:bg-[#e8edff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"><span aria-hidden="true">＋</span> Nova factura</Link>
           <Link href="/reports" className="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/20 bg-white/5 px-5 text-sm font-semibold text-white transition hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Relatórios</Link>
         </div>
