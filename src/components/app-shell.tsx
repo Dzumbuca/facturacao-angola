@@ -11,6 +11,8 @@ import { ResponsiveTables } from '@/components/responsive-tables';
 import { PwaInstall } from '@/components/pwa-install';
 import { visibleNavGroups } from '@/lib/navigation';
 import { Assistant } from '@/components/assistant/assistant';
+import { GlobalSearch } from '@/components/global-search';
+import { NotificationsBell } from '@/components/notifications-bell';
 
 type NavLink = { href: string; label: string; icon: string };
 const groups: { title: string; links: NavLink[] }[] = [
@@ -41,22 +43,22 @@ export function AppShell({ children, platformAdmin = false, plan = 'FREE', adHtm
 
   return (
     <div className="min-h-dvh">
-      <aside aria-label="Menu principal" className="fixed inset-y-0 left-0 z-40 hidden w-[220px] flex-col overflow-hidden border-r border-white/10 bg-[#071936] px-4 py-6 text-white md:flex lg:w-[252px] lg:px-5">
-        <Link href="/" className="mb-5 flex shrink-0 items-center gap-3 rounded-md px-2" aria-label="Machine Facturas, início">
+      <aside aria-label="Menu principal" className="fixed inset-y-0 left-0 z-40 hidden w-[232px] flex-col overflow-hidden border-r border-white/5 bg-gradient-to-b from-[#06122b] via-[#071936] to-[#0b2240] px-3 py-4 text-white md:flex lg:w-[268px] lg:px-4 lg:py-5">
+        <Link href="/" className="mb-4 flex shrink-0 items-center gap-3 rounded-md px-2" aria-label="Machine Facturas, início">
           <img src="/logo.png" width="800" height="600" alt="Facturação" className="h-9 w-auto max-w-[92px] rounded-md bg-white object-contain px-1.5 py-1" />
           <span className="leading-tight"><strong className="block text-[14px] tracking-[.12em]">MACHINE FACTURAS</strong><span className="text-[10px] uppercase tracking-[.1em] text-slate-400">Gestão financeira</span></span>
         </Link>
-        <nav aria-label="Navegação principal" className="min-h-0 flex-1 space-y-4 overflow-x-hidden overflow-y-auto overscroll-contain py-1">
+        <nav aria-label="Navegação principal" className="min-h-0 flex-1 space-y-3 overflow-x-hidden overflow-y-auto overscroll-contain py-1">
           {visibleGroups.map((group) => <section key={group.title} aria-label={group.title}>
             <h2 className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-[.16em] text-slate-500">{group.title}</h2>
             <ul className="space-y-0.5">{group.links.map(({ href, label, icon }) => {
               const active = pathname === href || (href !== '/' && pathname.startsWith(`${href}/`));
-              return <li key={href}><Link href={href} aria-current={active ? 'page' : undefined} className={`relative flex items-center gap-3 rounded-md px-3 py-2 text-[13px] transition-colors ${active ? 'bg-white/10 font-semibold text-white before:absolute before:inset-y-2 before:left-0 before:w-[2px] before:bg-[#7795ff]' : 'text-slate-300 hover:bg-white/[.06] hover:text-white'}`}><NavIcon name={icon} />{label}</Link></li>;
+              return <li key={href}><Link href={href} aria-current={active ? 'page' : undefined} className={`relative flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium transition-all ${active ? 'bg-white/10 font-semibold text-white before:absolute before:inset-y-1.5 before:left-0 before:w-[3px] before:rounded-full before:bg-gradient-to-b before:from-[#7795ff] before:to-[#2878d0]' : 'text-slate-300 hover:bg-white/[.07] hover:text-white'}`}><NavIcon name={icon} />{label}</Link></li>;
             })}</ul>
           </section>)}
           {platformAdmin && <section aria-label="Plataforma">
             <h2 className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-[.16em] text-slate-500">Plataforma</h2>
-            <ul className="space-y-0.5"><li><Link href="/admin" aria-current={pathname === '/admin' || pathname.startsWith('/admin/') ? 'page' : undefined} className={`relative flex items-center gap-3 rounded-md px-3 py-2 text-[13px] transition-colors ${pathname === '/admin' || pathname.startsWith('/admin/') ? 'bg-white/10 font-semibold text-white before:absolute before:inset-y-2 before:left-0 before:w-[2px] before:bg-[#7795ff]' : 'text-slate-300 hover:bg-white/[.06] hover:text-white'}`}><NavIcon name="building" />Administração da plataforma</Link></li></ul>
+            <ul className="space-y-0.5"><li><Link href="/admin" aria-current={pathname === '/admin' || pathname.startsWith('/admin/') ? 'page' : undefined} className={`relative flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium transition-all ${pathname === '/admin' || pathname.startsWith('/admin/') ? 'bg-white/10 font-semibold text-white before:absolute before:inset-y-1.5 before:left-0 before:w-[3px] before:rounded-full before:bg-gradient-to-b before:from-[#7795ff] before:to-[#2878d0]' : 'text-slate-300 hover:bg-white/[.07] hover:text-white'}`}><NavIcon name="building" />Administração da plataforma</Link></li></ul>
           </section>}
         </nav>
         <div className="mt-3 max-h-[46vh] shrink-0 space-y-3 overflow-y-auto overscroll-contain border-t border-white/10 px-3 pt-3">
@@ -81,19 +83,25 @@ export function AppShell({ children, platformAdmin = false, plan = 'FREE', adHtm
       </aside>
 
       <div className="min-w-0 md:ml-[220px] lg:ml-[252px]">
-        <header className="sticky top-0 z-30 border-b border-[#e1e8f0] bg-white/95 backdrop-blur-md">
-          <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-3 px-4 py-2.5 md:px-8 md:py-4">
+        <header className="sticky top-0 z-30 border-b border-[#e6ebf3] bg-white/90 backdrop-blur-xl">
+          <div className="mx-auto flex h-12 max-w-[1440px] items-center gap-3 px-4 md:h-16 md:px-8">
             <div className="flex min-w-0 items-center gap-2.5">
-              <img src="/logo.png" width="800" height="600" alt="Facturação" className="h-8 w-auto max-w-[72px] shrink-0 rounded-md bg-white object-contain px-1 py-0.5 md:hidden" />
+              <img src="/logo.png" width="800" height="600" alt="Facturação" className="h-7 w-auto max-w-[64px] shrink-0 rounded-md bg-white object-contain px-1 py-0.5 md:hidden" />
               <div className="min-w-0">
-                <p className="hidden text-[10px] font-bold uppercase tracking-[.14em] text-[#708195] sm:block">Facturação Angola</p>
-                <h1 className="truncate text-[15px] font-bold text-[#1c2d3f] md:text-lg">{title}</h1>
+                <p className="hidden text-[9px] font-extrabold uppercase tracking-[.16em] text-[#8494a9] sm:block">Facturação Angola</p>
+                <h1 className="truncate text-[13px] font-bold leading-none text-[#0f223c] md:text-base">{title}</h1>
               </div>
             </div>
-            <div className="flex shrink-0 items-center gap-2">
-              <span className="hidden rounded-full border border-[#e1e8f0] bg-[#f7f9fc] px-3 py-1.5 text-xs font-medium text-[#607286] sm:inline-flex">Área de gestão</span>
+            <div className="hidden min-w-0 flex-1 justify-center md:flex">
+              <GlobalSearch />
+            </div>
+            <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+              <NotificationsBell />
               <ThemeToggle compact />
             </div>
+          </div>
+          <div className="border-t border-[#eef2f7] bg-[#f8fafc]/80 px-4 py-2 backdrop-blur-md md:hidden">
+            <GlobalSearch />
           </div>
         </header>
 
