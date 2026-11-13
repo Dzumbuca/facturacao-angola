@@ -11,5 +11,5 @@ export default async function AdminPlansPage() {
   } catch {
     return <AdminErrorState title="Planos comerciais" />;
   }
-  return <div><h1 className="text-3xl font-bold">Planos comerciais</h1><p className="mt-2 text-slate-600">Criar, editar e consultar pacotes Free / Stock / RH / Business. Os dados salvam-se na base e entram em vigor imediatamente.</p><AdminPlanEditor plans={plans} applications={apps} /></div>;
+  return <div><h1 className="text-3xl font-bold">Planos comerciais</h1><p className="mt-2 text-[var(--text-muted)]">Criar, editar e consultar pacotes Free / Stock / RH / Business. Os dados salvam-se na base e entram em vigor imediatamente.</p><AdminPlanEditor plans={plans} applications={apps} /></div>;
 }

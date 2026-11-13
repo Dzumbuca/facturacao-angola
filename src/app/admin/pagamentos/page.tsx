@@ -15,7 +15,7 @@ export default async function AdminPagamentosPage({ searchParams }: { searchPara
     const kz = (value: number | string) => new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', maximumFractionDigits: 0 }).format(Number(value));
     return <div>
       <h1 className="text-3xl font-bold">Pagamentos de planos</h1>
-      <p className="mt-2 text-slate-600">Comprovativos Multicaixa Express enviados pelas empresas. Confirmar activa o plano Pro automaticamente.</p>
+      <p className="mt-2 text-[var(--text-muted)]">Comprovativos Multicaixa Express enviados pelas empresas. Confirmar activa o plano Pro automaticamente.</p>
       <div className="mt-4 flex flex-wrap gap-2">
         {[
           { label: 'Pendentes', value: undefined },
@@ -24,16 +24,16 @@ export default async function AdminPagamentosPage({ searchParams }: { searchPara
         ].map((tab) => <a
           key={tab.label}
           href={tab.value ? `/admin/pagamentos?status=${tab.value}` : '/admin/pagamentos'}
-          className={`rounded-full border px-3.5 py-1.5 text-sm font-semibold transition ${(status ?? 'PENDENTE') === (tab.value ?? 'PENDENTE') ? 'border-[#021f87] bg-[#021f87] text-white' : 'border-slate-300 text-slate-600 hover:border-[#021f87] hover:text-[#021f87]'}`}
+          className={`rounded-full border px-3.5 py-1.5 text-sm font-semibold transition ${(status ?? 'PENDENTE') === (tab.value ?? 'PENDENTE') ? 'border-[#021f87] bg-[#021f87] text-white' : 'border-slate-300 text-[var(--text-muted)] hover:border-[#021f87] hover:text-[#021f87]'}`}
         >{tab.label}</a>)}
       </div>
       <section className="mt-5 space-y-4">
-        {payments.map((v: any) => <article key={v.id} className="rounded-xl border border-slate-200 bg-white p-5">
+        {payments.map((v: any) => <article key={v.id} className="rounded-xl border border-[var(--line)] bg-[var(--surface)] p-5">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <p className="font-semibold">{v.tenant?.name ?? 'Empresa'}</p>
-              <p className="text-sm text-slate-600">{kz(v.amountKz)} · {planFromAmount(Number(v.amountKz), v.months)} · {v.months} {v.months === 1 ? 'mês' : 'meses'}</p>
-              <p className="text-xs text-slate-500">Pagador: {v.payerName} ({v.payerPhone}) · {new Date(v.createdAt).toLocaleString('pt-AO', { timeZone: 'Africa/Luanda' })}</p>
+              <p className="text-sm text-[var(--text-muted)]">{kz(v.amountKz)} · {planFromAmount(Number(v.amountKz), v.months)} · {v.months} {v.months === 1 ? 'mês' : 'meses'}</p>
+              <p className="text-xs text-[var(--text-muted)]">Pagador: {v.payerName} ({v.payerPhone}) · {new Date(v.createdAt).toLocaleString('pt-AO', { timeZone: 'Africa/Luanda' })}</p>
             </div>
             <AdminStatusBadge status={v.status === 'PENDENTE' ? 'PENDING' : v.status === 'CONFIRMADO' ? 'ACTIVE' : 'SUSPENDED'} />
           </div>
@@ -41,7 +41,7 @@ export default async function AdminPagamentosPage({ searchParams }: { searchPara
             <a href={`/api/plan/payment/proof/${v.id}`} target="_blank" rel="noopener" className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-semibold text-[#021f87] hover:border-[#021f87]">Ver comprovativo</a>
           </div>
           {v.status === 'PENDENTE' && <PlanPaymentReviewForm id={v.id} done={false} />}
-          {v.status !== 'PENDENTE' && v.adminNote && <p className="mt-2 text-sm text-slate-500">Nota: {v.adminNote}</p>}
+          {v.status !== 'PENDENTE' && v.adminNote && <p className="mt-2 text-sm text-[var(--text-muted)]">Nota: {v.adminNote}</p>}
         </article>)}
         {!payments.length && <div className="p-4"><EmptyState title="Sem registos" description="Nenhum pagamento nesta lista." /></div>}
       </section>
