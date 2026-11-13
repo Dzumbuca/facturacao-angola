@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { StatusBadge, stateTone, EmptyState } from '@/components/ui/data-table';
+const ISSUED_TONE: 'success' | 'primary' = 'success';
 
 type IssuedRow = {
   id: string;
@@ -28,6 +29,9 @@ const _unusedChipClass = (state: string) =>
 // trocar de aba não faz novos pedidos.
 export function InvoicesTabs({ issuedRows, draftRows }: { issuedRows: IssuedRow[]; draftRows: DraftRow[] }) {
   const [tab, setTab] = useState<'issued' | 'drafts'>('issued');
+  const [sortKey, setSortKey] = useState<'date' | 'total' | 'customer'>('date');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const showDue = issuedRows.some((r) => r.dueAtISO);
 
   return (
     <div className="space-y-4">
@@ -72,21 +76,24 @@ export function InvoicesTabs({ issuedRows, draftRows }: { issuedRows: IssuedRow[
         <div className="overflow-x-auto rounded-[18px] border border-[var(--line)] bg-[var(--surface)] shadow-[var(--shadow-card)]">
           <table className="w-full border-separate border-spacing-0 text-left text-sm">
             <caption className="sr-only">Facturas emitidas ordenadas da mais recente para a mais antiga. Total: {issuedRows.reduce((s, r) => s + r.total, 0).toLocaleString('pt-AO', { style: 'currency', currency: 'AOA' })}.</caption>
-            <thead><tr><th className="bg-[var(--surface-raised)] px-5 py-3 text-[11px] font-bold uppercase tracking-[.1em] text-[var(--text-muted)]">Documento</th><th className="bg-[var(--surface-raised)] px-5 py-3 text-[11px] font-bold uppercase tracking-[.1em] text-[var(--text-muted)]">Cliente</th><th className="bg-[var(--surface-raised)] px-5 py-3 text-[11px] font-bold uppercase tracking-[.1em] text-[var(--text-muted)]">Emissão</th><th className="bg-[var(--surface-raised)] px-5 py-3 text-[11px] font-bold uppercase tracking-[.1em] text-[var(--text-muted)]">Vencimento</th><th className="bg-[var(--surface-raised)] px-5 py-3 text-right text-[11px] font-bold uppercase tracking-[.1em] text-[var(--text-muted)]">Total</th><th className="bg-[var(--surface-raised)] px-5 py-3 text-[11px] font-bold uppercase tracking-[.1em] text-[var(--text-muted)]">Estado</th><th className="bg-[var(--surface-raised)] px-5 py-3 text-right text-[11px] font-bold uppercase tracking-[.1em] text-[var(--text-muted)]">Acção</th></tr></thead>
+            <thead><tr><th className="bg-[var(--surface-raised)] px-5 py-3 text-[11px] font-bold uppercase tracking-[.1em] text-[var(--text-muted)]">Documento</th><th className="bg-[var(--surface-raised)] px-5 py-3 text-[11px] font-bold uppercase tracking-[.1em] text-[var(--text-muted)]"><button type="button" onClick={() => { setSortKey('customer'); setSortDir((d) => d === 'asc' ? 'desc' : 'asc'); }} aria-sort={sortKey === 'customer' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'} className="hover:text-[var(--text)]">Cliente{sortKey === 'customer' ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''}</button></th><th className="bg-[var(--surface-raised)] px-5 py-3 text-[11px] font-bold uppercase tracking-[.1em] text-[var(--text-muted)]"><button type="button" onClick={() => { setSortKey('date'); setSortDir((d) => d === 'asc' ? 'desc' : 'asc'); }} aria-sort={sortKey === 'date' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'} className="hover:text-[var(--text)]">Emissão{sortKey === 'date' ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''}</button></th>{showDue && <th className="bg-[var(--surface-raised)] px-5 py-3 text-[11px] font-bold uppercase tracking-[.1em] text-[var(--text-muted)]">Vencimento</th>}<th className="bg-[var(--surface-raised)] px-5 py-3 text-right text-[11px] font-bold uppercase tracking-[.1em] text-[var(--text-muted)]"><button type="button" onClick={() => { setSortKey('total'); setSortDir((d) => d === 'asc' ? 'desc' : 'asc'); }} aria-sort={sortKey === 'total' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'} className="hover:text-[var(--text)]">Total{sortKey === 'total' ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''}</button></th><th className="bg-[var(--surface-raised)] px-5 py-3 text-[11px] font-bold uppercase tracking-[.1em] text-[var(--text-muted)]">Estado</th><th className="bg-[var(--surface-raised)] px-5 py-3 text-right text-[11px] font-bold uppercase tracking-[.1em] text-[var(--text-muted)]">Acção</th></tr></thead>
             <tbody className="divide-y divide-[var(--line)]">
-              {issuedRows.map((row) => (
+              {[...issuedRows].sort((a, b) => {
+                const cmp = sortKey === 'date' ? new Date(a.issuedAtISO).getTime() - new Date(b.issuedAtISO).getTime() : sortKey === 'total' ? a.total - b.total : a.customerName.localeCompare(b.customerName);
+                return sortDir === 'asc' ? cmp : -cmp;
+              }).map((row) => (
                 <tr key={row.id} className="transition-colors hover:bg-[var(--surface-raised)]">
-                  <td className="px-5 py-3.5"><Link href={`/invoices/${row.id}`} className="font-bold text-[var(--blue)] hover:underline underline-offset-4">{row.number}</Link><span className="ml-2 text-[10px] font-medium uppercase text-[var(--text-muted)]">{row.type}</span></td>
+                  <td className="px-5 py-3.5"><Link href={`/invoices/${row.id}`} className="font-bold text-[var(--blue)] hover:underline underline-offset-4">{row.number}</Link></td>
                   <td className="px-5 py-3.5 font-medium text-[var(--text)]">{row.customerName}</td>
                   <td className="px-5 py-3.5 text-[var(--text-muted)]">{new Date(row.issuedAtISO).toLocaleDateString('pt-AO')}</td>
-                  <td className="px-5 py-3.5 text-[var(--text-muted)]">{row.dueAtISO ? new Date(row.dueAtISO).toLocaleDateString('pt-AO') : '—'}</td>
+                  {showDue && <td className="px-5 py-3.5 text-[var(--text-muted)]">{row.dueAtISO ? new Date(row.dueAtISO).toLocaleDateString('pt-AO') : '—'}</td>}
                   <td className="px-5 py-3.5 text-right tabular-nums font-bold text-[var(--text)]">{money(row.total)}</td>
-                  <td className="px-5 py-3.5"><StatusBadge tone={stateTone(row.state)}>{stateLabel[row.state] ?? row.state}</StatusBadge></td>
+                  <td className="px-5 py-3.5"><StatusBadge tone={row.state === 'ISSUED' ? ISSUED_TONE : stateTone(row.state)}>{stateLabel[row.state] ?? row.state}</StatusBadge></td>
                   <td className="px-5 py-3.5 text-right"><Link href={`/invoices/${row.id}`} aria-label={`Ver ${row.number}`} className="inline-flex min-h-9 items-center rounded-[8px] border border-[var(--line)] px-3 text-xs font-semibold text-[var(--blue)] hover:border-[var(--blue)]">Ver →</Link></td>
                 </tr>
               ))}
               {issuedRows.length === 0 && (
-                <tr><td colSpan={7} className="px-5 py-6"><EmptyState title="Nenhuma factura" description="Não há facturas para o filtro seleccionado. Ajuste a vista ou emita uma nova factura." /></td></tr>
+                <tr><td colSpan={showDue ? 7 : 6} className="px-5 py-6"><EmptyState title="Nenhuma factura" description="Não há facturas para o filtro seleccionado. Ajuste a vista ou emita uma nova factura." /></td></tr>
               )}
             </tbody>
           </table>
