@@ -167,7 +167,7 @@ export function CompanyProfileForm({ initialProfile, initialBankAccounts = [] }:
         </div>
       </section>
 
-      <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-xs text-[#708195]">{isDirty ? 'Tem alterações por guardar.' : 'Todas as alterações estão guardadas.'}</p><button type="submit" disabled={isSaving} className="min-h-11 rounded-lg bg-[#2878d0] px-5 text-sm font-bold text-white shadow-sm transition hover:bg-[#216bbd] disabled:cursor-wait disabled:opacity-60">{isSaving ? 'A guardar…' : 'Guardar dados da empresa'}</button></div>
+      <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-xs text-[#708195]">{isDirty ? 'Tem alterações por guardar.' : 'Todas as alterações estão guardadas.'}</p><button type="submit" disabled={isSaving} className="min-h-11 rounded-lg bg-[#2878d0] px-5 text-sm font-bold text-white shadow-[var(--shadow-card)] transition hover:bg-[#216bbd] disabled:cursor-wait disabled:opacity-60">{isSaving ? 'A guardar…' : 'Guardar dados da empresa'}</button></div>
     </form>
     <BankAccountManager initialAccounts={initialBankAccounts} />
   </div>;

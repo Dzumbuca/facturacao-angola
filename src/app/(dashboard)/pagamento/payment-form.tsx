@@ -72,7 +72,7 @@ export function PaymentForm({ plans }: { plans: PlanOption[] }) {
       <p className="mt-1 text-2xl font-black tabular-nums text-[#2878d0]">{kz(amount)}</p>
       <p className="mt-2 text-sm text-[#4a5f76]">
         Envia via <strong>Multicaixa Express</strong> para o número
-        <button type="button" onClick={() => navigator.clipboard?.writeText('937555618').catch(() => null)} className="mx-1.5 inline-flex items-center gap-1 rounded-md bg-white px-2 py-1 font-black tabular-nums text-[#102b46] shadow-sm transition hover:bg-blue-50" title="Copiar número">
+        <button type="button" onClick={() => navigator.clipboard?.writeText('937555618').catch(() => null)} className="mx-1.5 inline-flex items-center gap-1 rounded-md bg-white px-2 py-1 font-black tabular-nums text-[#102b46] shadow-[var(--shadow-card)] transition hover:bg-blue-50" title="Copiar número">
           937 555 618 <span aria-hidden="true" className="text-xs">📋</span>
         </button>
         (toca para copiar).

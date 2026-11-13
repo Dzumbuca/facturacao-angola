@@ -162,7 +162,7 @@ export function Assistant() {
           <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto bg-[#fbfcfe] px-3 py-3">
             {messages.map((message) => (
               <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[88%] rounded-2xl px-3 py-2 shadow-sm ${message.role === 'user' ? 'rounded-br-md bg-[#021f87] text-white' : 'rounded-bl-md border border-[#e6ebf3] bg-white'}`}>
+                <div className={`max-w-[88%] rounded-2xl px-3 py-2 shadow-[var(--shadow-card)] ${message.role === 'user' ? 'rounded-br-md bg-[#021f87] text-white' : 'rounded-bl-md border border-[#e6ebf3] bg-white'}`}>
                   <div className="space-y-1">{renderContent(message.content)}</div>
                   {message.document && (
                     <AssistantDocumentCard

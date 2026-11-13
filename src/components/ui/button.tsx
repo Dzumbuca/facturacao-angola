@@ -4,7 +4,7 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & { children: ReactNo
 
 export function Button({ children, className = '', variant = 'primary', ...props }: ButtonProps) {
   const styles = {
-    primary: 'bg-[#2878D0] text-white shadow-sm hover:bg-[#216bbd]',
+    primary: 'bg-[#2878D0] text-white shadow-[var(--shadow-card)] hover:bg-[#216bbd]',
     secondary: 'border border-[#d8e1eb] bg-white text-[#30465c] hover:bg-[#f7f9fc]',
     quiet: 'bg-transparent text-[#52667a] hover:bg-[#f0f4f8]',
   };

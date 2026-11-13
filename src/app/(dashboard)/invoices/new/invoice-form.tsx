@@ -317,7 +317,7 @@ export function InvoiceForm({ initialCustomers, initialProducts, hasCompanyProfi
     <button type="button" className="flex min-h-12 items-center justify-center rounded-xl border border-[#cdddeb] bg-white px-5 py-3 font-bold text-[#2878D0] transition hover:bg-[#f4f8fc] disabled:cursor-wait disabled:opacity-60" onClick={handleSaveDraft} disabled={isSavingDraft || isGenerating}>
       {isSavingDraft ? 'A guardar rascunho…' : 'Guardar rascunho'}
     </button>
-    <button type="button" className="flex min-h-12 items-center justify-center rounded-xl bg-[#2878D0] px-5 py-3 font-bold text-white shadow-sm transition hover:bg-[#216bbd] disabled:cursor-wait disabled:opacity-60" onClick={handleGeneratePDF} disabled={isGenerating || isSavingDraft}>
+    <button type="button" className="flex min-h-12 items-center justify-center rounded-xl bg-[#2878D0] px-5 py-3 font-bold text-white shadow-[var(--shadow-card)] transition hover:bg-[#216bbd] disabled:cursor-wait disabled:opacity-60" onClick={handleGeneratePDF} disabled={isGenerating || isSavingDraft}>
       {isGenerating ? 'A gerar PDF…' : 'Gerar PDF Final'}
     </button>
     </div>

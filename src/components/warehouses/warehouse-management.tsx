@@ -293,7 +293,7 @@ export function WarehouseManagement({
           <CardContent>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
               {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="rounded-lg border bg-white p-6 shadow-sm">
+                <div key={i} className="rounded-lg border bg-white p-6 shadow-[var(--shadow-card)]">
                   <SkeletonRow className="w-40" />
                   <SkeletonCell className="mt-2 w-24" />
                 </div>
@@ -383,11 +383,11 @@ export function WarehouseManagement({
             </Card>
             <div className="mt-6">
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-lg border bg-white p-6 shadow-sm">
+                <div className="rounded-lg border bg-white p-6 shadow-[var(--shadow-card)]">
                   <SkeletonRow className="w-40" />
                   <SkeletonCell className="mt-2 w-24" />
                 </div>
-                <div className="rounded-lg border bg-white p-6 shadow-sm">
+                <div className="rounded-lg border bg-white p-6 shadow-[var(--shadow-card)]">
                   <SkeletonRow className="w-40" />
                   <SkeletonCell className="mt-2 w-24" />
                 </div>

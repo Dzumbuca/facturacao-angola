@@ -280,7 +280,7 @@ export default async function LandingPage() {
           <a href={"https://wa.me/?text=" + encodeURIComponent('Conhece o Machine Facturas — facturação online para empresas em Angola, com assinatura digital e SAFT. Grátis para começar: https://machinefaturas.shop')} target="_blank" rel="noopener" className="mt-5 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#25d366] px-7 text-base font-bold text-white transition hover:bg-[#1fb855]"><WhatsappIcon className="h-5 w-5" /> Partilhar no WhatsApp</a>
         </div>
         <div className="text-center">
-          <img src="/qr-machinefaturas.png" alt="QR code para machinefaturas.shop" className="h-44 w-44 rounded-xl border border-[#e2e9f1] shadow-sm" />
+          <img src="/qr-machinefaturas.png" alt="QR code para machinefaturas.shop" className="h-44 w-44 rounded-xl border border-[#e2e9f1] shadow-[var(--shadow-card)]" />
           <p className="mt-2 text-xs text-[#708195]">Aponta a câmara do telemóvel</p>
         </div>
       </div>

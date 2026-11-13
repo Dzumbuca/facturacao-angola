@@ -130,8 +130,8 @@ export default async function DashboardPage({ searchParams }: Props) {
             </div>
           </div>
           <div className="flex w-fit rounded-[12px] border border-[var(--line)] p-1" aria-label="Métrica do gráfico">
-            <Link href={chartHref('invoices')} aria-current={selectedMetric === 'invoices' ? 'page' : undefined} className={`rounded-[8px] px-3 py-2 text-xs font-semibold transition ${selectedMetric === 'invoices' ? 'bg-[#021f87] text-white shadow-sm' : 'text-[var(--text-muted)] hover:bg-[var(--surface-raised)]'}`}>Facturação</Link>
-            <Link href={chartHref('receipts')} aria-current={selectedMetric === 'receipts' ? 'page' : undefined} className={`rounded-[8px] px-3 py-2 text-xs font-semibold transition ${selectedMetric === 'receipts' ? 'bg-[#021f87] text-white shadow-sm' : 'text-[var(--text-muted)] hover:bg-[var(--surface-raised)]'}`}>Recebimentos</Link>
+            <Link href={chartHref('invoices')} aria-current={selectedMetric === 'invoices' ? 'page' : undefined} className={`rounded-[8px] px-3 py-2 text-xs font-semibold transition ${selectedMetric === 'invoices' ? 'bg-[#021f87] text-white shadow-[var(--shadow-card)]' : 'text-[var(--text-muted)] hover:bg-[var(--surface-raised)]'}`}>Facturação</Link>
+            <Link href={chartHref('receipts')} aria-current={selectedMetric === 'receipts' ? 'page' : undefined} className={`rounded-[8px] px-3 py-2 text-xs font-semibold transition ${selectedMetric === 'receipts' ? 'bg-[#021f87] text-white shadow-[var(--shadow-card)]' : 'text-[var(--text-muted)] hover:bg-[var(--surface-raised)]'}`}>Recebimentos</Link>
           </div>
         </div>
         <div className="mt-5 flex flex-wrap items-center gap-3 border-b border-[var(--line)] pb-4 text-xs text-[var(--text-muted)]"><span className="inline-flex items-center gap-2"><span className={`h-2 w-2 rounded-full ${selectedMetric === 'receipts' ? 'bg-[#248468]' : 'bg-[#021f87]'}`} />{metricLabel}</span><span>·</span><span>{rangeLabel}</span></div>

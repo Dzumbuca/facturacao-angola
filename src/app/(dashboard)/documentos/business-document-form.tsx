@@ -93,7 +93,7 @@ export function BusinessDocumentForm({ customers, products, initialType, initial
       <Link href="/documentos" className="inline-flex min-h-10 items-center rounded-lg border border-[#d8e1eb] bg-white px-4 text-sm font-semibold text-[#344256]">Voltar à lista</Link>
     </div>
 
-    <section className="rounded-2xl border border-[#e2e9f1] bg-white p-5 shadow-sm md:p-6">
+    <section className="rounded-2xl border border-[#e2e9f1] bg-white p-5 shadow-[var(--shadow-card)] md:p-6">
       <div className="grid gap-4 md:grid-cols-2">
         <div><label className="app-label" htmlFor="document-type">Tipo de documento</label><select id="document-type" className="app-input" value={type} disabled={Boolean(initialDocument)} onChange={(event) => setType(event.target.value as BusinessDocumentType)}>{BUSINESS_DOCUMENT_TYPES.map((value) => <option key={value} value={value}>{BUSINESS_DOCUMENT_LABELS[value]}</option>)}</select></div>
         <div><label className="app-label" htmlFor="document-title">Título</label><input id="document-title" className="app-input" maxLength={160} required value={title} onChange={(event) => setTitle(event.target.value)} placeholder={BUSINESS_DOCUMENT_LABELS[type]} /></div>
@@ -102,7 +102,7 @@ export function BusinessDocumentForm({ customers, products, initialType, initial
       </div>
     </section>
 
-    {requiresItems && <section className="rounded-2xl border border-[#e2e9f1] bg-white p-5 shadow-sm md:p-6">
+    {requiresItems && <section className="rounded-2xl border border-[#e2e9f1] bg-white p-5 shadow-[var(--shadow-card)] md:p-6">
       <h3 className="font-bold text-[#1c2d3f]">Cliente ou destinatário</h3>
       <p className="mt-1 text-xs leading-5 text-[#708195]">Use um cliente registado ou indique os dados sem criar um registo duplicado.</p>
       <div className="mt-4 grid gap-4 md:grid-cols-2">
@@ -113,7 +113,7 @@ export function BusinessDocumentForm({ customers, products, initialType, initial
       </div>
     </section>}
 
-    {type !== 'COMPANY_DECLARATION' && <section className="rounded-2xl border border-[#e2e9f1] bg-white p-5 shadow-sm md:p-6">
+    {type !== 'COMPANY_DECLARATION' && <section className="rounded-2xl border border-[#e2e9f1] bg-white p-5 shadow-[var(--shadow-card)] md:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3"><div><h3 className="font-bold text-[#1c2d3f]">Linhas do documento</h3><p className="mt-1 text-xs text-[#708195]">As taxas são indicativas e não atribuem natureza fiscal ao documento.</p></div><button type="button" onClick={() => setItems((current) => [...current, newItem()])} className="inline-flex min-h-10 items-center rounded-lg border border-[#cdddeb] bg-white px-3 text-sm font-semibold text-[#2878d0]">+ Adicionar linha</button></div>
       <div className="mt-4 space-y-3">{items.map((item, index) => <div key={index} className="grid gap-3 rounded-xl border border-[#edf1f5] p-3 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_90px_120px_95px_auto] lg:items-end">
         <div className="sm:col-span-2 lg:col-span-1"><label className="app-label" htmlFor={`product-${index}`}>Produto/serviço registado</label><select id={`product-${index}`} className="app-input" value={item.productId ?? ''} onChange={(event) => chooseProduct(index, event.target.value)}><option value="">Descrição livre</option>{products.map((product) => <option key={product.id} value={product.id}>{product.name}{product.code ? ` · ${product.code}` : ''}</option>)}</select></div>
@@ -126,8 +126,8 @@ export function BusinessDocumentForm({ customers, products, initialType, initial
       {items.length > 0 && <div className="mt-5 ml-auto max-w-xs space-y-2 border-t border-[#e2e9f1] pt-4 text-sm"><div className="flex justify-between"><span>Subtotal</span><span className="tabular-nums">{totals.subTotal.toLocaleString('pt-AO')} AOA</span></div><div className="flex justify-between"><span>Impostos indicativos</span><span className="tabular-nums">{totals.taxTotal.toLocaleString('pt-AO')} AOA</span></div><div className="flex justify-between font-bold"><span>Total</span><span className="tabular-nums">{totals.total.toLocaleString('pt-AO')} AOA</span></div></div>}
     </section>}
 
-    {['SERVICE_ORDER', 'SERVICE_CONTRACT', 'COMPANY_DECLARATION'].includes(type) && <section className="rounded-2xl border border-[#e2e9f1] bg-white p-5 shadow-sm md:p-6"><label className="app-label" htmlFor="document-details">Termos ou conteúdo do documento *</label><textarea id="document-details" className="app-input min-h-40" maxLength={12000} value={details} onChange={(event) => setDetails(event.target.value)} /></section>}
-    <section className="rounded-2xl border border-[#e2e9f1] bg-white p-5 shadow-sm md:p-6"><label className="app-label" htmlFor="document-notes">Observações (opcional)</label><textarea id="document-notes" className="app-input min-h-24" maxLength={2000} value={notes} onChange={(event) => setNotes(event.target.value)} /></section>
+    {['SERVICE_ORDER', 'SERVICE_CONTRACT', 'COMPANY_DECLARATION'].includes(type) && <section className="rounded-2xl border border-[#e2e9f1] bg-white p-5 shadow-[var(--shadow-card)] md:p-6"><label className="app-label" htmlFor="document-details">Termos ou conteúdo do documento *</label><textarea id="document-details" className="app-input min-h-40" maxLength={12000} value={details} onChange={(event) => setDetails(event.target.value)} /></section>}
+    <section className="rounded-2xl border border-[#e2e9f1] bg-white p-5 shadow-[var(--shadow-card)] md:p-6"><label className="app-label" htmlFor="document-notes">Observações (opcional)</label><textarea id="document-notes" className="app-input min-h-24" maxLength={2000} value={notes} onChange={(event) => setNotes(event.target.value)} /></section>
 
     <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">Estes documentos são comerciais ou operacionais. Não substituem uma factura fiscal. As notas de crédito e débito fiscais continuam no fluxo próprio de correcção de facturas.</p>
     {error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{error}</p>}
