@@ -37,7 +37,7 @@ export function PremiumKpi({ label, value, detail, tone = 'neutral', icon }: {
           {icon && <span className="text-[var(--text-muted)] transition group-hover:text-[var(--blue)]">{icon}</span>}
         </div>
         <div>
-          <p className="tabular-nums text-xl font-extrabold tracking-tight sm:text-2xl" style={{ color: toneAccent[tone] }}>{value}</p>
+          <p className="tabular-nums text-2xl font-extrabold leading-none tracking-tight sm:text-[34px]" style={{ color: toneAccent[tone], filter: "drop-shadow(0 1px 4px rgba(0,0,0,.35))" }}>{value}</p>
           {detail && <p className="mt-1 text-[10px] leading-4 text-[var(--text-muted)] sm:text-[11px]">{detail}</p>}
         </div>
       </div>
