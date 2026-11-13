@@ -91,7 +91,7 @@ export function ToolsHub({ ferramentas }: { ferramentas: FerramentaResumo[] }) {
             const cat = categoryStyle[ferramenta.categoria] ?? categoryStyle['Fiscalidade']!;
             const ready = ferramenta.estado === 'ativa' && ferramenta.href;
             return (
-              <li key={ferramenta.id} className="group flex h-full flex-col rounded-[18px] border border-[var(--line)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card)] transition hover:-translate-y-[1px] hover:border-[var(--blue)]">
+              <li key={ferramenta.id} className={`group flex h-full flex-col rounded-[18px] border border-[var(--line)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card)] transition hover:-translate-y-[1px] hover:border-[var(--blue)] ${ready ? "" : "opacity-75"}`}>
                 <div className="flex items-start justify-between gap-2">
                   <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-[14px] ring-1 ring-[var(--line)] ${cat.iconBg} ${cat.iconColor}`}>
                     <ToolIcon icone={ferramenta.icone} className="h-6 w-6" />
