@@ -141,18 +141,32 @@ export function CustomerManagement({ initialCustomers }: { initialCustomers: Cus
       </Card>
 
       {isOpen && <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#102b46]/50 p-0 backdrop-blur-[2px] sm:items-center sm:p-5" onMouseDown={(event) => { if (event.target === event.currentTarget && !isSaving) setIsOpen(false); }}>
-        <section role="dialog" aria-modal="true" aria-labelledby="customer-form-title" className="max-h-[92vh] w-full overflow-y-auto rounded-t-2xl bg-white p-5 shadow-2xl sm:max-w-lg sm:rounded-2xl sm:p-7">
-          <div className="mb-6 flex items-start justify-between gap-4">
-            <div><p className="text-xs font-bold uppercase tracking-[.14em] text-[#2878d0]">Directório da empresa</p><h3 id="customer-form-title" className="mt-1 text-xl font-bold text-[#1c2d3f]">{editing ? 'Editar cliente' : 'Novo cliente'}</h3><p className="mt-1 text-sm text-[#708195]">Preencha os dados do cliente.</p></div>
-            <button type="button" aria-label="Fechar" disabled={isSaving} onClick={() => setIsOpen(false)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xl text-[#708195] hover:bg-[#f0f4f8] disabled:opacity-50">×</button>
+        <section role="dialog" aria-modal="true" aria-labelledby="customer-form-title" className="max-h-[92vh] w-full overflow-y-auto rounded-t-2xl bg-[var(--surface)] shadow-2xl sm:max-w-xl sm:rounded-2xl">
+          <div className="flex items-start justify-between gap-4 border-b border-[var(--line)] px-5 py-4 sm:px-6">
+            <div><p className="text-[10px] font-semibold uppercase tracking-[.14em] text-[var(--blue)]">Directório da empresa</p><h3 id="customer-form-title" className="mt-1 text-lg font-extrabold text-[var(--text)]">{editing ? 'Editar cliente' : 'Novo cliente'}</h3></div>
+            <button type="button" aria-label="Fechar" disabled={isSaving} onClick={() => setIsOpen(false)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] text-lg text-[var(--text-muted)] transition hover:bg-[var(--surface-raised)] hover:text-[var(--text)] disabled:opacity-50">×</button>
           </div>
-          <form className="space-y-4" onSubmit={handleSubmit} key={editing?.id ?? 'novo'}>
-            <div><label htmlFor="customer-name" className="app-label">Nome do cliente <span className="text-[#c44747]">*</span></label><input id="customer-name" name="name" className="app-input" autoComplete="name" maxLength={160} required autoFocus defaultValue={editing?.name ?? ''} /></div>
-            <div><label htmlFor="customer-nif" className="app-label">NIF <span className="font-normal text-[#708195]">(opcional)</span></label><input id="customer-nif" name="nif" className="app-input" inputMode="numeric" defaultValue={editing?.nif ?? ''} /></div>
-            <div><label htmlFor="customer-email" className="app-label">Email</label><input id="customer-email" name="email" type="email" className="app-input" autoComplete="email" defaultValue={editing?.email ?? ''} /></div>
-            <div><label htmlFor="customer-address" className="app-label">Morada</label><input id="customer-address" name="address" className="app-input" autoComplete="street-address" defaultValue={editing?.address ?? ''} /></div>
-            {error && <p role="alert" className="rounded-lg border border-red-100 bg-red-50 px-3 py-2.5 text-sm text-[#a83939]">{error}</p>}
-            <div className="flex flex-col-reverse gap-2 border-t border-[#e7edf3] pt-4 sm:flex-row sm:justify-end">
+          <form className="space-y-5 px-5 py-5 sm:px-6" onSubmit={handleSubmit} key={editing?.id ?? 'novo'}>
+            {/* Secção 1 — Dados fiscais */}
+            <fieldset>
+              <legend className="mb-2 text-[10px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">Dados fiscais</legend>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="sm:col-span-2"><label htmlFor="customer-name" className="app-label">Nome do cliente <span className="text-[#c44747]">*</span></label><input id="customer-name" name="name" className="app-input" autoComplete="name" maxLength={160} required autoFocus defaultValue={editing?.name ?? ''} placeholder="Ex.: Teresa Quiar" /></div>
+                <div className="sm:col-span-2"><label htmlFor="customer-nif" className="app-label">NIF <span className="font-normal text-[var(--text-muted)]">(opcional)</span></label><input id="customer-nif" name="nif" className="app-input" inputMode="numeric" defaultValue={editing?.nif ?? ''} placeholder="Ex.: 004123456LA032" /></div>
+              </div>
+            </fieldset>
+            {/* Secção 2 — Contacto */}
+            <fieldset>
+              <legend className="mb-2 text-[10px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">Contacto</legend>
+              <div><label htmlFor="customer-email" className="app-label">Email</label><input id="customer-email" name="email" type="email" className="app-input" autoComplete="email" placeholder="cliente@empresa.ao" defaultValue={editing?.email ?? ''} /></div>
+            </fieldset>
+            {/* Secção 3 — Localização */}
+            <fieldset>
+              <legend className="mb-2 text-[10px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">Localização</legend>
+              <div><label htmlFor="customer-address" className="app-label">Morada</label><textarea id="customer-address" name="address" rows={2} className="app-input" autoComplete="street-address" placeholder="Rua, bairro, cidade" defaultValue={editing?.address ?? ''} /></div>
+            </fieldset>
+            {error && <p role="alert" className="rounded-[10px] border border-[#f0d3d3] bg-[#fdf2f2] px-3 py-2 text-sm font-semibold text-[var(--danger)]">{error}</p>}
+            <div className="flex flex-col-reverse gap-2 border-t border-[var(--line)] pt-4 sm:flex-row sm:justify-end">
               <Button type="button" variant="secondary" onClick={() => setIsOpen(false)} disabled={isSaving}>Cancelar</Button>
               <Button type="submit" disabled={isSaving}>{isSaving ? 'A guardar…' : editing ? 'Guardar alterações' : 'Guardar cliente'}</Button>
             </div>
