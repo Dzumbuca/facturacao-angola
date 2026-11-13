@@ -8,7 +8,6 @@ import { AdHtml } from '@/components/ad-html';
 import { FERRAMENTAS } from './tools-data';
 import { ToolsHub } from './tools-hub';
 
-// Anúncios actualizam a cada 60s sem novo deploy
 export const revalidate = 60;
 
 export const metadata: Metadata = {
@@ -34,55 +33,79 @@ export default async function CentroFerramentasPage() {
     adHtml = config?.adHtml ?? null;
   } catch { adHtml = null; }
 
-  return <ToolPage><main className="min-h-screen bg-[#f3f6fa] text-[#1c2d3f]">
+
+  return <ToolPage><main className="min-h-screen bg-[#f3f6fa] dark:bg-[#07090d] text-[#1c2d3f] dark:text-[#f2f5fa]">
     <SiteHeader />
-    {adHtml && <div className="mx-auto max-w-4xl px-4 pt-5 md:px-6"><div className="overflow-hidden rounded-xl border border-[#e2e9f1] bg-white p-2"><AdHtml html={adHtml} /></div></div>}
+    {adHtml && <div className="mx-auto max-w-6xl px-4 pt-5 md:px-6"><div className="overflow-hidden rounded-xl border border-[#e2e9f1] bg-white p-2 dark:border-[#1e2a44] dark:bg-[#0d1627]"><AdHtml html={adHtml} /></div></div>}
 
-    <article className="mx-auto max-w-5xl px-4 py-12 md:px-6">
-      <p className="text-xs font-bold uppercase tracking-[.16em] text-[#2878d0]">Grátis, sem registo</p>
-      <h1 className="mt-2 text-3xl font-bold tracking-tight md:text-4xl">Centro de Ferramentas</h1>
-      <p className="mt-3 max-w-2xl leading-7 text-[#4a5f76]">Ferramentas práticas para calcular, organizar e gerir melhor o seu negócio em Angola.</p>
+    <article className="mx-auto max-w-6xl px-4 py-10 md:px-6 lg:py-14">
+      {/* Header */}
+      <header className="max-w-3xl">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-[#cbe8dc] bg-[#eff9f4] px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[.16em] text-[#227958] dark:border-[#1f3a2a] dark:bg-[#0e241b] dark:text-[#34d399]">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L19 7"/></svg>
+          GRÁTIS · Sem registo
+        </span>
+        <h1 className="mt-2 text-[34px] font-extrabold leading-[1.06] tracking-[-.02em] text-[var(--text)] sm:text-4xl">Centro de Ferramentas</h1>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--text-muted)] sm:text-base">Ferramentas práticas para calcular, organizar e gerir melhor o seu negócio em Angola.</p>
+      </header>
 
-      <div className="mt-8 rounded-3xl border border-[#e2e9f1] bg-white p-6 shadow-[var(--shadow-card)] md:p-8">
+      <div className="mt-6 rounded-[20px] border border-[var(--line)] bg-[var(--surface)] p-4 shadow-[var(--shadow-card)] sm:p-6 md:p-7">
         <ToolsHub ferramentas={FERRAMENTAS} />
       </div>
 
-      <div className="mt-10 grid gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-[#e2e9f1] bg-white p-5"><h2 className="font-bold">Fiscalidade</h2><p className="mt-2 text-sm leading-6 text-[#5b6f85]">IVA, salário líquido com IRT e validação de NIF, com as taxas em vigor em Angola.</p></div>
-        <div className="rounded-2xl border border-[#e2e9f1] bg-white p-5"><h2 className="font-bold">Gestão financeira</h2><p className="mt-2 text-sm leading-6 text-[#5b6f85]">Lucro, margem, markup, preço de venda e indicadores para decidir melhor.</p></div>
-        <div className="rounded-2xl border border-[#e2e9f1] bg-white p-5"><h2 className="font-bold">Documentos</h2><p className="mt-2 text-sm leading-6 text-[#5b6f85]">Orçamentos, facturas proforma, recibos e mapas de despesas em PDF — prontos a enviar.</p></div>
-      </div>
-
-      <section className="mt-10 rounded-2xl border border-[#e2e9f1] bg-white p-6 md:p-8">
-        <h2 className="text-xl font-bold">Sobre o Centro de Ferramentas</h2>
-        <p className="mt-2 leading-7 text-[#4a5f76]">
-          O Centro de Ferramentas do Machine Facturas reúne calculadoras e geradores gratuitos para empresas angolanas. São pensados para uso rápido, sem registo,
-          com explicações práticas e ligações aos guias e à <Link href="/academia" className="font-semibold text-[#2878d0] hover:underline">Academia Machine</Link>.
-        </p>
-        <h3 className="mt-6 font-bold">Como usar</h3>
-        <ol className="mt-2 space-y-1 leading-7 text-[#4a5f76]">
-          <li>1. Escolhe a ferramenta que precisares.</li>
-          <li>2. Preenche os dados e obtém o resultado ou documento PDF.</li>
-          <li>3. Usa as explicações e exemplos para aplicar ao teu negócio.</li>
-        </ol>
-        <h3 className="mt-6 font-bold">Categorias</h3>
-        <p className="mt-2 leading-7 text-[#4a5f76]"><strong>Fiscalidade:</strong> IVA, salário líquido/IRT, validador de NIF. <strong>Gestão financeira:</strong> lucro/margem, preço de venda. <strong>Documentos empresariais:</strong> orçamentos, facturas proforma, recibos, mapa de despesas.</p>
-      </section>
-
-      <section className="mt-10 rounded-2xl border border-[#e2e9f1] bg-white p-6 md:p-8">
-        <h2 className="text-xl font-bold">Aprende e pratica</h2>
-        <p className="mt-2 leading-7 text-[#4a5f76]">Junta as ferramentas com os guias e artigos da Academia para facturar com mais confiança.</p>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Link href="/guias/emitir-facturas" className="rounded-lg bg-[#eef6ff] px-3 py-1.5 text-sm font-semibold text-[#2878d0] hover:bg-[#e6f2ff]">Guia: Como emitir facturas</Link>
-          <Link href="/guias/saft" className="rounded-lg bg-[#eef6ff] px-3 py-1.5 text-sm font-semibold text-[#2878d0] hover:bg-[#e6f2ff]">Guia: SAFT-AO</Link>
-          <Link href="/academia" className="rounded-lg bg-[#eef6ff] px-3 py-1.5 text-sm font-semibold text-[#2878d0] hover:bg-[#e6f2ff]">Academia Machine</Link>
+      {/* Sobre + Como usar (duas colunas) */}
+      <section className="mt-6 grid gap-4 lg:grid-cols-[1fr_1fr]">
+        <div className="rounded-[18px] border border-[var(--line)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card)]">
+          <h2 className="text-base font-extrabold text-[var(--text)]">Sobre o Centro de Ferramentas</h2>
+          <p className="mt-2 text-sm leading-7 text-[var(--text-muted)]">
+            O Centro de Ferramentas do Machine Facturas reúne calculadoras e geradores gratuitos para empresas angolanas. São pensados para uso rápido, sem registo,
+            com explicações práticas e ligações aos guias e à <Link href="/academia" className="font-semibold text-[#021f87] underline underline-offset-2 hover:text-[#0634b8] dark:text-[#8aa4ff]">Academia Machine</Link>.
+          </p>
+        </div>
+        <div className="rounded-[18px] border border-[var(--line)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card)]">
+          <h2 className="text-base font-extrabold text-[var(--text)]">Como usar</h2>
+          <ol className="mt-3 space-y-3">
+            {[
+              { n: 1, title: 'Escolhe a ferramenta', desc: 'pela categoria ou pela pesquisa.' },
+              { n: 2, title: 'Preenche os dados', desc: 'campos reais do teu negócio.' },
+              { n: 3, title: 'Consulta e aplica', desc: 'o resultado, ou exporta em PDF.' },
+            ].map((step) => (
+              <li key={step.n} className="flex items-start gap-3">
+                <span aria-hidden="true" className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-[#dbe2ff] bg-[#eef2ff] text-[11px] font-extrabold text-[#021f87] dark:border-[#1e2a44] dark:bg-[#0d1730] dark:text-[#8aa4ff]">{step.n}</span>
+                <div>
+                  <p className="text-[13px] font-bold text-[var(--text)]">{step.title}</p>
+                  <p className="text-xs leading-5 text-[var(--text-muted)]">{step.desc}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
         </div>
       </section>
 
-      <div className="prose-cta mt-10 rounded-3xl bg-[#102b46] px-6 py-10 text-center text-white md:px-12">
-        <h2 className="text-2xl font-bold md:text-3xl">Quer isto tudo dentro do seu negócio?</h2>
-        <p className="mx-auto mt-3 max-w-xl leading-7 text-blue-100">No Machine Facturas, as facturas saem com o IVA calculado, assinadas e numeradas automaticamente. Grátis para começar — sem cartão.</p>
-        <Link href="/register" className="mt-6 inline-flex min-h-12 items-center justify-center rounded-xl bg-[#2878d0] px-8 text-base font-bold text-white transition hover:bg-[#216bbd]">Criar conta grátis</Link>
+      {/* Aprende e pratica — cartões reais */}
+      <section aria-labelledby="aprende-title" className="mt-6">
+        <h2 id="aprende-title" className="text-[10px] font-extrabold uppercase tracking-[.16em] text-[var(--text-muted)]">Aprende e pratica</h2>
+        <div className="mt-2 grid gap-3 sm:grid-cols-3">
+          {[
+            { href: '/guias/emitir-facturas', title: 'Como emitir facturas', desc: 'O fluxo completo de emissão, da criação ao envio.', tag: 'Guia' },
+            { href: '/guias/saft', title: 'SAFT-AO', desc: 'Como gerar e submeter o ficheiro de auditoria.', tag: 'Guia' },
+            { href: '/academia', title: 'Academia Machine', desc: 'Artigos e explicações para empresas angolanas.', tag: 'Academia' },
+          ].map((item) => (
+            <Link key={item.href} href={item.href} className="group rounded-[18px] border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] transition hover:-translate-y-[1px] hover:border-[#021f87]">
+              <p className="text-[10px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">{item.tag}</p>
+              <p className="mt-0.5 font-extrabold text-[var(--text)] transition group-hover:text-[#021f87] dark:group-hover:text-[#8aa4ff]">{item.title}</p>
+              <p className="mt-1.5 text-[12px] leading-5 text-[var(--text-muted)]">{item.desc}</p>
+              <p className="mt-3 text-xs font-semibold text-[#021f87] underline underline-offset-2 dark:text-[#8aa4ff]">Ler conteúdo →</p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA final */}
+      <div className="mt-8 rounded-[20px] border border-[var(--line)] bg-gradient-to-br from-[#021f87] to-[#0634b8] px-6 py-8 text-center text-white shadow-[0_18px_42px_rgba(2,31,135,.35)] md:px-10">
+        <h2 className="text-xl font-extrabold md:text-2xl">Queres isto tudo dentro do teu negócio?</h2>
+        <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-[#b9d0ff]">No Machine Facturas, as facturas saem com o IVA calculado, assinadas e numeradas automaticamente. Grátis para começar — sem cartão.</p>
+        <Link href="/register" className="mt-5 inline-flex min-h-12 items-center justify-center rounded-[14px] bg-white px-7 text-sm font-extrabold text-[#041f52] transition hover:bg-[#e8edff]">Criar conta grátis</Link>
       </div>
     </article>
 
