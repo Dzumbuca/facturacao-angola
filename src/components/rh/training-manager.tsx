@@ -4,6 +4,7 @@ import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { FormSection, FormField, FormActions, FormError, CalendarField } from '@/components/rh/form-kit';
+import { RhModuleHero } from '@/components/rh/premium-kit';
 type Enrollment = { id: string; status: string; score: number | null; employee: { firstName: string; lastName: string; employeeNumber: string; position: { title: string } | null } };
 type Course = { id: string; title: string; trainerName: string | null; startDate: string; endDate: string | null; cargaHoras: number; location: string | null; status: string; enrollments: Enrollment[] };
 type Employee = { id: string; firstName: string; lastName: string; employeeNumber: string };
@@ -101,11 +102,12 @@ export function TrainingManager({ courses, employees, positions }: { courses: Co
 
   return (
     <div className="space-y-5">
-      <div>
-        <p className="text-sm text-[#708195]">Desenvolvimento humano</p>
-        <h1 className="mt-1 text-2xl font-bold text-[#1c2d3f]">Formação profissional</h1>
-        <p className="mt-1 text-sm text-[#607286]">Cursos, inscrições, participação e conclusão.</p>
-      </div>
+      <RhModuleHero
+        eyebrow="Desenvolvimento humano"
+        title="Formação profissional"
+        description="Cursos, inscrições, participação e conclusão. Informação certa para auditorias e desenvolvimento de competências."
+        icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>}
+      />
 
       <FormError>{error}</FormError>
 

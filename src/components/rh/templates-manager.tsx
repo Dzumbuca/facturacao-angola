@@ -4,6 +4,7 @@ import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
+import { RhModuleHero } from '@/components/rh/premium-kit';
 type Template = { id: string; name: string; type: string; body: string; isActive: boolean; version: number; legalStatus?: string };
 
 const TYPE_LABEL: Record<string, string> = {
@@ -70,11 +71,12 @@ export function TemplatesManager({ templates }: { templates: Template[] }) {
 
   return (
     <div className="space-y-5">
-      <div>
-        <p className="text-sm text-[#708195]">Machine Documents</p>
-        <h1 className="mt-1 text-2xl font-bold text-[#1c2d3f]">Modelos</h1>
-        <p className="mt-1 text-sm text-[#607286]">Cada edição cria uma versão imutável. A validação jurídica é obrigatória antes de emitir.</p>
-      </div>
+      <RhModuleHero
+        eyebrow="Machine Documents"
+        title="Modelos"
+        description="Cada edição cria uma versão imutável. A validação jurídica é obrigatória antes de emitir."
+        icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M10 12h4"/><path d="M10 16h4"/></svg>}
+      />
 
       <form onSubmit={submit} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
         <div className="flex items-center justify-between">

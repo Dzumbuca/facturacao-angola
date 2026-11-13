@@ -4,6 +4,7 @@ import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { FormSection, FormField, FormActions, FormError, CurrencyInput } from '@/components/rh/form-kit';
+import { RhModuleHero } from '@/components/rh/premium-kit';
 type Deduction = { id: string; description: string; type: string; amount: number; remainingInstallments: number | null; active: boolean };
 
 const TYPE_LABEL: Record<string, string> = { ADIANTAMENTO: 'Adiantamento', EMPRESTIMO: 'Empréstimo', OUTRO: 'Outro' };
@@ -57,7 +58,14 @@ export function DeductionsManager({ employeeId, deductions, canWrite }: { employ
   }
 
   return (
-    <section className="rounded-xl border border-[#e1e8f0] bg-white">
+    <div className="space-y-4">
+    <RhModuleHero
+      eyebrow="Payroll"
+      title="Descontos recorrentes"
+      description="Adiantamentos e descontos mensais promovidos directamente no processamento salarial. Nunca são aplicados sem registo."
+      icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>}
+    />
+    <section className="rounded-[18px] border border-[#e2e8ef] bg-white shadow-[0_10px_28px_rgba(18,36,68,.05)] overflow-hidden">
       <h2 className="border-b border-[#eef2f6] px-4 py-3 text-sm font-bold text-[#1c2d3f]">Descontos recorrentes</h2>
 
       {canWrite && (
@@ -114,5 +122,6 @@ export function DeductionsManager({ employeeId, deductions, canWrite }: { employ
         </table>
       </div>
     </section>
+    </div>
   );
 }

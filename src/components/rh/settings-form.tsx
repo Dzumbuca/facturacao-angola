@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from 'react';
 
 import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
+import { RhModuleHero } from '@/components/rh/premium-kit';
 export function RhSettingsForm({ initial }: { initial: number | null }) {
   const [value, setValue] = useState(initial === null ? '' : String(initial));
   const [saving, setSaving] = useState(false);
@@ -29,7 +30,14 @@ export function RhSettingsForm({ initial }: { initial: number | null }) {
   }
 
   return (
-    <form onSubmit={submit} className="mt-3">
+    <div className="space-y-4">
+      <RhModuleHero
+        eyebrow="Machine RH"
+        title="Configurações"
+        description="Configuração global do módulo RH. O direito anual de férias é o valor aplicado para cálculo de saldo em todos os pedidos aprovados."
+        icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>}
+      />
+    <form onSubmit={submit} className="mt-1">
       <FormSection title="Direito de férias">
         <FormField label="Direito anual de férias" name="vacation-days" hint="Deixar vazio não aplica saldo">
           <div className="flex gap-2">
@@ -42,5 +50,6 @@ export function RhSettingsForm({ initial }: { initial: number | null }) {
       {message && <p role="status" className="mt-2 text-xs font-medium text-[#267256]">{message}</p>}
       <FormError>{error}</FormError>
     </form>
+    </div>
   );
 }

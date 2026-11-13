@@ -1,12 +1,13 @@
 import { type ReactNode, useState } from 'react';
 
-/** Secção com título, descrição curta e conteúdo consistente para formulários RH. */
-export function FormSection({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
+/** Secção premium: cartão branco com título, ícone e conteúdo consistente. */
+export function FormSection({ title, description, children, tone = 'default' }: { title: string; description?: string; children: ReactNode; tone?: 'default' | 'soft' | 'danger' }) {
+  const toneClass = tone === 'soft' ? 'bg-[#fbfcfe] border-[#e6eaf0]' : tone === 'danger' ? 'bg-[#fff7f7] border-[#f0dada]' : 'bg-white border-[#e6eaf0]';
   return (
-    <fieldset className="space-y-3">
-      <legend className="text-[11px] font-bold uppercase tracking-[.12em] text-[#8a99ab]">{title}</legend>
-      {description && <p className="text-xs text-[#708195]">{description}</p>}
-      <div className="grid gap-3 sm:grid-cols-2">{children}</div>
+    <fieldset className={`space-y-4 rounded-[18px] border ${toneClass} p-4 shadow-[0_10px_28px_rgba(18,36,68,.05)] sm:p-5`}>
+      <legend className="flex items-center gap-2 px-2 text-[11px] font-extrabold uppercase tracking-[.12em] text-[#52667a]">{title}</legend>
+      {description && <p className="text-xs leading-5 text-[#8094a9]">{description}</p>}
+      <div className="grid gap-4 sm:grid-cols-2">{children}</div>
     </fieldset>
   );
 }
@@ -17,7 +18,7 @@ type Base = { label: string; name?: string; required?: boolean; error?: string; 
 export function FormField({ label, name, required, error, hint, children }: Base) {
   const id = name ?? `rh-field-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
   return (
-    <div className="space-y-1">
+    <div className="space-y-1.5">
       <label htmlFor={id} className="app-label">{label}{required && <span className="text-[#a83939]"> *</span>}</label>
       {children}
       {hint && !error && <p className="text-[11px] text-[#8a99ab]">{hint}</p>}
@@ -30,8 +31,8 @@ export function FormField({ label, name, required, error, hint, children }: Base
 export function FormActions({ saving, onCancel, saveLabel, disabled }: { saving?: boolean; onCancel: () => void; saveLabel?: string; disabled?: boolean }) {
   return (
     <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-      <button type="button" onClick={onCancel} className="min-h-10 rounded-lg border border-[#cdddeb] px-4 text-sm font-semibold text-[#52667a] hover:bg-[#f3f6fa]">Cancelar</button>
-      <button type="submit" disabled={saving || disabled} className="min-h-10 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white disabled:opacity-60">{saving ? 'A guardar…' : (saveLabel ?? 'Guardar')}</button>
+      <button type="button" onClick={onCancel} className="min-h-12 rounded-[12px] border border-[#cdd6e3] bg-white px-5 text-sm font-semibold text-[#52667a] transition hover:bg-[#f3f6fa] focus:outline-none focus-visible:ring-4 focus-visible:ring-[#021f87]/10">Cancelar</button>
+      <button type="submit" disabled={saving || disabled} className="min-h-12 rounded-[12px] bg-gradient-to-br from-[#021f87] via-[#0b2b6b] to-[#1b3a7a] px-5 text-sm font-bold text-white shadow-[0_12px_28px_rgba(2,31,135,.34)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(2,31,135,.4)] disabled:opacity-60">{saving ? 'A guardar…' : (saveLabel ?? 'Guardar')}</button>
     </div>
   );
 }
@@ -39,13 +40,13 @@ export function FormActions({ saving, onCancel, saveLabel, disabled }: { saving?
 /** Alerta de erro de servidor / validação. */
 export function FormError({ children }: { children: ReactNode }) {
   if (!children) return null;
-  return <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-[#a83939]">{children}</p>;
+  return <p role="alert" className="rounded-[14px] border border-[#f3d0d0] bg-[#fcf2f2] px-4 py-3 text-sm font-semibold text-[#a83939]">{children}</p>;
 }
 
 /** Mensagem de sucesso transitória. */
 export function FormSuccess({ children }: { children: ReactNode }) {
   if (!children) return null;
-  return <p role="status" className="rounded-lg bg-[#eff9f4] px-3 py-2 text-sm text-[#267256]">{children}</p>;
+  return <p role="status" className="rounded-[14px] border border-[#c7e5d1] bg-[#eff9f4] px-4 py-3 text-sm font-semibold text-[#267256]">{children}</p>;
 }
 
 /** Skeleton de carregamento. */

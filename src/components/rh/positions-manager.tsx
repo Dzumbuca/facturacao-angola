@@ -4,6 +4,7 @@ import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { FormSection, FormActions, FormError } from '@/components/rh/form-kit';
+import { RhModuleHero } from '@/components/rh/premium-kit';
 type Position = {
   id: string; title: string; code: string | null; level: number | null;
   departmentId: string | null;
@@ -50,14 +51,13 @@ export function PositionsManager({ positions, departments }: {
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
-        <div>
-          <p className="text-sm text-[#708195]">Organização</p>
-          <h1 className="mt-1 text-2xl font-bold text-[#1c2d3f]">Cargos</h1>
-          <p className="mt-1 text-sm text-[#607286]">Funções por departamento e nível hierárquico.</p>
-        </div>
-        <button type="button" onClick={() => { setError(''); setOpen(true); }} className="min-h-11 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white">Novo cargo</button>
-      </div>
+      <RhModuleHero
+        eyebrow="Organização"
+        title="Cargos"
+        description="Funções por departamento e nível hierárquico. Estrutura a empresa antes de contratar."
+        icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12l2 2 4-4"/><path d="M21 12c0 4.418-4.03 8-9 8s-9-3.582-9-8 4.03-8 9-8 9 3.582 9 8z"/></svg>}
+        action={<button type="button" onClick={() => { setError(''); setOpen(true); }} className="min-h-12 rounded-[14px] bg-gradient-to-br from-[#021f87] via-[#0b2b6b] to-[#1b3a7a] px-5 text-sm font-bold text-white shadow-[0_12px_28px_rgba(2,31,135,.32)] transition hover:-translate-y-0.5">Novo cargo</button>}
+      />
 
       {open && (
         <form onSubmit={submit} className="rounded-xl border border-[#dfe7f0] bg-white p-4">

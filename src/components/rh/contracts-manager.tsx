@@ -4,6 +4,7 @@ import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { FormSection, FormField, FormActions, FormError, CurrencyInput, CalendarField } from '@/components/rh/form-kit';
+import { RhModuleHero } from '@/components/rh/premium-kit';
 type Contract = {
   id: string; type: string; status: string; startDate: string; endDate: string | null;
   salary: number; notes: string | null;
@@ -68,14 +69,13 @@ export function ContractsManager({ contracts, employees }: {
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
-        <div>
-          <p className="text-sm text-[#708195]">Vínculos</p>
-          <h1 className="mt-1 text-2xl font-bold text-[#1c2d3f]">Contratos</h1>
-          <p className="mt-1 text-sm text-[#607286]">Contratos, renovações e datas de vencimento.</p>
-        </div>
-        <button type="button" onClick={() => { setError(''); setOpen(true); }} disabled={employees.length === 0} className="min-h-11 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white disabled:opacity-50">Novo contrato</button>
-      </div>
+      <RhModuleHero
+        eyebrow="Vínculos"
+        title="Contratos"
+        description="Contratos, renovações e datas de vencimento. Cria rascunhos e mantém o controlo de datas num só sítio."
+        icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M10 12h4"/><path d="M10 16h4"/></svg>}
+        action={<button type="button" onClick={() => { setError(''); setOpen(true); }} disabled={employees.length === 0} className="min-h-12 rounded-[14px] bg-gradient-to-br from-[#021f87] via-[#0b2b6b] to-[#1b3a7a] px-5 text-sm font-bold text-white shadow-[0_12px_28px_rgba(2,31,135,.32)] transition hover:-translate-y-0.5 disabled:opacity-50">Novo contrato</button>}
+      />
 
       {open && (
         <form onSubmit={submit} className="rounded-xl border border-[#dfe7f0] bg-white p-4">

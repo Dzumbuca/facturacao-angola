@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 import { FormSection, FormField, FormActions, FormError, CalendarField } from '@/components/rh/form-kit';
+import { RhModuleHero } from '@/components/rh/premium-kit';
 const STATUS_LABEL: Record<string, string> = {
   ABERTA: 'Aberta', ENCERRADA: 'Encerrada', CANCELADA: 'Cancelada',
   RECEBIDA: 'Recebida', TRIAGEM: 'Triagem', ENTREVISTA: 'Entrevista',
@@ -147,11 +148,12 @@ export function RecruitmentManager({ openings, candidates, departments, position
 
   return (
     <div className="space-y-5">
-      <div>
-        <p className="text-sm text-[#708195]">Recrutamento e Seleção</p>
-        <h1 className="mt-1 text-2xl font-bold text-[#1c2d3f]">Recrutamento</h1>
-        <p className="mt-1 text-sm text-[#607286]">Vagas → candidaturas → triagem → entrevista → avaliação → admissão.</p>
-      </div>
+      <RhModuleHero
+        eyebrow="Recrutamento e Seleção"
+        title="Recrutamento"
+        description="Vagas, candidaturas, triagem, entrevista, avaliação e admissão. Um único sítio para toda a jornada de contratação."
+        icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>}
+      />
 
       <FormError>{error}</FormError>
 

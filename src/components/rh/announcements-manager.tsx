@@ -4,6 +4,7 @@ import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { FormSection, FormField, FormActions, FormError, CalendarField } from '@/components/rh/form-kit';
+import { RhModuleHero } from '@/components/rh/premium-kit';
 type Announcement = { id: string; title: string; body: string; priority: string; publishedAt: string; expiresAt: string | null };
 
 const PRIORITY: Record<string, string> = { BAIXA: 'Baixa', NORMAL: 'Normal', ALTA: 'Alta' };
@@ -42,11 +43,12 @@ export function AnnouncementsManager({ items }: { items: Announcement[] }) {
 
   return (
     <div className="space-y-5">
-      <div>
-        <p className="text-sm text-[#708195]">Comunicação interna</p>
-        <h1 className="mt-1 text-2xl font-bold text-[#1c2d3f]">Comunicados</h1>
-        <p className="mt-1 text-sm text-[#607286]">Avisos visíveis para todos os funcionários em Meu RH.</p>
-      </div>
+      <RhModuleHero
+        eyebrow="Comunicação interna"
+        title="Comunicados"
+        description="Avisos visíveis para todos os funcionários em Meu RH. Comunica uma vez, todos recebem."
+        icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M3 11l18-5-5 18-3-8-8-3z"/><path d="M13 15l6-6"/></svg>}
+      />
 
       <FormError>{error}</FormError>
 

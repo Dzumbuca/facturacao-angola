@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { RhModuleHero } from '@/components/rh/premium-kit';
 import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
 type Document = {
   id: string; title: string; status: string; type: string; createdAt: string;
@@ -66,11 +67,12 @@ export function DocumentsManager({ documents, templates, employees }: {
 
   return (
     <div className="space-y-5">
-      <div>
-        <p className="text-sm text-[#708195]">Machine Documents</p>
-        <h1 className="mt-1 text-2xl font-bold text-[#1c2d3f]">Documentos</h1>
-        <p className="mt-1 text-sm text-[#607286]">Gere rascunhos a partir de modelos, pré-visualize em PDF e emita após validação humana.</p>
-      </div>
+      <RhModuleHero
+        eyebrow="Machine Documents"
+        title="Documentos"
+        description="Gere rascunhos a partir de modelos, pré-visualize em PDF e emita apenas após a validação humana. Nenhum documento sai sem que alguém o aprove."
+        icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M10 13h4"/><path d="M10 17h4"/></svg>}
+      />
 
       <form onSubmit={generate} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
         <FormSection title="Gerar documento">

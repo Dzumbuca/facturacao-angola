@@ -4,6 +4,7 @@ import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { FormSection, FormActions, FormError } from '@/components/rh/form-kit';
+import { RhModuleHero } from '@/components/rh/premium-kit';
 type Department = {
   id: string; name: string; code: string | null; managerName: string | null;
   parentId: string | null; description: string | null;
@@ -89,14 +90,13 @@ export function DepartmentsManager({ departments }: { departments: Department[] 
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
-        <div>
-          <p className="text-sm text-[#708195]">Organização</p>
-          <h1 className="mt-1 text-2xl font-bold text-[#1c2d3f]">Departamentos</h1>
-          <p className="mt-1 text-sm text-[#607286]">Estrutura hierárquica e responsáveis.</p>
-        </div>
-        <button type="button" onClick={openCreate} className="min-h-11 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white">Novo departamento</button>
-      </div>
+      <RhModuleHero
+        eyebrow="Organização"
+        title="Departamentos"
+        description="Estrutura hierárquica e responsáveis. Cria a cadeia antes de distribuir funções."
+        icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M3 10h18M5 6h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/></svg>}
+        action={<button type="button" onClick={openCreate} className="min-h-12 rounded-[14px] bg-gradient-to-br from-[#021f87] via-[#0b2b6b] to-[#1b3a7a] px-5 text-sm font-bold text-white shadow-[0_12px_28px_rgba(2,31,135,.32)] transition hover:-translate-y-0.5">Novo departamento</button>}
+      />
 
       {open && (
         <form onSubmit={submit} className="rounded-xl border border-[#dfe7f0] bg-white p-4">

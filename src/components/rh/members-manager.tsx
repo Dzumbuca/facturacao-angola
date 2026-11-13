@@ -4,6 +4,7 @@ import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
+import { RhModuleHero } from '@/components/rh/premium-kit';
 type Member = { id: string; role: string; user: { email: string; name: string | null } };
 const ROLES: Record<string, string> = { ADMIN: 'Administrador RH', MANAGER: 'Gestor RH', FINANCE: 'Financeiro' };
 
@@ -50,11 +51,12 @@ export function MembersManager({ members }: { members: Member[] }) {
 
   return (
     <div className="space-y-5">
-      <div>
-        <p className="text-sm text-[#708195]">Administração</p>
-        <h1 className="mt-1 text-2xl font-bold text-[#1c2d3f]">Equipa RH</h1>
-        <p className="mt-1 text-sm text-[#607286]">Funções por empresa. O administrador da empresa mantém acesso total.</p>
-      </div>
+      <RhModuleHero
+        eyebrow="Administração"
+        title="Equipa RH"
+        description="Funções por empresa. O administrador da empresa mantém acesso total, sem excepções."
+        icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="7" r="4"/><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><path d="M19 11l2 2 4-4"/></svg>}
+      />
 
       <form onSubmit={submit} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
         <FormSection title="Adicionar membro RH">

@@ -3,6 +3,7 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { RhModuleHero } from '@/components/rh/premium-kit';
 import { FormSection, FormField, FormActions, FormError, CalendarField } from '@/components/rh/form-kit';
 type Employee = { id: string; firstName: string; lastName: string; employeeNumber: string };
 type Leave = {
@@ -88,11 +89,12 @@ export function LeavesManager({ leaves, employees, vacationDaysPerYear }: {
 
   return (
     <div className="space-y-5">
-      <div>
-        <p className="text-sm text-[#708195]">Pessoas</p>
-        <h1 className="mt-1 text-2xl font-bold text-[#1c2d3f]">Férias e licenças</h1>
-        <p className="mt-1 text-sm text-[#607286]">Pedidos, aprovação, saldo e mapa do ano {year}.</p>
-      </div>
+      <RhModuleHero
+        eyebrow="Pessoas"
+        title="Férias e licenças"
+        description={`Pedidos, aprovação, saldo e mapa do ano ${year}. Saldo e histórico ficam no mesmo sítio, sem surpresas no fim do mês.`}
+        icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2z"/><path d="M9 14l2 2 4-4"/></svg>}
+      />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="rounded-xl border border-[#e1e8f0] bg-white p-4"><p className="text-xs text-[#708195]">Aprovadas</p><p className="mt-1 text-xl font-bold tabular-nums">{approved} d</p></div>
