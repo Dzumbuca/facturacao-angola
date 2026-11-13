@@ -162,13 +162,32 @@ button, a { -webkit-tap-highlight-color: transparent; }
   100% { transform: translateY(0px) rotate(var(--hero-rot, 0deg)); }
 }
 .hero-float {
-  animation: hero-float 4.5s ease-in-out infinite;
+  animation: hero-float 5s ease-in-out infinite;
   will-change: transform;
 }
+.hero-entrance {
+  animation: hero-enter 620ms ease-out both;
+  will-change: transform, opacity;
+}
+.hero-icon-glow {
+  animation: hero-icon-glow 3.5s ease-in-out infinite;
+  will-change: filter;
+}
+@keyframes hero-enter {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes hero-icon-glow {
+  0% { filter: drop-shadow(0 4px 10px rgba(45, 89, 208, .45)) drop-shadow(0 0 2px rgba(120, 170, 255, .3)); }
+  50% { filter: drop-shadow(0 4px 18px rgba(45, 89, 208, .65)) drop-shadow(0 0 14px rgba(120, 170, 255, .6)); }
+  100% { filter: drop-shadow(0 4px 10px rgba(45, 89, 208, .45)) drop-shadow(0 0 2px rgba(120, 170, 255, .3)); }
+}
 @media (prefers-reduced-motion: reduce) {
-  .hero-float {
+  .hero-float, .hero-entrance, .hero-icon-glow {
     animation: none;
     transform: none;
+    opacity: 1;
+    filter: none;
   }
 }
 

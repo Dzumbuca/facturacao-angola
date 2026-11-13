@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import type { CSSProperties } from 'react';
 import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
 import { getSessionTenantId } from '@/lib/session';
@@ -65,23 +64,27 @@ export default async function DashboardPage({ searchParams }: Props) {
         </div>
 
         <div aria-hidden="true" className="relative hidden h-full min-h-[180px] select-none items-center justify-center lg:flex">
-          {/* Camada 1 — cartão maior */}
-          <div className="hero-float absolute h-56 w-44 rounded-[20px] border border-white/10 bg-white/[0.04] backdrop-blur-[2px] shadow-[0_10px_30px_rgba(0,0,0,.25)]" style={{ '--hero-rot': '-8deg', transform: 'rotate(-8deg)' } as CSSProperties}>
-            <div className="flex h-full flex-col justify-between p-4">
-              <div className="space-y-2"><div className="h-2 w-16 rounded-full bg-white/20" /><div className="h-2 w-10 rounded-full bg-white/15" /></div>
-              <div className="space-y-2"><div className="h-2 w-12 rounded-full bg-white/15" /><div className="h-2 w-20 rounded-full bg-white/20" /></div>
+          {/* Camada 1 — cartão maior (traseira) */}
+          <div className="hero-entrance absolute" style={{ animationDelay: '100ms' }}>
+            <div className="hero-float absolute h-56 w-44 rounded-[20px] border border-white/10 bg-white/[0.04] backdrop-blur-[2px] shadow-[0_10px_30px_rgba(0,0,0,.25)]" style={{ transform: 'rotate(-8deg)' }}>
+              <div className="flex h-full flex-col justify-between p-4">
+                <div className="space-y-2"><div className="h-2 w-16 rounded-full bg-white/20" /><div className="h-2 w-10 rounded-full bg-white/15" /></div>
+                <div className="space-y-2"><div className="h-2 w-12 rounded-full bg-white/15" /><div className="h-2 w-20 rounded-full bg-white/20" /></div>
+              </div>
             </div>
           </div>
           {/* Camada 2 — cartão intermédio */}
-          <div className="hero-float absolute h-52 w-40 rounded-[18px] border border-white/15 bg-white/[0.08] backdrop-blur-md shadow-[0_14px_36px_rgba(0,0,0,.32)]" style={{ '--hero-rot': '4deg', transform: 'rotate(4deg)' } as CSSProperties}>
-            <div className="flex h-full flex-col justify-between p-4">
-              <div className="space-y-2"><div className="h-2 w-14 rounded-full bg-white/35" /><div className="h-2 w-20 rounded-full bg-white/25" /></div>
-              <div className="space-y-2"><div className="h-2 w-16 rounded-full bg-white/30" /><div className="h-2 w-10 rounded-full bg-white/20" /></div>
+          <div className="hero-entrance absolute" style={{ animationDelay: '250ms' }}>
+            <div className="hero-float absolute h-52 w-40 rounded-[18px] border border-white/15 bg-white/[0.08] backdrop-blur-md shadow-[0_14px_36px_rgba(0,0,0,.32)]" style={{ transform: 'rotate(4deg)' }}>
+              <div className="flex h-full flex-col justify-between p-4">
+                <div className="space-y-2"><div className="h-2 w-14 rounded-full bg-white/35" /><div className="h-2 w-20 rounded-full bg-white/25" /></div>
+                <div className="space-y-2"><div className="h-2 w-16 rounded-full bg-white/30" /><div className="h-2 w-10 rounded-full bg-white/20" /></div>
+              </div>
             </div>
           </div>
           {/* Camada 3 — cartão frontal + ícone central */}
-          <div className="relative flex h-56 w-44 items-center justify-center rounded-[22px] border border-white/25 bg-white/[0.14] backdrop-blur-xl shadow-[0_22px_50px_rgba(2,31,135,.45)]">
-            <svg width="78" height="78" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#dce7ff] drop-shadow-[0_4px_12px_rgba(45,89,208,.45)]">
+          <div className="hero-entrance relative flex h-56 w-44 items-center justify-center rounded-[22px] border border-white/25 bg-white/[0.14] backdrop-blur-xl shadow-[0_22px_50px_rgba(2,31,135,.45)]" style={{ animationDelay: '400ms' }}>
+            <svg width="78" height="78" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="hero-icon-glow text-[#dce7ff]" style={{ animationDelay: '550ms' }}>
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
               <path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/>
             </svg>
