@@ -5,7 +5,7 @@ import type { ReportPeriod } from './report-period';
 type MetricInvoice = { id: string; number?: string; type: string; status: string; total: number | string; issuedAt: Date; dueAt: Date | null; customer?: { name: string }; payments: { amount: number | string; status: string; paymentDate: Date; method?: string }[] };
 type MetricPayment = { amount: number | string; status: string; paymentDate: Date; method?: string };
 export type FinancialMetrics = {
-  invoiced: number; invoicedPrevious: number; invoicedChangePercent: number | null; received: number; outstanding: number; overdue: number;
+  invoiced: number; invoicedPrevious: number; invoicedChangePercent: number | null; received: number; outstanding: number; pendingYetDue: number; overdue: number;
   dueSoon: number; invoiceCount: number; stateCounts: Record<InvoiceDisplayState, number>;
   invoiceSeries: { date: string; value: number }[]; receiptSeries: { date: string; value: number }[];
   paymentMethods: { method: string; confirmed: number; pending: number }[]; pendingTotal: number;
@@ -46,8 +46,9 @@ export function aggregatePeriodMetrics(input: { invoices: MetricInvoice[]; previ
     if (state === 'OVERDUE') overdue += balance;
     if (balance > 0 && invoice.dueAt && dateKey(invoice.dueAt) >= dateKey(now) && dateKey(invoice.dueAt) <= dateKey(new Date(now.getTime() + 7 * 86400000))) dueSoon += balance;
   }
+  const pendingYetDue = roundMoney(Math.max(0, outstanding - overdue));
   return {
-    invoiced, invoicedPrevious, invoicedChangePercent, received, outstanding: roundMoney(outstanding), overdue: roundMoney(overdue), dueSoon: roundMoney(dueSoon),
+    invoiced, invoicedPrevious, invoicedChangePercent, received, outstanding: roundMoney(outstanding), pendingYetDue, overdue: roundMoney(overdue), dueSoon: roundMoney(dueSoon),
     paymentMethods, pendingTotal: roundMoney(paymentMethods.reduce((sum, method) => sum + method.pending, 0)),
     invoiceCount: invoices.length, stateCounts,
     invoiceSeries: series(invoices.map((invoice) => ({ date: invoice.issuedAt, value: Number(invoice.total) })), input.period),

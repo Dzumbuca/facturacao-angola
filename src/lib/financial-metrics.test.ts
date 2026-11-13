@@ -17,6 +17,7 @@ describe('aggregatePeriodMetrics', () => {
     expect(metrics.received).toBe(20);
     expect(metrics.outstanding).toBe(80);
     expect(metrics.overdue).toBe(80);
+    expect(metrics.pendingYetDue).toBe(0);
     expect(metrics.stateCounts.OVERDUE).toBe(1);
     expect(metrics.stateCounts.CANCELLED).toBe(0);
     expect(metrics.invoiceSeries.find((point) => point.date === '2026-10-03')?.value).toBe(0);
@@ -37,5 +38,22 @@ describe('aggregatePeriodMetrics', () => {
     expect(metrics.received).toBe(30);
     expect(metrics.pendingTotal).toBe(20);
     expect(metrics.paymentMethods).toEqual([{ method: 'BANK_TRANSFER', confirmed: 30, pending: 20 }]);
+  });
+});
+
+describe('aggregatePeriodMetrics/pendingYetDue', () => {
+  it('returns non-overdue pending balance as the pendingYetDue complement', () => {
+    const period = { start: new Date('2026-10-01T00:00:00.000Z'), endExclusive: new Date('2026-11-01T00:00:00.000Z'), key: 'thisMonth', timeZone: 'Africa/Luanda' as const };
+    const metrics = aggregatePeriodMetrics({
+      invoices: [
+        { id: 'overdue', type: 'FT', status: 'ISSUED', total: 1000, issuedAt: new Date('2026-10-02'), dueAt: new Date('2026-10-05'), payments: [{ amount: 200, status: 'CONFIRMED', paymentDate: new Date('2026-10-03') }] },
+        { id: 'yetToDue', type: 'FT', status: 'ISSUED', total: 500, issuedAt: new Date('2026-10-02'), dueAt: new Date('2026-10-30'), payments: [] },
+      ],
+      period,
+      now: new Date('2026-10-19T12:00:00.000Z'),
+    });
+    expect(metrics.outstanding).toBe(1300);
+    expect(metrics.overdue).toBe(800);
+    expect(metrics.pendingYetDue).toBe(500);
   });
 });

@@ -24,23 +24,25 @@ export function PremiumKpi({ label, value, detail, tone = 'neutral', icon }: {
   tone?: 'neutral' | 'success' | 'warning' | 'danger' | 'primary';
   icon?: ReactNode;
 }) {
-  const toneAccent: Record<typeof tone, string> = {
-    neutral: 'var(--text)',
-    primary: 'var(--blue)',
-    success: '#227958',
-    warning: '#b16d15',
-    danger: '#ad4444',
+  // Cores semânticas — remapeadas por tokens; nunca fixas.
+  const toneStyle: Record<typeof tone, { color: string; ring: string; bg: string }> = {
+    neutral: { color: 'var(--text)', ring: 'var(--line)', bg: 'var(--surface-raised)' },
+    primary: { color: 'var(--blue)', ring: '#cfe0ff', bg: 'var(--surface-raised)' },
+    success: { color: 'var(--success)', ring: '#c7e5d1', bg: '#effaf4' },
+    warning: { color: '#946000', ring: '#f3dfae', bg: '#fdf6e9' },
+    danger:  { color: 'var(--danger)', ring: '#f3d0d0', bg: '#fdf2f2' },
   };
+  const styles = toneStyle[tone];
   return (
-    <article className={`${cardBase} group overflow-hidden p-5 hover:-translate-y-[2px] sm:p-6`}>
-      <div className="flex h-full flex-col justify-between gap-3">
-        <div className="flex items-start justify-between gap-2">
-          <p className="text-[10px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">{label}</p>
-          {icon && <span className="text-[var(--text-muted)] transition group-hover:text-[var(--blue)]">{icon}</span>}
+    <article className={`${cardBase} group overflow-hidden px-5 pt-4 pb-5 hover:-translate-y-[1px]`}>
+      <div className="flex h-full min-w-0 flex-col gap-4">
+        <div className="flex items-start justify-between gap-3">
+          <p className="text-[11px] font-semibold uppercase leading-4 tracking-[.12em] text-[var(--text-muted)]">{label}</p>
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] ring-1" style={{ background: styles.bg, color: styles.color, borderColor: styles.ring }}>{icon}</span>
         </div>
-        <div>
-          <p className={`tabular-nums font-extrabold leading-none tracking-tight ${valueFontClass(value)}`} style={{ color: toneAccent[tone], filter: "drop-shadow(0 1px 4px rgba(0,0,0,.35))" }}>{value}</p>
-          {detail && <p className="mt-1 text-[10px] leading-4 text-[var(--text-muted)] sm:text-[11px]">{detail}</p>}
+        <div className="min-w-0 flex-1">
+          <p className={`tabular-nums font-extrabold leading-none tracking-tight text-[var(--text)] ${valueFontClass(value)}`} style={{ color: styles.color }}>{value}</p>
+          {detail && <p className="mt-2 text-[12px] leading-4 text-[var(--text-muted)]">{detail}</p>}
         </div>
       </div>
     </article>
