@@ -74,7 +74,7 @@ export function DocumentsManager({ documents, templates, employees }: {
         icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M10 13h4"/><path d="M10 17h4"/></svg>}
       />
 
-      <form onSubmit={generate} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
+      <form onSubmit={generate} className="rounded-xl border border-[var(--line)] bg-white p-4">
         <FormSection title="Gerar documento">
           <div>
             <FormField label="Modelo" name="doc-template" required>
@@ -101,20 +101,20 @@ export function DocumentsManager({ documents, templates, employees }: {
         </div>
       </form>
 
-      <div className="overflow-x-auto rounded-xl border border-[#e1e8f0] bg-white">
+      <div className="overflow-x-auto rounded-xl border border-[var(--line)] bg-white">
         <table className="data-table min-w-[820px]">
           <thead><tr><th>Documento</th><th>Funcionário</th><th>Estado</th><th>Criado</th><th>Acções</th></tr></thead>
           <tbody>
             {documents.map((document) => (
               <tr key={document.id}>
-                <td data-mobile-primary><span className="block font-semibold text-[#1c2d3f]">{document.title}</span><span className="block text-xs text-[#708195]">{document.type}</span></td>
+                <td data-mobile-primary><span className="block font-semibold text-[var(--text)]">{document.title}</span><span className="block text-xs text-[var(--text-muted)]">{document.type}</span></td>
                 <td>{document.employee ? `${document.employee.firstName} ${document.employee.lastName}` : '—'}</td>
                 <td><span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${STATUS_TONE[document.status] ?? ''}`}>{STATUS_LABEL[document.status] ?? document.status}</span></td>
                 <td className="tabular-nums text-xs">{new Date(document.createdAt).toLocaleDateString('pt-AO')}</td>
                 <td data-mobile-actions>
                   <div className="flex flex-wrap gap-2">
-                    <a href={`/api/rh/documents/${document.id}/pdf`} target="_blank" rel="noreferrer" className="inline-flex min-h-9 items-center rounded-lg border border-[#cdddeb] px-3 text-xs font-semibold text-[#021f87]">PDF</a>
-                    <a href={`/api/rh/documents/${document.id}/docx`} className="inline-flex min-h-9 items-center rounded-lg border border-[#cdddeb] px-3 text-xs font-semibold text-[#52667a]">DOCX</a>
+                    <a href={`/api/rh/documents/${document.id}/pdf`} target="_blank" rel="noreferrer" className="inline-flex min-h-9 items-center rounded-lg border border-[var(--line)] px-3 text-xs font-semibold text-[var(--blue)]">PDF</a>
+                    <a href={`/api/rh/documents/${document.id}/docx`} className="inline-flex min-h-9 items-center rounded-lg border border-[var(--line)] px-3 text-xs font-semibold text-[#52667a]">DOCX</a>
                     {document.status === 'RASCUNHO' && (
                       <>
                         <button type="button" onClick={() => decide(document.id, 'EMITIDO')} className="min-h-9 rounded-lg border border-[#cbe8dc] px-3 text-xs font-semibold text-[#267256]">Emitir</button>

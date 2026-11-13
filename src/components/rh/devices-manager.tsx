@@ -54,12 +54,12 @@ export function DevicesManager({ devices }: { devices: Device[] }) {
   return (
     <div className="space-y-5">
       <div>
-        <p className="text-sm text-[#708195]">Machine Point</p>
-        <h1 className="mt-1 text-2xl font-bold text-[#1c2d3f]">Dispositivos</h1>
-        <p className="mt-1 text-sm text-[#607286]">Terminais autorizados a registar ponto por QR.</p>
+        <p className="text-sm text-[var(--text-muted)]">Machine Point</p>
+        <h1 className="mt-1 text-2xl font-bold text-[var(--text)]">Dispositivos</h1>
+        <p className="mt-1 text-sm text-[var(--text-muted)]">Terminais autorizados a registar ponto por QR.</p>
       </div>
 
-      <form onSubmit={create} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
+      <form onSubmit={create} className="rounded-xl border border-[var(--line)] bg-white p-4">
         <FormSection title="Registar dispositivo">
           <div className="sm:col-span-2 flex flex-col gap-2 sm:flex-row sm:items-end">
             <div className="flex-1">
@@ -82,18 +82,18 @@ export function DevicesManager({ devices }: { devices: Device[] }) {
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-[#e1e8f0] bg-white">
+      <div className="overflow-x-auto rounded-xl border border-[var(--line)] bg-white">
         <table className="data-table min-w-[560px]">
           <thead><tr><th>Dispositivo</th><th>Estado</th><th>Último uso</th><th>Criado</th><th>Acções</th></tr></thead>
           <tbody>
             {devices.map((device) => (
               <tr key={device.id}>
-                <td data-mobile-primary className="font-semibold text-[#1c2d3f]">{device.name}</td>
+                <td data-mobile-primary className="font-semibold text-[var(--text)]">{device.name}</td>
                 <td><span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${device.isActive ? 'bg-[#eff9f4] text-[#267256]' : 'bg-[#fdf3f3] text-[#a83939]'}`}>{device.isActive ? 'Activo' : 'Desactivado'}</span></td>
                 <td className="tabular-nums text-xs">{date(device.lastSeenAt)}</td>
                 <td className="tabular-nums text-xs">{date(device.createdAt)}</td>
                 <td data-mobile-actions>
-                  <button type="button" onClick={() => toggle(device.id, !device.isActive)} className="min-h-9 rounded-lg border border-[#cdddeb] px-3 text-xs font-semibold text-[#021f87]">{device.isActive ? 'Desactivar' : 'Activar'}</button>
+                  <button type="button" onClick={() => toggle(device.id, !device.isActive)} className="min-h-9 rounded-lg border border-[var(--line)] px-3 text-xs font-semibold text-[var(--blue)]">{device.isActive ? 'Desactivar' : 'Activar'}</button>
                 </td>
               </tr>
             ))}

@@ -12,7 +12,7 @@ type Run = { id: string; period: string; totalNet: number };
 
 const STATUS: Record<string, string> = { DRAFT: 'Rascunho', SENT: 'Enviado', CONFIRMED: 'Confirmado', FAILED: 'Falhado' };
 const TONE: Record<string, string> = {
-  DRAFT: 'bg-[#fff7e6] text-[#8a5a00]', SENT: 'bg-[#eef4ff] text-[#021f87]',
+  DRAFT: 'bg-[#fff7e6] text-[#8a5a00]', SENT: 'bg-[var(--surface-raised)] text-[var(--blue)]',
   CONFIRMED: 'bg-[#eff9f4] text-[#267256]', FAILED: 'bg-[#fdf3f3] text-[#a83939]',
 };
 
@@ -64,12 +64,12 @@ export function PaymentsManager({ batches, runs }: { batches: Batch[]; runs: Run
   return (
     <div className="space-y-5">
       <div>
-        <p className="text-sm text-[#708195]">Payroll Connect</p>
-        <h1 className="mt-1 text-2xl font-bold text-[#1c2d3f]">Pagamentos</h1>
-        <p className="mt-1 text-sm text-[#607286]">Lotes manuais. Nenhuma transferência bancária real é executada nesta versão.</p>
+        <p className="text-sm text-[var(--text-muted)]">Payroll Connect</p>
+        <h1 className="mt-1 text-2xl font-bold text-[var(--text)]">Pagamentos</h1>
+        <p className="mt-1 text-sm text-[var(--text-muted)]">Lotes manuais. Nenhuma transferência bancária real é executada nesta versão.</p>
       </div>
 
-      <form onSubmit={create} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
+      <form onSubmit={create} className="rounded-xl border border-[var(--line)] bg-white p-4">
         <FormSection title="Criar lote de pagamentos">
           <div className="sm:col-span-2">
             <FormField label="Processamento aprovado" name="pay-run" required>
@@ -92,7 +92,7 @@ export function PaymentsManager({ batches, runs }: { batches: Batch[]; runs: Run
         </FormSection>
       </form>
 
-      <div className="overflow-x-auto rounded-xl border border-[#e1e8f0] bg-white">
+      <div className="overflow-x-auto rounded-xl border border-[var(--line)] bg-white">
         <table className="data-table min-w-[720px]">
           <thead><tr><th>Período</th><th>Canal</th><th>Funcionários</th><th>Total</th><th>Estado</th><th>Acções</th></tr></thead>
           <tbody>
@@ -105,7 +105,7 @@ export function PaymentsManager({ batches, runs }: { batches: Batch[]; runs: Run
                 <td><span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${TONE[batch.status] ?? ''}`}>{STATUS[batch.status] ?? batch.status}</span></td>
                 <td data-mobile-actions>
                   <div className="flex flex-wrap gap-2">
-                    {batch.status === 'DRAFT' && <button type="button" onClick={() => transition(batch.id, 'SENT')} className="min-h-9 rounded-lg border border-[#cdddeb] px-3 text-xs font-semibold text-[#021f87]">Enviar</button>}
+                    {batch.status === 'DRAFT' && <button type="button" onClick={() => transition(batch.id, 'SENT')} className="min-h-9 rounded-lg border border-[var(--line)] px-3 text-xs font-semibold text-[var(--blue)]">Enviar</button>}
                     {batch.status === 'SENT' && (
                       <>
                         <button type="button" onClick={() => transition(batch.id, 'CONFIRMED')} className="min-h-9 rounded-lg border border-[#cbe8dc] px-3 text-xs font-semibold text-[#267256]">Confirmar</button>
@@ -116,7 +116,7 @@ export function PaymentsManager({ batches, runs }: { batches: Batch[]; runs: Run
                 </td>
               </tr>
             ))}
-            {batches.length === 0 && <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-[#708195]">Ainda não há lotes.</td></tr>}
+            {batches.length === 0 && <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-[var(--text-muted)]">Ainda não há lotes.</td></tr>}
           </tbody>
         </table>
       </div>

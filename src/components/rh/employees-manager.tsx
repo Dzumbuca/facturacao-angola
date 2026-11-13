@@ -200,9 +200,9 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
     <div className="space-y-5">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
         <div>
-          <p className="text-sm text-[#708195]">Pessoas</p>
-          <h1 className="mt-1 text-2xl font-bold text-[#1c2d3f]">Funcionários</h1>
-          <p className="mt-1 text-sm text-[#607286]">Cadastro, organização e dados profissionais da equipa.</p>
+          <p className="text-sm text-[var(--text-muted)]">Pessoas</p>
+          <h1 className="mt-1 text-2xl font-bold text-[var(--text)]">Funcionários</h1>
+          <p className="mt-1 text-sm text-[var(--text-muted)]">Cadastro, organização e dados profissionais da equipa.</p>
         </div>
         <button type="button" onClick={openCreate} className="min-h-11 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white hover:bg-[#061965]">Novo funcionário</button>
       </div>
@@ -223,27 +223,27 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
       </div>
 
       <DataTable>
-        <thead><tr><th className="sticky top-0 z-10 border-b border-[#e2e8ef] bg-[#fbfcfe] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[#7a8799]">Funcionário</th><th className="border-b border-[#e2e8ef] bg-[#fbfcfe] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[#7a8799]">Nº</th><th className="border-b border-[#e2e8ef] bg-[#fbfcfe] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[#7a8799]">Cargo / Departamento</th><th className="border-b border-[#e2e8ef] bg-[#fbfcfe] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[#7a8799]">Admissão</th><th className="border-b border-[#e2e8ef] bg-[#fbfcfe] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[#7a8799]">Salário</th><th className="border-b border-[#e2e8ef] bg-[#fbfcfe] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[#7a8799]">Estado</th><th className="border-b border-[#e2e8ef] bg-[#fbfcfe] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[#7a8799]">Acções</th></tr></thead>
+        <thead><tr><th className="sticky top-0 z-10 border-b border-[var(--line)] bg-[var(--surface-raised)] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[var(--text-muted)]">Funcionário</th><th className="border-b border-[var(--line)] bg-[var(--surface-raised)] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[var(--text-muted)]">Nº</th><th className="border-b border-[var(--line)] bg-[var(--surface-raised)] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[var(--text-muted)]">Cargo / Departamento</th><th className="border-b border-[var(--line)] bg-[var(--surface-raised)] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[var(--text-muted)]">Admissão</th><th className="border-b border-[var(--line)] bg-[var(--surface-raised)] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[var(--text-muted)]">Salário</th><th className="border-b border-[var(--line)] bg-[var(--surface-raised)] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[var(--text-muted)]">Estado</th><th className="border-b border-[var(--line)] bg-[var(--surface-raised)] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[var(--text-muted)]">Acções</th></tr></thead>
           <tbody>
             {filtered.map((employee) => (
               <tr key={employee.id}>
                 <td data-mobile-primary>
                   <div className="flex items-center gap-2">
-                    <SignedImage path={employee.photoUrl} alt={`${employee.firstName} ${employee.lastName}`} className="h-9 w-9 rounded-full border border-[#e1e8f0] object-cover" fallback={<div className="grid h-9 w-9 place-items-center rounded-full bg-[#eef2ff] text-xs font-bold text-[#021f87]">{employee.firstName.charAt(0).toUpperCase()}{employee.lastName.charAt(0).toUpperCase()}</div>} />
-                    <Link href={`/rh/funcionarios/${employee.id}`} className="block font-semibold text-[#1c2d3f] underline-offset-2 hover:underline">{employee.firstName} {employee.lastName}
-                      <span className="block text-xs text-[#708195]">{employee.email || '—'}</span>
+                    <SignedImage path={employee.photoUrl} alt={`${employee.firstName} ${employee.lastName}`} className="h-9 w-9 rounded-full border border-[var(--line)] object-cover" fallback={<div className="grid h-9 w-9 place-items-center rounded-full bg-[#eef2ff] text-xs font-bold text-[var(--blue)]">{employee.firstName.charAt(0).toUpperCase()}{employee.lastName.charAt(0).toUpperCase()}</div>} />
+                    <Link href={`/rh/funcionarios/${employee.id}`} className="block font-semibold text-[var(--text)] underline-offset-2 hover:underline">{employee.firstName} {employee.lastName}
+                      <span className="block text-xs text-[var(--text-muted)]">{employee.email || '—'}</span>
                     </Link>
                   </div>
                 </td>
-                <td className="font-mono text-xs text-[#607286]">{employee.employeeNumber}</td>
+                <td className="font-mono text-xs text-[var(--text-muted)]">{employee.employeeNumber}</td>
                 <td>
                   <span className="block text-sm">{employee.position?.title ?? '—'}</span>
-                  <span className="block text-xs text-[#708195]">{employee.department?.name ?? '—'}</span>
+                  <span className="block text-xs text-[var(--text-muted)]">{employee.department?.name ?? '—'}</span>
                 </td>
                 <td className="tabular-nums">{date(employee.hireDate)}</td>
                 <td className="tabular-nums">{money(employee.baseSalary)}</td>
-                <td><span className="rounded-full bg-[#eef4ff] px-2 py-0.5 text-[11px] font-semibold text-[#021f87]">{STATUS_LABEL[employee.status] ?? employee.status}</span></td>
-                <td data-mobile-actions><button type="button" onClick={() => openEdit(employee)} className="min-h-10 rounded-lg border border-[#cdddeb] px-3 text-sm font-semibold text-[#021f87]">Editar</button></td>
+                <td><span className="rounded-full bg-[var(--surface-raised)] px-2 py-0.5 text-[11px] font-semibold text-[var(--blue)]">{STATUS_LABEL[employee.status] ?? employee.status}</span></td>
+                <td data-mobile-actions><button type="button" onClick={() => openEdit(employee)} className="min-h-10 rounded-lg border border-[var(--line)] px-3 text-sm font-semibold text-[var(--blue)]">Editar</button></td>
               </tr>
             ))}
             {filtered.length === 0 && (
@@ -255,11 +255,11 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
       {generatedPin && (
         <div role="dialog" aria-modal="true" aria-labelledby="rh-pin-title" className="fixed inset-0 z-[60] flex items-end justify-center bg-[#102b46]/50 p-0 backdrop-blur-[2px] sm:items-center sm:p-5">
           <div className="w-full max-w-md rounded-t-2xl bg-white p-6 shadow-2xl sm:rounded-2xl">
-            <h2 id="rh-pin-title" className="text-lg font-bold text-[#1c2d3f]">Funcionário criado</h2>
-            <p className="mt-1 text-sm text-[#607286]">O PIN do ponto gerado automaticamente é mostrado uma única vez. Anota-o agora e entrega ao funcionário.</p>
-            <div className="mt-4 rounded-lg border border-[#e1e8f0] bg-[#f8fafc] p-4 text-center">
+            <h2 id="rh-pin-title" className="text-lg font-bold text-[var(--text)]">Funcionário criado</h2>
+            <p className="mt-1 text-sm text-[var(--text-muted)]">O PIN do ponto gerado automaticamente é mostrado uma única vez. Anota-o agora e entrega ao funcionário.</p>
+            <div className="mt-4 rounded-lg border border-[var(--line)] bg-[var(--surface-raised)] p-4 text-center">
               <span className="text-[11px] font-bold uppercase tracking-[.12em] text-[#8a99ab]">PIN do ponto</span>
-              <p className="mt-1 text-3xl font-bold tracking-[.3em] text-[#021f87]">{generatedPin}</p>
+              <p className="mt-1 text-3xl font-bold tracking-[.3em] text-[var(--blue)]">{generatedPin}</p>
             </div>
             <button type="button" onClick={() => { setGeneratedPin(null); setOpen(false); setEditing(null); }} className="mt-4 min-h-11 w-full rounded-lg bg-[#021f87] text-sm font-semibold text-white">Fechar</button>
           </div>
@@ -270,7 +270,7 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
           <section role="dialog" aria-modal="true" aria-labelledby="rh-employee-title" className="max-h-[92dvh] w-full overflow-y-auto overscroll-contain rounded-t-2xl bg-white p-5 shadow-2xl sm:max-w-2xl sm:rounded-2xl sm:p-7">
             <div className="mb-4 flex items-start justify-between gap-4">
               <FormHero eyebrow="Machine RH" title={editing ? 'Editar funcionário' : 'Novo funcionário'} description="Os dados ficam neste formulário até ao envio. A barra lateral mostra o que já está preenchido." icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 20a6 6 0 0 1 12 0"/></svg>} />
-              <button type="button" aria-label="Fechar" disabled={saving} onClick={() => setOpen(false)} className="flex h-10 w-10 items-center justify-center rounded-lg text-xl text-[#708195] hover:bg-[#f0f4f8]">×</button>
+              <button type="button" aria-label="Fechar" disabled={saving} onClick={() => setOpen(false)} className="flex h-10 w-10 items-center justify-center rounded-lg text-xl text-[var(--text-muted)] hover:bg-[#f0f4f8]">×</button>
             </div>
             <form className="space-y-4" onSubmit={submit} key={editing?.id ?? 'novo'} noValidate
               onInput={(e) => {
@@ -301,9 +301,9 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
   {(photoPreview || editing?.photoUrl) && (
     <div className="mt-2 flex items-center gap-3">
       {photoPreview
-        ? <img src={photoPreview} alt="Pré-visualização da fotografia" className="h-16 w-16 rounded-full border border-[#e1e8f0] object-cover" />
-        : <SignedImage path={editing?.photoUrl} alt={editing ? `${editing.firstName} ${editing.lastName}` : 'Fotografia do funcionário'} className="h-16 w-16 rounded-full border border-[#e1e8f0] object-cover" fallback={<div className="grid h-16 w-16 place-items-center rounded-full bg-[#eef2ff] text-lg font-bold text-[#021f87]">{editing?.firstName.charAt(0).toUpperCase()}{editing?.lastName.charAt(0).toUpperCase()}</div>} />}
-      <span className="text-xs text-[#607286]">Pré-visualização da fotografia</span>
+        ? <img src={photoPreview} alt="Pré-visualização da fotografia" className="h-16 w-16 rounded-full border border-[var(--line)] object-cover" />
+        : <SignedImage path={editing?.photoUrl} alt={editing ? `${editing.firstName} ${editing.lastName}` : 'Fotografia do funcionário'} className="h-16 w-16 rounded-full border border-[var(--line)] object-cover" fallback={<div className="grid h-16 w-16 place-items-center rounded-full bg-[#eef2ff] text-lg font-bold text-[var(--blue)]">{editing?.firstName.charAt(0).toUpperCase()}{editing?.lastName.charAt(0).toUpperCase()}</div>} />}
+      <span className="text-xs text-[var(--text-muted)]">Pré-visualização da fotografia</span>
     </div>
   )}
 </div>
@@ -318,20 +318,20 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
                   <div><label htmlFor="rh-contract" className="app-label">Tipo de contrato</label><select id="rh-contract" name="contractType" className="app-input" defaultValue={editing?.contractType ?? 'INDEFINIDO'}>{Object.entries(CONTRACT_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
                   <div><label htmlFor="rh-salary" className="app-label">Salário-base (Kz) *</label><CurrencyInput id="rh-salary" name="baseSalary" value={baseSalaryValue} onChange={setBaseSalaryValue} required /></div>
                   <div><label htmlFor="rh-status" className="app-label">Estado</label><select id="rh-status" name="status" className="app-input" defaultValue={editing?.status ?? 'ACTIVO'}>{Object.entries(STATUS_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
-                  <div><label htmlFor="rh-pin" className="app-label">PIN do ponto <span className="font-normal text-[#708195]">{editing?.hasPin ? '(definido)' : '(gerar automático)'}</span></label><input id="rh-pin" name="pin" type="password" inputMode="numeric" maxLength={8} className="app-input tracking-[.3em]" placeholder={editing?.hasPin ? 'Deixar vazio para manter' : 'Deixar vazio = gera automaticamente'} /></div>
+                  <div><label htmlFor="rh-pin" className="app-label">PIN do ponto <span className="font-normal text-[var(--text-muted)]">{editing?.hasPin ? '(definido)' : '(gerar automático)'}</span></label><input id="rh-pin" name="pin" type="password" inputMode="numeric" maxLength={8} className="app-input tracking-[.3em]" placeholder={editing?.hasPin ? 'Deixar vazio para manter' : 'Deixar vazio = gera automaticamente'} /></div>
               </FormSection>
 
               {editing && (
-                <div className="rounded-lg border border-[#e1e8f0] bg-[#f8fafc] p-3">
+                <div className="rounded-lg border border-[var(--line)] bg-[var(--surface-raised)] p-3">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold text-[#4a5d70]">QR do ponto (expira em 5 min)</p>
-                    <button type="button" onClick={loadQr} disabled={qrLoading} className="min-h-9 rounded-lg border border-[#cdddeb] bg-white px-3 text-xs font-semibold text-[#021f87] disabled:opacity-50">{qrLoading ? 'A gerar…' : 'Gerar QR'}</button>
+                    <button type="button" onClick={loadQr} disabled={qrLoading} className="min-h-9 rounded-lg border border-[var(--line)] bg-white px-3 text-xs font-semibold text-[var(--blue)] disabled:opacity-50">{qrLoading ? 'A gerar…' : 'Gerar QR'}</button>
                   </div>
                   {qr && (
                     <div className="mt-2 flex items-center gap-3">
                       <div className="h-28 w-28 shrink-0 rounded bg-white p-1 [&>svg]:h-full [&>svg]:w-full" dangerouslySetInnerHTML={{ __html: qr.svg }} />
-                      <div className="text-xs text-[#52667a]">
-                        <p className="font-semibold text-[#1c2d3f]">{qr.name}</p>
+                      <div className="text-xs text-[var(--text-muted)]">
+                        <p className="font-semibold text-[var(--text)]">{qr.name}</p>
                         <p className="mt-1">Expira às {new Date(qr.expiresAt).toLocaleTimeString('pt-AO', { hour: '2-digit', minute: '2-digit' })}.</p>
                         <p className="mt-1">Use no quiosque em /rh/ponto.</p>
                       </div>

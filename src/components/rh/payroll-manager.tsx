@@ -16,7 +16,7 @@ const STATUS_LABEL: Record<string, string> = {
   PENDENTE_PAGAMENTO: 'Pendente pagamento', PAGO: 'Pago', CANCELADO: 'Cancelado',
 };
 const STATUS_TONE: Record<string, string> = {
-  CALCULADO: 'bg-[#eef4ff] text-[#021f87]', EM_REVISAO: 'bg-[#fff7e6] text-[#8a5a00]',
+  CALCULADO: 'bg-[var(--surface-raised)] text-[var(--blue)]', EM_REVISAO: 'bg-[#fff7e6] text-[#8a5a00]',
   APROVADO: 'bg-[#eff9f4] text-[#267256]', PENDENTE_PAGAMENTO: 'bg-[#fff7e6] text-[#8a5a00]',
   PAGO: 'bg-[#eff9f4] text-[#267256]', CANCELADO: 'bg-[#fdf3f3] text-[#a83939]',
 };
@@ -117,14 +117,14 @@ export function PayrollManager({ rulesets, runs }: { rulesets: RuleSet[]; runs: 
   return (
     <div className="space-y-5">
       <div>
-        <p className="text-sm text-[#708195]">Machine Payroll</p>
-        <h1 className="mt-1 text-2xl font-bold text-[#1c2d3f]">Processamento salarial</h1>
-        <p className="mt-1 text-sm text-[#607286]">Regras configuráveis e versionadas. Nenhuma taxa legal está fixada no código.</p>
+        <p className="text-sm text-[var(--text-muted)]">Machine Payroll</p>
+        <h1 className="mt-1 text-2xl font-bold text-[var(--text)]">Processamento salarial</h1>
+        <p className="mt-1 text-sm text-[var(--text-muted)]">Regras configuráveis e versionadas. Nenhuma taxa legal está fixada no código.</p>
       </div>
 
       <div className="flex gap-2">
-        <button type="button" onClick={() => setTab('runs')} className={`min-h-9 rounded-lg px-3 text-sm font-semibold ${tab === 'runs' ? 'bg-[#021f87] text-white' : 'border border-[#cdddeb] bg-white text-[#52667a]'}`}>Processamentos</button>
-        <button type="button" onClick={() => setTab('rules')} className={`min-h-9 rounded-lg px-3 text-sm font-semibold ${tab === 'rules' ? 'bg-[#021f87] text-white' : 'border border-[#cdddeb] bg-white text-[#52667a]'}`}>Regras salariais</button>
+        <button type="button" onClick={() => setTab('runs')} className={`min-h-9 rounded-lg px-3 text-sm font-semibold ${tab === 'runs' ? 'bg-[#021f87] text-white' : 'border border-[var(--line)] bg-white text-[#52667a]'}`}>Processamentos</button>
+        <button type="button" onClick={() => setTab('rules')} className={`min-h-9 rounded-lg px-3 text-sm font-semibold ${tab === 'rules' ? 'bg-[#021f87] text-white' : 'border border-[var(--line)] bg-white text-[#52667a]'}`}>Regras salariais</button>
       </div>
 
       <FormError>{error}</FormError>
@@ -132,8 +132,8 @@ export function PayrollManager({ rulesets, runs }: { rulesets: RuleSet[]; runs: 
 
       {tab === 'runs' && (
         <>
-          <form onSubmit={calculate} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
-            <h2 className="text-sm font-bold text-[#1c2d3f]">Novo processamento</h2>
+          <form onSubmit={calculate} className="rounded-xl border border-[var(--line)] bg-white p-4">
+            <h2 className="text-sm font-bold text-[var(--text)]">Novo processamento</h2>
             {rulesets.length === 0 ? (
               <p className="mt-2 text-sm text-[#8a5a00]">Crie primeiro um conjunto de regras salariais (separador ao lado).</p>
             ) : (
@@ -145,13 +145,13 @@ export function PayrollManager({ rulesets, runs }: { rulesets: RuleSet[]; runs: 
             )}
           </form>
 
-          <div className="overflow-x-auto rounded-xl border border-[#e1e8f0] bg-white">
+          <div className="overflow-x-auto rounded-xl border border-[var(--line)] bg-white">
             <table className="data-table min-w-[820px]">
               <thead><tr><th>Período</th><th>Regras</th><th>Bruto</th><th>INSS</th><th>IRT</th><th>Líquido</th><th>Estado</th><th>Acções</th></tr></thead>
               <tbody>
                 {runs.map((run) => (
                   <tr key={run.id}>
-                    <td data-mobile-primary className="font-semibold tabular-nums text-[#1c2d3f]">{run.period}</td>
+                    <td data-mobile-primary className="font-semibold tabular-nums text-[var(--text)]">{run.period}</td>
                     <td className="text-xs">{run.ruleset?.name ?? '—'}</td>
                     <td className="tabular-nums">{money(run.totalGross)}</td>
                     <td className="tabular-nums">{money(run.totalInss)}</td>
@@ -160,7 +160,7 @@ export function PayrollManager({ rulesets, runs }: { rulesets: RuleSet[]; runs: 
                     <td><span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${STATUS_TONE[run.status] ?? ''}`}>{STATUS_LABEL[run.status] ?? run.status}</span></td>
                     <td data-mobile-actions>
                       <div className="flex flex-wrap gap-2">
-                        <Link href={`/rh/processamento-salarial/${run.id}`} className="inline-flex min-h-9 items-center rounded-lg border border-[#cdddeb] px-3 text-xs font-semibold text-[#021f87]">Ver</Link>
+                        <Link href={`/rh/processamento-salarial/${run.id}`} className="inline-flex min-h-9 items-center rounded-lg border border-[var(--line)] px-3 text-xs font-semibold text-[var(--blue)]">Ver</Link>
                         {(run.status === 'CALCULADO' || run.status === 'EM_REVISAO') && <button type="button" onClick={() => transition(run.id, 'APROVADO')} className="min-h-9 rounded-lg border border-[#cbe8dc] px-3 text-xs font-semibold text-[#267256]">Aprovar</button>}
                         {run.status === 'APROVADO' && <button type="button" onClick={() => transition(run.id, 'PENDENTE_PAGAMENTO')} className="min-h-9 rounded-lg border border-[#e6d29a] px-3 text-xs font-semibold text-[#8a5a00]">Preparar pagamento</button>}
                         {run.status === 'PENDENTE_PAGAMENTO' && <button type="button" onClick={() => transition(run.id, 'PAGO')} className="min-h-9 rounded-lg border border-[#cbe8dc] px-3 text-xs font-semibold text-[#267256]">Marcar pago</button>}
@@ -168,7 +168,7 @@ export function PayrollManager({ rulesets, runs }: { rulesets: RuleSet[]; runs: 
                     </td>
                   </tr>
                 ))}
-                {runs.length === 0 && <tr><td colSpan={8} className="px-4 py-10 text-center text-sm text-[#708195]">Ainda não há processamentos.</td></tr>}
+                {runs.length === 0 && <tr><td colSpan={8} className="px-4 py-10 text-center text-sm text-[var(--text-muted)]">Ainda não há processamentos.</td></tr>}
               </tbody>
             </table>
           </div>
@@ -177,8 +177,8 @@ export function PayrollManager({ rulesets, runs }: { rulesets: RuleSet[]; runs: 
 
       {tab === 'rules' && (
         <>
-          <form onSubmit={createRuleset} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
-            <h2 className="text-sm font-bold text-[#1c2d3f]">Novo conjunto de regras</h2>
+          <form onSubmit={createRuleset} className="rounded-xl border border-[var(--line)] bg-white p-4">
+            <h2 className="text-sm font-bold text-[var(--text)]">Novo conjunto de regras</h2>
             <FormSection title="Definição das regras" description="Os valores são definidos pela empresa após validação jurídica. Nada fica VALIDADO sem evidência documental.">
               <div className="sm:col-span-2"><FormField label="Nome" name="rule-name" required><input id="rule-name" className="app-input" value={name} onChange={(e) => setName(e.target.value)} required /></FormField></div>
               <div><FormField label="Vigência" name="rule-from" required><CalendarField id="rule-from" name="rule-from" value={effectiveFrom} onChange={setEffectiveFrom} required /></FormField></div>
@@ -193,18 +193,18 @@ export function PayrollManager({ rulesets, runs }: { rulesets: RuleSet[]; runs: 
             <div className="mt-3"><FormActions saving={saving} onCancel={() => {}} saveLabel={saving ? 'A guardar…' : 'Guardar regras'} /></div>
           </form>
 
-          <div className="rounded-xl border border-[#e1e8f0] bg-white">
-            <ul className="divide-y divide-[#eef2f6]">
+          <div className="rounded-xl border border-[var(--line)] bg-white">
+            <ul className="divide-y divide-[var(--line)]">
               {rulesets.map((ruleset) => (
                 <li key={ruleset.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
-                  <div><p className="text-sm font-semibold text-[#1c2d3f]">{ruleset.name}</p><p className="text-xs text-[#708195]">Vigência {new Date(ruleset.effectiveFrom).toLocaleDateString('pt-AO')}</p></div>
+                  <div><p className="text-sm font-semibold text-[var(--text)]">{ruleset.name}</p><p className="text-xs text-[var(--text-muted)]">Vigência {new Date(ruleset.effectiveFrom).toLocaleDateString('pt-AO')}</p></div>
                   <div className="flex items-center gap-2">
                     <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${ruleset.legalStatus === 'VALIDADO' ? 'bg-[#eff9f4] text-[#267256]' : 'bg-[#fff7e6] text-[#8a5a00]'}`}>{ruleset.legalStatus ?? 'PENDENTE'}</span>
-                    <button type="button" onClick={() => validateRuleset(ruleset)} className="min-h-9 rounded-lg border border-[#cdddeb] px-3 text-xs font-semibold text-[#021f87]">Validar</button>
+                    <button type="button" onClick={() => validateRuleset(ruleset)} className="min-h-9 rounded-lg border border-[var(--line)] px-3 text-xs font-semibold text-[var(--blue)]">Validar</button>
                   </div>
                 </li>
               ))}
-              {rulesets.length === 0 && <li className="px-4 py-8 text-center text-sm text-[#708195]">Ainda não há regras.</li>}
+              {rulesets.length === 0 && <li className="px-4 py-8 text-center text-sm text-[var(--text-muted)]">Ainda não há regras.</li>}
             </ul>
           </div>
         </>

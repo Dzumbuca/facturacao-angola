@@ -112,8 +112,8 @@ export function TrainingManager({ courses, employees, positions }: { courses: Co
       <FormError>{error}</FormError>
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <form onSubmit={createCourse} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
-          <h2 className="text-sm font-bold text-[#1c2d3f]">Novo curso</h2>
+        <form onSubmit={createCourse} className="rounded-xl border border-[var(--line)] bg-white p-4">
+          <h2 className="text-sm font-bold text-[var(--text)]">Novo curso</h2>
           <FormSection title="Detalhes do curso">
             <div className="sm:col-span-2">
               <FormField label="Título" name="tc-title" required><input id="tc-title" name="title" className="app-input" required placeholder="Ex.: Segurança no trabalho" /></FormField>
@@ -146,8 +146,8 @@ export function TrainingManager({ courses, employees, positions }: { courses: Co
           </FormSection>
         </form>
 
-        <form onSubmit={enroll} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
-          <h2 className="text-sm font-bold text-[#1c2d3f]">Inscrever funcionário</h2>
+        <form onSubmit={enroll} className="rounded-xl border border-[var(--line)] bg-white p-4">
+          <h2 className="text-sm font-bold text-[var(--text)]">Inscrever funcionário</h2>
           <FormSection title="Inscrição">
             <div className="sm:col-span-2">
               <FormField label="Curso" name="te-course" required>
@@ -171,11 +171,11 @@ export function TrainingManager({ courses, employees, positions }: { courses: Co
       </div>
 
       {courses.map((course) => (
-        <section key={course.id} className="rounded-xl border border-[#e1e8f0] bg-white">
+        <section key={course.id} className="rounded-xl border border-[var(--line)] bg-white">
           <div className="flex flex-col justify-between gap-2 border-b border-[#eef2f6] px-4 py-3 sm:flex-row sm:items-center">
             <div>
-              <h2 className="text-sm font-bold text-[#1c2d3f]">{course.title}</h2>
-              <p className="text-xs text-[#607286]">{new Date(course.startDate).toLocaleDateString('pt-AO')} · {course.cargaHoras}h · {course.trainerName ?? 'Formador a definir'}{course.location ? ` · ${course.location}` : ''}</p>
+              <h2 className="text-sm font-bold text-[var(--text)]">{course.title}</h2>
+              <p className="text-xs text-[var(--text-muted)]">{new Date(course.startDate).toLocaleDateString('pt-AO')} · {course.cargaHoras}h · {course.trainerName ?? 'Formador a definir'}{course.location ? ` · ${course.location}` : ''}</p>
             </div>
             <div className="flex items-center gap-2">
               <span className="rounded-full bg-[#eef2ff] px-2 py-0.5 text-[11px] font-semibold text-[#37379e]">{STATUS[course.status] ?? course.status}</span>
@@ -191,13 +191,13 @@ export function TrainingManager({ courses, employees, positions }: { courses: Co
                 {course.enrollments.map((enrollment) => (
                   <EnrollmentRow key={enrollment.id} enrollment={enrollment} onFinish={finish} busy={busy} />
                 ))}
-                {course.enrollments.length === 0 && <tr><td colSpan={5} className="px-4 py-8 text-center text-sm text-[#708195]">Sem inscrições.</td></tr>}
+                {course.enrollments.length === 0 && <tr><td colSpan={5} className="px-4 py-8 text-center text-sm text-[var(--text-muted)]">Sem inscrições.</td></tr>}
               </tbody>
             </table>
           </div>
         </section>
       ))}
-      {courses.length === 0 && <p className="rounded-xl border border-[#e1e8f0] bg-white px-4 py-10 text-center text-sm text-[#708195]">Sem cursos. Crie o primeiro acima.</p>}
+      {courses.length === 0 && <p className="rounded-xl border border-[var(--line)] bg-white px-4 py-10 text-center text-sm text-[var(--text-muted)]">Sem cursos. Crie o primeiro acima.</p>}
     </div>
   );
 }
@@ -206,7 +206,7 @@ function EnrollmentRow({ enrollment, onFinish, busy }: { enrollment: Enrollment;
   const [score, setScore] = useState(enrollment.score?.toString() ?? '');
   return (
     <tr>
-      <td data-mobile-primary className="font-semibold text-[#1c2d3f]">{enrollment.employee.firstName} {enrollment.employee.lastName} <span className="text-xs text-[#708195]">{enrollment.employee.employeeNumber}</span></td>
+      <td data-mobile-primary className="font-semibold text-[var(--text)]">{enrollment.employee.firstName} {enrollment.employee.lastName} <span className="text-xs text-[var(--text-muted)]">{enrollment.employee.employeeNumber}</span></td>
       <td className="text-xs">{enrollment.employee.position?.title ?? '—'}</td>
       <td><span className="rounded-full bg-[#eef2ff] px-2 py-0.5 text-[11px] font-semibold text-[#37379e]">{ENROLL[enrollment.status] ?? enrollment.status}</span></td>
       <td><input aria-label="Pontuação" type="number" min={0} max={100} placeholder="0–100" value={score} onChange={(e) => setScore(e.target.value)} className="app-input max-w-[90px] !min-h-8 !py-1 text-xs" /></td>

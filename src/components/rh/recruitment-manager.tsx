@@ -158,8 +158,8 @@ export function RecruitmentManager({ openings, candidates, departments, position
       <FormError>{error}</FormError>
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <form onSubmit={createOpening} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
-          <h2 className="text-sm font-bold text-[#1c2d3f]">Nova vaga</h2>
+        <form onSubmit={createOpening} className="rounded-xl border border-[var(--line)] bg-white p-4">
+          <h2 className="text-sm font-bold text-[var(--text)]">Nova vaga</h2>
           <FormSection title="Dados da vaga">
             <div className="sm:col-span-2">
               <FormField label="Título" name="jo-title" required><input id="jo-title" name="title" className="app-input" required /></FormField>
@@ -193,8 +193,8 @@ export function RecruitmentManager({ openings, candidates, departments, position
           </FormSection>
         </form>
 
-        <form onSubmit={createCandidate} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
-          <h2 className="text-sm font-bold text-[#1c2d3f]">Registar candidato</h2>
+        <form onSubmit={createCandidate} className="rounded-xl border border-[var(--line)] bg-white p-4">
+          <h2 className="text-sm font-bold text-[var(--text)]">Registar candidato</h2>
           <FormSection title="Dados do candidato">
             <div className="sm:col-span-2">
               <FormField label="Vaga" name="jc-opening" required>
@@ -231,28 +231,28 @@ export function RecruitmentManager({ openings, candidates, departments, position
         </form>
       </div>
 
-      <section className="rounded-xl border border-[#e1e8f0] bg-white">
+      <section className="rounded-xl border border-[var(--line)] bg-white">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#eef2f6] px-4 py-3">
-          <h2 className="text-sm font-bold text-[#1c2d3f]">Vagas</h2>
+          <h2 className="text-sm font-bold text-[var(--text)]">Vagas</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="data-table min-w-[720px]"><thead><tr><th>Vaga</th><th>Departamento/Cargo</th><th>Vagas</th><th>Candidatos</th><th>Estado</th><th>Acções</th></tr></thead>
             <tbody>{openings.map((opening) => (
               <tr key={opening.id}>
-                <td data-mobile-primary className="font-semibold text-[#1c2d3f]">{opening.title}</td>
+                <td data-mobile-primary className="font-semibold text-[var(--text)]">{opening.title}</td>
                 <td className="text-xs">{[opening.departmentName, opening.positionTitle].filter(Boolean).join(' · ') || '—'}</td>
                 <td className="tabular-nums">{opening.openings}</td>
                 <td className="tabular-nums">{opening.candidateCount}</td>
                 <td><span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${opening.status === 'ABERTA' ? 'bg-[#eff9f4] text-[#267256]' : 'bg-[#f0f3f7] text-[#52667a]'}`}>{STATUS_LABEL[opening.status]}</span></td>
-                <td data-mobile-actions>{opening.status === 'ABERTA' && <button type="button" onClick={() => closeOpening(opening.id)} disabled={busy} className="min-h-9 rounded-lg border border-[#cdddeb] px-3 text-xs font-semibold text-[#52667a]">Encerrar</button>}</td>
+                <td data-mobile-actions>{opening.status === 'ABERTA' && <button type="button" onClick={() => closeOpening(opening.id)} disabled={busy} className="min-h-9 rounded-lg border border-[var(--line)] px-3 text-xs font-semibold text-[#52667a]">Encerrar</button>}</td>
               </tr>
-            ))}{openings.length === 0 && <tr><td colSpan={6} className="px-4 py-8 text-center text-sm text-[#708195]">Sem vagas.</td></tr>}</tbody></table>
+            ))}{openings.length === 0 && <tr><td colSpan={6} className="px-4 py-8 text-center text-sm text-[var(--text-muted)]">Sem vagas.</td></tr>}</tbody></table>
         </div>
       </section>
 
-      <section className="rounded-xl border border-[#e1e8f0] bg-white">
+      <section className="rounded-xl border border-[var(--line)] bg-white">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#eef2f6] px-4 py-3">
-          <h2 className="text-sm font-bold text-[#1c2d3f]">Candidatos</h2>
+          <h2 className="text-sm font-bold text-[var(--text)]">Candidatos</h2>
           <select aria-label="Filtrar estado" value={candidateStatus} onChange={(e) => setCandidateStatus(e.target.value)} className="app-input max-w-[220px]">
             <option value="ALL">Todos os estados</option>
             {['RECEBIDA', 'TRIAGEM', 'ENTREVISTA', 'AVALIACAO', 'APROVADO', 'REJEITADO', 'ADMITIDO'].map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
@@ -262,7 +262,7 @@ export function RecruitmentManager({ openings, candidates, departments, position
           <table className="data-table min-w-[760px]"><thead><tr><th>Nome</th><th>Email</th><th>Vaga</th><th>Estado</th><th>Acções</th></tr></thead>
             <tbody>{visibleCandidates.map((candidate) => (
               <tr key={candidate.id}>
-                <td data-mobile-primary className="font-semibold text-[#1c2d3f]">{candidate.firstName} {candidate.lastName}</td>
+                <td data-mobile-primary className="font-semibold text-[var(--text)]">{candidate.firstName} {candidate.lastName}</td>
                 <td className="text-xs">{candidate.email}</td>
                 <td className="text-xs">{candidate.openingTitle}</td>
                 <td><span className="rounded-full bg-[#eef2ff] px-2 py-0.5 text-[11px] font-semibold text-[#37379e]">{STATUS_LABEL[candidate.status]}</span></td>
@@ -273,11 +273,11 @@ export function RecruitmentManager({ openings, candidates, departments, position
                       {['RECEBIDA', 'TRIAGEM', 'ENTREVISTA', 'AVALIACAO', 'APROVADO', 'REJEITADO'].filter((s) => s !== candidate.status).map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
                     </select>
                     {candidate.status === 'APROVADO' && <button type="button" onClick={() => admit(candidate.id)} disabled={busy} className="min-h-9 rounded-lg bg-[#021f87] px-3 text-xs font-semibold text-white">Admitir</button>}
-                    {candidate.status === 'ADMITIDO' && <Link href={`/rh/funcionarios`} className="text-xs font-semibold text-[#021f87]">Ver funcionários →</Link>}
+                    {candidate.status === 'ADMITIDO' && <Link href={`/rh/funcionarios`} className="text-xs font-semibold text-[var(--blue)]">Ver funcionários →</Link>}
                   </div>
                 </td>
               </tr>
-            ))}{visibleCandidates.length === 0 && <tr><td colSpan={5} className="px-4 py-8 text-center text-sm text-[#708195]">Sem candidatos.</td></tr>}</tbody></table>
+            ))}{visibleCandidates.length === 0 && <tr><td colSpan={5} className="px-4 py-8 text-center text-sm text-[var(--text-muted)]">Sem candidatos.</td></tr>}</tbody></table>
         </div>
       </section>
     </div>

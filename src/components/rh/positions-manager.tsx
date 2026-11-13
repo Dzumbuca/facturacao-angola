@@ -60,7 +60,7 @@ export function PositionsManager({ positions, departments }: {
       />
 
       {open && (
-        <form onSubmit={submit} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
+        <form onSubmit={submit} className="rounded-xl border border-[var(--line)] bg-white p-4">
           <FormSection title="Dados do cargo">
             <div className="grid gap-3 sm:grid-cols-2">
               <div><label htmlFor="pos-title" className="app-label">Título *</label><input id="pos-title" name="title" className="app-input" required /></div>
@@ -75,20 +75,20 @@ export function PositionsManager({ positions, departments }: {
         </form>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-[#e1e8f0] bg-white">
+      <div className="overflow-x-auto rounded-xl border border-[var(--line)] bg-white">
         <table className="data-table min-w-[560px]">
           <thead><tr><th>Cargo</th><th>Código</th><th>Departamento</th><th>Nível</th><th>Funcionários</th></tr></thead>
           <tbody>
             {positions.map((position) => (
               <tr key={position.id}>
-                <td data-mobile-primary className="font-semibold text-[#1c2d3f]">{position.title}</td>
-                <td className="font-mono text-xs text-[#607286]">{position.code || '—'}</td>
+                <td data-mobile-primary className="font-semibold text-[var(--text)]">{position.title}</td>
+                <td className="font-mono text-xs text-[var(--text-muted)]">{position.code || '—'}</td>
                 <td>{position.department?.name ?? '—'}</td>
                 <td className="tabular-nums">{position.level ?? '—'}</td>
                 <td className="tabular-nums">{position._count.employees}</td>
               </tr>
             ))}
-            {positions.length === 0 && <tr><td colSpan={5} className="px-4 py-10 text-center text-sm text-[#708195]">Ainda não há cargos.</td></tr>}
+            {positions.length === 0 && <tr><td colSpan={5} className="px-4 py-10 text-center text-sm text-[var(--text-muted)]">Ainda não há cargos.</td></tr>}
           </tbody>
         </table>
       </div>

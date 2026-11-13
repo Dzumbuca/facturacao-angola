@@ -52,8 +52,8 @@ export function AnnouncementsManager({ items }: { items: Announcement[] }) {
 
       <FormError>{error}</FormError>
 
-      <form onSubmit={submit} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
-        <h2 className="text-sm font-bold text-[#1c2d3f]">Novo comunicado</h2>
+      <form onSubmit={submit} className="rounded-xl border border-[var(--line)] bg-white p-4">
+        <h2 className="text-sm font-bold text-[var(--text)]">Novo comunicado</h2>
         <FormSection title="Detalhes do comunicado">
           <div className="sm:col-span-2">
             <FormField label="Título" name="an-title" required><input id="an-title" name="title" className="app-input" required maxLength={200} /></FormField>
@@ -75,18 +75,18 @@ export function AnnouncementsManager({ items }: { items: Announcement[] }) {
         </FormSection>
       </form>
 
-      <ul className="divide-y divide-[#eef2f6] overflow-hidden rounded-xl border border-[#e1e8f0] bg-white">
+      <ul className="divide-y divide-[var(--line)] overflow-hidden rounded-xl border border-[var(--line)] bg-white">
         {items.map((item) => (
           <li key={item.id} className="px-4 py-4">
             <div className="flex flex-wrap items-center gap-2">
               <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${TONE[item.priority] ?? ''}`}>{PRIORITY[item.priority] ?? item.priority}</span>
-              <h2 className="text-sm font-bold text-[#1c2d3f]">{item.title}</h2>
+              <h2 className="text-sm font-bold text-[var(--text)]">{item.title}</h2>
               <span className="text-[11px] text-[#8a99ab]">{new Date(item.publishedAt).toLocaleDateString('pt-AO')}</span>
             </div>
             <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-[#3a4a5e]">{item.body}</p>
           </li>
         ))}
-        {items.length === 0 && <li className="px-4 py-10 text-center text-sm text-[#708195]">Sem comunicados.</li>}
+        {items.length === 0 && <li className="px-4 py-10 text-center text-sm text-[var(--text-muted)]">Sem comunicados.</li>}
       </ul>
     </div>
   );

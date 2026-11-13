@@ -32,9 +32,9 @@ export function AiManager({ configured, provider }: { configured: boolean; provi
   return (
     <div className="space-y-5">
       <div>
-        <p className="text-sm text-[#708195]">Machine RH · Assistente</p>
-        <h1 className="mt-1 text-2xl font-bold text-[#1c2d3f]">Rascunhos com IA</h1>
-        <p className="mt-1 text-sm text-[#607286]">Gera rascunhos de documentos. Revisão humana obrigatória antes de emitir.</p>
+        <p className="text-sm text-[var(--text-muted)]">Machine RH · Assistente</p>
+        <h1 className="mt-1 text-2xl font-bold text-[var(--text)]">Rascunhos com IA</h1>
+        <p className="mt-1 text-sm text-[var(--text-muted)]">Gera rascunhos de documentos. Revisão humana obrigatória antes de emitir.</p>
       </div>
 
       <div className={`rounded-xl border p-4 text-sm ${configured ? 'border-[#cbe8dc] bg-[#eff9f4] text-[#267256]' : 'border-[#f0e0b8] bg-[#fffbef] text-[#8a5a00]'}`}>
@@ -43,7 +43,7 @@ export function AiManager({ configured, provider }: { configured: boolean; provi
           : <>Assistente não configurado. Crie uma chave gratuita na Groq e defina <code>GROQ_API_KEY</code>; opcionalmente <code>OPENROUTER_API_KEY</code> como fallback.</>}
       </div>
 
-      <form onSubmit={generate} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
+      <form onSubmit={generate} className="rounded-xl border border-[var(--line)] bg-white p-4">
         <FormSection title="Novo rascunho">
           <div>
             <FormField label="Tipo" name="ai-type">
@@ -73,12 +73,12 @@ export function AiManager({ configured, provider }: { configured: boolean; provi
       </form>
 
       {result && (
-        <section className="rounded-xl border border-[#e1e8f0] bg-white p-4">
+        <section className="rounded-xl border border-[var(--line)] bg-white p-4">
           <div className="flex items-center justify-between gap-2">
-            <h2 className="text-sm font-bold text-[#1c2d3f]">Rascunho</h2>
-            <button type="button" onClick={() => navigator.clipboard?.writeText(result)} className="min-h-9 rounded-lg border border-[#cdddeb] px-3 text-xs font-semibold text-[#021f87]">Copiar</button>
+            <h2 className="text-sm font-bold text-[var(--text)]">Rascunho</h2>
+            <button type="button" onClick={() => navigator.clipboard?.writeText(result)} className="min-h-9 rounded-lg border border-[var(--line)] px-3 text-xs font-semibold text-[var(--blue)]">Copiar</button>
           </div>
-          <pre className="mt-3 whitespace-pre-wrap font-sans text-sm leading-relaxed text-[#1c2d3f]">{result}</pre>
+          <pre className="mt-3 whitespace-pre-wrap font-sans text-sm leading-relaxed text-[var(--text)]">{result}</pre>
           <p className="mt-3 text-xs text-[#8a5a00]">Rascunho gerado por IA. Reveja factos, valores e conformidade antes de usar.</p>
         </section>
       )}

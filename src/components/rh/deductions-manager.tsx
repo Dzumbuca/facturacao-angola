@@ -67,7 +67,7 @@ export function DeductionsManager({ employeeId, deductions, canWrite }: { employ
       icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>}
     />
     <section className="rounded-[18px] border border-[#e2e8ef] bg-white shadow-[var(--shadow-card)] overflow-hidden">
-      <h2 className="border-b border-[#eef2f6] px-4 py-3 text-sm font-bold text-[#1c2d3f]">Descontos recorrentes</h2>
+      <h2 className="border-b border-[#eef2f6] px-4 py-3 text-sm font-bold text-[var(--text)]">Descontos recorrentes</h2>
 
       {canWrite && (
         <form onSubmit={create} className="border-b border-[#eef2f6] bg-[#f9fbfe] px-4 py-4">
@@ -110,21 +110,21 @@ export function DeductionsManager({ employeeId, deductions, canWrite }: { employ
           <tbody>
             {deductions.map((deduction) => (
               <tr key={deduction.id}>
-                <td data-mobile-primary className="font-semibold text-[#1c2d3f]">{deduction.description}</td>
+                <td data-mobile-primary className="font-semibold text-[var(--text)]">{deduction.description}</td>
                 <td>{TYPE_LABEL[deduction.type] ?? deduction.type}</td>
                 <td className="tabular-nums">{new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA' }).format(deduction.amount)}</td>
                 <td className="tabular-nums">{deduction.remainingInstallments === null ? '∞' : deduction.remainingInstallments}</td>
                 <td><span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${deduction.active ? 'bg-[#eff9f4] text-[#267256]' : 'bg-[#f0f3f7] text-[#52667a]'}`}>{deduction.active ? 'Ativo' : 'Inativo'}</span></td>
                 {canWrite && (
                   <td data-mobile-actions>
-                    <button type="button" onClick={() => toggle(deduction.id, !deduction.active)} disabled={busy === deduction.id} className="min-h-9 rounded-lg border border-[#cdddeb] px-3 text-xs font-semibold text-[#52667a] disabled:opacity-50">
+                    <button type="button" onClick={() => toggle(deduction.id, !deduction.active)} disabled={busy === deduction.id} className="min-h-9 rounded-lg border border-[var(--line)] px-3 text-xs font-semibold text-[#52667a] disabled:opacity-50">
                       {deduction.active ? 'Desactivar' : 'Reactivar'}
                     </button>
                   </td>
                 )}
               </tr>
             ))}
-            {deductions.length === 0 && <tr><td colSpan={canWrite ? 6 : 5} className="px-4 py-8 text-center text-sm text-[#708195]">Sem descontos recorrentes.</td></tr>}
+            {deductions.length === 0 && <tr><td colSpan={canWrite ? 6 : 5} className="px-4 py-8 text-center text-sm text-[var(--text-muted)]">Sem descontos recorrentes.</td></tr>}
           </tbody>
         </table>
       </div>

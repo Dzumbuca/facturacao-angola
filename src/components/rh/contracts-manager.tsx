@@ -126,21 +126,21 @@ export function ContractsManager({ contracts, employees }: {
         </form>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-[#e1e8f0] bg-white">
+      <div className="overflow-x-auto rounded-xl border border-[var(--line)] bg-white">
         <table className="data-table min-w-[760px]">
           <thead><tr><th>Funcionário</th><th>Tipo</th><th>Início</th><th>Fim</th><th>Salário</th><th>Estado</th></tr></thead>
           <tbody>
             {contracts.map((contract) => (
               <tr key={contract.id}>
                 <td data-mobile-primary>
-                  <span className="block font-semibold text-[#1c2d3f]">{contract.employee.firstName} {contract.employee.lastName}</span>
-                  <span className="block text-xs text-[#708195]">{contract.employee.employeeNumber}</span>
+                  <span className="block font-semibold text-[var(--text)]">{contract.employee.firstName} {contract.employee.lastName}</span>
+                  <span className="block text-xs text-[var(--text-muted)]">{contract.employee.employeeNumber}</span>
                 </td>
                 <td>{TYPE_LABEL[contract.type] ?? contract.type}</td>
                 <td className="tabular-nums">{date(contract.startDate)}</td>
                 <td className="tabular-nums">{date(contract.endDate)}</td>
                 <td className="tabular-nums">{money(contract.salary)}</td>
-                <td><span className="rounded-full bg-[#eef4ff] px-2 py-0.5 text-[11px] font-semibold text-[#021f87]">{STATUS_LABEL[contract.status] ?? contract.status}</span></td>
+                <td><span className="rounded-full bg-[var(--surface-raised)] px-2 py-0.5 text-[11px] font-semibold text-[var(--blue)]">{STATUS_LABEL[contract.status] ?? contract.status}</span></td>
               </tr>
             ))}
             {contracts.length === 0 && <tr><td colSpan={6} className="px-4 py-6 text-center text-sm text-[#7094aa]">Ainda não há contratos. Crie o primeiro.</td></tr>}

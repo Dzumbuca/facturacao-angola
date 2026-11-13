@@ -46,7 +46,7 @@ export function RhSettingsForm({ initial }: { initial: number | null }) {
           </div>
         </FormField>
       </FormSection>
-      <p className="mt-2 text-xs text-[#708195]">Deixar vazio para não aplicar saldo (fica apenas o histórico de dias).</p>
+      <p className="mt-2 text-xs text-[var(--text-muted)]">Deixar vazio para não aplicar saldo (fica apenas o histórico de dias).</p>
       {message && <p role="status" className="mt-2 text-xs font-medium text-[#267256]">{message}</p>}
       <FormError>{error}</FormError>
     </form>

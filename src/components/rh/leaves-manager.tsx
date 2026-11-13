@@ -22,7 +22,7 @@ const STATUS_TONE: Record<string, string> = {
   PENDENTE: 'bg-[#fff7e6] text-[#8a5a00]',
   APROVADO: 'bg-[#eff9f4] text-[#267256]',
   REJEITADO: 'bg-[#fdf3f3] text-[#a83939]',
-  CANCELADO: 'bg-[#f3f6fa] text-[#607286]',
+  CANCELADO: 'bg-[#f3f6fa] text-[var(--text-muted)]',
 };
 
 function date(value: string) {
@@ -97,15 +97,15 @@ export function LeavesManager({ leaves, employees, vacationDaysPerYear }: {
       />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="rounded-xl border border-[#e1e8f0] bg-white p-4"><p className="text-xs text-[#708195]">Aprovadas</p><p className="mt-1 text-xl font-bold tabular-nums">{approved} d</p></div>
-        <div className="rounded-xl border border-[#e1e8f0] bg-white p-4"><p className="text-xs text-[#708195]">Pendentes</p><p className="mt-1 text-xl font-bold tabular-nums">{pending} d</p></div>
-        <div className="rounded-xl border border-[#e1e8f0] bg-white p-4"><p className="text-xs text-[#708195]">Direito anual</p><p className="mt-1 text-xl font-bold tabular-nums">{vacationDaysPerYear === null ? '—' : `${vacationDaysPerYear} d`}</p></div>
-        <div className="rounded-xl border border-[#e1e8f0] bg-white p-4"><p className="text-xs text-[#708195]">Saldo</p><p className={`mt-1 text-xl font-bold tabular-nums ${balance !== null && balance < 0 ? 'text-[#a83939]' : ''}`}>{balance === null ? '—' : `${balance} d`}</p></div>
+        <div className="rounded-xl border border-[var(--line)] bg-white p-4"><p className="text-xs text-[var(--text-muted)]">Aprovadas</p><p className="mt-1 text-xl font-bold tabular-nums">{approved} d</p></div>
+        <div className="rounded-xl border border-[var(--line)] bg-white p-4"><p className="text-xs text-[var(--text-muted)]">Pendentes</p><p className="mt-1 text-xl font-bold tabular-nums">{pending} d</p></div>
+        <div className="rounded-xl border border-[var(--line)] bg-white p-4"><p className="text-xs text-[var(--text-muted)]">Direito anual</p><p className="mt-1 text-xl font-bold tabular-nums">{vacationDaysPerYear === null ? '—' : `${vacationDaysPerYear} d`}</p></div>
+        <div className="rounded-xl border border-[var(--line)] bg-white p-4"><p className="text-xs text-[var(--text-muted)]">Saldo</p><p className={`mt-1 text-xl font-bold tabular-nums ${balance !== null && balance < 0 ? 'text-[#a83939]' : ''}`}>{balance === null ? '—' : `${balance} d`}</p></div>
       </div>
 
       <form onSubmit={submit} className="rounded-[18px] border border-[#e4e9f0] bg-white p-4 shadow-[var(--shadow-card)]">
         <FormSplit main={<>
-        <h2 className="text-sm font-bold text-[#1c2d3f]">Novo pedido</h2>
+        <h2 className="text-sm font-bold text-[var(--text)]">Novo pedido</h2>
         <FormSection title="Dados do pedido">
           <div className="sm:col-span-2">
             <FormField label="Funcionário" name="leave-employee" required>
@@ -145,13 +145,13 @@ export function LeavesManager({ leaves, employees, vacationDaysPerYear }: {
         ]} footer={<p className="text-[11px] leading-5 text-[#8094a9]">A percentagem reflecte campos preenchidos. O saldo só é aplicado quando o pedido for aprovado.</p>} />} />
       </form>
 
-      <div className="overflow-x-auto rounded-xl border border-[#e1e8f0] bg-white">
+      <div className="overflow-x-auto rounded-xl border border-[var(--line)] bg-white">
         <table className="data-table min-w-[760px]">
           <thead><tr><th>Funcionário</th><th>Tipo</th><th>Período</th><th>Dias</th><th>Estado</th><th>Acções</th></tr></thead>
           <tbody>
             {leaves.map((leave) => (
               <tr key={leave.id}>
-                <td data-mobile-primary><span className="block font-semibold text-[#1c2d3f]">{leave.employee.firstName} {leave.employee.lastName}</span><span className="block text-xs text-[#708195]">{leave.employee.employeeNumber}</span></td>
+                <td data-mobile-primary><span className="block font-semibold text-[var(--text)]">{leave.employee.firstName} {leave.employee.lastName}</span><span className="block text-xs text-[var(--text-muted)]">{leave.employee.employeeNumber}</span></td>
                 <td>{TYPE_LABEL[leave.type] ?? leave.type}</td>
                 <td className="tabular-nums">{date(leave.startDate)} → {date(leave.endDate)}</td>
                 <td className="tabular-nums">{leave.days}</td>
@@ -166,7 +166,7 @@ export function LeavesManager({ leaves, employees, vacationDaysPerYear }: {
                 </td>
               </tr>
             ))}
-            {leaves.length === 0 && <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-[#708195]">Ainda não há pedidos este ano.</td></tr>}
+            {leaves.length === 0 && <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-[var(--text-muted)]">Ainda não há pedidos este ano.</td></tr>}
           </tbody>
         </table>
       </div>

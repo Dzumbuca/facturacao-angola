@@ -99,7 +99,7 @@ export function DepartmentsManager({ departments }: { departments: Department[] 
       />
 
       {open && (
-        <form onSubmit={submit} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
+        <form onSubmit={submit} className="rounded-xl border border-[var(--line)] bg-white p-4">
           <FormSection title={editing ? `Editar departamento (${editing.name})` : 'Novo departamento'}>
             <div className="grid gap-3 sm:grid-cols-2">
               <div><label htmlFor="dept-name" className="app-label">Nome *</label><input id="dept-name" name="name" className="app-input" required defaultValue={editing?.name ?? ''} /></div>
@@ -114,7 +114,7 @@ export function DepartmentsManager({ departments }: { departments: Department[] 
         </form>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-[#e1e8f0] bg-white">
+      <div className="overflow-x-auto rounded-xl border border-[var(--line)] bg-white">
         <table className="data-table min-w-[640px]">
           <thead><tr><th>Departamento</th><th>Código</th><th>Responsável</th><th>Funcionários</th><th>Cargos</th><th>Sub-departamentos</th><th>Acções</th></tr></thead>
           <tbody>
@@ -123,16 +123,16 @@ export function DepartmentsManager({ departments }: { departments: Department[] 
                 <td data-mobile-primary>
                   <div className="flex items-center gap-2" style={{ paddingLeft: `${depth * 1.25}rem` }}>
                     <span aria-hidden className="text-xs text-[#8a99ab]">{depth === 0 ? '■' : '└─'}</span>
-                    <span className="font-semibold text-[#1c2d3f]">{department.name}</span>
-                    <span className="rounded bg-[#eef4ff] px-1.5 py-0.5 text-[10px] font-semibold uppercase text-[#021f87]">{cycle ? 'ciclo' : depth === 0 ? 'raiz' : `N${depth}`}</span>
+                    <span className="font-semibold text-[var(--text)]">{department.name}</span>
+                    <span className="rounded bg-[var(--surface-raised)] px-1.5 py-0.5 text-[10px] font-semibold uppercase text-[var(--blue)]">{cycle ? 'ciclo' : depth === 0 ? 'raiz' : `N${depth}`}</span>
                   </div>
                 </td>
-                <td className="font-mono text-xs text-[#607286]">{department.code || '—'}</td>
+                <td className="font-mono text-xs text-[var(--text-muted)]">{department.code || '—'}</td>
                 <td>{department.managerName || '—'}</td>
                 <td className="tabular-nums">{department._count.employees}</td>
                 <td className="tabular-nums">{department._count.positions}</td>
                 <td className="tabular-nums">{department._count.children}</td>
-                <td data-mobile-actions><button type="button" onClick={() => openEdit(department)} className="min-h-9 rounded-lg border border-[#cdddeb] px-3 text-xs font-semibold text-[#021f87]">Editar</button></td>
+                <td data-mobile-actions><button type="button" onClick={() => openEdit(department)} className="min-h-9 rounded-lg border border-[var(--line)] px-3 text-xs font-semibold text-[var(--blue)]">Editar</button></td>
               </tr>
             ))}
             {departments.length === 0 && <tr><td colSpan={7} className="px-4 py-6 text-center text-sm text-[#7094aa]">Ainda não há departamentos. Crie primeiro um pai e depois os filhos.</td></tr>}

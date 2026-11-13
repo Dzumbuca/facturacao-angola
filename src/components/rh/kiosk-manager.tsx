@@ -59,7 +59,7 @@ export function KioskManager() {
         <p className="mt-1 text-sm text-blue-100">{now.toLocaleDateString('pt-AO', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}</p>
       </div>
 
-      <div className="rounded-xl border border-[#e1e8f0] bg-white p-5">
+      <div className="rounded-xl border border-[var(--line)] bg-white p-5">
         <label htmlFor="kiosk-token" className="app-label">QR do funcionário</label>
         <textarea
           id="kiosk-token"
@@ -80,7 +80,7 @@ export function KioskManager() {
         <FormError>{error}</FormError>
       </div>
 
-      <div className="rounded-xl border border-[#e1e8f0] bg-white p-4">
+      <div className="rounded-xl border border-[var(--line)] bg-white p-4">
         <button type="button" onClick={() => setShowDevice((value) => !value)} className="flex w-full items-center justify-between text-left text-xs font-semibold text-[#52667a]">
           <span>Terminal {deviceToken ? 'configurado' : 'não configurado'}</span>
           <span aria-hidden="true">{showDevice ? '−' : '+'}</span>
@@ -91,7 +91,7 @@ export function KioskManager() {
             <div className="flex flex-col gap-2 sm:flex-row">
               <input id="kiosk-device" className="app-input font-mono text-xs" value={deviceDraft} onChange={(e) => setDeviceDraft(e.target.value)} placeholder="Colar token gerado em /rh/dispositivos" />
               <button type="button" onClick={() => { const value = deviceDraft.trim(); setDeviceToken(value); window.localStorage.setItem('rh_device_token', value); }} className="min-h-11 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white">Guardar</button>
-              <button type="button" onClick={() => { setDeviceDraft(''); setDeviceToken(''); window.localStorage.removeItem('rh_device_token'); }} className="min-h-11 rounded-lg border border-[#cdddeb] px-4 text-sm font-semibold text-[#52667a]">Limpar</button>
+              <button type="button" onClick={() => { setDeviceDraft(''); setDeviceToken(''); window.localStorage.removeItem('rh_device_token'); }} className="min-h-11 rounded-lg border border-[var(--line)] px-4 text-sm font-semibold text-[#52667a]">Limpar</button>
             </div>
             <p className="mt-2 text-xs text-[#8a99ab]">Sem token, o quiosque funciona com a sessão do gestor; com token, cada marcação fica associada ao terminal.</p>
           </div>

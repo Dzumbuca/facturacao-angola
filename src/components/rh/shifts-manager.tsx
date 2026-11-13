@@ -49,15 +49,15 @@ export function ShiftsManager({ shifts }: { shifts: Shift[] }) {
     <div className="space-y-5">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
         <div>
-          <p className="text-sm text-[#708195]">Machine Point</p>
-          <h1 className="mt-1 text-2xl font-bold text-[#1c2d3f]">Horários e turnos</h1>
-          <p className="mt-1 text-sm text-[#607286]">Horas de entrada/saída e tolerância usadas no cálculo de atrasos.</p>
+          <p className="text-sm text-[var(--text-muted)]">Machine Point</p>
+          <h1 className="mt-1 text-2xl font-bold text-[var(--text)]">Horários e turnos</h1>
+          <p className="mt-1 text-sm text-[var(--text-muted)]">Horas de entrada/saída e tolerância usadas no cálculo de atrasos.</p>
         </div>
         <button type="button" onClick={() => { setError(''); setOpen(true); }} className="min-h-11 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white">Novo horário</button>
       </div>
 
       {open && (
-        <form onSubmit={submit} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
+        <form onSubmit={submit} className="rounded-xl border border-[var(--line)] bg-white p-4">
           <FormSection title="Horário / turno">
             <div className="grid gap-3 sm:grid-cols-4">
               <div className="sm:col-span-2"><label htmlFor="shift-name" className="app-label">Nome *</label><input id="shift-name" name="name" className="app-input" placeholder="Turno geral" required /></div>
@@ -73,21 +73,21 @@ export function ShiftsManager({ shifts }: { shifts: Shift[] }) {
         </form>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-[#e1e8f0] bg-white">
+      <div className="overflow-x-auto rounded-xl border border-[var(--line)] bg-white">
         <table className="data-table min-w-[560px]">
           <thead><tr><th>Horário</th><th>Entrada</th><th>Saída</th><th>Tolerância</th><th>Funcionários</th><th>Estado</th></tr></thead>
           <tbody>
             {shifts.map((shift) => (
               <tr key={shift.id}>
-                <td data-mobile-primary className="font-semibold text-[#1c2d3f]">{shift.name}</td>
+                <td data-mobile-primary className="font-semibold text-[var(--text)]">{shift.name}</td>
                 <td className="tabular-nums">{shift.startTime}</td>
                 <td className="tabular-nums">{shift.endTime}</td>
                 <td className="tabular-nums">{shift.toleranceMinutes} min</td>
                 <td className="tabular-nums">{shift._count.employees}</td>
-                <td><span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${shift.isActive ? 'bg-[#eff9f4] text-[#267256]' : 'bg-[#f3f6fa] text-[#607286]'}`}>{shift.isActive ? 'Activo' : 'Inactivo'}</span></td>
+                <td><span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${shift.isActive ? 'bg-[#eff9f4] text-[#267256]' : 'bg-[#f3f6fa] text-[var(--text-muted)]'}`}>{shift.isActive ? 'Activo' : 'Inactivo'}</span></td>
               </tr>
             ))}
-            {shifts.length === 0 && <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-[#708195]">Ainda não há horários.</td></tr>}
+            {shifts.length === 0 && <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-[var(--text-muted)]">Ainda não há horários.</td></tr>}
           </tbody>
         </table>
       </div>

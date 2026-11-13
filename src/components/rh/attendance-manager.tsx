@@ -65,21 +65,21 @@ export function AttendanceManager({ entries, employees }: { entries: Entry[]; em
   return (
     <div className="space-y-5">
       <div>
-        <p className="text-sm text-[#708195]">Machine Point</p>
-        <h1 className="mt-1 text-2xl font-bold text-[#1c2d3f]">Assiduidade</h1>
-        <Link href="/rh/ponto" className="mt-2 inline-flex min-h-9 items-center rounded-lg border border-[#cdddeb] bg-white px-3 text-xs font-semibold text-[#021f87]">Abrir quiosque →</Link>
-        <p className="mt-1 text-sm text-[#607286]">Registo de ponto por PIN. Horários, turnos e QR chegam nas próximas fases.</p>
+        <p className="text-sm text-[var(--text-muted)]">Machine Point</p>
+        <h1 className="mt-1 text-2xl font-bold text-[var(--text)]">Assiduidade</h1>
+        <Link href="/rh/ponto" className="mt-2 inline-flex min-h-9 items-center rounded-lg border border-[var(--line)] bg-white px-3 text-xs font-semibold text-[var(--blue)]">Abrir quiosque →</Link>
+        <p className="mt-1 text-sm text-[var(--text-muted)]">Registo de ponto por PIN. Horários, turnos e QR chegam nas próximas fases.</p>
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="rounded-xl border border-[#e1e8f0] bg-white p-4"><p className="text-xs text-[#708195]">Presentes hoje</p><p className="mt-1 text-xl font-bold tabular-nums"><CountUp value={present} durationMs={900} /></p></div>
-        <div className="rounded-xl border border-[#e1e8f0] bg-white p-4"><p className="text-xs text-[#708195]">Marcações hoje</p><p className="mt-1 text-xl font-bold tabular-nums"><CountUp value={entries.length} durationMs={900} /></p></div>
-        <div className="rounded-xl border border-[#e1e8f0] bg-white p-4"><p className="text-xs text-[#708195]">Funcionários com PIN</p><p className="mt-1 text-xl font-bold tabular-nums">{employees.filter((e) => e.hasPin).length}</p></div>
-        <div className="rounded-xl border border-[#e1e8f0] bg-white p-4"><p className="text-xs text-[#708195]">Atrasados hoje</p><p className="mt-1 text-xl font-bold tabular-nums text-[#a83939]"><CountUp value={late} durationMs={900} /></p></div>
+        <div className="rounded-xl border border-[var(--line)] bg-white p-4"><p className="text-xs text-[var(--text-muted)]">Presentes hoje</p><p className="mt-1 text-xl font-bold tabular-nums"><CountUp value={present} durationMs={900} /></p></div>
+        <div className="rounded-xl border border-[var(--line)] bg-white p-4"><p className="text-xs text-[var(--text-muted)]">Marcações hoje</p><p className="mt-1 text-xl font-bold tabular-nums"><CountUp value={entries.length} durationMs={900} /></p></div>
+        <div className="rounded-xl border border-[var(--line)] bg-white p-4"><p className="text-xs text-[var(--text-muted)]">Funcionários com PIN</p><p className="mt-1 text-xl font-bold tabular-nums">{employees.filter((e) => e.hasPin).length}</p></div>
+        <div className="rounded-xl border border-[var(--line)] bg-white p-4"><p className="text-xs text-[var(--text-muted)]">Atrasados hoje</p><p className="mt-1 text-xl font-bold tabular-nums text-[#a83939]"><CountUp value={late} durationMs={900} /></p></div>
       </div>
 
-      <section className="rounded-xl border border-[#e1e8f0] bg-white p-5">
-        <h2 className="text-sm font-bold text-[#1c2d3f]">Registar marcação</h2>
+      <section className="rounded-xl border border-[var(--line)] bg-white p-5">
+        <h2 className="text-sm font-bold text-[var(--text)]">Registar marcação</h2>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <div>
             <label htmlFor="att-employee" className="app-label">Funcionário</label>
@@ -109,8 +109,8 @@ export function AttendanceManager({ entries, employees }: { entries: Entry[]; em
         <FormError>{error}</FormError>
       </section>
 
-      <section className="rounded-xl border border-[#e1e8f0] bg-white">
-        <div className="border-b border-[#eef2f6] px-4 py-3"><h2 className="text-sm font-bold text-[#1c2d3f]">Marcações de hoje</h2></div>
+      <section className="rounded-xl border border-[var(--line)] bg-white">
+        <div className="border-b border-[#eef2f6] px-4 py-3"><h2 className="text-sm font-bold text-[var(--text)]">Marcações de hoje</h2></div>
         <div className="overflow-x-auto">
           <table className="data-table min-w-[560px]">
             <thead><tr><th>Hora</th><th>Funcionário</th><th>Marcação</th><th>Origem</th></tr></thead>
@@ -118,12 +118,12 @@ export function AttendanceManager({ entries, employees }: { entries: Entry[]; em
               {entries.map((entry) => (
                 <tr key={entry.id}>
                   <td data-mobile-primary className="font-semibold tabular-nums">{time(entry.occurredAt)}</td>
-                  <td>{entry.employee.firstName} {entry.employee.lastName} <span className="text-xs text-[#708195]">{entry.employee.employeeNumber}</span>{entry.shiftName && <span className="ml-2 text-[11px] text-[#8a99ab]">{entry.shiftName}</span>}</td>
+                  <td>{entry.employee.firstName} {entry.employee.lastName} <span className="text-xs text-[var(--text-muted)]">{entry.employee.employeeNumber}</span>{entry.shiftName && <span className="ml-2 text-[11px] text-[#8a99ab]">{entry.shiftName}</span>}</td>
                   <td>{TYPE_LABEL[entry.type] ?? entry.type}{entry.lateMinutes > 0 && <span className="ml-2 rounded-full bg-[#fdf3f3] px-2 py-0.5 text-[10px] font-semibold text-[#a83939]">{entry.lateMinutes} min atraso</span>}</td>
-                  <td><span className="rounded-full bg-[#eef4ff] px-2 py-0.5 text-[11px] font-semibold text-[#021f87]">{entry.source}</span></td>
+                  <td><span className="rounded-full bg-[var(--surface-raised)] px-2 py-0.5 text-[11px] font-semibold text-[var(--blue)]">{entry.source}</span></td>
                 </tr>
               ))}
-              {entries.length === 0 && <tr><td colSpan={4} className="px-4 py-10 text-center text-sm text-[#708195]">Ainda não há marcações hoje.</td></tr>}
+              {entries.length === 0 && <tr><td colSpan={4} className="px-4 py-10 text-center text-sm text-[var(--text-muted)]">Ainda não há marcações hoje.</td></tr>}
             </tbody>
           </table>
         </div>

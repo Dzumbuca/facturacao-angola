@@ -51,26 +51,26 @@ export function JustificationsManager({ items }: { items: Justification[] }) {
   return (
     <div className="space-y-5">
       <div>
-        <p className="text-sm text-[#708195]">Assiduidade</p>
-        <h1 className="mt-1 text-2xl font-bold text-[#1c2d3f]">Justificações</h1>
-        <p className="mt-1 text-sm text-[#607286]">Faltas, atrasos e saídas antecipadas submetidas pelos funcionários.</p>
+        <p className="text-sm text-[var(--text-muted)]">Assiduidade</p>
+        <h1 className="mt-1 text-2xl font-bold text-[var(--text)]">Justificações</h1>
+        <p className="mt-1 text-sm text-[var(--text-muted)]">Faltas, atrasos e saídas antecipadas submetidas pelos funcionários.</p>
       </div>
 
       <FormError>{error}</FormError>
 
-      <div className="overflow-x-auto rounded-xl border border-[#e1e8f0] bg-white">
+      <div className="overflow-x-auto rounded-xl border border-[var(--line)] bg-white">
         <table className="data-table min-w-[760px]">
           <thead><tr><th>Data</th><th>Funcionário</th><th>Tipo</th><th>Motivo</th><th>Estado</th><th>Acções</th></tr></thead>
           <tbody>
             {items.map((item) => (
               <tr key={item.id}>
                 <td data-mobile-primary className="tabular-nums">{day(item.date)}</td>
-                <td>{item.employee.firstName} {item.employee.lastName} <span className="text-xs text-[#708195]">{item.employee.employeeNumber}</span></td>
+                <td>{item.employee.firstName} {item.employee.lastName} <span className="text-xs text-[var(--text-muted)]">{item.employee.employeeNumber}</span></td>
                 <td>{TYPE_LABEL[item.type] ?? item.type}</td>
                 <td className="max-w-[280px] text-xs text-[#52667a]">{item.reason}</td>
                 <td>
                   <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${TONE[item.status] ?? ''}`}>{STATUS[item.status] ?? item.status}</span>
-                  {item.decisionNote && <span className="mt-1 block text-[11px] text-[#708195]">{item.decisionNote}</span>}
+                  {item.decisionNote && <span className="mt-1 block text-[11px] text-[var(--text-muted)]">{item.decisionNote}</span>}
                 </td>
                 <td data-mobile-actions>
                   {item.status === 'PENDENTE' ? (
