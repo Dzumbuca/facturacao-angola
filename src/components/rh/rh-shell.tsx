@@ -63,7 +63,7 @@ export function RhShell({ children, canManageMembers = false }: { children: Reac
           </span>
         </Link>
 
-        <nav aria-label="Navegação Machine RH" className="mt-6 flex-1 space-y-5 overflow-y-auto overscroll-contain sidebar-scroll">
+        <nav aria-label="Navegação Machine RH" className="mt-6 flex-1 space-y-5 overflow-y-auto">
           <div>
             <p className="px-2 text-[10px] font-semibold uppercase tracking-[.16em] text-blue-200/60">Gestão</p>
             <ul className="mt-2 space-y-1">
