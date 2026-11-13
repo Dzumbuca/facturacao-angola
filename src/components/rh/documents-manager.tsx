@@ -125,7 +125,7 @@ export function DocumentsManager({ documents, templates, employees }: {
                 </td>
               </tr>
             ))}
-            {documents.length === 0 && <tr><td colSpan={5} className="px-4 py-10 text-center text-sm text-[#708195]">Ainda não há documentos.</td></tr>}
+            {documents.length === 0 && <tr><td colSpan={5} className="px-4 py-6 text-center text-sm text-[#7094aa]">Ainda não há documentos gerados pelo sistema.</td></tr>}
           </tbody>
         </table>
       </div>

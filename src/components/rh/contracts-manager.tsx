@@ -143,7 +143,7 @@ export function ContractsManager({ contracts, employees }: {
                 <td><span className="rounded-full bg-[#eef4ff] px-2 py-0.5 text-[11px] font-semibold text-[#021f87]">{STATUS_LABEL[contract.status] ?? contract.status}</span></td>
               </tr>
             ))}
-            {contracts.length === 0 && <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-[#708195]">Ainda não há contratos.</td></tr>}
+            {contracts.length === 0 && <tr><td colSpan={6} className="px-4 py-6 text-center text-sm text-[#7094aa]">Ainda não há contratos. Crie o primeiro.</td></tr>}
           </tbody>
         </table>
       </div>

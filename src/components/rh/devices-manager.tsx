@@ -97,7 +97,7 @@ export function DevicesManager({ devices }: { devices: Device[] }) {
                 </td>
               </tr>
             ))}
-            {devices.length === 0 && <tr><td colSpan={5} className="px-4 py-10 text-center text-sm text-[#708195]">Ainda não há dispositivos.</td></tr>}
+            {devices.length === 0 && <tr><td colSpan={5} className="px-4 py-6 text-center text-sm text-[#7094aa]">Ainda não há dispositivos. Registe o primeiro.</td></tr>}
           </tbody>
         </table>
       </div>

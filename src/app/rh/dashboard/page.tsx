@@ -4,6 +4,7 @@ import { requireRhPage } from '@/lib/rh-page';
 import { rhFullName } from '@/lib/rh-service';
 import { PremiumHero, PremiumKpi, PremiumPanel } from '@/components/dashboard/premium-kit';
 import { MonthlyAdmissionsChart, type MonthAdmission } from '@/components/rh/monthly-admissions-chart';
+import { EmptyState } from '@/components/ui/data-table';
 
 function money(value: number) {
   return new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', maximumFractionDigits: 0 }).format(value || 0);
@@ -89,10 +90,7 @@ export default async function RhDashboardPage() {
             <Link href="/rh/funcionarios" className="text-xs font-semibold text-[#021f87] underline-offset-4 hover:underline">Ver todos →</Link>
           </div>
           {data.recent.length === 0 ? (
-            <div className="mt-4 rounded-lg border border-dashed border-[#dfe7f0] p-6 text-center">
-              <p className="text-sm font-semibold text-[#4a5d70]">Ainda não há funcionários.</p>
-              <Link href="/rh/funcionarios" className="mt-2 inline-flex text-xs font-semibold text-[#021f87]">Registar o primeiro →</Link>
-            </div>
+            <div className="mt-4"><EmptyState title="Sem admissões" description="Ainda não há funcionários registados. A criação do primeiro equipa é simples." action={<Link href="/rh/funcionarios" className="inline-flex min-h-9 items-center rounded-lg bg-[#021f87] px-3 text-xs font-semibold text-white">Criar funcionário</Link>} /></div>
           ) : (
             <ul className="mt-3 divide-y divide-[#eef2f6]">
               {(data.recent as any[]).map((employee) => (

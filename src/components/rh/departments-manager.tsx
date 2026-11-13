@@ -135,7 +135,7 @@ export function DepartmentsManager({ departments }: { departments: Department[] 
                 <td data-mobile-actions><button type="button" onClick={() => openEdit(department)} className="min-h-9 rounded-lg border border-[#cdddeb] px-3 text-xs font-semibold text-[#021f87]">Editar</button></td>
               </tr>
             ))}
-            {departments.length === 0 && <tr><td colSpan={7} className="px-4 py-10 text-center text-sm text-[#708195]">Ainda não há departamentos. Cria primeiro um pai (ex.: «Angola») e depois os filhos (ex.: «Administração»).</td></tr>}
+            {departments.length === 0 && <tr><td colSpan={7} className="px-4 py-6 text-center text-sm text-[#7094aa]">Ainda não há departamentos. Crie primeiro um pai e depois os filhos.</td></tr>}
           </tbody>
         </table>
       </div>

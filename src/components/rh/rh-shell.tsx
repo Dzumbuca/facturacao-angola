@@ -51,8 +51,8 @@ export function RhShell({ children, canManageMembers = false }: { children: Reac
   };
 
   return (
-    <div className="min-h-dvh bg-[#f5f7fb] text-[#1c2d3f]">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[236px] flex-col border-r border-[#071936] bg-[#0a1430] px-4 py-5 text-white md:flex">
+    <div className="min-h-dvh bg-[#f5f7fb] text-[#1c2d3f] dark:bg-[#050e20] dark:text-slate-100">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[236px] flex-col border-r border-white/5 bg-gradient-to-b from-[#040d26] via-[#081830] to-[#0c2548] px-4 py-5 text-white md:flex">
         <Link href="/rh/dashboard" className="flex items-center gap-3 rounded-lg px-2">
           <img src="/icons/rh-logo.png" alt="Machine RH" className="h-10 w-auto rounded-lg bg-white object-contain p-1" />
           <span>

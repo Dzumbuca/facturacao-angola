@@ -82,7 +82,7 @@ export function JustificationsManager({ items }: { items: Justification[] }) {
                 </td>
               </tr>
             ))}
-            {items.length === 0 && <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-[#708195]">Sem justificações.</td></tr>}
+            {items.length === 0 && <tr><td colSpan={6} className="px-4 py-6 text-center text-sm text-[#7094aa]">Sem justificações. Processe o primeiro.</td></tr>}
           </tbody>
         </table>
       </div>

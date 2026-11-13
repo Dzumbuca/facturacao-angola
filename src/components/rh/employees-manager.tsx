@@ -247,7 +247,7 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
               </tr>
             ))}
             {filtered.length === 0 && (
-              <tr><td colSpan={7} className="px-4 py-10 text-center text-sm text-[#708195]">Nenhum funcionário encontrado.</td></tr>
+              <tr><td colSpan={7} className="px-4 py-6 text-center text-sm text-[#7094aa]">Nenhum funcionário encontrado para a pesquisa</td></tr>
             )}
           </tbody>
       </DataTable>
