@@ -56,36 +56,44 @@ export default async function DashboardPage({ searchParams }: Props) {
 
   return <div className="dashboard-view space-y-7 pb-8">
     <PremiumHero>
-      <div className="grid grid-cols-1 items-center gap-6 lg:grid-cols-[minmax(0,1.85fr)_minmax(260px,.95fr)]">
-        <div className="flex flex-col justify-center gap-4">
-          <div className="flex flex-wrap items-center gap-3">
+      <div className="grid grid-cols-1 items-center gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(240px,.65fr)]">
+        <div className="flex flex-col items-start gap-4">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <span className="kpi-pill">MACHINE FACTURAS</span>
             <span className="kpi-pill">{rangeLabel}</span>
           </div>
-          <h1 className="text-2xl font-extrabold leading-[1.08] tracking-[-.04em] text-white sm:text-3xl lg:text-[38px]">Olá, {tenant.name}.</h1>
-          <p className="text-lg font-semibold leading-snug text-[#cdd9ff] sm:text-xl">Aqui está a saúde financeira da sua empresa.</p>
-          <p className="max-w-prose text-sm leading-6 text-[#a9c4ff]">Acompanhe a facturação, os recebimentos e os pagamentos pendentes num só lugar, com dados actualizados ao período seleccionado.</p>
-          <div className="mt-1 flex flex-wrap items-center gap-3">
-            <Link href="/invoices/new" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-white px-5 text-sm font-extrabold text-[#041f52] shadow-[0_12px_30px_rgba(0,0,0,.18)] transition hover:-translate-y-0.5 hover:bg-[#e8edff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          <h1 className="text-3xl font-extrabold leading-[1.04] tracking-[-.035em] text-white sm:text-4xl xl:text-[46px]">Olá, {tenant.name}.</h1>
+          <p className="max-w-prose text-lg font-semibold leading-snug text-[#dce7ff] sm:text-xl xl:text-2xl">Aqui está a saúde financeira da sua empresa.</p>
+          <p className="max-w-prose text-sm leading-relaxed text-[#a9c4ff] sm:text-[15px]">Acompanhe a facturação, os recebimentos e os pagamentos pendentes da sua empresa, tudo num só lugar.</p>
+          <div className="mt-1">
+            <Link href="/invoices/new" className="inline-flex min-h-[52px] items-center gap-2 rounded-[16px] bg-white px-6 text-base font-extrabold text-[#041f52] shadow-[0_14px_34px_rgba(0,0,0,.22)] transition-transform transition-shadow hover:-translate-y-0.5 hover:bg-[#f3f6ff] hover:shadow-[0_18px_40px_rgba(0,0,0,.28)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:text-[17px]">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
               Emitir factura
             </Link>
           </div>
         </div>
-        <div aria-hidden="true" className="hidden select-none lg:block">
-          <div className="relative flex h-full min-h-[150px] items-center justify-center">
-            <div className="absolute inset-0 rounded-[22px] bg-[radial-gradient(ellipse_at_center,_rgba(120,170,255,.16),_transparent_55%)]" />
-            <div className="absolute flex h-36 w-36 rotate-6 items-end justify-center rounded-2xl border border-white/10 bg-white/5 p-3 backdrop-blur-sm">
-              <div className="flex h-3/4 w-2/3 flex-col gap-2">
-                <div className="h-2 w-3/4 rounded-full bg-white/20" />
-                <div className="h-2 w-2/3 rounded-full bg-white/20" />
-                <div className="h-2 w-1/2 rounded-full bg-white/20" />
-                <div className="h-2 w-2/3 rounded-full bg-white/10" />
-              </div>
+
+        <div aria-hidden="true" className="relative hidden h-full min-h-[180px] select-none items-center justify-center lg:flex">
+          {/* Camada 1 — cartão maior */}
+          <div className="absolute h-56 w-44 -rotate-[8deg] rounded-[20px] border border-white/10 bg-white/[0.04] backdrop-blur-[2px] shadow-[0_10px_30px_rgba(0,0,0,.25)]">
+            <div className="flex h-full flex-col justify-between p-4">
+              <div className="space-y-2"><div className="h-2 w-16 rounded-full bg-white/20" /><div className="h-2 w-10 rounded-full bg-white/15" /></div>
+              <div className="space-y-2"><div className="h-2 w-12 rounded-full bg-white/15" /><div className="h-2 w-20 rounded-full bg-white/20" /></div>
             </div>
-            <div className="absolute flex h-24 w-24 -rotate-6 items-center justify-center rounded-2xl border border-white/10 bg-white/5 p-2 backdrop-blur-sm">
-              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="text-[#aac4ff]"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+          </div>
+          {/* Camada 2 — cartão intermédio */}
+          <div className="absolute h-52 w-40 rotate-[4deg] rounded-[18px] border border-white/15 bg-white/[0.08] backdrop-blur-md shadow-[0_14px_36px_rgba(0,0,0,.32)]">
+            <div className="flex h-full flex-col justify-between p-4">
+              <div className="space-y-2"><div className="h-2 w-14 rounded-full bg-white/35" /><div className="h-2 w-20 rounded-full bg-white/25" /></div>
+              <div className="space-y-2"><div className="h-2 w-16 rounded-full bg-white/30" /><div className="h-2 w-10 rounded-full bg-white/20" /></div>
             </div>
+          </div>
+          {/* Camada 3 — cartão frontal + ícone central */}
+          <div className="relative flex h-56 w-44 items-center justify-center rounded-[22px] border border-white/25 bg-white/[0.14] backdrop-blur-xl shadow-[0_22px_50px_rgba(2,31,135,.45)]">
+            <svg width="78" height="78" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#dce7ff] drop-shadow-[0_4px_12px_rgba(45,89,208,.45)]">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/>
+            </svg>
           </div>
         </div>
       </div>
