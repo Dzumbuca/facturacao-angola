@@ -5,15 +5,13 @@ import { getSessionTenantId } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 import { getTenantPeriodMetrics } from '@/lib/financial-metrics';
 import { parseReportPeriod, type ReportPeriodQuery } from '@/lib/report-period';
-import { getInvoiceState } from '@/lib/invoice-state';
 import { EvolutionChartCard } from '@/components/dashboard/evolution-chart-card';
 import { StackedMetricsCard } from '@/components/dashboard/stacked-metrics-card';
+import { ActivityTable } from '@/components/dashboard/activity-table';
 import { PremiumHero, PremiumKpi } from '@/components/dashboard/premium-kit';
 
 type Props = { searchParams: Promise<{ period?: string; from?: string; to?: string; metric?: string }> };
 const money = (amount: number) => new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', maximumFractionDigits: 0 }).format(amount);
-const labels = { DRAFT: 'Rascunho', CANCELLED: 'Anulada', PAID: 'Paga', PARTIALLY_PAID: 'Parcial', OVERDUE: 'Vencida', ISSUED: 'Emitida' };
-const stateColors: Record<string, string> = { ISSUED: '#748397', PARTIALLY_PAID: '#b16d15', PAID: '#248468', OVERDUE: '#bb4848' };
 
 const periodOptions = [['today', 'Hoje'], ['last7days', '7 dias'], ['last30days', '30 dias'], ['thisMonth', 'Este mês'], ['lastMonth', 'Mês anterior'], ['thisQuarter', 'Trimestre'], ['thisYear', 'Este ano'], ['custom', 'Personalizado']];
 
@@ -154,14 +152,7 @@ export default async function DashboardPage({ searchParams }: Props) {
       <StackedMetricsCard received={metrics.received} pendingYetDue={metrics.pendingYetDue} overdue={metrics.overdue} />
     </section>
     <section className="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(280px,.7fr)]">
-      <article className="dashboard-panel min-w-0 overflow-hidden">
-        <div className="flex items-end justify-between gap-3"><div><p className="text-[11px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">Actividade</p><h3 className="mt-1 text-base font-semibold tracking-tight text-[var(--text)]">Actividade recente</h3></div><Link href="/invoices" className="text-xs font-semibold text-[#021f87] hover:underline">Ver todas →</Link></div>
-        {metrics.recentInvoices.length ? <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[590px] text-left text-sm"><thead><tr className="border-b border-[var(--line)] text-[10px] font-bold uppercase tracking-[.12em] text-[var(--text-muted)]"><th className="py-3 pr-4">Documento / cliente</th><th className="py-3 pr-4">Data</th><th className="py-3 pr-4 text-right">Valor</th><th className="py-3 text-right">Estado</th></tr></thead><tbody>{metrics.recentInvoices.map((invoice) => {
-          const confirmed = invoice.payments.filter((payment) => payment.status === 'CONFIRMED').reduce((sum, payment) => sum + Number(payment.amount), 0);
-          const state = getInvoiceState(invoice, confirmed);
-          return <tr key={invoice.id} className="border-b border-[var(--line)] transition-colors last:border-0 hover:bg-[var(--surface-raised)]"><td className="py-3 pr-4"><Link href={`/invoices/${invoice.id}`} className="font-semibold text-[var(--text)] hover:text-[#021f87] hover:underline">{invoice.number ?? invoice.id.slice(0, 8).toUpperCase()}</Link><span className="mt-1 block max-w-[220px] truncate text-xs text-[var(--text-muted)]">{invoice.customer?.name ?? 'Adquirente'}</span></td><td className="py-3 pr-4 text-xs text-[var(--text-muted)]">{new Intl.DateTimeFormat('pt-AO', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Africa/Luanda' }).format(invoice.issuedAt)}</td><td className="py-3 pr-4 text-right tabular-nums font-bold text-[var(--text)]">{money(Number(invoice.total))}</td><td className="py-3 text-right"><span className={`inline-flex items-center gap-1.5 text-xs font-semibold ${state === 'OVERDUE' ? 'text-[#ad4444]' : state === 'PAID' ? 'text-[#227958]' : 'text-[var(--text-muted)]'}`}><span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: stateColors[state] ?? '#748397' }} />{labels[state]}</span></td></tr>;
-        })}</tbody></table></div> : <p className="mt-4 border-y border-[var(--line)] py-8 text-center text-sm text-[var(--text-muted)]">Sem facturas neste período. <Link href="/invoices/new" className="font-semibold text-[#021f87] underline underline-offset-4">Emitir a primeira factura</Link></p>}
-      </article>
+      <ActivityTable invoices={metrics.recentInvoices} />
 
       <aside className="dashboard-panel flex flex-col justify-between" aria-labelledby="alerts-title">
         <div>
