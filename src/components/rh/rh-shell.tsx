@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 import { RhPwa } from './rh-pwa';
 import { DashboardIcon, IconBuilding, IconBriefcase, IconFileText, IconClock, IconCalendar, IconCoffee, IconPhone, IconCpu, IconSparkles, IconCurrency, IconCheckSquare, IconMail, IconMegaphone, IconUsersGroup, IconCog, IconUsers } from './icons';
 import { ResponsiveTables } from '@/components/responsive-tables';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 import type { ComponentType, SVGProps } from 'react';
 import { Assistant } from '@/components/assistant/assistant';
@@ -109,8 +110,9 @@ export function RhShell({ children, canManageMembers = false }: { children: Reac
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Link href="/" className="hidden rounded-lg border border-[#dfe7f0] px-3 py-1.5 text-xs font-medium text-[#52667a] hover:bg-[#f7f9fc] sm:inline-flex">Machine Facturas</Link>
-            <span className="hidden rounded-full bg-[#021f87] px-2.5 py-1 text-[11px] font-semibold text-white sm:inline-flex">RH</span>
+            <ThemeToggle compact />
+            <Link href="/" className="hidden rounded-lg border border-[#dfe7f0] px-3 py-1.5 text-xs font-medium text-[#52667a] hover:bg-[#f7f9fc] dark:border-[#1e2a44] dark:text-[#a8b6cb] dark:hover:bg-[#111f35] sm:inline-flex">Machine Facturas</Link>
+            <span className="hidden rounded-full bg-[#021f87] px-2.5 py-1 text-[11px] font-semibold text-white dark:bg-[#1b3a7a] sm:inline-flex">RH</span>
           </div>
         </header>
 
