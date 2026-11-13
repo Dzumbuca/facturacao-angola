@@ -34,7 +34,7 @@ export default async function CentroFerramentasPage() {
   } catch { adHtml = null; }
 
 
-  return <ToolPage><main className="min-h-screen bg-[#f3f6fa] dark:bg-[#07090d] text-[#1c2d3f] dark:text-[#f2f5fa]">
+  return <ToolPage><main className="min-h-screen text-[var(--text)]">
     <SiteHeader />
     {adHtml && <div className="mx-auto max-w-6xl px-4 pt-5 md:px-6"><div className="overflow-hidden rounded-xl border border-[#e2e9f1] bg-white p-2 dark:border-[#1e2a44] dark:bg-[#0d1627]"><AdHtml html={adHtml} /></div></div>}
 
