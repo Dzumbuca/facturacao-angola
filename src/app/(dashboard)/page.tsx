@@ -144,14 +144,18 @@ export default async function DashboardPage({ searchParams }: Props) {
       </Link>
     </section>
 
-    <form action="/" method="get" className="grid grid-cols-2 items-end gap-3 sm:grid-cols-[minmax(130px,1fr)_minmax(130px,1fr)_minmax(130px,1fr)_auto]">
-      <div><label className="app-label" htmlFor="period">Período</label><select id="period" name="period" defaultValue={query.period || 'thisMonth'} className="ds-input">{periodOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
-      <div><label className="app-label" htmlFor="from">De</label><input id="from" name="from" type="date" defaultValue={query.from} className="ds-input" /></div>
-      <div><label className="app-label" htmlFor="to">Até</label><input id="to" name="to" type="date" defaultValue={query.to} className="ds-input" /></div>
-      <input type="hidden" name="metric" value={selectedMetric} />
-      <button className="min-h-11 rounded-[12px] border border-[var(--line)] bg-[var(--surface)] px-4 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-raised)]">Aplicar</button>
-      <Link href="/?period=thisMonth" className="min-h-11 inline-flex items-center justify-center rounded-[12px] px-4 text-sm font-semibold text-[var(--text-muted)] transition hover:text-[var(--text)]">Limpar</Link>
-      <span className="col-span-2 text-xs text-[var(--text-muted)] sm:col-span-4 sm:text-right">Datas no fuso Africa/Luanda · valores em AOA</span>
+    <form action="/" method="get" className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[var(--shadow-soft)]">
+      <div className="flex flex-wrap items-end gap-4">
+        <div className="min-w-[180px] flex-1"><label className="app-label" htmlFor="period">Período</label><select id="period" name="period" defaultValue={query.period || 'thisMonth'} className="ds-input">{periodOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
+        <div className="w-40"><label className="app-label" htmlFor="from">De</label><input id="from" name="from" type="date" defaultValue={query.from} className="ds-input" /></div>
+        <div className="w-40"><label className="app-label" htmlFor="to">Até</label><input id="to" name="to" type="date" defaultValue={query.to} className="ds-input" /></div>
+        <input type="hidden" name="metric" value={selectedMetric} />
+        <div className="flex items-center gap-2">
+          <Link href="/?period=thisMonth" className="inline-flex h-11 items-center rounded-xl px-4 text-sm font-medium text-[var(--text-muted)] transition hover:bg-[var(--surface-raised)] hover:text-[var(--text)]">Limpar</Link>
+          <button type="submit" className="inline-flex h-11 items-center rounded-xl bg-[#021f87] px-5 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(2,31,135,.28)] transition hover:bg-[#011566] hover:shadow-[0_6px_18px_rgba(2,31,135,.35)]">Aplicar</button>
+        </div>
+      </div>
+      <p className="mt-3 text-xs text-[var(--text-muted)]">Datas no fuso Africa/Luanda · valores em Kz</p>
     </form>
 
     <section aria-label="Indicadores principais" className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
