@@ -27,7 +27,7 @@ export function PremiumKpi({ label, value, detail, tone = 'neutral', icon }: {
     danger: '#ad4444',
   };
   return (
-    <article className="machine-card-ring group rounded-[18px] border border-[#e3e9f1] bg-white p-4 shadow-[0_6px_18px_rgba(18,36,68,.05)] transition hover:-translate-y-[3px] hover:border-[#c9d4e2] hover:shadow-[0_16px_36px_rgba(18,36,68,.10)] sm:p-5">
+    <article className="machine-card-ring group rounded-[18px] border border-[#e3e9f1] bg-white dark:border-[#1e2a44] dark:bg-[#0d1627] p-4 shadow-[0_6px_18px_rgba(18,36,68,.05)] transition hover:-translate-y-[3px] hover:border-[#c9d4e2] hover:shadow-[0_16px_36px_rgba(18,36,68,.10)] sm:p-5">
       <div className="flex items-start justify-between gap-2">
         <p className="text-[11px] font-bold uppercase tracking-[.12em] text-[#7a8799]">{label}</p>
         {icon && <span className="text-[#c3ccd9] transition group-hover:text-[#021f87]">{icon}</span>}
@@ -61,7 +61,7 @@ export function PremiumBalance({ label, amount, trend, sublabel }: { label: stri
 /** Painel branco com título/ícone e slot de cabeçalho. */
 export function PremiumPanel({ title, kicker, action, children, className = '' }: { title?: string; kicker?: string; action?: ReactNode; children: ReactNode; className?: string }) {
   return (
-    <section className={`rounded-[18px] border border-[#e3e9f1] bg-white p-5 shadow-[0_6px_18px_rgba(18,36,68,.05)] sm:p-6 ${className}`}>
+    <section className={`rounded-[18px] border border-[#e3e9f1] bg-white dark:border-[#1e2a44] dark:bg-[#0d1627] p-5 shadow-[0_6px_18px_rgba(18,36,68,.05)] sm:p-6 ${className}`}>
       {(title || action) && (
         <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
           <div>
