@@ -34,58 +34,58 @@ export async function SiteFooter() {
         NEXT_PUBLIC_ADSENSE_SLOT_INPAGE; para clientes autenticados nunca
         aparece. */}
     {!authenticated && <AdSenseSlot placement="inpage-footer" authenticated={false} wrapperClassName="border-t border-[#e2e9f1] bg-white" minHeight={110} />}
-    <footer className="border-t border-[#e2e9f1] bg-[#0b1d33] px-4 py-12 text-slate-300 md:px-6">
+    <footer className="border-t border-[#e2e9f1] bg-[#f5f8fb] px-4 py-12 text-[#3d4654] md:px-6 dark:border-[#1e2a44] dark:bg-[#0d1627] dark:text-slate-300">
     <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
       <div>
         <div className="flex items-center gap-2">
           <img src="/logo.png" width="800" height="600" alt="Machine Facturas" className="h-9 w-auto rounded-lg bg-white object-contain px-1.5 py-1" />
-          <span className="text-sm font-extrabold tracking-[.08em] text-white">MACHINE FACTURAS</span>
+          <span className="text-sm font-extrabold tracking-[.08em] text-[#021f87] dark:text-white">MACHINE FACTURAS</span>
         </div>
-        <p className="mt-3 max-w-xs text-sm leading-6 text-slate-400">Facturação online para empresas angolanas — assinatura digital padrão AGT, SAFT-AO e relatórios, do telemóvel ou computador.</p>
+        <p className="mt-3 max-w-xs text-sm leading-6 text-[#5a6472] dark:text-slate-400">Facturação online para empresas angolanas — assinatura digital padrão AGT, SAFT-AO e relatórios, do telemóvel ou computador.</p>
       </div>
       <nav aria-label="Produto">
-        <p className="text-xs font-bold uppercase tracking-[.14em] text-slate-500">Produto</p>
+        <p className="text-xs font-bold uppercase tracking-[.14em] text-[#758597] dark:text-slate-500">Produto</p>
         <ul className="mt-3 space-y-2 text-sm">
-          <li><Link href="/inicio#funcionalidades" className="text-slate-300 transition hover:text-white">Funcionalidades</Link></li>
-          <li><Link href="/inicio#precos" className="text-slate-300 transition hover:text-white">Preços</Link></li>
-          {desktopDownloadUrl && <li><a href={desktopDownloadUrl} target="_blank" rel="nofollow noreferrer" className="text-slate-300 transition hover:text-white">Aplicação para Windows</a></li>}
+          <li><Link href="/inicio#funcionalidades" className="text-[#3d4654] transition hover:text-[#021f87] dark:text-slate-300 dark:hover:text-white">Funcionalidades</Link></li>
+          <li><Link href="/inicio#precos" className="text-[#3d4654] transition hover:text-[#021f87] dark:text-slate-300 dark:hover:text-white">Preços</Link></li>
+          {desktopDownloadUrl && <li><a href={desktopDownloadUrl} target="_blank" rel="nofollow noreferrer" className="text-[#3d4654] transition hover:text-[#021f87] dark:text-slate-300 dark:hover:text-white">Aplicação para Windows</a></li>}
           {authenticated ? (
-            <li><Link href="/" className="text-slate-300 transition hover:text-white">Minha área</Link></li>
+            <li><Link href="/" className="text-[#3d4654] transition hover:text-[#021f87] dark:text-slate-300 dark:hover:text-white">Minha área</Link></li>
           ) : (
             <>
-              <li><Link href="/register" className="text-slate-300 transition hover:text-white">Criar conta grátis</Link></li>
-              <li><Link href="/login" className="text-slate-300 transition hover:text-white">Entrar</Link></li>
+              <li><Link href="/register" className="text-[#3d4654] transition hover:text-[#021f87] dark:text-slate-300 dark:hover:text-white">Criar conta grátis</Link></li>
+              <li><Link href="/login" className="text-[#3d4654] transition hover:text-[#021f87] dark:text-slate-300 dark:hover:text-white">Entrar</Link></li>
             </>
           )}
         </ul>
       </nav>
       <nav aria-label="Ferramentas grátis">
-        <p className="text-xs font-bold uppercase tracking-[.14em] text-slate-500">Ferramentas grátis</p>
+        <p className="text-xs font-bold uppercase tracking-[.14em] text-[#758597] dark:text-slate-500">Ferramentas grátis</p>
         <ul className="mt-3 space-y-2 text-sm">
-          <li><Link href="/ferramentas" className="text-slate-300 transition hover:text-white">Centro de Ferramentas</Link></li>
-          <li><Link href="/ferramentas/iva" className="text-slate-300 transition hover:text-white">Calculadora de IVA</Link></li>
-          <li><Link href="/ferramentas/conversor-iva" className="text-slate-300 transition hover:text-white">Conversor de IVA</Link></li>
-          <li><Link href="/ferramentas/lucro" className="text-slate-300 transition hover:text-white">Lucro e margem</Link></li>
-          <li><Link href="/ferramentas/preco-venda" className="text-slate-300 transition hover:text-white">Preço de venda</Link></li>
-          <li><Link href="/ferramentas/salario" className="text-slate-300 transition hover:text-white">Salário líquido e IRT</Link></li>
-          <li><Link href="/ferramentas/nif" className="text-slate-300 transition hover:text-white">Validador de NIF</Link></li>
+          <li><Link href="/ferramentas" className="text-[#3d4654] transition hover:text-[#021f87] dark:text-slate-300 dark:hover:text-white">Centro de Ferramentas</Link></li>
+          <li><Link href="/ferramentas/iva" className="text-[#3d4654] transition hover:text-[#021f87] dark:text-slate-300 dark:hover:text-white">Calculadora de IVA</Link></li>
+          <li><Link href="/ferramentas/conversor-iva" className="text-[#3d4654] transition hover:text-[#021f87] dark:text-slate-300 dark:hover:text-white">Conversor de IVA</Link></li>
+          <li><Link href="/ferramentas/lucro" className="text-[#3d4654] transition hover:text-[#021f87] dark:text-slate-300 dark:hover:text-white">Lucro e margem</Link></li>
+          <li><Link href="/ferramentas/preco-venda" className="text-[#3d4654] transition hover:text-[#021f87] dark:text-slate-300 dark:hover:text-white">Preço de venda</Link></li>
+          <li><Link href="/ferramentas/salario" className="text-[#3d4654] transition hover:text-[#021f87] dark:text-slate-300 dark:hover:text-white">Salário líquido e IRT</Link></li>
+          <li><Link href="/ferramentas/nif" className="text-[#3d4654] transition hover:text-[#021f87] dark:text-slate-300 dark:hover:text-white">Validador de NIF</Link></li>
         </ul>
       </nav>
       <nav aria-label="Recursos e empresa">
-        <p className="text-xs font-bold uppercase tracking-[.14em] text-slate-500">Recursos</p>
+        <p className="text-xs font-bold uppercase tracking-[.14em] text-[#758597] dark:text-slate-500">Recursos</p>
         <ul className="mt-3 space-y-2 text-sm">
-          <li><Link href="/guias/emitir-facturas" className="text-slate-300 transition hover:text-white">Como emitir facturas</Link></li>
-          <li><Link href="/guias/saft" className="text-slate-300 transition hover:text-white">Guia SAFT-AO</Link></li>
-          <li><Link href="/academia" className="text-slate-300 transition hover:text-white">Academia Machine</Link></li>
-          <li><Link href="/privacidade" className="text-slate-300 transition hover:text-white">Privacidade</Link></li>
-          <li><Link href="/termos" className="text-slate-300 transition hover:text-white">Termos</Link></li>
-          <li><a href="mailto:machinefacturas@gmail.com" className="text-slate-300 transition hover:text-white">Contacto</a></li>
+          <li><Link href="/guias/emitir-facturas" className="text-[#3d4654] transition hover:text-[#021f87] dark:text-slate-300 dark:hover:text-white">Como emitir facturas</Link></li>
+          <li><Link href="/guias/saft" className="text-[#3d4654] transition hover:text-[#021f87] dark:text-slate-300 dark:hover:text-white">Guia SAFT-AO</Link></li>
+          <li><Link href="/academia" className="text-[#3d4654] transition hover:text-[#021f87] dark:text-slate-300 dark:hover:text-white">Academia Machine</Link></li>
+          <li><Link href="/privacidade" className="text-[#3d4654] transition hover:text-[#021f87] dark:text-slate-300 dark:hover:text-white">Privacidade</Link></li>
+          <li><Link href="/termos" className="text-[#3d4654] transition hover:text-[#021f87] dark:text-slate-300 dark:hover:text-white">Termos</Link></li>
+          <li><a href="mailto:machinefacturas@gmail.com" className="text-[#3d4654] transition hover:text-[#021f87] dark:text-slate-300 dark:hover:text-white">Contacto</a></li>
         </ul>
       </nav>
     </div>
-    <div className="mx-auto mt-10 flex max-w-6xl flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 sm:flex-row">
-      <p className="text-xs text-slate-500">© 2026 Machine Facturas · Angola</p>
-      <a href="https://beta.publishers.adsterra.com/referral/L8Y8skqCEG" rel="nofollow" className="text-xs text-slate-500 transition hover:text-slate-300">Programa de afiliados</a>
+    <div className="mx-auto mt-10 flex max-w-6xl flex-col items-center justify-between gap-3 border-t border-[#e2e9f1] pt-6 sm:flex-row dark:border-white/10">
+      <p className="text-xs text-[#758597] dark:text-slate-500">© 2026 Machine Facturas · Angola</p>
+      <a href="https://beta.publishers.adsterra.com/referral/L8Y8skqCEG" rel="nofollow" className="text-xs text-[#758597] transition hover:text-[#021f87] dark:text-slate-500 dark:hover:text-slate-300">Programa de afiliados</a>
     </div>
     </footer>
   </>;
