@@ -150,6 +150,7 @@ model Tenant {
   rhTrainingCourses        RhTrainingCourse[]
   rhAnnouncements          RhAnnouncement[]
   rhDevices                RhDevice[]
+  rhDocumentDrafts        RhDocumentDraft[]
   rhDocumentTemplates      RhDocumentTemplate[]
   rhDocuments              RhDocument[]
   rhPayrollRuleSets        RhPayrollRuleSet[]
@@ -3459,6 +3460,48 @@ enum RhDeductionType {
   ADIANTAMENTO
   EMPRESTIMO
   OUTRO
+}
+
+model RhDocumentDraft {
+
+  id             String          @id @default(uuid())
+
+  tenantId       String
+
+  userId         String
+
+  title          String
+
+  category       String
+
+  type           String
+
+  content        String
+
+  status         RhDocumentDraftStatus @default(EM_EDICAO)
+
+  createdAt      DateTime        @default(now())
+
+  updatedAt      DateTime        @updatedAt
+
+  tenant         Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, userId, createdAt])
+
+  @@index([tenantId, category])
+
+}
+
+enum RhDocumentDraftStatus {
+
+  EM_EDICAO
+
+  AGUARDANDO_REVISAO
+
+  REVISTO
+
+  APROVADO
+
 }
 
 model RhEmployeeDeduction {
