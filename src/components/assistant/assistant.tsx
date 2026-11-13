@@ -57,14 +57,14 @@ function renderContent(content: string) {
     const trimmed = line.trim();
     const numbered = trimmed.match(/^(\d+)[.)]\s+(.*)$/);
     if (numbered) {
-      return <li key={idx} className="ml-5 list-outside list-decimal text-[13px] leading-6 text-[#24364d]">{renderInline(numbered[2], `n${idx}`)}</li>;
+      return <li key={idx} className="ml-5 list-outside list-decimal text-[13px] leading-6 text-current">{renderInline(numbered[2], `n${idx}`)}</li>;
     }
     const bullet = trimmed.match(/^[-*•]\s+(.*)$/);
     if (bullet) {
-      return <li key={idx} className="ml-5 list-outside list-disc text-[13px] leading-6 text-[#24364d]">{renderInline(bullet[1], `b${idx}`)}</li>;
+      return <li key={idx} className="ml-5 list-outside list-disc text-[13px] leading-6 text-current">{renderInline(bullet[1], `b${idx}`)}</li>;
     }
     if (!trimmed) return <div key={idx} className="h-1.5" />;
-    return <p key={idx} className="text-[13px] leading-6 text-[#24364d]">{renderInline(line, `p${idx}`)}</p>;
+    return <p key={idx} className="text-[13px] leading-6 text-current">{renderInline(line, `p${idx}`)}</p>;
   });
 }
 
