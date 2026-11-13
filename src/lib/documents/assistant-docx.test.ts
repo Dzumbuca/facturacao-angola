@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { renderAssistantDocx } from '@/lib/documents/assistant-docx';
 import { renderAssistantPdf } from '@/lib/documents/assistant-pdf';
-import { parseDocumentBlocks, documentFileName } from '@/lib/document-blocks';
+import { parseInlineRuns, parseDocumentBlocks, documentFileName } from '@/lib/document-blocks';
 
 const body = `# Carta de Apresentação
 
@@ -69,5 +69,20 @@ describe('assistant PDF generation', () => {
     const tableBody = ['# Tabela', '', '| A | B |', '|---|---|', '| 1 | 2 |'].join(String.fromCharCode(10));
     const pdf = await renderAssistantPdf({ title: 'Tabela', body: tableBody });
     expect(pdf.subarray(0, 4).toString()).toBe('%PDF');
+  });
+});
+
+describe('inline markdown hygiene', () => {
+  it('parseInlineRuns converts **bold** to styled run without markers', () => {
+    const runs = parseInlineRuns('**João Kaluana**, Técnico Contabilidade.');
+    expect(runs.some((r) => r.bold && r.text === 'João Kaluana')).toBe(true);
+    expect(runs.map((r) => r.text).join('')).not.toContain('**');
+  });
+
+  it('strips HTML tags and <br> from body', () => {
+    const blocks = parseDocumentBlocks('Linha um.<br>Linha dois.<p>Texto.</p>');
+    const para = blocks.find((b) => b.kind === 'paragraph') as any;
+    expect(para.text).not.toContain('<');
+    expect(para.text).toContain('Linha um');
   });
 });

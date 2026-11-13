@@ -51,8 +51,9 @@ export function parseDocumentBlocks(body: string): DocumentBlock[] {
     /^\s*(assinatura|carimbo( e assinatura)?|local e data|assina[dt])\b/i.test(line)
     || /^\s*_{6,}\s*$/.test(line);
 
+  const sanitize = (value: string) => value.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '').trimEnd();
   for (const raw of lines) {
-    const line = raw.trimEnd();
+    const line = sanitize(raw.trimEnd());
     const trimmed = line.trim();
 
     if (!trimmed) { flushLists(); flushTable(); continue; }
@@ -112,4 +113,54 @@ export function titleFromBody(body: string): string | null {
 export function documentFileName(title: string, ext: string): string {
   const safe = title.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\w\- ]/g, '').trim().replace(/\s+/g, '-').slice(0, 60) || 'documento';
   return `${safe}.${ext}`;
+}
+
+export type InlineRun = { text: string; bold?: boolean; italic?: boolean; code?: boolean };
+
+const stripHtml = (value: string) =>
+  value
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .trim();
+
+/** Divide uma string em segmentos com estilo (negrito, itálico, código). */
+export function parseInlineRuns(input: string): InlineRun[] {
+  const text = stripHtml(input);
+  if (!text) return [];
+  const runs: InlineRun[] = [];
+  const pattern = /\*\*([^*]+)\*\*|__([^_]+)__|\*([^*\n]+)\*|_([^_\n]+)_|`([^`]+)`/g;
+  let last = 0;
+  for (const match of text.matchAll(pattern)) {
+    if (match.index !== undefined && match.index > last) {
+      runs.push({ text: text.slice(last, match.index) });
+    }
+    if (match[1] !== undefined) runs.push({ text: match[1], bold: true });
+    else if (match[2] !== undefined) runs.push({ text: match[2], bold: true });
+    else if (match[3] !== undefined) runs.push({ text: match[3], italic: true });
+    else if (match[4] !== undefined) runs.push({ text: match[4], italic: true });
+    else if (match[5] !== undefined) runs.push({ text: match[5], code: true });
+    if (match.index !== undefined) last = match.index + match[0].length;
+  }
+  if (last < text.length) runs.push({ text: text.slice(last) });
+  return runs;
+}
+
+export const inlineRunsToText = (runs: InlineRun[]) => runs.map((r) => r.text).join('');
+
+/** Remove o Markdown visível (negrito, itálico, # e código residual). */
+export function plainTextFromMarkdown(body: string): string {
+  return parseDocumentBlocks(body)
+    .map((block) => {
+      switch (block.kind) {
+        case 'heading': return block.text;
+        case 'paragraph': return inlineRunsToText(parseInlineRuns(block.text));
+        case 'bullets': return block.items.map((i) => `• ${inlineRunsToText(parseInlineRuns(i))}`).join('\n');
+        case 'numbered': return block.items.map((item, index) => `${index + 1}. ${inlineRunsToText(parseInlineRuns(item))}`).join('\n');
+        case 'table': return block.rows.map((r) => r.join(' | ')).join('\n');
+        case 'signature': return block.label;
+        case 'hr': return '';
+      }
+    })
+    .filter(Boolean)
+    .join('\n\n');
 }

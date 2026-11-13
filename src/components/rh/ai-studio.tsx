@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
 import { DOCUMENT_TYPES, documentTypeById, buildInstruction, CATEGORIES, type DocumentField } from '@/lib/rh-ai-studio';
+import { AiDocumentPreview } from './ai-document-preview';
 
 type Step = 'choose' | 'form' | 'editor';
 type StoredDraft = { id: string; title: string; typeId: string; content: string; updatedAt: number };
@@ -52,6 +53,14 @@ export function RhAiStudio({ configured, provider }: { configured: boolean; prov
 
   const chosen = documentTypeById(typeId) ?? DOCUMENT_TYPES[0];
   const visibleTypes = useMemo(() => DOCUMENT_TYPES.filter((t) => !categoryFilter || t.category === categoryFilter), [categoryFilter]);
+  const identity = useMemo(() => ({
+    name: values.empresa,
+    legalName: values.empresa,
+    nif: values.nifEmpresa,
+    address: values.endereco,
+    phone: values.telefoneEmpresa,
+    email: values.emailEmpresa,
+  }), [values]);
 
   const setValue = (key: string, value: string) => setValues((v) => {
     const next = { ...v, [key]: value };
@@ -214,11 +223,11 @@ export function RhAiStudio({ configured, provider }: { configured: boolean; prov
         <div>
           <label htmlFor="studio-editor" className="text-xs font-bold uppercase tracking-[.14em] text-[#708195]">Editor</label>
           <textarea id="studio-editor" value={result} onChange={(e) => setResult(e.target.value)} className="mt-1 h-96 w-full resize-none rounded-xl border border-[#d4e0ea] bg-white px-3 py-2 font-mono text-xs leading-5 text-[#24364d] outline-none focus:border-[#021f87]" spellCheck={false} />
-          <p className="mt-1 text-[10px] uppercase tracking-[.1em] text-[#94a3b8]">{charCount} caracteres · negrito **texto**, títulos #/##, listas -, tabelas |</p>
+          <p className="mt-1 text-[10px] uppercase tracking-[.1em] text-[#94a3b8]">{charCount} caracteres · o conteúdo pode ter Markdown, que é renderizado automaticamente</p>
         </div>
         <div>
           <p className="text-xs font-bold uppercase tracking-[.14em] text-[#708195]">Pré-visualização A4</p>
-          <div className="mt-1 h-96 overflow-y-auto rounded-xl border border-[#e1e8f0] bg-[#fdfdfd] px-6 py-4 text-[#1c2d3f]"><pre className="whitespace-pre-wrap font-serif text-[11px] leading-6">{result}</pre></div>
+          <AiDocumentPreview title={title} body={result} identity={identity} />
         </div>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#e1e8f0] pt-3">

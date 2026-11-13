@@ -4,7 +4,7 @@ import {
   ImageRun, LevelFormat, Packer, PageNumber, Paragraph, Table, TableCell, TableLayoutType,
   TableRow, TextRun, WidthType,
 } from 'docx';
-import { parseDocumentBlocks, type DocumentIdentity } from '../document-blocks';
+import { parseDocumentBlocks, parseInlineRuns, type DocumentIdentity } from '../document-blocks';
 
 const BRAND = '021F87';
 const INK = '171C27';
@@ -29,12 +29,22 @@ function heading(text: string, level: 1 | 2 | 3 | 4): Paragraph {
   });
 }
 
-const para = (text: string, options: { align?: 'left' | 'center' | 'right' | 'justify'; size?: number; color?: string; bold?: boolean; italics?: boolean } = {}) =>
+const paraRuns = (runs: { text: string; bold?: boolean; italic?: boolean; code?: boolean }[], options: { align?: 'left' | 'center' | 'right' | 'justify'; size?: number; color?: string } = {}) =>
   new Paragraph({
     alignment: options.align === 'justify' ? AlignmentType.JUSTIFIED : options.align === 'center' ? AlignmentType.CENTER : options.align === 'right' ? AlignmentType.RIGHT : AlignmentType.LEFT,
-    spacing: { after: 120, line: 276 },
-    children: [new TextRun({ text, size: options.size ?? 21, color: options.color ?? INK, bold: options.bold ?? false, italics: options.italics ?? false, font: PT_FONT })],
+    spacing: { after: 140, line: 276 },
+    children: runs.map((run) => new TextRun({
+      text: run.text,
+      size: options.size ?? 21,
+      color: options.color ?? INK,
+      bold: run.bold ?? false,
+      italics: run.italic ?? false,
+      font: run.code ? 'Consolas' : PT_FONT,
+    })),
   });
+
+const paraInline = (text: string, options: { align?: 'left' | 'center' | 'right' | 'justify'; size?: number; color?: string } = {}) =>
+  paraRuns(parseInlineRuns(text), options);
 
 /** Tabela profissional: cabeçalho azul pálido, linhas alternadas, bordas finas. */
 function tableFromRows(rows: string[][]): Table {
@@ -77,7 +87,7 @@ const numberedItem = (text: string): Paragraph =>
   new Paragraph({
     numbering: { reference: 'numbered-list', level: 0 },
     spacing: { after: 60 },
-    children: [new TextRun({ text, size: 21, color: INK, font: PT_FONT })],
+    children: parseInlineRuns(text).map((run) => new TextRun({ text: run.text, size: 21, color: INK, bold: run.bold ?? false, italics: run.italic ?? false, font: PT_FONT })),
   });
 
 export interface AssistantDocumentInput {
@@ -158,7 +168,7 @@ export async function renderAssistantDocx(input: AssistantDocumentInput): Promis
         children.push(heading(block.text, block.level));
         break;
       case 'paragraph':
-        children.push(para(block.text, { align: 'justify' }));
+        children.push(paraInline(block.text, { align: 'justify' }));
         break;
       case 'bullets':
         for (const item of block.items) children.push(bulletItem(item));
@@ -170,9 +180,9 @@ export async function renderAssistantDocx(input: AssistantDocumentInput): Promis
         children.push(tableFromRows(block.rows));
         break;
       case 'signature':
-        children.push(para('', {}));
-        children.push(para('________________________________', { align: 'center', color: INK }));
-        children.push(para(input.identity?.legalName || block.label, { align: 'center', size: 18, color: MUTED }));
+        children.push(paraInline('', {}));
+        children.push(paraInline('________________________________', { align: 'center', color: INK }));
+        children.push(paraInline(input.identity?.legalName || block.label, { align: 'center', size: 18, color: MUTED }));
         break;
       case 'hr':
         children.push(new Paragraph({
