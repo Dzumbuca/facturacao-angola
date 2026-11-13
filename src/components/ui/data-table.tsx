@@ -5,13 +5,13 @@ import { type ReactNode } from 'react';
 /** Badge uniforme para estados: sucesso, aviso, erro, neutro, primário. */
 export function StatusBadge({ tone = 'neutral', children }: { tone?: 'success' | 'warning' | 'danger' | 'neutral' | 'primary'; children: ReactNode }) {
   const map = {
-    success: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-300/35 dark:bg-emerald-950/40 dark:text-emerald-400 dark:ring-emerald-800/40',
+    success: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-500/50 dark:bg-[#0e2818] dark:text-emerald-300 dark:ring-emerald-500/30',
     warning: 'bg-amber-50 text-amber-800 ring-1 ring-amber-300/35 dark:bg-amber-950/40 dark:text-amber-400 dark:ring-amber-800/40',
     danger: 'bg-rose-50 text-rose-700 ring-1 ring-rose-300/35 dark:bg-rose-950/40 dark:text-rose-400 dark:ring-rose-800/40',
     neutral: 'bg-slate-100 text-slate-600 ring-1 ring-slate-300/35 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700',
     primary: 'bg-blue-50 text-blue-700 ring-1 ring-blue-300/35 dark:bg-blue-950/40 dark:text-blue-400 dark:ring-blue-800/40',
   } as const;
-  return <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[.1em] ${map[tone]}`}><span className="h-1.5 w-1.5 rounded-full bg-current opacity-80" />{children}</span>;
+  return <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[.1em] ${map[tone]}`}><span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />{children}</span>;
 }
 
 export function DataTable({ children, className = '' }: { children: ReactNode; className?: string }) {
