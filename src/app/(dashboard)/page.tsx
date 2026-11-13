@@ -8,6 +8,7 @@ import { parseReportPeriod, type ReportPeriodQuery } from '@/lib/report-period';
 import { EvolutionChartCard } from '@/components/dashboard/evolution-chart-card';
 import { StackedMetricsCard } from '@/components/dashboard/stacked-metrics-card';
 import { ActivityTable } from '@/components/dashboard/activity-table';
+import { AttentionPanel } from '@/components/dashboard/attention-panel';
 import { PremiumHero, PremiumKpi } from '@/components/dashboard/premium-kit';
 
 type Props = { searchParams: Promise<{ period?: string; from?: string; to?: string; metric?: string }> };
@@ -154,17 +155,7 @@ export default async function DashboardPage({ searchParams }: Props) {
     <section className="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(280px,.7fr)]">
       <ActivityTable invoices={metrics.recentInvoices} />
 
-      <aside className="dashboard-panel flex flex-col justify-between" aria-labelledby="alerts-title">
-        <div>
-          <p className="text-[11px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">Acompanhamento</p><h3 id="alerts-title" className="mt-1 text-base font-semibold tracking-tight text-[var(--text)]">Atenção necessária</h3>
-          {alerts.length ? <ul className="mt-3 divide-y divide-[var(--line)]">{alerts.map((alert) => <li key={alert.title} className="flex items-start gap-3 py-3 first:pt-0"><span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${alert.tone === 'danger' ? 'bg-[#bb4848]' : alert.tone === 'warning' ? 'bg-[#bd7b24]' : 'bg-[#9aa6b5]'}`} /><div className="min-w-0 flex-1"><p className="text-sm leading-5 text-[var(--text)]">{alert.title}</p><Link href={alert.href} className="mt-1 inline-block text-xs font-semibold text-[#021f87] hover:underline">{alert.action}</Link></div></li>)}</ul> : <p className="mt-3 rounded-lg border border-[#c7e5d1] bg-[#eff9f4] px-3 py-3 text-sm font-medium text-[#1e5e38]">Tudo certo — sem situações a exigir atenção.</p>}
-        </div>
-        <div className="mt-5 grid grid-cols-3 divide-x divide-[var(--line)] rounded-[14px] border border-[var(--line)] bg-[var(--surface-raised)] text-center">
-          <Link href="/customers" className="px-2 py-3 transition hover:bg-[var(--surface)]"><span className="block text-[10px] uppercase text-[var(--text-muted)]">Clientes</span><span className="mt-1 block tabular-nums text-base font-extrabold text-[var(--text)]">{totalCustomers}</span></Link>
-          <Link href="/produtos" className="px-2 py-3 transition hover:bg-[var(--surface)]"><span className="block text-[10px] uppercase text-[var(--text-muted)]">Artigos</span><span className="mt-1 block tabular-nums text-base font-extrabold text-[var(--text)]">{totalProducts}</span></Link>
-          <Link href="/invoices?tab=drafts" className="px-2 py-3 transition hover:bg-[var(--surface)]"><span className="block text-[10px] uppercase text-[var(--text-muted)]">Rascunhos</span><span className="mt-1 block tabular-nums text-base font-extrabold text-[var(--text)]">{draftCount}</span></Link>
-        </div>
-      </aside>
+      <AttentionPanel alerts={alerts} totalCustomers={totalCustomers} totalProducts={totalProducts} draftCount={draftCount} />
     </section>
   </div>;
 }
