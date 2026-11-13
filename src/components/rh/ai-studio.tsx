@@ -150,7 +150,7 @@ export function RhAiStudio({ configured, provider }: { configured: boolean; prov
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           {visibleTypes.map((t) => (
-            <button key={t.id} type="button" onClick={() => { setTypeId(t.id); setStep('form'); }} className="group relative overflow-hidden rounded-2xl border border-[#e4e9f0] bg-white p-4 text-left transition hover:-translate-y-0.5 hover:border-[#021f87]/40 hover:shadow-[0_20px_40px_rgba(2,31,135,.14)]">
+            <button key={t.id} type="button" onClick={() => { setTypeId(t.id); setStep('form'); }} className="group relative overflow-hidden rounded-2xl border border-[#e4e9f0] bg-white p-4 text-left transition hover:-translate-y-0.5 hover:border-[#021f87]/40 hover:shadow-[var(--shadow-card)]">
               <p className="text-sm font-semibold text-[#1c2d3f]">{t.label}</p>
               <p className="mt-0.5 text-xs text-[#708195]">{t.description}</p>
               <p className="mt-2 text-[10px] uppercase tracking-[.12em] text-[#8aa1bd]">Ex.: {t.example}</p>

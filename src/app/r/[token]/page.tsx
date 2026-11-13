@@ -56,7 +56,7 @@ export default async function SharedReceiptPage({ params }: Props) {
         <div className="flex items-center gap-2"><ThemeToggle compact /><PrintButton /></div>
       </div>
 
-      <article className="overflow-hidden rounded-2xl border border-[#e2e9f1] bg-white shadow-[0_8px_30px_rgba(25,52,80,.06)]">
+      <article className="overflow-hidden rounded-2xl border border-[#e2e9f1] bg-white shadow-[var(--shadow-card)]">
         <header className="border-b-4 border-[#227958] bg-white p-6 md:p-8">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="flex items-center gap-3">

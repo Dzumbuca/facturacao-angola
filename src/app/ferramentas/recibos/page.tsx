@@ -39,7 +39,7 @@ export default async function GeradorRecibosPage() {
       <h1 className="mt-2 text-3xl font-bold tracking-tight md:text-4xl">Gerador de Recibos</h1>
       <p className="mt-3 leading-7 text-[#4a5f76]">Confirme pagamentos com um recibo em PDF apresentável: valor em destaque, forma de pagamento, data, referência e espaço para assinatura e carimbo. Sem registo.</p>
 
-      <div className="mt-8 rounded-3xl border border-[#e2e9f1] bg-white p-6 shadow-[0_3px_14px_rgba(25,52,80,.035)] md:p-8">
+      <div className="mt-8 rounded-3xl border border-[#e2e9f1] bg-white p-6 shadow-[var(--shadow-card)] md:p-8">
         <ReciboForm />
       </div>
 

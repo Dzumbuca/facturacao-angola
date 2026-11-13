@@ -112,7 +112,7 @@ export function ProductPicker({
       </div>
 
       {open && (
-        <div id={`${id}-listbox`} role="listbox" className="absolute z-20 mt-1 max-h-80 w-full overflow-y-auto rounded-xl border border-[#e1e8f0] bg-white shadow-[0_18px_50px_rgba(18,36,68,.16)]">
+        <div id={`${id}-listbox`} role="listbox" className="absolute z-20 mt-1 max-h-80 w-full overflow-y-auto rounded-xl border border-[#e1e8f0] bg-white shadow-[var(--shadow-card)]">
           {loading && <p className="px-4 py-3 text-sm text-[#708195]">A pesquisar…</p>}
           {!loading && empty && <p className="px-4 py-3 text-sm text-[#708195]">Nenhum produto encontrado.</p>}
           {!loading && results.map((item) => (

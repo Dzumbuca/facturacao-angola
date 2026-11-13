@@ -15,6 +15,9 @@
   --field: #ffffff;
   --focus: #7395ff;
   --shadow-soft: 0 12px 36px rgb(18 36 68 / 7%);
+  --shadow-card: 0 4px 24px rgb(18 36 68 / 8%), 0 1px 2px rgb(18 36 68 / 6%);
+  --shadow-inset: inset 0 1px 0 rgb(255 255 255 / 60%);
+  --shadow-cta: 0 12px 28px rgb(2 31 135 / 34%), 0 2px 6px rgb(2 31 135 / 24%);
   --radius-card: 18px;
   --space-section: 2rem;
   --motion-fast: 160ms;
@@ -39,6 +42,9 @@
   --line: #2b3442;
   --focus: #8aa4ff;
   --shadow-soft: 0 14px 38px rgb(0 0 0 / 28%);
+  --shadow-card: 0 6px 28px rgb(0 0 0 / 35%), 0 1px 3px rgb(0 0 0 / 24%);
+  --shadow-inset: inset 0 1px 0 rgb(255 255 255 / 8%);
+  --shadow-cta: 0 14px 32px rgb(2 31 135 / 55%), 0 3px 8px rgb(0 0 0 / 30%);
 }
 
 @theme inline {

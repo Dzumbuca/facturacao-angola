@@ -55,7 +55,7 @@ export function PremiumBalance({ label, amount, trend, sublabel }: { label: stri
       <div className="pointer-events-none absolute -bottom-12 -left-10 h-44 w-44 rounded-full bg-[radial-gradient(circle,_rgba(60,210,255,.28),_transparent_70%)]" />
       <div className="relative">
         <p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-[#e8efff]">{label}</p>
-        <p className={`tabular-nums mt-2 font-black leading-none tracking-[-.035em] text-white drop-shadow-[0_2px_8px_rgba(0,0,0,.45)] ${balanceFontClass(amount)}`}>{amount}</p>
+        <p className={`tabular-nums mt-2 font-black leading-none tracking-[-.035em] text-white drop-shadow-[var(--shadow-card)] ${balanceFontClass(amount)}`}>{amount}</p>
         <div className="mt-2 flex items-center justify-between gap-2">
           {trend && <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/15 px-2.5 py-0.5 text-[10px] font-semibold text-[#a8fccb] ring-1 ring-white/10">{trend}</span>}
           {sublabel && <span className="text-[10px] uppercase tracking-[.1em] text-[#a4b8dc]">{sublabel}</span>}
@@ -101,7 +101,7 @@ export function PremiumActivityItem({ icon, title, meta, tone = 'neutral' }: { i
 export function PremiumCta({ href, variant = 'primary', children }: { href?: string; variant?: 'primary' | 'ghost'; children: ReactNode }) {
   const base = 'inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] px-5 text-sm font-bold transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
   const styles = variant === 'primary'
-    ? `${base} bg-[#021f87] text-white shadow-[0_10px_24px_rgba(2,31,135,.32)] hover:-translate-y-0.5 hover:bg-[#0634b8] focus-visible:outline-[#021f87]`
+    ? `${base} bg-[#021f87] text-white shadow-[var(--shadow-cta)] hover:-translate-y-0.5 hover:bg-[#0634b8] focus-visible:outline-[#021f87]`
     : `${base} border border-[var(--line)] bg-[var(--surface)] text-[var(--text)] hover:bg-[var(--surface-raised)] focus-visible:outline-[var(--blue)]`;
   const Tag = href ? 'a' : 'button';
   return <Tag href={href} className={styles}>{children}</Tag>;

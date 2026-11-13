@@ -26,7 +26,7 @@ export function AiDocumentPreview({ title, body, identity }: { title: string; bo
   const showHeader = !!(identity?.legalName || identity?.name);
   return (
     <div className="h-full overflow-y-auto rounded-xl border border-[#e1e8f0] bg-[#f6f7fb] p-4">
-      <div className="mx-auto max-w-[680px] rounded-[4px] bg-white p-8 shadow-[0_18px_40px_rgba(6,27,56,.18)]" style={{ minHeight: '900px' }}>
+      <div className="mx-auto max-w-[680px] rounded-[4px] bg-white p-8 shadow-[var(--shadow-card)]" style={{ minHeight: '900px' }}>
         {showHeader && (
           <div className="border-b-2 border-[#021f87] pb-3">
             <p className="text-sm font-bold uppercase tracking-[.1em] text-[#021f87]">{identity!.legalName || identity!.name}</p>

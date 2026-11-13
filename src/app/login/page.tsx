@@ -40,7 +40,7 @@ export default function LoginPage() {
     <main className="relative flex min-h-screen items-stretch bg-[#f3f6fa] text-[#1c2d3f] md:p-6">
       <RhLoader />
       <div className="auth-theme-control"><ThemeToggle compact /></div>
-      <div className="mx-auto flex w-full max-w-6xl overflow-hidden bg-white md:min-h-[min(760px,calc(100vh-3rem))] md:rounded-3xl md:border md:border-[#e2e9f1] md:shadow-[0_20px_60px_rgba(25,52,80,.09)]">
+      <div className="mx-auto flex w-full max-w-6xl overflow-hidden bg-white md:min-h-[min(760px,calc(100vh-3rem))] md:rounded-3xl md:border md:border-[#e2e9f1] md:shadow-[var(--shadow-card)]">
       <aside className="relative hidden w-[42%] flex-col justify-between overflow-hidden bg-[#102b46] p-10 text-white md:flex lg:p-14">
         <div className="absolute -right-24 -top-20 h-72 w-72 rounded-full border border-white/10"/><div className="absolute -bottom-24 -left-24 h-80 w-80 rounded-full border border-white/10"/>
         <Link href="/login" className="relative flex items-center gap-3"><img src="/logo.png" width="800" height="600" alt="Facturas" className="h-11 w-auto max-w-[120px] rounded-xl bg-white object-contain px-2 py-1.5" /><span className="text-sm font-extrabold tracking-[.12em]">FACTURAÇÃO<br/><span className="text-xs font-medium tracking-[.2em] text-blue-200">ANGOLA</span></span></Link>

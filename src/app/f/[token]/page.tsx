@@ -63,7 +63,7 @@ export default async function SharedInvoicePage({ params }: Props) {
         <div className="flex items-center gap-2"><ThemeToggle compact /><PrintButton /></div>
       </div>
 
-      <article className="overflow-hidden rounded-2xl border border-[#e2e9f1] bg-white shadow-[0_8px_30px_rgba(25,52,80,.06)]">
+      <article className="overflow-hidden rounded-2xl border border-[#e2e9f1] bg-white shadow-[var(--shadow-card)]">
         <header className="flex flex-wrap items-start justify-between gap-4 border-b border-[#e2e9f1] bg-[#102b46] p-6 text-white md:p-8">
           <div className="flex items-center gap-3">
             <img src="/logo.png" alt="" width="800" height="600" className="h-12 w-auto max-w-[96px] rounded-lg bg-white object-contain px-2 py-1.5" />

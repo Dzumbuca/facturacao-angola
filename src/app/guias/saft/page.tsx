@@ -71,11 +71,11 @@ export default async function GuiaSaftPage() {
       <section className="mt-10 rounded-2xl border border-[#e2e9f1] bg-white p-6 md:p-8">
         <h2 className="text-xl font-bold">Ver também</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <Link href="/guias/emitir-facturas" className="rounded-xl border border-[#e2e9f1] p-4 transition hover:border-[#c9def2] hover:shadow-[0_6px_20px_rgba(25,52,80,.06)]">
+          <Link href="/guias/emitir-facturas" className="rounded-xl border border-[#e2e9f1] p-4 transition hover:border-[#c9def2] hover:shadow-[var(--shadow-card)]">
             <p className="font-bold">Como emitir facturas em Angola</p>
             <p className="mt-1 text-sm text-[#4a5f76]">Elementos, IVA e boas práticas.</p>
           </Link>
-          <Link href="/academia/erros-comuns-ao-emitir-facturas-em-angola" className="rounded-xl border border-[#e2e9f1] p-4 transition hover:border-[#c9def2] hover:shadow-[0_6px_20px_rgba(25,52,80,.06)]">
+          <Link href="/academia/erros-comuns-ao-emitir-facturas-em-angola" className="rounded-xl border border-[#e2e9f1] p-4 transition hover:border-[#c9def2] hover:shadow-[var(--shadow-card)]">
             <p className="font-bold">Erros comuns ao emitir facturas</p>
             <p className="mt-1 text-sm text-[#4a5f76]">Checklist para evitar correções.</p>
           </Link>

@@ -90,7 +90,7 @@ export function PwaInstall() {
   return (
     <>
       <div className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+70px)] z-40 flex justify-center px-4 md:hidden">
-        <div className="flex items-center gap-1 rounded-full border border-[#dbe4ee] bg-white/95 p-1.5 shadow-[0_10px_30px_rgba(18,36,68,.16)] backdrop-blur">
+        <div className="flex items-center gap-1 rounded-full border border-[#dbe4ee] bg-white/95 p-1.5 shadow-[var(--shadow-card)] backdrop-blur">
           <button type="button" onClick={install} className="flex min-h-10 items-center gap-2 rounded-full bg-[#021f87] px-4 text-sm font-semibold text-white transition active:bg-[#061965]">
             <NavIcon name="download" className="h-4 w-4" />
             Instalar app

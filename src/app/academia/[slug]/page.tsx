@@ -119,11 +119,11 @@ function ArtigoOrcamentoProforma() {
 
       <h2 className="mt-10 text-2xl font-bold tracking-tight">Põe isto em prática</h2>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        <Link href="/ferramentas/orcamento-pdf" className="rounded-xl border border-[#e2e9f1] bg-white p-4 transition hover:border-[#c9def2] hover:shadow-[0_6px_20px_rgba(25,52,80,.06)]">
+        <Link href="/ferramentas/orcamento-pdf" className="rounded-xl border border-[#e2e9f1] bg-white p-4 transition hover:border-[#c9def2] hover:shadow-[var(--shadow-card)]">
           <p className="font-bold">Gerador de Orçamentos em PDF</p>
           <p className="mt-1 text-sm text-[#4a5f76]">Cria um orçamento profissional em segundos.</p>
         </Link>
-        <Link href="/ferramentas/factura-proforma" className="rounded-xl border border-[#e2e9f1] bg-white p-4 transition hover:border-[#c9def2] hover:shadow-[0_6px_20px_rgba(25,52,80,.06)]">
+        <Link href="/ferramentas/factura-proforma" className="rounded-xl border border-[#e2e9f1] bg-white p-4 transition hover:border-[#c9def2] hover:shadow-[var(--shadow-card)]">
           <p className="font-bold">Gerador de Factura Proforma</p>
           <p className="mt-1 text-sm text-[#4a5f76]">Ideal para cotações formais.</p>
         </Link>
@@ -201,15 +201,15 @@ function ArtigoErrosFacturas() {
 
       <h2 className="mt-10 text-2xl font-bold tracking-tight">Ferramentas úteis</h2>
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
-        <Link href="/ferramentas/iva" className="rounded-xl border border-[#e2e9f1] bg-white p-4 transition hover:border-[#c9def2] hover:shadow-[0_6px_20px_rgba(25,52,80,.06)]">
+        <Link href="/ferramentas/iva" className="rounded-xl border border-[#e2e9f1] bg-white p-4 transition hover:border-[#c9def2] hover:shadow-[var(--shadow-card)]">
           <p className="font-bold">Calculadora de IVA</p>
           <p className="mt-1 text-sm text-[#4a5f76]">Acrescenta ou retira IVA com rapidez.</p>
         </Link>
-        <Link href="/ferramentas/orcamento-pdf" className="rounded-xl border border-[#e2e9f1] bg-white p-4 transition hover:border-[#c9def2] hover:shadow-[0_6px_20px_rgba(25,52,80,.06)]">
+        <Link href="/ferramentas/orcamento-pdf" className="rounded-xl border border-[#e2e9f1] bg-white p-4 transition hover:border-[#c9def2] hover:shadow-[var(--shadow-card)]">
           <p className="font-bold">Orçamento em PDF</p>
           <p className="mt-1 text-sm text-[#4a5f76]">Profissional, sem registo.</p>
         </Link>
-        <Link href="/ferramentas/recibos" className="rounded-xl border border-[#e2e9f1] bg-white p-4 transition hover:border-[#c9def2] hover:shadow-[0_6px_20px_rgba(25,52,80,.06)]">
+        <Link href="/ferramentas/recibos" className="rounded-xl border border-[#e2e9f1] bg-white p-4 transition hover:border-[#c9def2] hover:shadow-[var(--shadow-card)]">
           <p className="font-bold">Gerador de Recibos</p>
           <p className="mt-1 text-sm text-[#4a5f76]">Comprova pagamentos facilmente.</p>
         </Link>

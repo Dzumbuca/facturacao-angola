@@ -103,7 +103,7 @@ export function LeavesManager({ leaves, employees, vacationDaysPerYear }: {
         <div className="rounded-xl border border-[#e1e8f0] bg-white p-4"><p className="text-xs text-[#708195]">Saldo</p><p className={`mt-1 text-xl font-bold tabular-nums ${balance !== null && balance < 0 ? 'text-[#a83939]' : ''}`}>{balance === null ? '—' : `${balance} d`}</p></div>
       </div>
 
-      <form onSubmit={submit} className="rounded-[18px] border border-[#e4e9f0] bg-white p-4 shadow-[0_12px_28px_rgba(18,36,68,.06)]">
+      <form onSubmit={submit} className="rounded-[18px] border border-[#e4e9f0] bg-white p-4 shadow-[var(--shadow-card)]">
         <FormSplit main={<>
         <h2 className="text-sm font-bold text-[#1c2d3f]">Novo pedido</h2>
         <FormSection title="Dados do pedido">

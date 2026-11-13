@@ -242,7 +242,7 @@ export function InvoiceForm({ initialCustomers, initialProducts, hasCompanyProfi
       </div>
     </aside>
 
-    <section className="rounded-2xl border border-[#e2e9f1] bg-white shadow-[0_3px_14px_rgba(25,52,80,.035)]">
+    <section className="rounded-2xl border border-[#e2e9f1] bg-white shadow-[var(--shadow-card)]">
       <div className="border-b border-[#e7edf3] px-5 py-4 md:px-6"><h3 className="font-bold text-[#1c2d3f]">Dados do adquirente</h3><p className="mt-1 text-xs text-[#708195]">Escolha um cliente existente ou introduza um novo nome.</p></div>
       <div className="grid gap-4 p-5 md:grid-cols-2 md:p-6">
         <div className="relative" onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setCustomerSuggestionsOpen(false); }}>
@@ -257,7 +257,7 @@ export function InvoiceForm({ initialCustomers, initialProducts, hasCompanyProfi
       </div>
     </section>
 
-    <section className="overflow-hidden rounded-2xl border border-[#e2e9f1] bg-white shadow-[0_3px_14px_rgba(25,52,80,.035)]">
+    <section className="overflow-hidden rounded-2xl border border-[#e2e9f1] bg-white shadow-[var(--shadow-card)]">
       <div className="border-b border-[#e7edf3] px-5 py-4 md:px-6"><h3 className="font-bold text-[#1c2d3f]">Artigos e serviços</h3><p className="mt-1 text-xs text-[#708195]">Procure um produto do catálogo ou escreva uma descrição livre.</p></div>
       <div className="space-y-4 p-5 md:p-6">
         {items.map((item, index) => {
@@ -283,7 +283,7 @@ export function InvoiceForm({ initialCustomers, initialProducts, hasCompanyProfi
     </section>
 
     <div className="grid gap-4 md:grid-cols-2">
-    <section className="w-full rounded-2xl border border-[#e2e9f1] bg-white p-5 shadow-[0_3px_14px_rgba(25,52,80,.035)] md:p-6">
+    <section className="w-full rounded-2xl border border-[#e2e9f1] bg-white p-5 shadow-[var(--shadow-card)] md:p-6">
       <h3 className="mb-4 font-bold text-[#1c2d3f]">Resumo da fatura</h3>
       <div className="space-y-4 border-b border-[#e7edf3] pb-4">
         <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-[#30465c]"><input type="checkbox" checked={applyVat} onChange={(event) => setApplyVat(event.target.checked)} className="h-4 w-4 accent-[#2878d0]" />Aplicar IVA de 14% à fatura</label>
@@ -296,7 +296,7 @@ export function InvoiceForm({ initialCustomers, initialProducts, hasCompanyProfi
       <label className="mt-5 flex cursor-pointer items-start gap-2 border-t border-[#e7edf3] pt-4 text-sm font-medium text-[#30465c]"><input type="checkbox" checked={includeCompanyProfile} onChange={(event) => setIncludeCompanyProfile(event.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 accent-[#2878d0]" /><span>Incluir dados da empresa no PDF<p className="mt-1 text-xs font-normal text-[#708195]">{hasCompanyProfile ? 'Usa o perfil guardado em Dados da empresa.' : 'Configure os dados da empresa para os apresentar na factura.'}</p></span></label>
     </section>
 
-    <section className="rounded-2xl border border-[#e2e9f1] bg-white p-5 shadow-[0_3px_14px_rgba(25,52,80,.035)] md:p-6">
+    <section className="rounded-2xl border border-[#e2e9f1] bg-white p-5 shadow-[var(--shadow-card)] md:p-6">
       <h3 className="mb-4 font-bold text-[#1c2d3f]">Pagamento e vencimento</h3>
       <div className="grid gap-4 sm:grid-cols-2">
         <div><label htmlFor="invoice-due-at" className="app-label">Data de vencimento <span className="font-normal text-[#708195]">(opcional)</span></label><input id="invoice-due-at" type="date" className="app-input" value={dueAt} onChange={(event) => setDueAt(event.target.value)} /></div>
@@ -304,7 +304,7 @@ export function InvoiceForm({ initialCustomers, initialProducts, hasCompanyProfi
       </div>
     </section>
 
-    <section className="rounded-2xl border border-[#e2e9f1] bg-white p-5 shadow-[0_3px_14px_rgba(25,52,80,.035)] md:p-6">
+    <section className="rounded-2xl border border-[#e2e9f1] bg-white p-5 shadow-[var(--shadow-card)] md:p-6">
       <label htmlFor="invoice-observations" className="app-label">Observações <span className="font-normal text-[#708195]">(opcional)</span></label>
       <textarea id="invoice-observations" className="app-input min-h-24 resize-y" maxLength={2000} value={observations} onChange={(event) => setObservations(event.target.value)} placeholder="Notas adicionais para incluir na fatura" />
       <p className="mt-1 text-xs text-[#708195]">As observações serão incluídas no PDF.</p>

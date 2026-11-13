@@ -60,7 +60,7 @@ export function FormStepper({ steps, current }: { steps: Step[]; current: number
           const active = index === current;
           return (
             <li key={index} className="flex items-center">
-              <div className={`flex items-center gap-2 rounded-full pl-1 pr-3 py-1.5 transition ${active ? 'bg-[#021f87] text-white shadow-[0_6px_16px_rgba(2,31,135,.35)]' : done ? 'bg-[#eef4ff] text-[#021f87]' : 'text-[#8aa1bd]'}`}>
+              <div className={`flex items-center gap-2 rounded-full pl-1 pr-3 py-1.5 transition ${active ? 'bg-[#021f87] text-white shadow-[var(--shadow-cta)]' : done ? 'bg-[#eef4ff] text-[#021f87]' : 'text-[#8aa1bd]'}`}>
                 <span className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold ${active ? 'bg-white text-[#021f87]' : done ? 'bg-[#021f87] text-white' : 'bg-[#eef2f6] text-[#607286]'}`}>
                   {done ? '✓' : index + 1}
                 </span>
@@ -79,7 +79,7 @@ export function FormStepper({ steps, current }: { steps: Step[]; current: number
 export function FormHero({ eyebrow, title, description, icon }: { eyebrow?: string; title: string; description?: string; icon?: ReactNode }) {
   return (
     <div className="flex items-start gap-4 border-b border-[#e8edf2] pb-5">
-      {icon && <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#021f87] to-[#2b5ce6] text-white shadow-[0_8px_22px_rgba(2,31,135,.35)]">{icon}</div>}
+      {icon && <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#021f87] to-[#2b5ce6] text-white shadow-[var(--shadow-cta)]">{icon}</div>}
       <div className="min-w-0">
         {eyebrow && <p className="text-[10px] font-extrabold uppercase tracking-[.16em] text-[#021f87]">{eyebrow}</p>}
         <h1 className="mt-0.5 text-xl font-extrabold tracking-tight text-[#1c2d3f] sm:text-2xl">{title}</h1>
@@ -94,7 +94,7 @@ export function RhModuleHero({ eyebrow, title, description, icon, action }: { ey
   return (
     <div className="flex flex-col gap-4 rounded-[22px] border border-[#e4e9f0] bg-white p-4 shadow-[0_16px_36px_rgba(18,36,68,.07)] sm:flex-row sm:items-center sm:justify-between sm:p-5">
       <div className="flex items-start gap-3">
-        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[#021f87] via-[#0b2b6b] to-[#1b3a7a] text-white shadow-[0_10px_22px_rgba(2,31,135,.34)]">{icon}</div>
+        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[#021f87] via-[#0b2b6b] to-[#1b3a7a] text-white shadow-[var(--shadow-cta)]">{icon}</div>
         <div className="min-w-0">
           <p className="text-[10px] font-extrabold uppercase tracking-[.16em] text-[#8793a6]">{eyebrow}</p>
           <h1 className="mt-0.5 text-xl font-extrabold tracking-tight text-[#152236] sm:text-2xl">{title}</h1>

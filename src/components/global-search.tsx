@@ -53,7 +53,7 @@ export function GlobalSearch() {
         {query && <button type="button" aria-label="Limpar pesquisa" onClick={() => { setQuery(''); setItems([]); }} className="rounded-md p-1 text-[#8a99ab] hover:bg-[#eef2f6]"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg></button>}
       </label>
       {open && items.length > 0 && (
-        <div className="absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-2xl border border-[#e1e8f0] bg-white shadow-[0_24px_48px_rgba(6,27,56,.22)]" role="listbox">
+        <div className="absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-2xl border border-[#e1e8f0] bg-white shadow-[var(--shadow-card)]" role="listbox">
           <ul className="max-h-80 overflow-y-auto py-1">
             {items.map((item) => (
               <li key={`${item.type}-${item.href}-${item.label}`}>

@@ -313,7 +313,12 @@ export function buildInstruction(type: DocumentType, values: Record<string, stri
   lines.push(`Redige o seguinte ${type.label.toLowerCase()}, estruturado em secções, linguagem formal e profissional.`);
   lines.push('Segue rigorosamente os factos fornecidos; não inventes nomes, NIF, datas ou valores.');
   lines.push('Se algum dado não foi fornecido, escreve [A PREENCHER: descrição] no lugar correspondente; nunca inventes.');
-  lines.push('Usa Markdown simples: # títulos, ## subtítulos, listas com -, tabelas com |.');
+  lines.push('Estrutura esperada: # Título do Documento, corpo em secções com ##, parágrafos justificados, listas com - ou numeradas, tabelas somente quando necessário (evita excesso de tabelas).');
+  lines.push('NÃO uses HTML (`<br>`, `<p>`, `<b>`). Usa apenas Markdown simples.');
+  lines.push('NÃO escrevas «[A PREENCHER]» em campos que o utilizador já forneceu. Se faltar dado obrigatório, primeiro escreve no texto final apenas os campos preenchidos e coloca «[A PREENCHER: descrição exacta do campo]» APENAS no local correspondente. Não cries secções de «Instruções», «Nota», «Comentário» ou «Observação interna» para o utilizador.');
+  lines.push('Não repitas o mesmo facto em secções diferentes. Cada secção deve acrescentar informação nova.');
+  lines.push('Usa tom empresarial formal, natural e claro; evita jargão vazio e exclamações.');
+  lines.push('Assinatura final: linha «________________________», nome e cargo por baixo. Sem caracteres especiais adicionais, sem setas, sem emojis.');
   lines.push('Para cidadãos angolanos, o NIF pode coincidir com o BI. Se o NIF não for fornecido mas o BI for, usa o BI no campo NIF.');
   for (const field of type.fields) {
     const value = answer(field.key);

@@ -135,7 +135,7 @@ export function Assistant() {
         onClick={() => setOpen((value) => !value)}
         aria-label={open ? 'Fechar o Machine IA' : `Abrir o ${ASSISTANT_NAME}`}
         aria-expanded={open}
-        className="fixed bottom-24 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#021f87] text-white shadow-[0_10px_30px_rgba(2,31,135,.45)] transition hover:scale-105 hover:bg-[#1233a8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7795ff] md:bottom-6 md:right-6"
+        className="fixed bottom-24 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#021f87] text-white shadow-[var(--shadow-cta)] transition hover:scale-105 hover:bg-[#1233a8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7795ff] md:bottom-6 md:right-6"
       >
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M12 2l1.6 4.7L18.3 8.3l-4.7 1.6L12 14.6l-1.6-4.7L5.7 8.3l4.7-1.6L12 2z" fill="#a9bfff" />
@@ -145,7 +145,7 @@ export function Assistant() {
       </button>
 
       {open && (
-        <div role="dialog" aria-label={`${ASSISTANT_NAME} — assistente`} className="fixed bottom-44 right-4 z-50 flex h-[min(640px,calc(100dvh-11.5rem))] w-[min(400px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-[#dfe7f1] bg-white shadow-[0_24px_60px_rgba(6,27,56,.35)] md:bottom-24 md:right-6 md:h-[min(660px,calc(100dvh-7rem))]">
+        <div role="dialog" aria-label={`${ASSISTANT_NAME} — assistente`} className="fixed bottom-44 right-4 z-50 flex h-[min(640px,calc(100dvh-11.5rem))] w-[min(400px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-[#dfe7f1] bg-white shadow-[var(--shadow-cta)] md:bottom-24 md:right-6 md:h-[min(660px,calc(100dvh-7rem))]">
           <div className="flex items-center gap-3 border-b border-[#e6ebf3] bg-gradient-to-r from-[#071936] to-[#021f87] px-4 py-3 text-white">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l1.6 4.7 4.7 1.6-4.7 1.6L12 14.6l-1.6-4.7-4.7-1.6 4.7-1.6L12 2z" fill="#a9bfff" /></svg>

@@ -4,7 +4,7 @@ import { type ReactNode, useState } from 'react';
 export function FormSection({ title, description, children, tone = 'default' }: { title: string; description?: string; children: ReactNode; tone?: 'default' | 'soft' | 'danger' }) {
   const toneClass = tone === 'soft' ? 'bg-[#fbfcfe] border-[#e6eaf0] dark:bg-[#111f35] dark:border-[#1e2a44]' : tone === 'danger' ? 'bg-[#fff7f7] border-[#f0dada] dark:bg-red-950/30 dark:border-[#3a1e1e]' : 'bg-white border-[#e6eaf0] dark:bg-[#0d1627] dark:border-[#1e2a44]';
   return (
-    <fieldset className={`space-y-4 rounded-[18px] border ${toneClass} dark:border-[#1e2a44] dark:bg-[#0d1526] p-4 shadow-[0_10px_28px_rgba(18,36,68,.05)] sm:p-5`}>
+    <fieldset className={`space-y-4 rounded-[18px] border ${toneClass} dark:border-[#1e2a44] dark:bg-[#0d1526] p-4 shadow-[var(--shadow-card)] sm:p-5`}>
       <legend className="flex items-center gap-2 px-2 text-[11px] font-extrabold uppercase tracking-[.12em] text-[#52667a] dark:text-[#9db1d8]">{title}</legend>
       {description && <p className="text-xs leading-5 text-[#8094a9] dark:text-[#7a8faf]">{description}</p>}
       <div className="grid gap-4 sm:grid-cols-2">{children}</div>
@@ -32,7 +32,7 @@ export function FormActions({ saving, onCancel, saveLabel, disabled }: { saving?
   return (
     <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
       <button type="button" onClick={onCancel} className="min-h-12 rounded-[12px] border border-[#cdd6e3] bg-white px-5 text-sm font-semibold text-[#52667a] transition hover:bg-[#f3f6fa] focus:outline-none focus-visible:ring-4 focus-visible:ring-[#021f87]/10">Cancelar</button>
-      <button type="submit" disabled={saving || disabled} className="min-h-12 rounded-[12px] bg-gradient-to-br from-[#021f87] via-[#0b2b6b] to-[#1b3a7a] px-5 text-sm font-bold text-white shadow-[0_12px_28px_rgba(2,31,135,.34)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(2,31,135,.4)] disabled:opacity-60">{saving ? 'A guardar…' : (saveLabel ?? 'Guardar')}</button>
+      <button type="submit" disabled={saving || disabled} className="min-h-12 rounded-[12px] bg-gradient-to-br from-[#021f87] via-[#0b2b6b] to-[#1b3a7a] px-5 text-sm font-bold text-white shadow-[var(--shadow-cta)] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-cta)] disabled:opacity-60">{saving ? 'A guardar…' : (saveLabel ?? 'Guardar')}</button>
     </div>
   );
 }

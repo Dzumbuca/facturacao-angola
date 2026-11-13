@@ -33,7 +33,7 @@ export function NotificationsBell() {
         {count > 0 && <span aria-hidden className="absolute right-2 top-2 grid min-w-4 place-items-center rounded-full border border-white bg-[#e11d48] px-1 text-[9px] font-bold text-white shadow">{count > 9 ? '9+' : count}</span>}
       </button>
       {open && (
-        <div role="dialog" aria-label="Notificações" className="absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-[#e1e8f0] bg-white shadow-[0_24px_48px_rgba(6,27,56,.22)]">
+        <div role="dialog" aria-label="Notificações" className="absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-[#e1e8f0] bg-white shadow-[var(--shadow-card)]">
           <p className="border-b border-[#eef2f6] px-4 py-2.5 text-[11px] font-extrabold uppercase tracking-[.14em] text-[#708195]">Notificações</p>
           <ul className="max-h-80 divide-y divide-[#eef2f6] overflow-y-auto">
             {badge?.overdue ? <li className="px-4 py-3"><Link href="/invoices?state=OVERDUE" onClick={() => setOpen(false)} className="flex items-start gap-3 text-sm font-semibold text-[#a83939]"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[#fef2f2] text-[#a83939]"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M12 8v4m0 4h.01"/></svg></span><span><span className="block">{badge.overdue} factura(s) vencidas</span><span className="mt-0.5 block text-[11px] font-normal text-[#708195]">Reveja cobranças em atraso.</span></span></Link></li> : null}

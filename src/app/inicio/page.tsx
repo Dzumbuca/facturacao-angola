@@ -135,7 +135,7 @@ export default async function LandingPage() {
         <h1 className="mx-auto mt-5 max-w-3xl text-4xl font-black leading-[1.08] tracking-tight md:text-6xl">A facturação do seu negócio, organizada em minutos.</h1>
         <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-[#4a5f76] md:text-lg">Crie, emita e acompanhe facturas com assinatura digital, SAFT-AO e relatórios — do telemóvel ou do computador. Feito para empresas angolanas.</p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Link href="/register" className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-[#2878d0] px-7 text-base font-semibold text-white shadow-[0_10px_30px_rgba(40,120,208,.35)] transition hover:bg-[#216bbd] sm:w-auto">Criar conta grátis</Link>
+          <Link href="/register" className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-[#2878d0] px-7 text-base font-semibold text-white shadow-[var(--shadow-cta)] transition hover:bg-[#216bbd] sm:w-auto">Criar conta grátis</Link>
           <Link href="#precos" className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-[#cdddeb] bg-white px-7 text-base font-semibold text-[#1c2d3f] transition hover:bg-[#f6f9fc] sm:w-auto">Ver planos e preços</Link>
         </div>
         <p className="mt-4 text-sm text-[#708195]">Grátis para começar · Sem cartão de crédito · Os seus dados, a sua empresa</p>
@@ -151,7 +151,7 @@ export default async function LandingPage() {
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((feature, index) => {
             const Icon = featureIcons[index % featureIcons.length];
-            return <div key={feature.title} className="landing-feature rounded-2xl border border-[#e2e9f1] bg-white p-6 shadow-[0_3px_14px_rgba(25,52,80,.035)] transition hover:border-[#c9def2] hover:shadow-[0_8px_28px_rgba(25,52,80,.07)]">
+            return <div key={feature.title} className="landing-feature rounded-2xl border border-[#e2e9f1] bg-white p-6 shadow-[var(--shadow-card)] transition hover:border-[#c9def2] hover:shadow-[var(--shadow-card)]">
               <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#eef6ff] text-[#2878d0]"><Icon /></span>
               <h3 className="mt-4 font-bold text-[#1c2d3f]">{feature.title}</h3>
               <p className="mt-2 text-sm leading-6 text-[#5b6f85]">{feature.body}</p>
@@ -161,7 +161,7 @@ export default async function LandingPage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 pb-4 md:px-6">
-        <div className="rounded-3xl border border-[#e2e9f1] bg-white p-6 shadow-[0_3px_14px_rgba(25,52,80,.035)] md:p-8">
+        <div className="rounded-3xl border border-[#e2e9f1] bg-white p-6 shadow-[var(--shadow-card)] md:p-8">
           <div className="max-w-2xl">
             <p className="text-xs font-bold uppercase tracking-[.14em] text-[#2878d0]">Aprende</p>
             <h2 className="mt-2 text-2xl font-bold tracking-tight md:text-3xl">Aprende sobre facturação em Angola</h2>
@@ -170,17 +170,17 @@ export default async function LandingPage() {
             </p>
           </div>
           <div className="mt-6 grid gap-3 md:grid-cols-3">
-            <Link href="/guias/emitir-facturas" className="rounded-2xl border border-[#e2e9f1] p-5 transition hover:border-[#c9def2] hover:shadow-[0_6px_20px_rgba(25,52,80,.06)]">
+            <Link href="/guias/emitir-facturas" className="rounded-2xl border border-[#e2e9f1] p-5 transition hover:border-[#c9def2] hover:shadow-[var(--shadow-card)]">
               <h3 className="font-bold">Como emitir facturas em Angola</h3>
               <p className="mt-2 text-sm leading-6 text-[#5b6f85]">Guia prático com o essencial sobre facturação, IVA e organização.</p>
               <span className="mt-3 inline-flex text-sm font-semibold text-[#2878d0]">Ler guia →</span>
             </Link>
-            <Link href="/guias/saft" className="rounded-2xl border border-[#e2e9f1] p-5 transition hover:border-[#c9def2] hover:shadow-[0_6px_20px_rgba(25,52,80,.06)]">
+            <Link href="/guias/saft" className="rounded-2xl border border-[#e2e9f1] p-5 transition hover:border-[#c9def2] hover:shadow-[var(--shadow-card)]">
               <h3 className="font-bold">SAFT-AO: o que é e como gerar</h3>
               <p className="mt-2 text-sm leading-6 text-[#5b6f85]">Entende o ficheiro que muitos contabilistas pedem e como o preparar.</p>
               <span className="mt-3 inline-flex text-sm font-semibold text-[#2878d0]">Ler guia →</span>
             </Link>
-            <Link href="/academia" className="rounded-2xl border border-[#e2e9f1] p-5 transition hover:border-[#c9def2] hover:shadow-[0_6px_20px_rgba(25,52,80,.06)]">
+            <Link href="/academia" className="rounded-2xl border border-[#e2e9f1] p-5 transition hover:border-[#c9def2] hover:shadow-[var(--shadow-card)]">
               <h3 className="font-bold">Academia Machine</h3>
               <p className="mt-2 text-sm leading-6 text-[#5b6f85]">Artigos práticos sobre documentos, erros comuns e boas práticas.</p>
               <span className="mt-3 inline-flex text-sm font-semibold text-[#2878d0]">Ver artigos →</span>
@@ -203,7 +203,7 @@ export default async function LandingPage() {
           <p className="mt-3 leading-7 text-[#4a5f76]">Comece grátis e cresça quando quiser. Sem contratos de fidelização — paga por Multicaixa Express, mês a mês ou com desconto de duração.</p>
         </div>
         <div className="mt-12 grid items-start gap-5 md:grid-cols-2 lg:grid-cols-4">
-          {plans.map((plan) => <div key={plan.name} className={`relative flex h-full flex-col rounded-3xl border bg-white p-6 shadow-[0_3px_14px_rgba(25,52,80,.035)] ${plan.highlight ? 'border-[#2878d0] shadow-[0_18px_50px_rgba(40,120,208,.18)] lg:-mt-3 lg:pb-9' : 'border-[#e2e9f1]'}`}>
+          {plans.map((plan) => <div key={plan.name} className={`relative flex h-full flex-col rounded-3xl border bg-white p-6 shadow-[var(--shadow-card)] ${plan.highlight ? 'border-[#2878d0] shadow-[var(--shadow-card)] lg:-mt-3 lg:pb-9' : 'border-[#e2e9f1]'}`}>
             {plan.highlight && <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#2878d0] px-4 py-1 text-xs font-bold text-white">Mais popular</span>}
             <p className="text-sm font-bold uppercase tracking-[.14em] text-[#2878d0]">{plan.name}</p>
             <p className="mt-3 text-4xl font-black tracking-tight">{plan.price}<span className="ml-1 text-sm font-medium text-[#708195]">/ {plan.period}</span></p>

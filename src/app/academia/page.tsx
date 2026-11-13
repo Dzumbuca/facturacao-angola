@@ -71,7 +71,7 @@ export default async function AcademiaPage() {
 
         <div className="mt-8 grid gap-4 md:grid-cols-2">
           {artigos.map((artigo) => (
-            <article key={artigo.slug} className="rounded-2xl border border-[#e2e9f1] bg-white p-6 shadow-[0_3px_14px_rgba(25,52,80,.035)] transition hover:border-[#c9def2] hover:shadow-[0_8px_28px_rgba(25,52,80,.07)]">
+            <article key={artigo.slug} className="rounded-2xl border border-[#e2e9f1] bg-white p-6 shadow-[var(--shadow-card)] transition hover:border-[#c9def2] hover:shadow-[var(--shadow-card)]">
               <div className="flex items-center justify-between text-xs text-[#708195]">
                 <span className="rounded-full bg-[#eef6ff] px-2.5 py-1 font-semibold text-[#2878d0]">{artigo.categoria}</span>
                 <span>{artigo.tempoLeitura} de leitura</span>

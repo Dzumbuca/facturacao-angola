@@ -118,7 +118,7 @@ export function CompanyProfileForm({ initialProfile, initialBankAccounts = [] }:
     {error && <p ref={noticeRef} role="alert" className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-[#a83939]">{error}</p>}
 
     <form className="space-y-5" onSubmit={handleSubmit}>
-      <section className="company-profile-section overflow-hidden rounded-2xl border border-[#e2e9f1] bg-white shadow-[0_3px_14px_rgba(25,52,80,.035)]">
+      <section className="company-profile-section overflow-hidden rounded-2xl border border-[#e2e9f1] bg-white shadow-[var(--shadow-card)]">
         <div className="border-b border-[#e7edf3] px-5 py-4 md:px-6"><h3 className="font-bold text-[#1c2d3f]">Identificação e contactos</h3><p className="mt-1 text-xs text-[#708195]">Estes dados pertencem à empresa associada à sua conta.</p></div>
         <div className="grid gap-4 p-5 sm:grid-cols-2 md:p-6">
           {fields.filter((field) => !['bankName', 'bankAccountName', 'iban'].includes(field.name)).map((field) => <div key={field.name} className={field.name === 'address' ? 'sm:col-span-2' : ''}>
@@ -128,7 +128,7 @@ export function CompanyProfileForm({ initialProfile, initialBankAccounts = [] }:
         </div>
       </section>
 
-      <section className="company-profile-section overflow-hidden rounded-2xl border border-[#e2e9f1] bg-white shadow-[0_3px_14px_rgba(25,52,80,.035)]">
+      <section className="company-profile-section overflow-hidden rounded-2xl border border-[#e2e9f1] bg-white shadow-[var(--shadow-card)]">
         <div className="border-b border-[#e7edf3] px-5 py-4 md:px-6"><h3 className="font-bold text-[#1c2d3f]">Dados bancários</h3><p className="mt-1 text-xs text-[#708195]">O bloco bancário aparece na factura quando estiver preenchido.</p></div>
         <div className="grid gap-4 p-5 sm:grid-cols-2 md:p-6">
           {fields.filter((field) => ['bankName', 'bankAccountName', 'iban'].includes(field.name)).map((field) => <div key={field.name}>
@@ -138,7 +138,7 @@ export function CompanyProfileForm({ initialProfile, initialBankAccounts = [] }:
         </div>
       </section>
 
-      <section className="company-profile-section overflow-hidden rounded-2xl border border-[#e2e9f1] bg-white shadow-[0_3px_14px_rgba(25,52,80,.035)]">
+      <section className="company-profile-section overflow-hidden rounded-2xl border border-[#e2e9f1] bg-white shadow-[var(--shadow-card)]">
         <div className="border-b border-[#e7edf3] px-5 py-4 md:px-6"><h3 className="font-bold text-[#1c2d3f]">Identidade e preferências</h3><p className="mt-1 text-xs text-[#708195]">Os valores preenchem novos documentos e podem ser alterados antes da emissão.</p></div>
         <div className="grid gap-4 p-5 sm:grid-cols-2 md:p-6">
           <div><label htmlFor="company-brand-color" className="app-label">Cor principal</label><div className="flex gap-2"><input id="company-brand-color" name="brandColor" type="color" className="h-11 w-14 rounded-lg border border-[#d8e1eb] p-1" value={/^#[0-9a-fA-F]{6}$/.test(profile.brandColor) ? profile.brandColor : '#2878d0'} onChange={(event) => setProfile((current) => ({ ...current, brandColor: event.target.value }))} /><input aria-label="Código hexadecimal da cor" className="app-input" value={profile.brandColor} maxLength={7} onChange={(event) => setProfile((current) => ({ ...current, brandColor: event.target.value }))} /></div></div>
@@ -152,7 +152,7 @@ export function CompanyProfileForm({ initialProfile, initialBankAccounts = [] }:
         </div>
       </section>
 
-      <section className="company-profile-section overflow-hidden rounded-2xl border border-[#e2e9f1] bg-white shadow-[0_3px_14px_rgba(25,52,80,.035)]">
+      <section className="company-profile-section overflow-hidden rounded-2xl border border-[#e2e9f1] bg-white shadow-[var(--shadow-card)]">
         <div className="border-b border-[#e7edf3] px-5 py-4 md:px-6"><h3 className="font-bold text-[#1c2d3f]">Logótipo</h3><p className="mt-1 text-xs text-[#708195]">Carregue uma imagem PNG ou JPEG até 1 MB.</p></div>
         <div className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center md:p-6">
           <div className="flex h-24 w-36 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-dashed border-[#cdddeb] bg-[#f8fafc]">

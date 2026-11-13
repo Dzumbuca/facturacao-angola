@@ -16,7 +16,7 @@ export function StatusBadge({ tone = 'neutral', children }: { tone?: 'success' |
 
 export function DataTable({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`overflow-x-auto rounded-[18px] border border-[#e2e8ef] bg-white shadow-[0_18px_38px_rgba(18,36,68,.06)] dark:border-[#1e2a44] dark:bg-[#0d1627] dark:shadow-[0_18px_38px_rgba(0,0,0,.35)] ${className}`}>
+    <div className={`overflow-x-auto rounded-[18px] border border-[#e2e8ef] bg-white shadow-[var(--shadow-card)] dark:border-[#1e2a44] dark:bg-[#0d1627] dark:shadow-[0_18px_38px_rgba(0,0,0,.35)] ${className}`}>
       <table className="w-full border-separate border-spacing-0 text-left text-sm">
         {children}
       </table>
@@ -26,8 +26,8 @@ export function DataTable({ children, className = '' }: { children: ReactNode; c
 
 export function EmptyState({ title, description, action }: { title: string; description: string; action?: ReactNode }) {
   return (
-    <div className="rounded-[20px] border border-dashed border-[#dfe6ee] bg-gradient-to-b from-[#fbfcfe] to-[#f7f9fd] px-6 py-12 text-center shadow-[inset_0_1px_0_rgba(255,255,255,.7)] dark:border-[#1e2a44] dark:from-[#0d1627] dark:to-[#0b1220]">
-      <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-white shadow-[0_8px_24px_rgba(18,36,68,.07)] dark:bg-[#162038]">
+    <div className="rounded-[20px] border border-dashed border-[#dfe6ee] bg-gradient-to-b from-[#fbfcfe] to-[#f7f9fd] px-6 py-12 text-center shadow-[var(--shadow-inset)] dark:border-[#1e2a44] dark:from-[#0d1627] dark:to-[#0b1220]">
+      <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-white shadow-[var(--shadow-card)] dark:bg-[#162038]">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="text-[#c0cbda] dark:text-[#8295b4]"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
       </div>
       <h3 className="mt-4 text-sm font-extrabold tracking-tight text-[#1c2d3f] dark:text-slate-100">{title}</h3>

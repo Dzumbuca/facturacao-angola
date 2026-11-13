@@ -95,7 +95,7 @@ export function DepartmentsManager({ departments }: { departments: Department[] 
         title="Departamentos"
         description="Estrutura hierárquica e responsáveis. Cria a cadeia antes de distribuir funções."
         icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M3 10h18M5 6h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/></svg>}
-        action={<button type="button" onClick={openCreate} className="min-h-12 rounded-[14px] bg-gradient-to-br from-[#021f87] via-[#0b2b6b] to-[#1b3a7a] px-5 text-sm font-bold text-white shadow-[0_12px_28px_rgba(2,31,135,.32)] transition hover:-translate-y-0.5">Novo departamento</button>}
+        action={<button type="button" onClick={openCreate} className="min-h-12 rounded-[14px] bg-gradient-to-br from-[#021f87] via-[#0b2b6b] to-[#1b3a7a] px-5 text-sm font-bold text-white shadow-[var(--shadow-cta)] transition hover:-translate-y-0.5">Novo departamento</button>}
       />
 
       {open && (

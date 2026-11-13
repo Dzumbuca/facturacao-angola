@@ -76,11 +76,11 @@ export function ContractsManager({ contracts, employees }: {
         title="Contratos"
         description="Contratos, renovações e datas de vencimento. Cria rascunhos e mantém o controlo de datas num só sítio."
         icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M10 12h4"/><path d="M10 16h4"/></svg>}
-        action={<button type="button" onClick={() => { setError(''); setOpen(true); }} disabled={employees.length === 0} className="min-h-12 rounded-[14px] bg-gradient-to-br from-[#021f87] via-[#0b2b6b] to-[#1b3a7a] px-5 text-sm font-bold text-white shadow-[0_12px_28px_rgba(2,31,135,.32)] transition hover:-translate-y-0.5 disabled:opacity-50">Novo contrato</button>}
+        action={<button type="button" onClick={() => { setError(''); setOpen(true); }} disabled={employees.length === 0} className="min-h-12 rounded-[14px] bg-gradient-to-br from-[#021f87] via-[#0b2b6b] to-[#1b3a7a] px-5 text-sm font-bold text-white shadow-[var(--shadow-cta)] transition hover:-translate-y-0.5 disabled:opacity-50">Novo contrato</button>}
       />
 
       {open && (
-        <form onSubmit={submit} className="rounded-[18px] border border-[#e4e9f0] bg-white p-4 shadow-[0_12px_28px_rgba(18,36,68,.06)]">
+        <form onSubmit={submit} className="rounded-[18px] border border-[#e4e9f0] bg-white p-4 shadow-[var(--shadow-card)]">
           <FormSplit main={<>
           <FormSection title="Dados do contrato">
             <div className="sm:col-span-2">

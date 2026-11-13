@@ -80,11 +80,11 @@ export default async function GuiaEmitirFacturasPage() {
       <section className="mt-10 rounded-2xl border border-[#e2e9f1] bg-white p-6 md:p-8">
         <h2 className="text-xl font-bold">Ver também na Academia</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <Link href="/academia/diferenca-entre-orcamento-factura-proforma-e-factura" className="rounded-xl border border-[#e2e9f1] p-4 transition hover:border-[#c9def2] hover:shadow-[0_6px_20px_rgba(25,52,80,.06)]">
+          <Link href="/academia/diferenca-entre-orcamento-factura-proforma-e-factura" className="rounded-xl border border-[#e2e9f1] p-4 transition hover:border-[#c9def2] hover:shadow-[var(--shadow-card)]">
             <p className="font-bold">Orçamento vs Proforma vs Factura</p>
             <p className="mt-1 text-sm text-[#4a5f76]">Quando usar cada um no dia-a-dia.</p>
           </Link>
-          <Link href="/academia/erros-comuns-ao-emitir-facturas-em-angola" className="rounded-xl border border-[#e2e9f1] p-4 transition hover:border-[#c9def2] hover:shadow-[0_6px_20px_rgba(25,52,80,.06)]">
+          <Link href="/academia/erros-comuns-ao-emitir-facturas-em-angola" className="rounded-xl border border-[#e2e9f1] p-4 transition hover:border-[#c9def2] hover:shadow-[var(--shadow-card)]">
             <p className="font-bold">Erros comuns e como evitá-los</p>
             <p className="mt-1 text-sm text-[#4a5f76]">Checklist prático para evitar correções.</p>
           </Link>
