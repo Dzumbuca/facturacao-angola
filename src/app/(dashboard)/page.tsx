@@ -7,6 +7,7 @@ import { getTenantPeriodMetrics } from '@/lib/financial-metrics';
 import { parseReportPeriod, type ReportPeriodQuery } from '@/lib/report-period';
 import { getInvoiceState } from '@/lib/invoice-state';
 import { FinancialLineChart } from '@/components/financial-line-chart';
+import { PremiumHero, PremiumKpi } from '@/components/dashboard/premium-kit';
 
 type Props = { searchParams: Promise<{ period?: string; from?: string; to?: string; metric?: string }> };
 const money = (amount: number) => new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', maximumFractionDigits: 0 }).format(amount);
@@ -65,10 +66,22 @@ export default async function DashboardPage({ searchParams }: Props) {
   ];
 
   return <div className="dashboard-view space-y-7 pb-8">
-    <section className="dashboard-hero flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
-      <div><p className="text-[11px] font-bold uppercase tracking-[.16em] text-[#67768a]">Olá, {tenant.name}</p><h2 className="mt-2 text-[30px] font-semibold leading-tight tracking-[-.035em] text-[#152236] md:text-[36px]">Resumo da actividade</h2><p className="mt-2 text-sm text-[#65758a]">Visão financeira · {rangeLabel}</p></div>
-      <Link href="/invoices/new" className="inline-flex min-h-11 items-center justify-center gap-2 self-start rounded-md bg-[#021F87] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#061965] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#021F87] lg:self-auto"><span aria-hidden="true">＋</span> Emitir factura</Link>
-    </section>
+    <PremiumHero>
+      <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+        <div className="max-w-2xl">
+          <div className="flex items-center gap-3">
+            <span className="kpi-pill">MACHINE FACTURAS</span>
+            <span className="kpi-pill">{rangeLabel}</span>
+          </div>
+          <h1 className="mt-4 text-3xl font-extrabold leading-[1.05] tracking-[-.04em] text-white sm:text-4xl">{tenant.name}, que bom ver o seu negócio hoje.</h1>
+          <p className="mt-3 text-sm leading-6 text-[#a9c4ff]">Aqui está a visão consolidada da actividade do período. Emita facturas, acompanhe recebimentos e veja onde o dinheiro está — tudo num só sítio.</p>
+        </div>
+        <div className="flex shrink-0 gap-2">
+          <Link href="/invoices/new" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-white px-5 text-sm font-extrabold text-[#041f52] transition hover:-translate-y-0.5 hover:bg-[#e8edff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"><span aria-hidden="true">＋</span> Nova factura</Link>
+          <Link href="/reports" className="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/20 bg-white/5 px-5 text-sm font-semibold text-white transition hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Relatórios</Link>
+        </div>
+      </div>
+    </PremiumHero>
 
     <section aria-label="Atalhos para ferramentas empresariais" className="grid grid-cols-2 gap-3 sm:grid-cols-4">
       {[
@@ -91,12 +104,16 @@ export default async function DashboardPage({ searchParams }: Props) {
       <span className="col-span-2 text-xs text-[#7b8796] sm:col-span-4 sm:text-right">Datas no fuso Africa/Luanda · valores em AOA</span>
     </form>
 
-    <section aria-label="Indicadores de facturação" className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-      {dashboardIndicators.map((indicator) => <article key={indicator.label} className="dashboard-kpi">
-        <p className="text-xs font-semibold text-[#69788c]">{indicator.label}</p>
-        <p className={`mt-2 tabular-nums text-2xl font-semibold tracking-tight ${indicator.tone}`}>{indicator.value}</p>
-        <p className="mt-1 text-xs text-[#788596]">{indicator.detail}</p>
-      </article>)}
+    <section aria-label="Indicadores de facturação" className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+      {dashboardIndicators.map((indicator) => {
+        const toneMap: Record<string, 'primary' | 'success' | 'warning' | 'danger'> = {
+          'Facturas emitidas': 'primary',
+          'Pagas': 'success',
+          'Pendentes': 'warning',
+          'Vencidas': 'danger',
+        };
+        return <PremiumKpi key={indicator.label} label={indicator.label} value={indicator.value} detail={indicator.detail} tone={toneMap[indicator.label] ?? 'neutral' as any} />;
+      })}
     </section>
 
     <section aria-label="Desempenho financeiro" className="grid gap-7 xl:grid-cols-[minmax(0,1.8fr)_minmax(250px,.72fr)]">

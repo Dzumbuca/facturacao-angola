@@ -309,8 +309,43 @@ button, a { -webkit-tap-highlight-color: transparent; }
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
   background: var(--surface);
-  box-shadow: 0 4px 18px rgb(18 36 68 / 4%);
+  box-shadow: 0 6px 24px rgb(18 36 68 / 6%), inset 0 1px 0 rgb(255 255 255 / 60%);
 }
+.dashboard-view .dashboard-kpi { transition: transform var(--motion-fast) ease, border-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease; }
+.dashboard-view .dashboard-kpi:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgb(18 36 68 / 10%), inset 0 1px 0 rgb(255 255 255 / 60%); }
+
+.premium-hero {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgb(2 31 135 / 12%);
+  border-radius: 26px;
+  background: linear-gradient(145deg, #041f52 0%, #071f4b 48%, #0b2b6b 100%);
+  color: #eaf0ff;
+  padding: clamp(1.5rem, 3.5vw, 2.25rem);
+  box-shadow: 0 18px 48px rgb(4 31 82 / 28%), inset 0 1px 0 rgb(255 255 255 / 6%);
+}
+.premium-hero::before {
+  content: "";
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 85% 10%, rgb(120 170 255 / 28%), transparent 45%), radial-gradient(circle at 15% 85%, rgb(60 210 255 / 18%), transparent 50%);
+  pointer-events: none;
+}
+.kpi-pill {
+  display:inline-flex; align-items:center; gap:.35rem; border:1px solid rgb(255 255 255 / 14%);
+  border-radius:9999px; background: rgb(255 255 255 / 7%); padding:.25rem .6rem; font-size:.65rem; color:#cfe0ff;
+}
+.spark-bar { height: 38px; display:flex; align-items:flex-end; gap:2px; }
+.spark-bar > span { flex:1; border-radius: 2px 2px 0 0; background: linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.15)); }
+.kpi-delta-up { color:#52d3a6; }
+.kpi-delta-down { color:#ff8a8a; }
+.machine-card-ring { position: relative; isolation: isolate; }
+.machine-card-ring::after {
+  content:""; position:absolute; inset:-1px; border-radius: inherit; padding:1px;
+  background: linear-gradient(180deg, rgb(120 180 255 / 16%), transparent 70%);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude; pointer-events:none;
+}
+
 .dashboard-view .dashboard-kpi { min-width: 0; padding: 1rem 1.1rem; transition: transform var(--motion-fast) ease, border-color var(--motion-fast) ease; }
 .dashboard-view .dashboard-kpi:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--blue-accent) 35%, var(--line)); }
 .dashboard-view .dashboard-panel { padding: clamp(1rem, 2.5vw, 1.5rem); }
