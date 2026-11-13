@@ -4,9 +4,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { suggestionsForPath } from '@/lib/assistant-knowledge';
+import { AssistantDocumentCard, type AssistantDocument } from './assistant-document-card';
 
 type AssistantAction = { label: string; href: string };
-type AssistantDocument = { title: string; body: string };
 type ChatMessage = { id: string; role: 'user' | 'assistant'; content: string; actions?: AssistantAction[]; document?: AssistantDocument | null; offline?: boolean };
 
 const STORAGE_KEY = 'machine-ia-history-v1';
@@ -68,19 +68,7 @@ function renderContent(content: string) {
   });
 }
 
-async function downloadBlob(filename: string, content: string, mime: string) {
-  const blob = new Blob([content], { type: `${mime};charset=utf-8` });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
-  anchor.href = url; anchor.download = filename; document.body.appendChild(anchor); anchor.click();
-  anchor.remove(); URL.revokeObjectURL(url);
-}
 
-function wordDocumentHtml(title: string, body: string) {
-  const escaped = body.replace(/&/g, '&amp;').replace(/</g, '&lt;');
-  const withBreaks = escaped.replace(/\n/g, '<br/>');
-  return `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>${title}</title><style>body{font-family:Calibri,sans-serif;font-size:11pt;line-height:1.5;color:#171C27}h1{color:#021F87;font-size:18pt}</style></head><body><h1>${title}</h1>${withBreaks}<hr/><p style="color:#647184;font-size:9pt">Documento gerado pelo Machine IA — Machine Facturas.</p></body></html>`;
-}
 
 export function Assistant() {
   const pathname = usePathname();
@@ -139,27 +127,6 @@ export function Assistant() {
 
   const suggestions = suggestionsForPath(pathname);
 
-  async function exportDocument(doc: AssistantDocument, format: 'txt' | 'md' | 'doc' | 'pdf') {
-    if (format === 'pdf') {
-      try {
-        const response = await fetch('/api/assistant/document', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title: doc.title, body: doc.body }),
-        });
-        if (!response.ok) throw new Error('pdf-failed');
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        const anchor = document.createElement('a');
-        anchor.href = url; anchor.download = `${doc.title}.pdf`; document.body.appendChild(anchor); anchor.click(); anchor.remove(); URL.revokeObjectURL(url);
-      } catch { setMessages((current) => [...current, { id: `a-${Date.now()}`, role: 'assistant', content: 'Não foi possível gerar o PDF. Use TXT ou Markdown por agora.', offline: true }]); }
-      return;
-    }
-    const plain = doc.body;
-    if (format === 'txt') downloadBlob(`${doc.title}.txt`, plain, 'text/plain');
-    if (format === 'md') downloadBlob(`${doc.title}.md`, `# ${doc.title}\n\n${plain}`, 'text/markdown');
-    if (format === 'doc') downloadBlob(`${doc.title}.doc`, wordDocumentHtml(doc.title, plain), 'application/msword');
-  }
-
   return (
     <>
       <button
@@ -198,15 +165,17 @@ export function Assistant() {
                 <div className={`max-w-[88%] rounded-2xl px-3 py-2 shadow-sm ${message.role === 'user' ? 'rounded-br-md bg-[#021f87] text-white' : 'rounded-bl-md border border-[#e6ebf3] bg-white'}`}>
                   <div className="space-y-1">{renderContent(message.content)}</div>
                   {message.document && (
-                    <div className="mt-2 rounded-xl border border-[#dbe6fb] bg-[#f4f7ff] p-2">
-                      <p className="text-[11px] font-bold uppercase tracking-[.12em] text-[#021f87]">Documento · {message.document.title}</p>
-                      <pre className="mt-1 max-h-36 overflow-auto whitespace-pre-wrap rounded-lg bg-white p-2 text-[11px] leading-5 text-[#24364d]">{message.document.body.slice(0, 1200)}</pre>
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        {(['pdf', 'doc', 'txt', 'md'] as const).map((fmt) => (
-                          <button key={fmt} type="button" onClick={() => exportDocument(message.document!, fmt)} className="rounded-lg border border-[#c9d8fb] bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[.1em] text-[#021f87] transition hover:bg-[#eef2ff]">{fmt === 'doc' ? 'Word' : fmt === 'md' ? 'Markdown' : fmt.toUpperCase()}</button>
-                        ))}
-                      </div>
-                    </div>
+                    <AssistantDocumentCard
+                      doc={message.document}
+                      regenerating={sending}
+                      onRegenerate={(instruction) => {
+                        const context = message.document ? `O documento actual intitula-se "${message.document.title}" e o seu conteúdo é:
+
+${message.document.body}` : '';
+                        send(`Regenera o documento anterior com as seguintes instruções, devolvendo apenas o documento completo e pronto: ${instruction}
+${context}`);
+                      }}
+                    />
                   )}
                   {message.actions && message.actions.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1.5">

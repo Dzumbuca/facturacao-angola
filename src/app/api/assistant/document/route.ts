@@ -1,29 +1,28 @@
 import { NextResponse } from 'next/server';
-import PDFDocument from 'pdfkit';
 import { auth } from '@/lib/auth';
 import { getSessionUserId } from '@/lib/session';
 import { assistantRateLimited } from '@/lib/assistant';
+import { renderAssistantDocx } from '@/lib/documents/assistant-docx';
+import { renderAssistantPdf } from '@/lib/documents/assistant-pdf';
+import { documentFileName, type DocumentIdentity } from '@/lib/document-blocks';
 
 export const runtime = 'nodejs';
-
 const MAX_BODY = 15000;
 
-function wrapText(doc: InstanceType<typeof PDFDocument>, value: string, width: number) {
-  const lines: string[] = [];
-  for (const paragraph of value.replace(/\r\n/g, '\n').split('\n')) {
-    if (!paragraph.trim()) { lines.push(''); continue; }
-    const words = paragraph.match(/\S+\s*/g) ?? [paragraph];
-    let line = '';
-    for (const word of words) {
-      const next = line + word;
-      if (doc.widthOfString(next.trimEnd()) > width && line) {
-        lines.push(line.trimEnd());
-        line = word;
-      } else line = next;
-    }
-    if (line) lines.push(line.trimEnd());
-  }
-  return lines;
+function parseIdentity(raw: unknown): DocumentIdentity | undefined {
+  if (!raw || typeof raw !== 'object') return undefined;
+  const value = raw as Record<string, unknown>;
+  return {
+    name: typeof value.name === 'string' ? value.name.slice(0, 200) : undefined,
+    legalName: typeof value.legalName === 'string' ? value.legalName.slice(0, 200) : undefined,
+    nif: typeof value.nif === 'string' ? value.nif.slice(0, 40) : undefined,
+    address: typeof value.address === 'string' ? value.address.slice(0, 300) : undefined,
+    phone: typeof value.phone === 'string' ? value.phone.slice(0, 60) : undefined,
+    email: typeof value.email === 'string' ? value.email.slice(0, 120) : undefined,
+    website: typeof value.website === 'string' ? value.website.slice(0, 200) : undefined,
+    logoDataUrl: typeof value.logoDataUrl === 'string' && value.logoDataUrl.startsWith('data:image/') ? value.logoDataUrl.slice(0, 400_000) : null,
+    includeLogo: value.includeLogo === true,
+  };
 }
 
 export async function POST(req: Request) {
@@ -33,43 +32,36 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
   const title = typeof body?.title === 'string' ? body.title.trim().slice(0, 160) : '';
   const text = typeof body?.body === 'string' ? body.body.trim().slice(0, MAX_BODY) : '';
+  const format = body?.format === 'docx' ? 'docx' : 'pdf';
+  const identity = parseIdentity(body?.identity);
   if (!title || !text) return NextResponse.json({ error: 'Documento inválido.' }, { status: 400 });
   if (assistantRateLimited(`doc:${userId}`, 10, 60_000)) {
     return NextResponse.json({ code: 'AI_RATE_LIMITED', error: 'Demasiados pedidos. Aguarde um minuto.' }, { status: 429 });
   }
 
-  const doc = new PDFDocument({ size: 'A4', margins: { top: 48, bottom: 56, left: 48, right: 48 } });
-  const chunks: Buffer[] = [];
-  doc.on('data', (chunk: Buffer) => chunks.push(chunk));
-  const done = new Promise<Buffer>((resolve, reject) => {
-    doc.on('end', () => resolve(Buffer.concat(chunks)));
-    doc.on('error', reject);
-  });
-
-  doc.rect(0, 0, 595.28, 12).fill('#021f87');
-  doc.fillColor('#021f87').font('Helvetica-Bold').fontSize(16).text(title, 48, 52, { width: 499 });
-  doc.fillColor('#647184').font('Helvetica').fontSize(8).text('Machine IA · Machine Facturas', 48, doc.y + 4);
-  doc.moveDown(1.2);
-  doc.fillColor('#171c27').font('Helvetica').fontSize(11);
-  for (const line of wrapText(doc, text, 499)) {
-    if (!line) { doc.moveDown(0.4); continue; }
-    if (/^\s*#{1,3}\s+/.test(line)) {
-      doc.fillColor('#021f87').font('Helvetica-Bold').fontSize(13).text(line.replace(/^\s*#{1,3}\s*/, ''));
-      doc.fillColor('#171c27').font('Helvetica').fontSize(11);
-      continue;
+  try {
+    if (format === 'docx') {
+      const docx = await renderAssistantDocx({ title, body: text, identity });
+      return new NextResponse(new Uint8Array(docx), {
+        status: 200,
+        headers: {
+          'content-type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'content-disposition': `attachment; filename="${documentFileName(title, 'docx')}"`,
+          'cache-control': 'no-store',
+        },
+      });
     }
-    doc.text(line);
+    const pdf = await renderAssistantPdf({ title, body: text, identity });
+    return new NextResponse(new Uint8Array(pdf), {
+      status: 200,
+      headers: {
+        'content-type': 'application/pdf',
+        'content-disposition': `attachment; filename="${documentFileName(title, 'pdf')}"`,
+        'cache-control': 'no-store',
+      },
+    });
+  } catch (error) {
+    console.error('assistant document', error);
+    return NextResponse.json({ error: 'Não foi possível gerar o documento.' }, { status: 500 });
   }
-  doc.moveDown(1);
-  doc.fillColor('#647184').fontSize(8).text(`Gerado em ${new Intl.DateTimeFormat('pt-AO', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Africa/Luanda' }).format(new Date())} · machinefaturas.shop`);
-  doc.end();
-  const pdf = await done;
-  return new NextResponse(new Uint8Array(pdf), {
-    status: 200,
-    headers: {
-      'content-type': 'application/pdf',
-      'content-disposition': `attachment; filename="${title.replace(/[^\w\- ]/g, '').slice(0, 60) || 'documento'}.pdf"`,
-      'cache-control': 'no-store',
-    },
-  });
 }
