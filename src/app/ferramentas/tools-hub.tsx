@@ -10,9 +10,9 @@ type FiltroCategoria = FerramentaCategoria | 'Todas';
 const FILTROS: FiltroCategoria[] = ['Todas', ...CATEGORIAS_FERRAMENTAS];
 
 const categoryStyle: Record<string, { iconBg: string; iconColor: string; badge: string }> = {
-  'Fiscalidade': { iconBg: 'bg-[#eef2ff] dark:bg-[#0d1730]', iconColor: 'text-[#021f87] dark:text-[#8aa4ff]', badge: 'bg-[#eef2ff] text-[#021f87] dark:bg-[#0d1730] dark:text-[#8aa4ff]' },
-  'Gestão Financeira': { iconBg: 'bg-[#eff9f4] dark:bg-[#0e241b]', iconColor: 'text-[#267256] dark:text-[#34d399]', badge: 'bg-[#eff9f4] text-[#227958] dark:bg-[#0e241b] dark:text-[#34d399]' },
-  'Documentos Empresariais': { iconBg: 'bg-[#f3effc] dark:bg-[#1a1235]', iconColor: 'text-[#5b34d6] dark:text-[#c4b0ff]', badge: 'bg-[#f3effc] text-[#5b34d6] dark:bg-[#1a1235] dark:text-[#c4b0ff]' },
+  'Fiscalidade': { iconBg: 'bg-blue-100 text-blue-700', iconColor: '', badge: 'bg-blue-50 text-blue-700 border border-blue-200' },
+  'Gestão Financeira': { iconBg: 'bg-emerald-100 text-emerald-700', iconColor: '', badge: 'bg-emerald-50 text-emerald-700 border border-emerald-200' },
+  'Documentos Empresariais': { iconBg: 'bg-purple-100 text-purple-700', iconColor: '', badge: 'bg-purple-50 text-purple-700 border border-purple-200' },
 };
 
 export function ToolsHub({ ferramentas }: { ferramentas: FerramentaResumo[] }) {
@@ -46,7 +46,7 @@ export function ToolsHub({ ferramentas }: { ferramentas: FerramentaResumo[] }) {
       </section>
 
       {/* Search + filtros */}
-      <section aria-label="Pesquisa e filtros" className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <section aria-label="Pesquisa e filtros" className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:gap-4">
         <label className="relative block sm:min-w-[260px] lg:min-w-[320px]">
           <span className="sr-only">Pesquisar ferramenta</span>
           <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
@@ -96,7 +96,7 @@ export function ToolsHub({ ferramentas }: { ferramentas: FerramentaResumo[] }) {
                   <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-[14px] ring-1 ring-[var(--line)] ${cat.iconBg} ${cat.iconColor}`}>
                     <ToolIcon icone={ferramenta.icone} className="h-6 w-6" />
                   </span>
-                  <span className={`inline-flex items-center rounded-full px-3 py-1.5 text-[11px] font-bold uppercase tracking-[.11em] ${cat.badge}`}>{ferramenta.categoria}</span>
+                  <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider ${cat.badge}`}>{ferramenta.categoria}</span>
                 </div>
                 <h3 className="mt-4 text-[17px] font-extrabold text-[var(--text)]">{ferramenta.nome}</h3>
                 <p className="mt-1.5 text-[14px] leading-6 text-[var(--text-muted)]">{ferramenta.descricao}</p>
