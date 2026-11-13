@@ -3,6 +3,7 @@ import { runWithTenant } from '@/lib/tenant-db';
 import { requireRhPage } from '@/lib/rh-page';
 import { rhFullName } from '@/lib/rh-service';
 import { PremiumHero, PremiumKpi, PremiumPanel } from '@/components/dashboard/premium-kit';
+import { MonthlyAdmissionsChart, type MonthAdmission } from '@/components/rh/monthly-admissions-chart';
 
 function money(value: number) {
   return new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', maximumFractionDigits: 0 }).format(value || 0);
@@ -21,7 +22,24 @@ export default async function RhDashboardPage() {
       tx.rhEmployee.aggregate({ where: { tenantId: access.tenantId, status: 'ACTIVO' }, _sum: { baseSalary: true } }),
       tx.rhEmployee.findMany({ where: { tenantId: access.tenantId }, orderBy: { createdAt: 'desc' }, take: 5, include: { department: { select: { name: true } }, position: { select: { title: true } } } }),
     ]);
-    return { total, active, departments, contractsExpiring, monthly: Number(salaryAgg._sum.baseSalary ?? 0), recent };
+    const year = now.getFullYear();
+    const start = new Date(year, 0, 1);
+    const end = new Date(year + 1, 0, 1);
+    const employeesForYear = await tx.rhEmployee.findMany({
+      where: { tenantId: access.tenantId, createdAt: { gte: start, lt: end } },
+      select: { createdAt: true },
+    });
+    const admissionsByMonth: MonthAdmission[] = Array.from({ length: 12 }, (_, month) => ({
+      month: month + 1 > 9 ? `${month + 1}` : `0${month + 1}`,
+      fullDate: `${year}-${String(month + 1).padStart(2, '0')}-01`,
+      count: 0,
+    }));
+    for (const employee of employeesForYear as any[]) {
+      const month = employee.createdAt.getMonth();
+      admissionsByMonth[month].count += 1;
+    }
+
+    return { total, active, departments, contractsExpiring, monthly: Number(salaryAgg._sum.baseSalary ?? 0), recent, admissionsByMonth };
   }, { userId: access.userId });
 
   const kpis = [
@@ -51,7 +69,20 @@ export default async function RhDashboardPage() {
         })}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+      <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
+        <PremiumPanel title="Evolução de admissões" kicker="Este ano">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[.12em] text-[#8494a9]">Funcionários contratados por mês</p>
+              <p className="mt-0.5 text-lg font-extrabold text-[#1c2d3f]">{(data.admissionsByMonth as MonthAdmission[]).reduce((sum, m) => sum + m.count, 0)} admissões este ano</p>
+            </div>
+            <span className="kpi-pill !bg-[#eef2ff] !text-[#021f87] !border-[#dbe2ff]">REAL</span>
+          </div>
+          <div className="mt-4">
+            <MonthlyAdmissionsChart months={data.admissionsByMonth as MonthAdmission[]} />
+          </div>
+        </PremiumPanel>
+
         <PremiumPanel title="Admissões recentes" kicker="Últimas 5">
           <div className="flex items-center justify-between">
             <span />

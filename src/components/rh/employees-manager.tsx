@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { SignedImage } from '@/components/rh/signed-image';
 import { FormSection, FormActions, FormError, CurrencyInput, CalendarField } from '@/components/rh/form-kit';
 import { FormSplit, FormSidebar, FormHero } from '@/components/rh/premium-kit';
+import { DataTable } from '@/components/ui/data-table';
 
 type Department = { id: string; name: string };
 type Position = { id: string; title: string; departmentId: string | null };
@@ -221,9 +222,8 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
         </select>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-[#e1e8f0] bg-white">
-        <table className="data-table min-w-[860px]">
-          <thead><tr><th>Funcionário</th><th>Nº</th><th>Cargo / Departamento</th><th>Admissão</th><th>Salário</th><th>Estado</th><th>Acções</th></tr></thead>
+      <DataTable>
+        <thead><tr><th className="sticky top-0 z-10 border-b border-[#e2e8ef] bg-[#fbfcfe] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[#7a8799]">Funcionário</th><th className="border-b border-[#e2e8ef] bg-[#fbfcfe] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[#7a8799]">Nº</th><th className="border-b border-[#e2e8ef] bg-[#fbfcfe] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[#7a8799]">Cargo / Departamento</th><th className="border-b border-[#e2e8ef] bg-[#fbfcfe] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[#7a8799]">Admissão</th><th className="border-b border-[#e2e8ef] bg-[#fbfcfe] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[#7a8799]">Salário</th><th className="border-b border-[#e2e8ef] bg-[#fbfcfe] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[#7a8799]">Estado</th><th className="border-b border-[#e2e8ef] bg-[#fbfcfe] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[#7a8799]">Acções</th></tr></thead>
           <tbody>
             {filtered.map((employee) => (
               <tr key={employee.id}>
@@ -250,8 +250,7 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
               <tr><td colSpan={7} className="px-4 py-10 text-center text-sm text-[#708195]">Nenhum funcionário encontrado.</td></tr>
             )}
           </tbody>
-        </table>
-      </div>
+      </DataTable>
 
       {generatedPin && (
         <div role="dialog" aria-modal="true" aria-labelledby="rh-pin-title" className="fixed inset-0 z-[60] flex items-end justify-center bg-[#102b46]/50 p-0 backdrop-blur-[2px] sm:items-center sm:p-5">

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { DataTable, StatusBadge, stateTone } from '@/components/ui/data-table';
 
 type IssuedRow = {
   id: string;
@@ -20,7 +21,7 @@ const stateLabel: Record<string, string> = {
   DRAFT: 'Rascunho', CANCELLED: 'Anulada', PAID: 'Paga', PARTIALLY_PAID: 'Parcialmente paga', OVERDUE: 'Vencida', ISSUED: 'Emitida',
 };
 const money = (value: number) => new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA' }).format(value);
-const stateChipClass = (state: string) =>
+const _unusedChipClass = (state: string) =>
   state === 'OVERDUE' ? 'bg-red-50 text-red-700' : state === 'PAID' ? 'bg-emerald-50 text-emerald-700' : 'bg-[#eef4fa] text-[#48627a]';
 
 // Tabs instantâneas no cliente: ambos os listados vêm já carregados do servidor,
@@ -52,24 +53,24 @@ export function InvoicesTabs({ issuedRows, draftRows }: { issuedRows: IssuedRow[
           <p className="rounded-xl bg-white p-8 text-center text-sm text-[#708195]">Não há rascunhos guardados.</p>
         )
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-[#e2e9f1] bg-white">
-          <table className="min-w-[760px] w-full text-left text-sm">
-            <thead className="bg-[#f7f9fc] text-xs uppercase tracking-wide text-[#708195]"><tr><th className="px-4 py-3">Documento</th><th className="px-4 py-3">Cliente</th><th className="px-4 py-3">Emissão</th><th className="px-4 py-3">Vencimento</th><th className="px-4 py-3 text-right">Total</th><th className="px-4 py-3">Estado</th></tr></thead>
-            <tbody className="divide-y divide-[#edf1f5]">
-              {issuedRows.map((row) => (
-                <tr key={row.id} className="hover:bg-[#fbfcfe]">
-                  <td className="px-4 py-3"><Link href={`/invoices/${row.id}`} className="font-semibold text-[#2878d0] hover:underline">{row.number}</Link><span className="ml-2 text-xs text-[#708195]">{row.type}</span></td>
-                  <td className="px-4 py-3 text-[#30465c]">{row.customerName}</td>
-                  <td className="px-4 py-3 text-[#607286]">{new Date(row.issuedAtISO).toLocaleDateString('pt-AO')}</td>
-                  <td className="px-4 py-3 text-[#607286]">{row.dueAtISO ? new Date(row.dueAtISO).toLocaleDateString('pt-AO') : '—'}</td>
-                  <td className="px-4 py-3 text-right tabular-nums font-semibold text-[#1c2d3f]">{money(row.total)}</td>
-                  <td className="px-4 py-3"><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${stateChipClass(row.state)}`}>{stateLabel[row.state] ?? row.state}</span></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {issuedRows.length === 0 && <p className="p-8 text-center text-sm text-[#708195]">Nenhuma factura encontrada para este filtro.</p>}
-        </div>
+        <DataTable>
+          <thead><tr><th className="sticky top-0 z-10 border-b border-[#e2e8ef] bg-[#fbfcfe] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[#7a8799]">Documento</th><th className="border-b border-[#e2e8ef] bg-[#fbfcfe] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[#7a8799]">Cliente</th><th className="border-b border-[#e2e8ef] bg-[#fbfcfe] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[#7a8799]">Emissão</th><th className="border-b border-[#e2e8ef] bg-[#fbfcfe] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[#7a8799]">Vencimento</th><th className="border-b border-[#e2e8ef] bg-[#fbfcfe] px-5 py-3.5 text-right text-[10px] font-extrabold uppercase tracking-[.12em] text-[#7a8799]">Total</th><th className="border-b border-[#e2e8ef] bg-[#fbfcfe] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[#7a8799]">Estado</th></tr></thead>
+          <tbody className="divide-y divide-[#edf1f5]">
+            {issuedRows.map((row) => (
+              <tr key={row.id} className="transition-colors hover:bg-[#f8fafc]">
+                <td className="px-5 py-3.5"><Link href={`/invoices/${row.id}`} className="font-bold text-[#021f87] hover:underline underline-offset-4">{row.number}</Link><span className="ml-2 text-[10px] font-medium uppercase text-[#94a3b8]">{row.type}</span></td>
+                <td className="px-5 py-3.5 font-medium text-[#30465c]">{row.customerName}</td>
+                <td className="px-5 py-3.5 text-[#607286]">{new Date(row.issuedAtISO).toLocaleDateString('pt-AO')}</td>
+                <td className="px-5 py-3.5 text-[#607286]">{row.dueAtISO ? new Date(row.dueAtISO).toLocaleDateString('pt-AO') : '—'}</td>
+                <td className="px-5 py-3.5 text-right tabular-nums font-bold text-[#1c2d3f]">{money(row.total)}</td>
+                <td className="px-5 py-3.5"><StatusBadge tone={stateTone(row.state)}>{stateLabel[row.state] ?? row.state}</StatusBadge></td>
+              </tr>
+            ))}
+            {issuedRows.length === 0 && (
+              <tr><td colSpan={6} className="px-5 py-10 text-center text-sm text-[#8094a9]">Nenhuma factura encontrada para este filtro.</td></tr>
+            )}
+          </tbody>
+        </DataTable>
       )}
     </div>
   );

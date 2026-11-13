@@ -7,6 +7,7 @@ import { isApplicationEnabled } from '@/lib/platform-apps';
 import { isStockReportKind } from '@/lib/report-data';
 import { ReportBreakdownChart } from '@/components/report-breakdown-chart';
 import { SaftExport } from '@/components/saft-export';
+import { DataTable, EmptyState } from '@/components/ui/data-table';
 
 type Props = { searchParams: Promise<{ period?: string; from?: string; to?: string; kind?: string; customerId?: string; state?: string; warehouseId?: string; productId?: string }> };
 
@@ -78,8 +79,12 @@ export default async function ReportsPage({ searchParams }: Props) {
 
     <section className="min-w-0 border-t border-[#dce2e9] pt-5">
       <div className="mb-4 flex flex-wrap items-end justify-between gap-2"><div><p className="text-[10px] font-bold uppercase tracking-[.14em] text-[#718095]">Detalhe</p><h3 className="mt-1 text-base font-semibold text-[#1d2b40]">{dataset.title}</h3></div><p className="text-xs text-[#7a8796]">{dataset.company.name}{dataset.company.nif ? ` · NIF ${dataset.company.nif}` : ''}</p></div>
-      <div className="overflow-x-auto"><table className="min-w-full text-left text-sm"><thead className="border-b border-[#dce2e9] text-[10px] uppercase tracking-[.1em] text-[#718095]"><tr>{dataset.headers.map((header) => <th key={header} className="whitespace-nowrap px-3 py-3">{header}</th>)}</tr></thead><tbody>{dataset.rows.map((row, rowIndex) => <tr key={rowIndex} className="border-b border-[#edf0f4] last:border-0 hover:bg-white">{row.map((cell, columnIndex) => <td key={columnIndex} className={`whitespace-nowrap px-3 py-3 ${typeof cell === 'number' ? 'text-right tabular-nums text-[#344358]' : 'text-[#4b5a6e]'}`}>{typeof cell === 'number' ? cell.toLocaleString('pt-AO', { maximumFractionDigits: 2 }) : cell ?? '—'}</td>)}</tr>)}</tbody>{dataset.rows.length > 0 && <tfoot className="border-t border-[#cfd7e1] font-bold text-[#26354a]"><tr>{dataset.totals.map((cell, index) => <td key={index} className="whitespace-nowrap px-3 py-3 text-right tabular-nums">{typeof cell === 'number' ? cell.toLocaleString('pt-AO', { maximumFractionDigits: 2 }) : cell ?? '—'}</td>)}</tr></tfoot>}</table></div>
-      {dataset.rows.length === 0 && <p className="border-y border-[#e2e7ed] py-8 text-center text-sm text-[#708195]">Sem dados para os filtros seleccionados. Os exports apresentam os cabeçalhos e o período escolhido.</p>}
+      <DataTable>
+        <thead><tr>{dataset.headers.map((header) => <th key={header} className="sticky top-0 z-10 border-b border-[#e2e8ef] bg-[#fbfcfe] px-4 py-3 text-[10px] font-extrabold uppercase tracking-[.12em] text-[#7a8799]">{header}</th>)}</tr></thead>
+        <tbody>{dataset.rows.map((row, rowIndex) => <tr key={rowIndex} className="border-b border-[#edf0f4] transition-colors last:border-0 hover:bg-[#f8fafc]">{row.map((cell, columnIndex) => <td key={columnIndex} className={`whitespace-nowrap px-4 py-3 ${typeof cell === 'number' ? 'text-right tabular-nums font-medium text-[#344358]' : 'text-[#4b5a6e]'}`}>{typeof cell === 'number' ? cell.toLocaleString('pt-AO', { maximumFractionDigits: 2 }) : cell ?? '—'}</td>)}</tr>)}</tbody>
+        {dataset.rows.length > 0 && <tfoot className="border-t-2 border-[#cfd7e1] font-extrabold text-[#26354a]"><tr>{dataset.totals.map((cell, index) => <td key={index} className="whitespace-nowrap px-4 py-3 text-right tabular-nums">{typeof cell === 'number' ? cell.toLocaleString('pt-AO', { maximumFractionDigits: 2 }) : cell ?? '—'}</td>)}</tr></tfoot>}
+      </DataTable>
+      {dataset.rows.length === 0 && <EmptyState title="Sem dados" description="Os filtros seleccionados não devolvem registos. Ajuste o período ou o tipo de relatório." />}
     </section>
     <p className="text-xs text-[#708195]">Os recebimentos pendentes estão identificados e não contam como valores recebidos. Não há conversão de moeda nem cálculo de lucro.</p>
   </div>;
