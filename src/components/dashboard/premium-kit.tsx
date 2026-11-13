@@ -27,7 +27,7 @@ export function PremiumKpi({ label, value, detail, tone = 'neutral', icon }: {
     danger: '#ad4444',
   };
   return (
-    <article className="machine-card-ring group rounded-[18px] border border-[#e3e9f1] bg-white dark:border-[#1e2a44] dark:bg-[#0d1627] p-4 shadow-[0_6px_18px_rgba(18,36,68,.05)] transition hover:-translate-y-[3px] hover:border-[#c9d4e2] hover:shadow-[0_16px_36px_rgba(18,36,68,.10)] sm:p-5">
+    <article className="machine-card-ring group rounded-[18px] border border-[#e3e9f1] bg-white dark:border-[#1e2a44] dark:bg-[#0d1627] dark:border-[#1e2a44] dark:bg-[#0d1627] p-4 shadow-[0_6px_18px_rgba(18,36,68,.05)] transition hover:-translate-y-[3px] hover:border-[#c9d4e2] hover:shadow-[0_16px_36px_rgba(18,36,68,.10)] sm:p-5">
       <div className="flex items-start justify-between gap-2">
         <p className="text-[11px] font-bold uppercase tracking-[.12em] text-[#7a8799]">{label}</p>
         {icon && <span className="text-[#c3ccd9] transition group-hover:text-[#021f87]">{icon}</span>}
@@ -43,7 +43,7 @@ export function PremiumKpi({ label, value, detail, tone = 'neutral', icon }: {
 /** Balance premium (navy gradient) para mostrar o total principal. */
 export function PremiumBalance({ label, amount, trend, sublabel }: { label: string; amount: string; trend?: string; sublabel?: string }) {
   return (
-    <article className="relative overflow-hidden rounded-[22px] border border-[#0f2b57] bg-gradient-to-br from-[#041f52] via-[#071f4b] to-[#0b2b6b] p-5 text-white shadow-[0_20px_48px_rgba(4,31,82,.32)] sm:p-6">
+    <article className="relative overflow-hidden rounded-[22px] border border-[#0f2b57] bg-gradient-to-br dark:border-[#1e2a44] from-[#041f52] via-[#071f4b] to-[#0b2b6b] p-5 text-white shadow-[0_20px_48px_rgba(4,31,82,.32)] sm:p-6">
       <div className="pointer-events-none absolute -right-10 -top-16 h-48 w-48 rounded-full bg-[radial-gradient(circle,_rgba(120,170,255,.35),_transparent_70%)]" />
       <div className="pointer-events-none absolute -bottom-12 -left-10 h-44 w-44 rounded-full bg-[radial-gradient(circle,_rgba(60,210,255,.28),_transparent_70%)]" />
       <div className="relative">

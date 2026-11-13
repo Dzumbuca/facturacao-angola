@@ -83,7 +83,7 @@ export function AppShell({ children, platformAdmin = false, plan = 'FREE', adHtm
       </aside>
 
       <div className="min-w-0 md:ml-[76px] lg:ml-[248px]">
-        <header className="sticky top-0 z-30 border-b border-[#e6ebf3] bg-white/90 backdrop-blur-xl">
+        <header className="sticky top-0 z-30 border-b border-[#e6ebf3] dark:border-[#1e2a44] bg-white/90 backdrop-blur-xl dark:bg-[#050e20]/90 dark:border-[#1e2a44]">
           <div className="mx-auto flex h-12 max-w-[1440px] items-center gap-3 px-4 md:h-16 md:px-8">
             <div className="flex min-w-0 items-center gap-2.5">
               <img src="/logo.png" width="800" height="600" alt="Facturação" className="h-7 w-auto max-w-[64px] shrink-0 rounded-md bg-white object-contain px-1 py-0.5 md:hidden" />
