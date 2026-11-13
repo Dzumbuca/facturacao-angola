@@ -51,7 +51,15 @@ export function InvoiceForm({ initialCustomers, initialProducts, hasCompanyProfi
   const total = taxableBase + tax;
   const matchingCustomers = useMemo(() => {
     const query = customerName.trim().toLocaleLowerCase();
-    return customers.filter((customer) => !query || customer.name.toLocaleLowerCase().includes(query) || (customer.nif ?? '').includes(query)).slice(0, 6);
+    // Dedup across exact name (case-insensitive), keep first occurrence
+    const seen = new Set<string>();
+    const uniqueCustomers = customers.filter((customer) => {
+      const key = customer.name.trim().toLocaleLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    return uniqueCustomers.filter((customer) => !query || customer.name.toLocaleLowerCase().includes(query) || (customer.nif ?? '').includes(query)).slice(0, 6);
   }, [customerName, customers]);
 
   const addItem = () => setItems((current) => [...current, { desc: '', qty: 1, rate: 0, productId: null }]);
@@ -232,21 +240,15 @@ export function InvoiceForm({ initialCustomers, initialProducts, hasCompanyProfi
         <button type="button" onClick={() => { navigator.clipboard?.writeText(shareUrl).then(() => { setShareCopied(true); setTimeout(() => setShareCopied(false), 2500); }).catch(() => null); }} className="mt-2 inline-flex min-h-8 items-center rounded-lg border border-[#cdddeb] bg-white px-3 py-1.5 text-xs font-semibold text-[#2878d0] transition hover:bg-[#f0f6fc]">{shareCopied ? 'Copiado ✓' : 'Copiar link'}</button>
       </div>}
     </div>}
-    <div><p className="text-sm text-[#708195]">Documentos de venda</p><h2 className="mt-1 text-2xl font-bold tracking-tight">{initialDraft ? 'Editar rascunho' : 'Nova fatura'}</h2><p className="mt-2 text-sm text-[#708195]">Indique o adquirente e os artigos a incluir no documento.</p></div>
+    <div><p className="text-sm text-[#708195]">Documentos de venda</p><h2 className="mt-1 text-2xl font-bold tracking-tight">{initialDraft ? 'Editar rascunho' : 'Nova factura'}</h2><p className="mt-2 text-sm text-[#708195]">Indique o adquirente e os artigos a incluir no documento.</p></div>
 
-    <aside aria-label="Outros documentos de venda" className="rounded-xl border border-[#d8e1eb] bg-[#f7f9fc] p-4 sm:flex sm:items-center sm:justify-between sm:gap-4">
-      <div><p className="text-sm font-semibold text-[#26354a]">Ainda não vai emitir a factura?</p><p className="mt-1 text-xs leading-5 text-[#708195]">Prepare primeiro um orçamento ou uma factura proforma em PDF.</p></div>
-      <div className="mt-3 flex flex-wrap gap-2 sm:mt-0">
-        <Link href="/ferramentas/orcamento-pdf" className="inline-flex min-h-10 items-center rounded-lg border border-[#cdddeb] bg-white px-3 text-xs font-semibold text-[#2878d0] transition hover:bg-[#f0f6fc]">Criar orçamento</Link>
-        <Link href="/ferramentas/factura-proforma" className="inline-flex min-h-10 items-center rounded-lg bg-[#021F87] px-3 text-xs font-semibold text-white transition hover:bg-[#061965]">Criar proforma</Link>
-      </div>
-    </aside>
+    
 
     <section className="rounded-2xl border border-[#e2e9f1] bg-white shadow-[var(--shadow-card)]">
       <div className="border-b border-[#e7edf3] px-5 py-4 md:px-6"><h3 className="font-bold text-[#1c2d3f]">Dados do adquirente</h3><p className="mt-1 text-xs text-[#708195]">Escolha um cliente existente ou introduza um novo nome.</p></div>
       <div className="grid gap-4 p-5 md:grid-cols-2 md:p-6">
         <div className="relative" onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setCustomerSuggestionsOpen(false); }}>
-          <label htmlFor="customerName" className="app-label">Adquirente (Nome)</label>
+          <label htmlFor="customerName" className="app-label">Adquirente (Nome) <span aria-hidden="true" className="text-[#c44747]">*</span></label>
           <input id="customerName" role="combobox" aria-autocomplete="list" aria-expanded={customerSuggestionsOpen} aria-controls="customer-options" className="app-input" value={customerName} onFocus={() => setCustomerSuggestionsOpen(true)} onChange={(event) => { setCustomerName(event.target.value); setCustomerNif(''); setCustomerSuggestionsOpen(true); }} placeholder="Escreva para procurar clientes" autoComplete="off" />
           {customerSuggestionsOpen && <div id="customer-options" role="listbox" className="absolute inset-x-0 top-full z-30 mt-1 max-h-64 overflow-y-auto rounded-xl border border-[#dfe7ef] bg-white p-1.5 shadow-xl">
             {matchingCustomers.length ? matchingCustomers.map((customer) => <button key={customer.id} type="button" role="option" aria-selected={customer.name === customerName} onMouseDown={(event) => event.preventDefault()} onClick={() => selectCustomer(customer)} className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left hover:bg-[#f2f7fb] focus:bg-[#f2f7fb] focus:outline-none"><span className="truncate text-sm font-semibold text-[#263c52]">{customer.name}</span><span className="shrink-0 text-xs text-[#708195]">{customer.nif ? `NIF ${customer.nif}` : 'Sem NIF'}</span></button>) : <p className="px-3 py-2.5 text-sm text-[#708195]">Nenhum cliente encontrado.</p>}
@@ -268,13 +270,13 @@ export function InvoiceForm({ initialCustomers, initialProducts, hasCompanyProfi
               <label htmlFor={`item-description-${index}`} className="app-label">Descrição</label>
               <input id={`item-description-${index}`} role="combobox" aria-autocomplete="list" aria-expanded={activeProductIndex === index} aria-controls={`product-options-${index}`} className="app-input" value={item.desc} onFocus={() => setActiveProductIndex(index)} onChange={(event) => { updateItem(index, { desc: event.target.value, productId: null }); setActiveProductIndex(index); }} placeholder="Nome do produto ou serviço" autoComplete="off" />
               {activeProductIndex === index && <div id={`product-options-${index}`} role="listbox" className="absolute inset-x-0 top-full z-30 mt-1 max-h-64 overflow-y-auto rounded-xl border border-[#dfe7ef] bg-white p-1.5 shadow-xl">
-                {suggestions.length ? suggestions.map((product) => <button key={product.id} type="button" role="option" aria-selected={product.id === item.productId} onMouseDown={(event) => event.preventDefault()} onClick={() => selectProduct(index, product)} className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left hover:bg-[#f2f7fb] focus:bg-[#f2f7fb] focus:outline-none"><span className="min-w-0"><span className="block truncate text-sm font-semibold text-[#263c52]">{product.name}</span><span className="text-xs text-[#708195]">{product.codigo || 'Sem código'}</span></span><span className="tabular-nums shrink-0 text-sm font-semibold text-[#30465c]">{product.price.toFixed(2)} Kz</span></button>) : <p className="px-3 py-2.5 text-sm text-[#708195]">Nenhum produto encontrado.</p>}
+                {suggestions.length ? suggestions.map((product) => <button key={product.id} type="button" role="option" aria-selected={product.id === item.productId} onMouseDown={(event) => event.preventDefault()} onClick={() => selectProduct(index, product)} className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left hover:bg-[#f2f7fb] focus:bg-[#f2f7fb] focus:outline-none"><span className="min-w-0"><span className="block truncate text-sm font-semibold text-[#263c52]">{product.name}</span><span className="text-xs text-[#708195]">Sem código</span></span><span className="tabular-nums shrink-0 text-sm font-semibold text-[#30465c]">{product.price.toFixed(2)} Kz</span></button>) : <p className="px-3 py-2.5 text-sm text-[#708195]">Nenhum produto encontrado.</p>}
                 <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => { setProductCreateError(''); setActiveProductIndex(null); setCreatingProductFor(index); }} className="mt-1 flex w-full items-center gap-2 rounded-lg border-t border-[#e7edf3] px-3 py-3 text-left text-sm font-semibold text-[#2878d0] hover:bg-[#f2f7fb]"><span aria-hidden="true">＋</span>Criar novo produto{item.desc.trim() ? ` “${item.desc.trim()}”` : ''}</button>
               </div>}
             </div>
             <div><label htmlFor={`item-quantity-${index}`} className="app-label">Quantidade</label><input id={`item-quantity-${index}`} type="number" min="0.01" step="0.01" className="app-input tabular-nums" value={item.qty} onChange={(event) => updateItem(index, { qty: Number(event.target.value) })} /></div>
-            <div><label htmlFor={`item-rate-${index}`} className="app-label">Preço unit. (AOA)</label><input id={`item-rate-${index}`} type="number" min="0" step="0.01" className="app-input tabular-nums" value={item.rate} onChange={(event) => updateItem(index, { rate: Number(event.target.value) })} /></div>
-            <div className="lg:pb-2"><span className="app-label">Total (AOA)</span><p className="tabular-nums py-2 text-sm font-bold text-[#31475d]">{(item.qty * item.rate).toFixed(2)} AOA</p></div>
+            <div><label htmlFor={`item-rate-${index}`} className="app-label">Preço unit. (Kz)</label><input id={`item-rate-${index}`} type="number" min="0" step="0.01" className="app-input tabular-nums" value={item.rate} onChange={(event) => updateItem(index, { rate: Number(event.target.value) })} /></div>
+            <div className="lg:pb-2"><span className="app-label">Total (Kz)</span><p className="tabular-nums py-2 text-sm font-bold text-[#31475d]">{(item.qty * item.rate).toFixed(2)} Kz</p></div>
             <div className="flex items-end justify-end lg:pb-1.5">{items.length > 1 && <button type="button" onClick={() => removeItem(index)} aria-label={`Remover linha ${index + 1}`} title="Remover linha" className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[#f0c9c9] bg-white text-base font-bold text-[#a83939] transition hover:bg-red-50">✕</button>}</div>
           </div>;
         })}
@@ -284,15 +286,15 @@ export function InvoiceForm({ initialCustomers, initialProducts, hasCompanyProfi
 
     <div className="grid gap-4 md:grid-cols-2">
     <section className="w-full rounded-2xl border border-[#e2e9f1] bg-white p-5 shadow-[var(--shadow-card)] md:p-6">
-      <h3 className="mb-4 font-bold text-[#1c2d3f]">Resumo da fatura</h3>
+      <h3 className="mb-4 font-bold text-[#1c2d3f]">Resumo da factura</h3>
       <div className="space-y-4 border-b border-[#e7edf3] pb-4">
-        <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-[#30465c]"><input type="checkbox" checked={applyVat} onChange={(event) => setApplyVat(event.target.checked)} className="h-4 w-4 accent-[#2878d0]" />Aplicar IVA de 14% à fatura</label>
+        <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-[#30465c]"><input type="checkbox" checked={applyVat} onChange={(event) => setApplyVat(event.target.checked)} className="h-4 w-4 accent-[#2878d0]" />Aplicar IVA de 14% à factura</label>
         <div className="grid grid-cols-[minmax(0,1fr)_120px] gap-2">
           <div><label htmlFor="invoice-discount-type" className="app-label">Desconto</label><select id="invoice-discount-type" className="app-input" value={discountType} onChange={(event) => setDiscountType(event.target.value as 'amount' | 'percent')}><option value="amount">Valor (Kz)</option><option value="percent">Percentagem (%)</option></select></div>
           <div><label htmlFor="invoice-discount-value" className="app-label">{discountType === 'percent' ? 'Percentagem' : 'Valor'}</label><input id="invoice-discount-value" type="number" min="0" max={discountType === 'percent' ? 100 : undefined} step="0.01" className="app-input tabular-nums" value={discountValue} onChange={(event) => setDiscountValue(Math.max(0, Number(event.target.value)))} /></div>
         </div>
       </div>
-      <div className="mt-4 space-y-3 text-sm"><div className="flex justify-between gap-4 text-[#607286]"><span>Subtotal</span><span className="tabular-nums">{subtotal.toFixed(2)} AOA</span></div>{discountAmount > 0 && <div className="flex justify-between gap-4 text-[#607286]"><span>Desconto</span><span className="tabular-nums">−{discountAmount.toFixed(2)} AOA</span></div>}<div className="flex justify-between gap-4 text-[#607286]"><span>{applyVat ? 'IVA (14%)' : 'IVA (não aplicado)'}</span><span className="tabular-nums">{tax.toFixed(2)} AOA</span></div><div className="flex justify-between gap-4 border-t border-[#e7edf3] pt-4 text-base font-bold text-[#1c2d3f]"><span>Total</span><span className="tabular-nums">{total.toFixed(2)} AOA</span></div></div>
+      <div className="mt-4 space-y-3 text-sm"><div className="flex justify-between gap-4 text-[#607286]"><span>Subtotal</span><span className="tabular-nums">{subtotal.toFixed(2)} Kz</span></div>{discountAmount > 0 && <div className="flex justify-between gap-4 text-[#607286]"><span>Desconto</span><span className="tabular-nums">−{discountAmount.toFixed(2)} Kz</span></div>}<div className="flex justify-between gap-4 text-[#607286]"><span>{applyVat ? 'IVA (14%)' : 'IVA (não aplicado)'}</span><span className="tabular-nums">{tax.toFixed(2)} Kz</span></div><div className="flex justify-between gap-4 border-t border-[#e7edf3] pt-4 text-base font-bold text-[#1c2d3f]"><span>Total</span><span className="tabular-nums">{total.toFixed(2)} Kz</span></div></div>
       <label className="mt-5 flex cursor-pointer items-start gap-2 border-t border-[#e7edf3] pt-4 text-sm font-medium text-[#30465c]"><input type="checkbox" checked={includeCompanyProfile} onChange={(event) => setIncludeCompanyProfile(event.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 accent-[#2878d0]" /><span>Incluir dados da empresa no PDF<p className="mt-1 text-xs font-normal text-[#708195]">{hasCompanyProfile ? 'Usa o perfil guardado em Dados da empresa.' : 'Configure os dados da empresa para os apresentar na factura.'}</p></span></label>
     </section>
 
@@ -306,7 +308,7 @@ export function InvoiceForm({ initialCustomers, initialProducts, hasCompanyProfi
 
     <section className="rounded-2xl border border-[#e2e9f1] bg-white p-5 shadow-[var(--shadow-card)] md:p-6">
       <label htmlFor="invoice-observations" className="app-label">Observações <span className="font-normal text-[#708195]">(opcional)</span></label>
-      <textarea id="invoice-observations" className="app-input min-h-24 resize-y" maxLength={2000} value={observations} onChange={(event) => setObservations(event.target.value)} placeholder="Notas adicionais para incluir na fatura" />
+      <textarea id="invoice-observations" className="app-input min-h-24 resize-y" maxLength={2000} value={observations} onChange={(event) => setObservations(event.target.value)} placeholder="Notas adicionais para incluir na factura" />
       <p className="mt-1 text-xs text-[#708195]">As observações serão incluídas no PDF.</p>
     </section>
     </div>
@@ -318,13 +320,13 @@ export function InvoiceForm({ initialCustomers, initialProducts, hasCompanyProfi
       {isSavingDraft ? 'A guardar rascunho…' : 'Guardar rascunho'}
     </button>
     <button type="button" className="flex min-h-12 items-center justify-center rounded-xl bg-[#2878D0] px-5 py-3 font-bold text-white shadow-[var(--shadow-card)] transition hover:bg-[#216bbd] disabled:cursor-wait disabled:opacity-60" onClick={handleGeneratePDF} disabled={isGenerating || isSavingDraft}>
-      {isGenerating ? 'A gerar PDF…' : 'Gerar PDF Final'}
+      {isGenerating ? 'A gerar PDF…' : 'Emitir factura'}
     </button>
     </div>
 
     {creatingCustomer && <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#102b46]/50 p-0 backdrop-blur-[2px] sm:items-center sm:p-5" onMouseDown={(event) => { if (event.target === event.currentTarget && !isCreatingCustomer) setCreatingCustomer(false); }}>
       <section role="dialog" aria-modal="true" aria-labelledby="invoice-new-customer-title" className="max-h-[92vh] w-full overflow-y-auto rounded-t-2xl bg-white p-5 shadow-2xl sm:max-w-lg sm:rounded-2xl sm:p-7">
-        <div className="mb-6 flex items-start justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[.14em] text-[#2878d0]">Cadastro rápido</p><h3 id="invoice-new-customer-title" className="mt-1 text-xl font-bold text-[#1c2d3f]">Novo cliente</h3><p className="mt-1 text-sm text-[#708195]">Será guardado no cadastro e seleccionado nesta fatura.</p></div><button type="button" aria-label="Fechar" disabled={isCreatingCustomer} onClick={() => setCreatingCustomer(false)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xl text-[#708195] hover:bg-[#f0f4f8] disabled:opacity-50">×</button></div>
+        <div className="mb-6 flex items-start justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[.14em] text-[#2878d0]">Cadastro rápido</p><h3 id="invoice-new-customer-title" className="mt-1 text-xl font-bold text-[#1c2d3f]">Novo cliente</h3><p className="mt-1 text-sm text-[#708195]">Será guardado no cadastro e seleccionado nesta factura.</p></div><button type="button" aria-label="Fechar" disabled={isCreatingCustomer} onClick={() => setCreatingCustomer(false)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xl text-[#708195] hover:bg-[#f0f4f8] disabled:opacity-50">×</button></div>
         <form className="space-y-4" onSubmit={handleCreateCustomer}>
           <div><label htmlFor="invoice-new-customer-name" className="app-label">Nome do cliente <span className="text-[#c44747]">*</span></label><input id="invoice-new-customer-name" name="name" className="app-input" defaultValue={customerName} maxLength={160} required autoFocus /></div>
           <div><label htmlFor="invoice-new-customer-nif" className="app-label">NIF <span className="font-normal text-[#708195]">(opcional)</span></label><input id="invoice-new-customer-nif" name="nif" className="app-input" inputMode="numeric" /></div>
