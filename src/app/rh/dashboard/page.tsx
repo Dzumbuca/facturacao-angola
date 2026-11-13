@@ -74,10 +74,10 @@ export default async function RhDashboardPage() {
         <PremiumPanel title="Evolução de admissões" kicker="Este ano">
           <div className="flex items-end justify-between gap-3">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[.12em] text-[#8494a9]">Funcionários contratados por mês</p>
-              <p className="mt-0.5 text-lg font-extrabold text-[#1c2d3f]">{(data.admissionsByMonth as MonthAdmission[]).reduce((sum, m) => sum + m.count, 0)} admissões este ano</p>
+              <p className="text-xs font-bold uppercase tracking-[.12em] text-[var(--text-muted)]">Funcionários contratados por mês</p>
+              <p className="mt-0.5 text-lg font-extrabold text-[var(--text)]">{(data.admissionsByMonth as MonthAdmission[]).reduce((sum, m) => sum + m.count, 0)} admissões este ano</p>
             </div>
-            <span className="kpi-pill !bg-[#eef2ff] !text-[#021f87] !border-[#dbe2ff]">REAL</span>
+            <span className="kpi-pill !bg-[var(--surface-raised)] !text-[#021f87] !border-[#dbe2ff]">REAL</span>
           </div>
           <div className="mt-4">
             <MonthlyAdmissionsChart months={data.admissionsByMonth as MonthAdmission[]} />
@@ -92,14 +92,14 @@ export default async function RhDashboardPage() {
           {data.recent.length === 0 ? (
             <div className="mt-4"><EmptyState title="Sem admissões" description="Ainda não há funcionários registados. A criação do primeiro equipa é simples." action={<Link href="/rh/funcionarios" className="inline-flex min-h-9 items-center rounded-lg bg-[#021f87] px-3 text-xs font-semibold text-white">Criar funcionário</Link>} /></div>
           ) : (
-            <ul className="mt-3 divide-y divide-[#eef2f6]">
+            <ul className="mt-3 divide-y divide-[var(--line)]">
               {(data.recent as any[]).map((employee) => (
                 <li key={employee.id} className="flex items-center justify-between gap-3 py-2.5">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-[#1c2d3f]">{rhFullName(employee.firstName, employee.lastName)}</p>
-                    <p className="truncate text-xs text-[#708195]">{employee.position?.title ?? 'Sem cargo'} · {employee.department?.name ?? 'Sem departamento'}</p>
+                    <p className="truncate text-sm font-semibold text-[var(--text)]">{rhFullName(employee.firstName, employee.lastName)}</p>
+                    <p className="truncate text-xs text-[var(--text-muted)]">{employee.position?.title ?? 'Sem cargo'} · {employee.department?.name ?? 'Sem departamento'}</p>
                   </div>
-                  <span className="shrink-0 rounded-full bg-[#eef4ff] px-2 py-0.5 text-[10px] font-semibold text-[#021f87]">{employee.employeeNumber}</span>
+                  <span className="shrink-0 rounded-full bg-[var(--surface-raised)] px-2 py-0.5 text-[10px] font-semibold text-[#021f87]">{employee.employeeNumber}</span>
                 </li>
               ))}
             </ul>
@@ -107,14 +107,14 @@ export default async function RhDashboardPage() {
         </PremiumPanel>
 
         <PremiumPanel title="Módulos implementados" kicker="Disponível agora">
-          <ul className="mt-3 space-y-2 text-sm text-[#607286]">
+          <ul className="mt-3 space-y-2 text-sm text-[var(--text-muted)]">
             <li className="flex justify-between"><span>Funcionários e organização</span><span className="text-[10px] font-semibold uppercase text-[#267256]">Activo</span></li>
             <li className="flex justify-between"><span>Contratos e vencimentos</span><span className="text-[10px] font-semibold uppercase text-[#267256]">Activo</span></li>
             <li className="flex justify-between"><span>Assiduidade (Machine Point)</span><span className="text-[10px] font-semibold uppercase text-[#267256]">Activo</span></li>
             <li className="flex justify-between"><span>Documentos oficiais com IA</span><span className="text-[10px] font-semibold uppercase text-[#267256]">Activo</span></li>
             <li className="flex justify-between"><span>Férias e licenças</span><span className="text-[10px] font-semibold uppercase text-[#267256]">Activo</span></li>
           </ul>
-          <p className="mt-4 rounded-lg bg-[#f5f8fc] p-3 text-xs text-[#607286]">
+          <p className="mt-4 rounded-lg bg-[#f5f8fc] p-3 text-xs text-[var(--text-muted)]">
             Use o menu RH para navegar entre Funcionários, Contratos, Assiduidade, Documentos e Processamento Salarial.
           </p>
         </PremiumPanel>

@@ -86,7 +86,7 @@ export default async function DashboardPage({ searchParams }: Props) {
         <span className="tabular-nums text-lg font-extrabold text-[#021f87]">{totalProducts}</span>
       </Link>
       <Link href="/reports" className="flex items-center gap-3 rounded-[18px] border border-[var(--line)] bg-[var(--surface)] p-4 text-[var(--text)] shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5 hover:border-[#021f87]/30">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#eef2ff] text-[#021f87]"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19h16M4 15l6-6 4 4 6-8"/></svg></span>
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[var(--surface-raised)] text-[#021f87]"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19h16M4 15l6-6 4 4 6-8"/></svg></span>
         <span><span className="block text-[10px] font-extrabold uppercase tracking-[.16em] text-[var(--text-muted)]">Análise</span><span className="mt-1 block text-sm font-bold">Consultar relatórios</span></span>
       </Link>
     </section>
