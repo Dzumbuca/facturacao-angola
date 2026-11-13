@@ -7,6 +7,7 @@ import { getTenantPeriodMetrics } from '@/lib/financial-metrics';
 import { parseReportPeriod, type ReportPeriodQuery } from '@/lib/report-period';
 import { getInvoiceState } from '@/lib/invoice-state';
 import { EvolutionChartCard } from '@/components/dashboard/evolution-chart-card';
+import { StackedMetricsCard } from '@/components/dashboard/stacked-metrics-card';
 import { PremiumHero, PremiumKpi } from '@/components/dashboard/premium-kit';
 
 type Props = { searchParams: Promise<{ period?: string; from?: string; to?: string; metric?: string }> };
@@ -148,7 +149,10 @@ export default async function DashboardPage({ searchParams }: Props) {
       />
     </section>
 
-    <EvolutionChartCard invoices={metrics.invoiceSeries} receipts={metrics.receiptSeries} periodStart={period.start.toISOString()} periodEnd={period.endExclusive.toISOString()} />
+    <section className="grid gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,.45fr)]">
+      <EvolutionChartCard invoices={metrics.invoiceSeries} receipts={metrics.receiptSeries} periodStart={period.start.toISOString()} periodEnd={period.endExclusive.toISOString()} />
+      <StackedMetricsCard received={metrics.received} pendingYetDue={metrics.pendingYetDue} overdue={metrics.overdue} />
+    </section>
     <section className="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(280px,.7fr)]">
       <article className="dashboard-panel min-w-0 overflow-hidden">
         <div className="flex items-end justify-between gap-3"><div><p className="text-[11px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">Actividade</p><h3 className="mt-1 text-base font-semibold tracking-tight text-[var(--text)]">Actividade recente</h3></div><Link href="/invoices" className="text-xs font-semibold text-[#021f87] hover:underline">Ver todas →</Link></div>
