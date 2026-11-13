@@ -6,9 +6,8 @@ import { prisma } from '@/lib/prisma';
 import { getTenantPeriodMetrics } from '@/lib/financial-metrics';
 import { parseReportPeriod, type ReportPeriodQuery } from '@/lib/report-period';
 import { getInvoiceState } from '@/lib/invoice-state';
-import { FinancialLineChart } from '@/components/financial-line-chart';
+import { EvolutionChartCard } from '@/components/dashboard/evolution-chart-card';
 import { PremiumHero, PremiumKpi } from '@/components/dashboard/premium-kit';
-import { valueFontClass } from '@/lib/font-fit';
 
 type Props = { searchParams: Promise<{ period?: string; from?: string; to?: string; metric?: string }> };
 const money = (amount: number) => new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', maximumFractionDigits: 0 }).format(amount);
@@ -34,16 +33,6 @@ export default async function DashboardPage({ searchParams }: Props) {
   ]);
   if (!tenant) return <p>Empresa não configurada.</p>;
 
-  const selectedMetric = query.metric === 'receipts' ? 'receipts' : 'invoices';
-  const chart = selectedMetric === 'receipts' ? metrics.receiptSeries : metrics.invoiceSeries;
-  const metricLabel = selectedMetric === 'receipts' ? 'Recebimentos confirmados' : 'Facturação emitida';
-  const metricColor = selectedMetric === 'receipts' ? 'green' : 'blue';
-  const chartHref = (metric: string) => {
-    const params = new URLSearchParams({ period: period.key, metric });
-    if (query.from) params.set('from', query.from);
-    if (query.to) params.set('to', query.to);
-    return `/?${params.toString()}`;
-  };
   const profileIncomplete = !tenant.nif && !tenant.address && !tenant.email && !tenant.phone;
   const alerts = [
     metrics.overdue > 0 ? { title: `${money(metrics.overdue)} em saldo vencido`, href: '/invoices?state=OVERDUE', action: 'Ver facturas', tone: 'danger' } : null,
@@ -51,6 +40,7 @@ export default async function DashboardPage({ searchParams }: Props) {
     draftCount ? { title: `${draftCount} rascunho${draftCount === 1 ? '' : 's'} por concluir`, href: '/invoices?tab=drafts', action: 'Continuar', tone: 'neutral' } : null,
     profileIncomplete ? { title: 'Complete o perfil da empresa para preencher documentos', href: '/empresa', action: 'Completar perfil', tone: 'neutral' } : null,
   ].filter(Boolean) as { title: string; href: string; action: string; tone: string }[];
+  const selectedMetric = query.metric === 'receipts' ? 'receipts' : 'invoices';
   const rangeLabel = `${new Intl.DateTimeFormat('pt-AO', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Africa/Luanda' }).format(period.start)} — ${new Intl.DateTimeFormat('pt-AO', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Africa/Luanda' }).format(new Date(period.endExclusive.getTime() - 1))}`;
 
 
@@ -158,32 +148,7 @@ export default async function DashboardPage({ searchParams }: Props) {
       />
     </section>
 
-    <section aria-label="Análise financeira" className="grid gap-6 xl:grid-cols-[minmax(0,1.8fr)_minmax(260px,.72fr)]">
-      <article className="dashboard-panel min-w-0">
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
-          <div>
-            <p className="text-[11px] font-bold uppercase tracking-[.15em] text-[var(--text-muted)]">Evolução</p>
-            <p className={`mt-2 tabular-nums font-semibold leading-none tracking-[-.035em] text-[var(--text)] ${valueFontClass(money(metrics.invoiced))}`}>{money(metrics.invoiced)}</p>
-            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
-              {metrics.invoicedChangePercent === null ? <span className="text-[var(--text-muted)]">Sem base para comparar</span> : <><span className={`font-bold ${metrics.invoicedChangePercent >= 0 ? 'text-[#227958]' : 'text-[#ad4444]'}`}>{metrics.invoicedChangePercent >= 0 ? '↑' : '↓'} {Math.abs(metrics.invoicedChangePercent).toLocaleString('pt-AO', { maximumFractionDigits: 1 })}%</span><span className="text-[var(--text-muted)]">face ao período anterior</span></>}
-            </div>
-          </div>
-          <div className="flex w-fit rounded-[12px] border border-[var(--line)] p-1" aria-label="Métrica do gráfico">
-            <Link href={chartHref('invoices')} aria-current={selectedMetric === 'invoices' ? 'page' : undefined} className={`rounded-[8px] px-3 py-2 text-xs font-semibold transition ${selectedMetric === 'invoices' ? 'bg-[#021f87] text-white shadow-[var(--shadow-card)]' : 'text-[var(--text-muted)] hover:bg-[var(--surface-raised)]'}`}>Facturação</Link>
-            <Link href={chartHref('receipts')} aria-current={selectedMetric === 'receipts' ? 'page' : undefined} className={`rounded-[8px] px-3 py-2 text-xs font-semibold transition ${selectedMetric === 'receipts' ? 'bg-[#021f87] text-white shadow-[var(--shadow-card)]' : 'text-[var(--text-muted)] hover:bg-[var(--surface-raised)]'}`}>Recebimentos</Link>
-          </div>
-        </div>
-        <div className="mt-5 flex flex-wrap items-center gap-3 border-b border-[var(--line)] pb-4 text-xs text-[var(--text-muted)]"><span className="inline-flex items-center gap-2"><span className={`h-2 w-2 rounded-full ${selectedMetric === 'receipts' ? 'bg-[#248468]' : 'bg-[#021f87]'}`} />{metricLabel}</span><span>·</span><span>{rangeLabel}</span></div>
-        <div className="mt-4"><FinancialLineChart points={chart} label={metricLabel} color={metricColor} /></div>
-      </article>
-
-      <div className="dashboard-panel flex flex-col gap-4">
-        <article><p className="text-[11px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">Recebido</p><p className="mt-2 tabular-nums text-[26px] font-semibold tracking-[-.03em] text-[#227958]">{money(metrics.received)}</p><p className="mt-1 text-xs text-[var(--text-muted)]">Confirmados no período</p></article>
-        <article className="border-t border-[var(--line)] pt-4"><p className="text-[11px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">Por receber</p><p className="mt-2 tabular-nums text-[26px] font-semibold tracking-[-.03em] text-[var(--text)]">{money(metrics.outstanding)}</p><p className="mt-1 text-xs text-[var(--text-muted)]">Saldo das facturas do período</p></article>
-        <article className="border-t border-[var(--line)] pt-4"><p className="text-[11px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">Em atraso</p><p className={`mt-2 tabular-nums text-[26px] font-semibold tracking-[-.03em] ${metrics.overdue > 0 ? 'text-[#ad4444]' : 'text-[var(--text)]'}`}>{money(metrics.overdue)}</p><p className="mt-1 text-xs text-[var(--text-muted)]">{metrics.dueSoon > 0 ? `${money(metrics.dueSoon)} vence em 7 dias` : 'Saldo com vencimento ultrapassado'}</p></article>
-      </div>
-    </section>
-
+    <EvolutionChartCard invoices={metrics.invoiceSeries} receipts={metrics.receiptSeries} periodStart={period.start.toISOString()} periodEnd={period.endExclusive.toISOString()} />
     <section className="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(280px,.7fr)]">
       <article className="dashboard-panel min-w-0 overflow-hidden">
         <div className="flex items-end justify-between gap-3"><div><p className="text-[11px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">Actividade</p><h3 className="mt-1 text-base font-semibold tracking-tight text-[var(--text)]">Actividade recente</h3></div><Link href="/invoices" className="text-xs font-semibold text-[#021f87] hover:underline">Ver todas →</Link></div>
