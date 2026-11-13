@@ -108,16 +108,16 @@ export default async function RhDashboardPage() {
           )}
         </PremiumPanel>
 
-        <PremiumPanel title="Próximos módulos" kicker="Na biblioteca">
+        <PremiumPanel title="Módulos implementados" kicker="Disponível agora">
           <ul className="mt-3 space-y-2 text-sm text-[#607286]">
-            <li className="flex justify-between"><span>Assiduidade (Machine Point)</span><span className="text-[10px] font-semibold uppercase text-[#8a99ab]">Breve</span></li>
-            <li className="flex justify-between"><span>Férias e licenças</span><span className="text-[10px] font-semibold uppercase text-[#8a99ab]">Breve</span></li>
-            <li className="flex justify-between"><span>Processamento salarial</span><span className="text-[10px] font-semibold uppercase text-[#8a99ab]">Breve</span></li>
-            <li className="flex justify-between"><span>Documentos e contratos PDF</span><span className="text-[10px] font-semibold uppercase text-[#8a99ab]">Breve</span></li>
-            <li className="flex justify-between"><span>Payroll Connect</span><span className="text-[10px] font-semibold uppercase text-[#8a99ab]">Breve</span></li>
+            <li className="flex justify-between"><span>Funcionários e organização</span><span className="text-[10px] font-semibold uppercase text-[#267256]">Activo</span></li>
+            <li className="flex justify-between"><span>Contratos e vencimentos</span><span className="text-[10px] font-semibold uppercase text-[#267256]">Activo</span></li>
+            <li className="flex justify-between"><span>Assiduidade (Machine Point)</span><span className="text-[10px] font-semibold uppercase text-[#267256]">Activo</span></li>
+            <li className="flex justify-between"><span>Documentos oficiais com IA</span><span className="text-[10px] font-semibold uppercase text-[#267256]">Activo</span></li>
+            <li className="flex justify-between"><span>Férias e licenças</span><span className="text-[10px] font-semibold uppercase text-[#267256]">Activo</span></li>
           </ul>
           <p className="mt-4 rounded-lg bg-[#f5f8fc] p-3 text-xs text-[#607286]">
-            O núcleo de funcionários, organização e contratos já está operacional.
+            Use o menu RH para navegar entre Funcionários, Contratos, Assiduidade, Documentos e Processamento Salarial.
           </p>
         </PremiumPanel>
       </div>
