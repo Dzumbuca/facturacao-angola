@@ -94,19 +94,71 @@ export function buildSystemPrompt(path: string): string {
     contextBriefForPath(path),
     '',
     'REGRAS DE RESPOSTA:',
-    '- Explica sempre em passos concretos (1., 2., 3.) quando o utilizador pede «como fazer».',
-    '- Quando existir uma página no sistema relacionada, devolve no campo "actions" um botão com { label, href }.',
-    '- Nunca peças nem reveles dados de outras empresas. Nunca revelas chaves, palavras-passe ou segredos.',
-    '- Não executas operações financeiras, não alteras dados e não emites documentos fiscais. Podes explicar como, e levar o utilizador até à página certa.',
-    '- Se a pergunta não for sobre o Machine Facturas ou gestão empresarial, responde educadamente que só ajudas no âmbito do sistema.',
-    '- Se não conheceres a resposta, di-lo abertamente e sugere o suporte da empresa.',
-    '- Usa formatação simples: texto normal e listas numeradas. Nunca inventes números fiscais ou percentagens.',
+    '- Explica sempre em passos concretos (1., 2., 3.) quando o utilizador pede como fazer.',
+    '- Quando existir uma página no sistema relacionada, devolve no campo actions um botão com label e href.',
+    '- Nunca peças dados desnecessários. Só pede o que falta para a tarefa concreta.',
+    '- Não executas operações financeiras, não alteras dados e não emites documentos fiscais.',
+    '- Nunca revelas chaves, palavras-passe ou segredos. Nunca expões dados de outras empresas.',
+    '- Se não conheceres a resposta, di-lo claramente e sugere o suporte da empresa.',
+    '- Usa formatação simples: texto normal e listas numeradas.',
     '',
-    'Formato de saída: responde APENAS com JSON válido, sem comentários e sem markdown envolvente, com a forma:',
-    '{"reply":"texto completo para o utilizador","actions":[{"label":"Abrir Facturas","href":"/invoices"}],"document":{"title":"Título","body":"conteúdo em Markdown"}}',
-    'O campo "document" só deve existir quando o utilizador pedir para criar um documento; caso contrário deve ser null.',
-    'O campo "actions" deve existir sempre, mesmo que vazio.',
+    'REGRAS PARA DOCUMENTOS (obrigatório):',
+    '- NUNCA devolvas um documento inteiro com apenas traços «________» se o utilizador te forneceu dados. Preenche TUDO.',
+    '- Se faltarem factos essenciais (nomes, cargos, datas, valores, NIF, moradas, salários), NÃO devolvas documento. Faz UMA mensagem curta com a lista do que falta e termina com «Responde com esses dados que eu genero já o documento».',
+    '- Estrutura real por tipo: declaração de trabalho = cabeçalho institucional, identificação, corpo numerado (nome, NIF, cargo, datas, jornada, remuneração), fecho, assinatura + carimbo. Carta comercial = destinatário, exposição, proposta, conclusão, assinatura. Proposta = escopo, metodologia, valores, prazos, assinatura.',
+    '- Documentos completos e accionáveis: usa titulos markdown (#), secções, listas numeradas, tabelas com «|» e bloco de assinatura no fim.',
+    '- Usa campos [A PREENCHER: x] apenas para dados que o utilizador NÃO forneceu. Nunca inventes nomes, NIFs, datas ou valores.',
+    '- O conteúdo do documento fica em Markdown simples (títulos com #, listas com -, tabelas com |).',
+    '',
+    'Formato de saída: responde APENAS com JSON válido, sem comentários nem markdown, com a forma:',
+    '{"reply":"texto completo","actions":[{"label":"Abrir Facturas","href":"/invoices"}],"document":{"title":"Título","body":"conteúdo em Markdown"}}',
+    'Se falta informação para o documento: document = null e reply = pedido curto dos dados em falta.',
+    'O campo actions deve existir sempre, mesmo que vazio.',
   ].join('\n');
+}
+
+function inferDocumentType(query: string): { title: string; href: string } {
+  const q = query.toLowerCase();
+  if (/declara[cç][aã]o/.test(q)) return { title: 'Declaração de Trabalho', href: '/rh/documentos' };
+  if (/carta/.test(q)) return { title: 'Carta', href: '/documentos' };
+  if (/proposta/.test(q)) return { title: 'Proposta Comercial', href: '/documentos' };
+  if (/contrato/.test(q)) return { title: 'Contrato', href: '/rh/contratos' };
+  if (/memorando|comunicado|oficio/.test(q)) return { title: 'Memorando', href: '/documentos' };
+  return { title: 'Documento', href: '/documentos' };
+}
+
+function offlineDocumentTemplate(query: string): { href: string; document: AssistantDocument } {
+  const type = inferDocumentType(query);
+  const body = [
+    '# ' + type.title,
+    '',
+    'Exmo. Senhor,',
+    '',
+    'Vimos por este meio apresentar o documento abaixo, para os devidos fins.',
+    '',
+    '## Identificação',
+    '',
+    'Eu, [A PREENCHER: nome completo], bilhete de identidade n.º [A PREENCHER: BI], na qualidade de [A PREENCHER: cargo/função] da empresa [A PREENCHER: empresa], com sede em [A PREENCHER: morada], declaro que:',
+    '',
+    '1. **Nome do Trabalhador:** [A PREENCHER: nome];',
+    '2. **NIF:** [A PREENCHER: NIF];',
+    '3. **Cargo/Função:** [A PREENCHER: cargo];',
+    '4. **Data de Admissão:** [A PREENCHER: data];',
+    '5. **Jornada de trabalho:** [A PREENCHER: horas] horas por semana.',
+    '',
+    '## Declaração',
+    '',
+    'A presente declaração é emitida a pedido do interessado, para os devidos fins, estando a empresa à disposição para os esclarecimentos que se justifiquem.',
+    '',
+    '## Fecho',
+    '',
+    '________________________________  ',
+    'Assinatura do Responsável  ',
+    'Nome: ________________________________  ',
+    'Cargo: ________________________________  ',
+    'Data: ________________________________',
+  ].join('\n');
+  return { href: type.href, document: { title: type.title, body } };
 }
 
 type ModelReply = { reply?: unknown; actions?: unknown; document?: unknown };
@@ -163,7 +215,18 @@ export async function chatAssistant(input: { path: string; messages: unknown }):
   }
   const available = providers();
   if (available.length === 0) {
+    const wantsDoc = detectDocumentIntent(lastUser.content);
     const offline = offlineAnswer(lastUser.content, path) ?? adminSafeFallback(lastUser.content);
+    if (wantsDoc) {
+      const template = offlineDocumentTemplate(lastUser.content);
+      return {
+        text: offline.answer + '\n\nNo modo offline, não gero documentos completos por omissão. Abaixo está a estrutura do documento com campos para preencheres manualmente; para dados reais, configura a IA (GROQ_API_KEY) e faze o pedido novamente com os dados.',
+        actions: template.href ? [{ label: 'Abrir documentos', href: template.href }] : [],
+        document: template.document,
+        offline: true,
+        provider: null,
+      };
+    }
     return { text: offline.answer, actions: offline.href ? [{ label: 'Abrir', href: offline.href }] : [], document: null, offline: true, provider: null };
   }
   const system = buildSystemPrompt(path);
