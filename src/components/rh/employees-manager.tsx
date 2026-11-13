@@ -4,6 +4,7 @@ import { useMemo, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { SignedImage } from '@/components/rh/signed-image';
 import { FormSection, FormActions, FormError, CurrencyInput, CalendarField } from '@/components/rh/form-kit';
+import { FormSplit, FormSidebar, FormHero } from '@/components/rh/premium-kit';
 
 type Department = { id: string; name: string };
 type Position = { id: string; title: string; departmentId: string | null };
@@ -36,6 +37,8 @@ type Employee = {
   shift: { id: string; name: string; startTime: string; endTime: string } | null;
 };
 
+const WATCHED_KEYS = ['firstName','lastName','bi','nif','email','phone','departmentId','positionId','shiftId','contractType','status'] as const;
+
 const STATUS_LABEL: Record<string, string> = {
   ACTIVO: 'Activo', SUSPENSO: 'Suspenso', FERIAS: 'Férias', CESSAO: 'Cessão', INACTIVO: 'Inactivo',
 };
@@ -65,6 +68,23 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
   const [birthDateIso, setBirthDateIso] = useState('');
   const [baseSalaryValue, setBaseSalaryValue] = useState<number | null>(null);
   const [generatedPin, setGeneratedPin] = useState<string | null>(null);
+  const [formValues, setFormValues] = useState<Record<string, string>>({});
+  const effective = useMemo(() => {
+    const base: Record<string, string> = {};
+    WATCHED_KEYS.forEach((k) => { base[k] = formValues[k] ?? String((editing as any)?.[k] ?? ''); });
+    base['departmentId'] = formValues['departmentId'] ?? String(editing?.departmentId ?? '');
+    base['positionId'] = formValues['positionId'] ?? String(editing?.positionId ?? '');
+    return base;
+  }, [formValues, editing]);
+  const progress = useMemo(() => {
+    const weights: Record<string, number> = { firstName: 10, lastName: 10, bi: 10, nif: 10, email: 10, phone: 10, departmentId: 10, positionId: 10, shiftId: 10, contractType: 10, status: 10 };
+    let score = 0;
+    Object.entries(weights).forEach(([k, w]) => { if (String(effective[k] ?? '').trim()) score += w; });
+    if (baseSalaryValue != null) score += 0; // already weighted above
+    return Math.min(100, score);
+  }, [effective, baseSalaryValue]);
+  const resolvedDepartment = departments.find((d) => d.id === effective['departmentId'])?.name ?? '';
+  const resolvedPosition = positions.find((pos) => pos.id === effective['positionId'])?.title ?? '';
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -250,13 +270,16 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
         <div className="fixed inset-0 z-[60] flex items-end justify-center bg-[#102b46]/50 p-0 backdrop-blur-[2px] sm:items-center sm:p-5" onMouseDown={(e) => { if (e.target === e.currentTarget && !saving) setOpen(false); }}>
           <section role="dialog" aria-modal="true" aria-labelledby="rh-employee-title" className="max-h-[92dvh] w-full overflow-y-auto overscroll-contain rounded-t-2xl bg-white p-5 shadow-2xl sm:max-w-2xl sm:rounded-2xl sm:p-7">
             <div className="mb-4 flex items-start justify-between gap-4">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[.14em] text-[#021f87]">Machine RH</p>
-                <h2 id="rh-employee-title" className="mt-1 text-lg font-bold text-[#1c2d3f]">{editing ? 'Editar funcionário' : 'Novo funcionário'}</h2>
-              </div>
+              <FormHero eyebrow="Machine RH" title={editing ? 'Editar funcionário' : 'Novo funcionário'} description="Os dados ficam neste formulário até ao envio. A barra lateral mostra o que já está preenchido." icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 20a6 6 0 0 1 12 0"/></svg>} />
               <button type="button" aria-label="Fechar" disabled={saving} onClick={() => setOpen(false)} className="flex h-10 w-10 items-center justify-center rounded-lg text-xl text-[#708195] hover:bg-[#f0f4f8]">×</button>
             </div>
-            <form className="space-y-4" onSubmit={submit} key={editing?.id ?? 'novo'} noValidate>
+            <form className="space-y-4" onSubmit={submit} key={editing?.id ?? 'novo'} noValidate
+              onInput={(e) => {
+                const target = e.target as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+                if (!target.name) return;
+                setFormValues((prev) => ({ ...prev, [target.name]: target.value }));
+              }}>
+              <FormSplit main={<>
               <FormSection title="Identificação pessoal">
 
                   <div><label htmlFor="rh-first" className="app-label">Nome *</label><input id="rh-first" name="firstName" className="app-input" required defaultValue={editing?.firstName ?? ''} /></div>
@@ -318,6 +341,16 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
                 </div>
               )}
 
+              </>}
+              sidebar={<FormSidebar title="Resumo do funcionário" progress={progress} lines={[
+                { label: 'Nome', value: `${effective.firstName} ${effective.lastName}`.trim() || undefined },
+                { label: 'BI', value: effective.bi || undefined },
+                { label: 'NIF', value: effective.nif || undefined },
+                { label: 'Departamento', value: resolvedDepartment || undefined },
+                { label: 'Cargo', value: resolvedPosition || undefined },
+                { label: 'Contrato', value: effective.contractType === 'INDEFINIDO' ? 'Tempo indeterminado' : effective.contractType ? 'A prazo (termo/estágio/prestação)' : undefined },
+                { label: 'Estado', value: effective.status || undefined },
+              ]} footer={<p className="text-[11px] leading-5 text-[#8094a9]">A percentagem mostra campos obrigatórios preenchidos. Nenhum dado é enviado sem submeter o formulário.</p>} />} />
               <FormSection title="Dados bancários (restrito)" description="Acesso restrito a perfis com escrita de funcionários.">
                 <div><label htmlFor="rh-bank" className="app-label">Banco</label><input id="rh-bank" name="bankName" className="app-input" defaultValue={editing?.bankName ?? ''} /></div>
                 <div><label htmlFor="rh-account" className="app-label">Conta</label><input id="rh-account" name="bankAccount" className="app-input" defaultValue={editing?.bankAccount ?? ''} /></div>

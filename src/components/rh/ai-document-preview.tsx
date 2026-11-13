@@ -1,6 +1,6 @@
 'use client';
 
-import { parseDocumentBlocks, parseInlineRuns, type DocumentIdentity } from '@/lib/document-blocks';
+import { parseDocumentBlocks, parseInlineRuns } from '@/lib/document-blocks';
 
 export type PreviewIdentity = {
   name?: string;
