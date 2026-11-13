@@ -154,6 +154,24 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .data-table th, .data-table td { padding: 11px 12px; }
 }
 
+
+/* Hero document cards — subtle float, respects prefers-reduced-motion */
+@keyframes hero-float {
+  0% { transform: translateY(0px) rotate(var(--hero-rot, 0deg)); }
+  50% { transform: translateY(-5px) rotate(var(--hero-rot, 0deg)); }
+  100% { transform: translateY(0px) rotate(var(--hero-rot, 0deg)); }
+}
+.hero-float {
+  animation: hero-float 4.5s ease-in-out infinite;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-float {
+    animation: none;
+    transform: none;
+  }
+}
+
 /* Tema escuro: remapeia as classes de cor já usadas pela aplicação para os
    tokens sem alterar o comportamento dos formulários, tabelas ou estados. */
 :root[data-theme="dark"] body { background: var(--background); color: var(--text); }

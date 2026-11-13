@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import type { CSSProperties } from 'react';
 import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
 import { getSessionTenantId } from '@/lib/session';
@@ -65,14 +66,14 @@ export default async function DashboardPage({ searchParams }: Props) {
 
         <div aria-hidden="true" className="relative hidden h-full min-h-[180px] select-none items-center justify-center lg:flex">
           {/* Camada 1 — cartão maior */}
-          <div className="absolute h-56 w-44 -rotate-[8deg] rounded-[20px] border border-white/10 bg-white/[0.04] backdrop-blur-[2px] shadow-[0_10px_30px_rgba(0,0,0,.25)]">
+          <div className="hero-float absolute h-56 w-44 rounded-[20px] border border-white/10 bg-white/[0.04] backdrop-blur-[2px] shadow-[0_10px_30px_rgba(0,0,0,.25)]" style={{ '--hero-rot': '-8deg', transform: 'rotate(-8deg)' } as CSSProperties}>
             <div className="flex h-full flex-col justify-between p-4">
               <div className="space-y-2"><div className="h-2 w-16 rounded-full bg-white/20" /><div className="h-2 w-10 rounded-full bg-white/15" /></div>
               <div className="space-y-2"><div className="h-2 w-12 rounded-full bg-white/15" /><div className="h-2 w-20 rounded-full bg-white/20" /></div>
             </div>
           </div>
           {/* Camada 2 — cartão intermédio */}
-          <div className="absolute h-52 w-40 rotate-[4deg] rounded-[18px] border border-white/15 bg-white/[0.08] backdrop-blur-md shadow-[0_14px_36px_rgba(0,0,0,.32)]">
+          <div className="hero-float absolute h-52 w-40 rounded-[18px] border border-white/15 bg-white/[0.08] backdrop-blur-md shadow-[0_14px_36px_rgba(0,0,0,.32)]" style={{ '--hero-rot': '4deg', transform: 'rotate(4deg)' } as CSSProperties}>
             <div className="flex h-full flex-col justify-between p-4">
               <div className="space-y-2"><div className="h-2 w-14 rounded-full bg-white/35" /><div className="h-2 w-20 rounded-full bg-white/25" /></div>
               <div className="space-y-2"><div className="h-2 w-16 rounded-full bg-white/30" /><div className="h-2 w-10 rounded-full bg-white/20" /></div>
