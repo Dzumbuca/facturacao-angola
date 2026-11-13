@@ -38,16 +38,27 @@ export default async function InvoicesPage({ searchParams }: Props) {
   const quota = await getInvoiceQuota(tenantId);
 
   return <div className="space-y-6">
-    <div className="flex flex-wrap items-end justify-between gap-3"><div><p className="text-sm text-[#708195]">Documentos de venda</p><h2 className="mt-1 text-2xl font-bold text-[#1c2d3f]">Facturas e rascunhos</h2><p className="mt-2 text-sm text-[#708195]">Acompanhe emissão, vencimentos e estado dos recebimentos.</p></div><Link href="/invoices/new" className="inline-flex min-h-10 items-center rounded-lg bg-[#2878d0] px-4 text-sm font-semibold text-white">Nova factura</Link></div>
-    {quota.limit !== null && <div className={`flex flex-wrap items-center justify-between gap-2 rounded-xl border px-4 py-3 text-sm ${quota.remaining === 0 && !quota.hasUnlock ? 'border-[#f0c9c9] bg-red-50 text-[#a83939]' : 'border-[#d8e6f5] bg-[#eef6ff] text-[#2c4a68]'}`}>
-      <span>
-        {quota.remaining === 0
-          ? <>Limite gratuito atingido: <strong>{quota.used}/{quota.limit}</strong> facturas gratuitas utilizadas.</>
-          : <>Facturas gratuitas: <strong>{quota.used}/{quota.limit}</strong> utilizadas — faltam <strong>{quota.remaining}</strong>.</>}
-        {quota.hasUnlock && ' Desbloqueio por publicidade disponível: já pode emitir a próxima.'}
-      </span>
-      <Link href="/pagamento" className="font-semibold text-[#2878d0] hover:underline">Suba para Pro — pagamento por Multicaixa Express →</Link>
-    </div>}
+    <div className="flex flex-wrap items-end justify-between gap-3"><div><p className="text-sm text-[#708195]">Documentos de venda</p><h2 className="mt-1 text-2xl font-bold text-[#1c2d3f]">Facturas e rascunhos</h2><p className="mt-2 text-sm text-[#708195]">Acompanhe emissão, vencimentos e estado dos recebimentos.</p></div><Link href="/invoices/new" className="inline-flex min-h-11 items-center rounded-[12px] bg-[var(--blue)] px-5 text-sm font-bold text-white shadow-[var(--shadow-cta)] transition hover:-translate-y-0.5 hover:bg-[#0634b8]">Nova factura</Link></div>
+    {quota.limit !== null && (
+      <div className="space-y-3">
+        <div className="flex items-start gap-3 rounded-[14px] border border-[var(--line)] bg-[var(--surface-raised)] px-4 py-3 text-sm text-[var(--text)]">
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 shrink-0 text-[var(--blue)]"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <span>
+            {quota.remaining === 0
+              ? <>Limite gratuito atingido: <strong>{quota.used}/{quota.limit}</strong> facturas gratuitas utilizadas.</>
+              : <>Facturas gratuitas: <strong>{quota.used}/{quota.limit}</strong> utilizadas — faltam <strong>{quota.remaining}</strong>.</>}
+            {quota.hasUnlock && ' Desbloqueio por publicidade disponível: já pode emitir a próxima.'}
+          </span>
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[14px] border border-[#dbe2ff] bg-gradient-to-br from-[#021f87] to-[#0634b8] px-4 py-3 text-sm text-white">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[.14em] text-[#b9d0ff]">Subir para Pro</p>
+            <p className="mt-0.5 text-sm font-semibold">Facturas ilimitadas + sem publicidade · pagamento por Multicaixa Express</p>
+          </div>
+          <Link href="/pagamento" className="inline-flex min-h-10 shrink-0 items-center rounded-[10px] bg-white px-4 text-xs font-extrabold text-[#041f52] transition hover:bg-[#e8edff]">Fazer upgrade →</Link>
+        </div>
+      </div>
+    )}
     <InvoicesTabs issuedRows={issuedRows} draftRows={draftRows} />
   </div>;
 }

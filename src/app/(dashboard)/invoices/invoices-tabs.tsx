@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { DataTable, StatusBadge, stateTone, EmptyState } from '@/components/ui/data-table';
+import { StatusBadge, stateTone, EmptyState } from '@/components/ui/data-table';
 
 type IssuedRow = {
   id: string;
@@ -31,9 +31,25 @@ export function InvoicesTabs({ issuedRows, draftRows }: { issuedRows: IssuedRow[
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2">
-        <button type="button" onClick={() => setTab('issued')} className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${tab === 'issued' ? 'bg-[#102b46] text-white' : 'bg-[#f0f4f8] text-[#52667a] hover:bg-[#e6edf5]'}`}>Emitidas ({issuedRows.length})</button>
-        <button type="button" onClick={() => setTab('drafts')} className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${tab === 'drafts' ? 'bg-[#102b46] text-white' : 'bg-[#f0f4f8] text-[#52667a] hover:bg-[#e6edf5]'}`}>Rascunhos ({draftRows.length})</button>
+      {/* Totalizador */}
+      <div className="grid grid-cols-1 gap-3 rounded-[16px] border border-[var(--line)] bg-[var(--surface-raised)] px-5 py-4 sm:grid-cols-3">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">Total facturado</p>
+          <p className="tabular-nums mt-1 text-2xl font-extrabold text-[var(--text)]">{new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', maximumFractionDigits: 0 }).format(issuedRows.reduce((s, r) => s + r.total, 0))}</p>
+        </div>
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">Facturas emitidas</p>
+          <p className="tabular-nums mt-1 text-2xl font-extrabold text-[var(--text)]">{issuedRows.length}</p>
+        </div>
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">Vencidas</p>
+          <p className="tabular-nums mt-1 text-2xl font-extrabold text-[var(--danger)]">{issuedRows.filter((r) => r.state === 'OVERDUE').length}</p>
+        </div>
+      </div>
+
+            <div role="tablist" aria-label="Tipo de documento" className="flex gap-1 border-b border-[var(--line)]">
+        <button role="tab" aria-selected={tab === 'issued'} onClick={() => setTab('issued')} className={`-mb-px border-b-2 px-4 py-2.5 text-sm font-medium transition ${tab === 'issued' ? 'border-[var(--blue)] text-[var(--blue)]' : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text)]'}`}>Emitidas ({issuedRows.length})</button>
+        <button role="tab" aria-selected={tab === 'drafts'} onClick={() => setTab('drafts')} className={`-mb-px border-b-2 px-4 py-2.5 text-sm font-medium transition ${tab === 'drafts' ? 'border-[var(--blue)] text-[var(--blue)]' : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text)]'}`}>Rascunhos ({draftRows.length})</button>
       </div>
 
       {tab === 'drafts' ? (
@@ -53,24 +69,28 @@ export function InvoicesTabs({ issuedRows, draftRows }: { issuedRows: IssuedRow[
           <p className="rounded-xl bg-white p-8 text-center text-sm text-[#708195]">Não há rascunhos guardados.</p>
         )
       ) : (
-        <DataTable>
-          <thead><tr><th className="sticky top-0 z-10 border-b border-[#e2e8ef] bg-[#fbfcfe] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[#7a8799]">Documento</th><th className="border-b border-[#e2e8ef] bg-[#fbfcfe] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[#7a8799]">Cliente</th><th className="border-b border-[#e2e8ef] bg-[#fbfcfe] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[#7a8799]">Emissão</th><th className="border-b border-[#e2e8ef] bg-[#fbfcfe] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[#7a8799]">Vencimento</th><th className="border-b border-[#e2e8ef] bg-[#fbfcfe] px-5 py-3.5 text-right text-[10px] font-extrabold uppercase tracking-[.12em] text-[#7a8799]">Total</th><th className="border-b border-[#e2e8ef] bg-[#fbfcfe] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[#7a8799]">Estado</th></tr></thead>
-          <tbody className="divide-y divide-[#edf1f5]">
-            {issuedRows.map((row) => (
-              <tr key={row.id} className="transition-colors hover:bg-[#f8fafc]">
-                <td className="px-5 py-3.5"><Link href={`/invoices/${row.id}`} className="font-bold text-[#021f87] hover:underline underline-offset-4">{row.number}</Link><span className="ml-2 text-[10px] font-medium uppercase text-[#94a3b8]">{row.type}</span></td>
-                <td className="px-5 py-3.5 font-medium text-[#30465c]">{row.customerName}</td>
-                <td className="px-5 py-3.5 text-[#607286]">{new Date(row.issuedAtISO).toLocaleDateString('pt-AO')}</td>
-                <td className="px-5 py-3.5 text-[#607286]">{row.dueAtISO ? new Date(row.dueAtISO).toLocaleDateString('pt-AO') : '—'}</td>
-                <td className="px-5 py-3.5 text-right tabular-nums font-bold text-[#1c2d3f]">{money(row.total)}</td>
-                <td className="px-5 py-3.5"><StatusBadge tone={stateTone(row.state)}>{stateLabel[row.state] ?? row.state}</StatusBadge></td>
-              </tr>
-            ))}
-            {issuedRows.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-4"><EmptyState title="Nenhuma factura" description="Não há facturas para o filtro seleccionado. Ajuste a vista ou emita uma nova factura." /></td></tr>
-            )}
-          </tbody>
-        </DataTable>
+        <div className="overflow-x-auto rounded-[18px] border border-[var(--line)] bg-[var(--surface)] shadow-[var(--shadow-card)]">
+          <table className="w-full border-separate border-spacing-0 text-left text-sm">
+            <caption className="sr-only">Facturas emitidas ordenadas da mais recente para a mais antiga. Total: {issuedRows.reduce((s, r) => s + r.total, 0).toLocaleString('pt-AO', { style: 'currency', currency: 'AOA' })}.</caption>
+            <thead><tr><th className="bg-[var(--surface-raised)] px-5 py-3 text-[11px] font-bold uppercase tracking-[.1em] text-[var(--text-muted)]">Documento</th><th className="bg-[var(--surface-raised)] px-5 py-3 text-[11px] font-bold uppercase tracking-[.1em] text-[var(--text-muted)]">Cliente</th><th className="bg-[var(--surface-raised)] px-5 py-3 text-[11px] font-bold uppercase tracking-[.1em] text-[var(--text-muted)]">Emissão</th><th className="bg-[var(--surface-raised)] px-5 py-3 text-[11px] font-bold uppercase tracking-[.1em] text-[var(--text-muted)]">Vencimento</th><th className="bg-[var(--surface-raised)] px-5 py-3 text-right text-[11px] font-bold uppercase tracking-[.1em] text-[var(--text-muted)]">Total</th><th className="bg-[var(--surface-raised)] px-5 py-3 text-[11px] font-bold uppercase tracking-[.1em] text-[var(--text-muted)]">Estado</th><th className="bg-[var(--surface-raised)] px-5 py-3 text-right text-[11px] font-bold uppercase tracking-[.1em] text-[var(--text-muted)]">Acção</th></tr></thead>
+            <tbody className="divide-y divide-[var(--line)]">
+              {issuedRows.map((row) => (
+                <tr key={row.id} className="transition-colors hover:bg-[var(--surface-raised)]">
+                  <td className="px-5 py-3.5"><Link href={`/invoices/${row.id}`} className="font-bold text-[var(--blue)] hover:underline underline-offset-4">{row.number}</Link><span className="ml-2 text-[10px] font-medium uppercase text-[var(--text-muted)]">{row.type}</span></td>
+                  <td className="px-5 py-3.5 font-medium text-[var(--text)]">{row.customerName}</td>
+                  <td className="px-5 py-3.5 text-[var(--text-muted)]">{new Date(row.issuedAtISO).toLocaleDateString('pt-AO')}</td>
+                  <td className="px-5 py-3.5 text-[var(--text-muted)]">{row.dueAtISO ? new Date(row.dueAtISO).toLocaleDateString('pt-AO') : '—'}</td>
+                  <td className="px-5 py-3.5 text-right tabular-nums font-bold text-[var(--text)]">{money(row.total)}</td>
+                  <td className="px-5 py-3.5"><StatusBadge tone={stateTone(row.state)}>{stateLabel[row.state] ?? row.state}</StatusBadge></td>
+                  <td className="px-5 py-3.5 text-right"><Link href={`/invoices/${row.id}`} aria-label={`Ver ${row.number}`} className="inline-flex min-h-9 items-center rounded-[8px] border border-[var(--line)] px-3 text-xs font-semibold text-[var(--blue)] hover:border-[var(--blue)]">Ver →</Link></td>
+                </tr>
+              ))}
+              {issuedRows.length === 0 && (
+                <tr><td colSpan={7} className="px-5 py-6"><EmptyState title="Nenhuma factura" description="Não há facturas para o filtro seleccionado. Ajuste a vista ou emita uma nova factura." /></td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
