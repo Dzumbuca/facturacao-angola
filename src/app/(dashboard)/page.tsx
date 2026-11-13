@@ -8,6 +8,7 @@ import { parseReportPeriod, type ReportPeriodQuery } from '@/lib/report-period';
 import { getInvoiceState } from '@/lib/invoice-state';
 import { FinancialLineChart } from '@/components/financial-line-chart';
 import { PremiumHero, PremiumKpi, PremiumBalance } from '@/components/dashboard/premium-kit';
+import { valueFontClass } from '@/lib/font-fit';
 
 type Props = { searchParams: Promise<{ period?: string; from?: string; to?: string; metric?: string }> };
 const money = (amount: number) => new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', maximumFractionDigits: 0 }).format(amount);
@@ -123,7 +124,7 @@ export default async function DashboardPage({ searchParams }: Props) {
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
           <div>
             <p className="text-[11px] font-bold uppercase tracking-[.15em] text-[var(--text-muted)]">Evolução</p>
-            <p className="mt-2 tabular-nums text-[32px] font-semibold leading-none tracking-[-.045em] text-[var(--text)] sm:text-[40px]">{money(metrics.invoiced)}</p>
+            <p className={`mt-2 tabular-nums font-semibold leading-none tracking-[-.035em] text-[var(--text)] ${valueFontClass(money(metrics.invoiced))}`}>{money(metrics.invoiced)}</p>
             <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
               {metrics.invoicedChangePercent === null ? <span className="text-[var(--text-muted)]">Sem base para comparar</span> : <><span className={`font-bold ${metrics.invoicedChangePercent >= 0 ? 'text-[#227958]' : 'text-[#ad4444]'}`}>{metrics.invoicedChangePercent >= 0 ? '↑' : '↓'} {Math.abs(metrics.invoicedChangePercent).toLocaleString('pt-AO', { maximumFractionDigits: 1 })}%</span><span className="text-[var(--text-muted)]">face ao período anterior</span></>}
             </div>

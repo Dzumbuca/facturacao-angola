@@ -1,9 +1,11 @@
 'use client';
 
 import { type ReactNode } from 'react';
+import { valueFontClass, balanceFontClass } from '@/lib/font-fit';
 
 /** Token semântico: card base. */
 const cardBase = 'rounded-[18px] border border-[var(--line)] bg-[var(--surface)] shadow-[var(--shadow-soft)] transition-colors';
+
 
 /** Hero navy distintivo do produto. */
 export function PremiumHero({ children, className = '' }: { children: ReactNode; className?: string }) {
@@ -30,14 +32,14 @@ export function PremiumKpi({ label, value, detail, tone = 'neutral', icon }: {
     danger: '#ad4444',
   };
   return (
-    <article className={`${cardBase} group p-4 hover:-translate-y-[2px] sm:p-5`}>
+    <article className={`${cardBase} group overflow-hidden p-5 hover:-translate-y-[2px] sm:p-6`}>
       <div className="flex h-full flex-col justify-between gap-3">
         <div className="flex items-start justify-between gap-2">
           <p className="text-[10px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">{label}</p>
           {icon && <span className="text-[var(--text-muted)] transition group-hover:text-[var(--blue)]">{icon}</span>}
         </div>
         <div>
-          <p className="tabular-nums text-2xl font-extrabold leading-none tracking-tight sm:text-[34px]" style={{ color: toneAccent[tone], filter: "drop-shadow(0 1px 4px rgba(0,0,0,.35))" }}>{value}</p>
+          <p className={`tabular-nums font-extrabold leading-none tracking-tight ${valueFontClass(value)}`} style={{ color: toneAccent[tone], filter: "drop-shadow(0 1px 4px rgba(0,0,0,.35))" }}>{value}</p>
           {detail && <p className="mt-1 text-[10px] leading-4 text-[var(--text-muted)] sm:text-[11px]">{detail}</p>}
         </div>
       </div>
@@ -53,7 +55,7 @@ export function PremiumBalance({ label, amount, trend, sublabel }: { label: stri
       <div className="pointer-events-none absolute -bottom-12 -left-10 h-44 w-44 rounded-full bg-[radial-gradient(circle,_rgba(60,210,255,.28),_transparent_70%)]" />
       <div className="relative">
         <p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-[#e8efff]">{label}</p>
-        <p className="tabular-nums mt-2 text-[32px] font-black leading-none tracking-[-.04em] tracking-[-.035em] text-white drop-shadow-[0_2px_8px_rgba(0,0,0,.45)] sm:text-[42px]">{amount}</p>
+        <p className={`tabular-nums mt-2 font-black leading-none tracking-[-.035em] text-white drop-shadow-[0_2px_8px_rgba(0,0,0,.45)] ${balanceFontClass(amount)}`}>{amount}</p>
         <div className="mt-2 flex items-center justify-between gap-2">
           {trend && <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/15 px-2.5 py-0.5 text-[10px] font-semibold text-[#a8fccb] ring-1 ring-white/10">{trend}</span>}
           {sublabel && <span className="text-[10px] uppercase tracking-[.1em] text-[#a4b8dc]">{sublabel}</span>}
