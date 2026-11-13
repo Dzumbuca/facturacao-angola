@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import type { ReactNode } from 'react';
 import { prisma } from '@/lib/prisma';
 import { getTenantAccess } from '@/lib/admin-auth';
 import { BUSINESS_DOCUMENT_CATEGORIES, BUSINESS_DOCUMENT_LABELS, BUSINESS_DOCUMENT_STATUS_LABELS, getBusinessDocumentStatusTone } from '@/lib/business-document-labels';
@@ -9,11 +10,26 @@ export const dynamic = 'force-dynamic';
 const PAGE_SIZE = 20;
 type Search = { q?: string; type?: string; status?: string; from?: string; to?: string; page?: string; tab?: string };
 
+
+const categoryIcons: Record<string, ReactNode> = {
+  Comerciais: (
+    <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+  ),
+  Financeiros: (
+    <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h8"/><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M16 15l2 2"/></svg>
+  ),
+  Operacionais: (
+    <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="7.5" cy="17.5" r="2"/><circle cx="17.5" cy="17.5" r="2"/><path d="M5 17h-2v-4l2-6h10v10"/><path d="M15 12h4l2 5h-2"/></svg>
+  ),
+  Administrativos: (
+    <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+  ),
+};
 const categoryStyle: Record<string, string> = {
   Comerciais: 'border border-[#dbe2ff] bg-[#eef2ff] text-[#021f87] dark:border-[#1e2a44] dark:bg-[#0d1730] dark:text-[#8aa4ff]',
   Financeiros: 'border border-[#cbe8dc] bg-[#eff9f4] text-[#227958] dark:border-[#1f3a2a] dark:bg-[#0e241b] dark:text-[#34d399]',
-  Operacionais: 'border border-[#d6e6f5] bg-[#eef6ff] text-[#1d4f7a] dark:border-[#1e2a44] dark:bg-[#0d1d30] dark:text-[#7db9ff]',
-  Administrativos: 'border border-[#f0e0b8] bg-[#fdf6e9] text-[#8a5a10] dark:border-[#3a2f10] dark:bg-[#2b2110] dark:text-[#f9c75a]',
+  Operacionais: 'border border-[#fbe5a8] bg-[#fdf3d0] text-[#7a4b00] dark:border-[#3a2f10] dark:bg-[#2b2110] dark:text-[#facc15]',
+  Administrativos: 'border border-[#d9dde4] bg-[#eef0f4] text-[#3d4654] dark:border-[#2a3140] dark:bg-[#161b25] dark:text-[#b4bac6]',
 };
 
 export default async function BusinessDocumentsPage({ searchParams }: { searchParams: Promise<Search> }) {
@@ -68,7 +84,7 @@ export default async function BusinessDocumentsPage({ searchParams }: { searchPa
               <article key={category.title} className="group flex h-full flex-col rounded-[18px] border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] transition hover:-translate-y-[2px] hover:border-[var(--blue)]">
                 <div className="flex items-center justify-between gap-3">
                   <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[.12em] ${categoryStyle[category.title] ?? ''}`}>{category.title}</span>
-                  <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--text-muted)] transition group-hover:text-[var(--blue)]"><path d="M6 9l6 6 6-6"/></svg>
+                  <span aria-hidden="true" className={`grid h-10 w-10 shrink-0 place-items-center rounded-[12px] ring-1 ring-[var(--line)] ${categoryStyle[category.title] ?? ""}`}>{categoryIcons[category.title] ?? categoryIcons.Comerciais}</span>
                 </div>
                 <p className="mt-3 text-[13px] leading-6 text-[var(--text-muted)]">{category.description}</p>
                 <div className="mt-4 flex flex-wrap gap-1.5">
