@@ -13,7 +13,6 @@ import { valueFontClass } from '@/lib/font-fit';
 type Props = { searchParams: Promise<{ period?: string; from?: string; to?: string; metric?: string }> };
 const money = (amount: number) => new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', maximumFractionDigits: 0 }).format(amount);
 const labels = { DRAFT: 'Rascunho', CANCELLED: 'Anulada', PAID: 'Paga', PARTIALLY_PAID: 'Parcial', OVERDUE: 'Vencida', ISSUED: 'Emitida' };
-const methodNames: Record<string, string> = { BANK_TRANSFER: 'Transferência bancária', MULTICAIXA_EXPRESS: 'Multicaixa Express', MULTICAIXA_REFERENCE: 'Referência Multicaixa', CASH: 'Numerário', OTHER: 'Outro método' };
 const stateColors: Record<string, string> = { ISSUED: '#748397', PARTIALLY_PAID: '#b16d15', PAID: '#248468', OVERDUE: '#bb4848' };
 
 const periodOptions = [['today', 'Hoje'], ['last7days', '7 dias'], ['last30days', '30 dias'], ['thisMonth', 'Este mês'], ['lastMonth', 'Mês anterior'], ['thisQuarter', 'Trimestre'], ['thisYear', 'Este ano'], ['custom', 'Personalizado']];
@@ -45,7 +44,6 @@ export default async function DashboardPage({ searchParams }: Props) {
     if (query.to) params.set('to', query.to);
     return `/?${params.toString()}`;
   };
-  const filterHref = (state: string) => `/invoices?state=${state}`;
   const profileIncomplete = !tenant.nif && !tenant.address && !tenant.email && !tenant.phone;
   const alerts = [
     metrics.overdue > 0 ? { title: `${money(metrics.overdue)} em saldo vencido`, href: '/invoices?state=OVERDUE', action: 'Ver facturas', tone: 'danger' } : null,
@@ -53,18 +51,8 @@ export default async function DashboardPage({ searchParams }: Props) {
     draftCount ? { title: `${draftCount} rascunho${draftCount === 1 ? '' : 's'} por concluir`, href: '/invoices?tab=drafts', action: 'Continuar', tone: 'neutral' } : null,
     profileIncomplete ? { title: 'Complete o perfil da empresa para preencher documentos', href: '/empresa', action: 'Completar perfil', tone: 'neutral' } : null,
   ].filter(Boolean) as { title: string; href: string; action: string; tone: string }[];
-  const stateRows = (['ISSUED', 'PARTIALLY_PAID', 'PAID', 'OVERDUE'] as const).map((key) => ({ key, count: metrics.stateCounts[key], label: labels[key] }));
-  const totalStates = Math.max(1, stateRows.reduce((sum, row) => sum + row.count, 0));
   const rangeLabel = `${new Intl.DateTimeFormat('pt-AO', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Africa/Luanda' }).format(period.start)} — ${new Intl.DateTimeFormat('pt-AO', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Africa/Luanda' }).format(new Date(period.endExclusive.getTime() - 1))}`;
 
-  const pendingCount = metrics.stateCounts.ISSUED + metrics.stateCounts.PARTIALLY_PAID;
-  const invoiceCountLabel = metrics.invoiceCount.toLocaleString('pt-AO');
-  const dashboardIndicators = [
-    { label: 'Facturas emitidas', value: invoiceCountLabel, detail: 'No período seleccionado', tone: 'text-[#021F87]' },
-    { label: 'Pagas', value: metrics.stateCounts.PAID.toLocaleString('pt-AO'), detail: 'Facturas liquidadas', tone: 'text-[#227958]' },
-    { label: 'Pendentes', value: pendingCount.toLocaleString('pt-AO'), detail: 'Emitidas ou parciais', tone: 'text-[#b16d15]' },
-    { label: 'Vencidas', value: metrics.stateCounts.OVERDUE.toLocaleString('pt-AO'), detail: 'Acompanhe os atrasos', tone: 'text-[#ad4444]' },
-  ];
 
   return <div className="dashboard-view space-y-7 pb-8">
     <PremiumHero>
