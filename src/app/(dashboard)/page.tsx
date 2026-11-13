@@ -7,7 +7,7 @@ import { getTenantPeriodMetrics } from '@/lib/financial-metrics';
 import { parseReportPeriod, type ReportPeriodQuery } from '@/lib/report-period';
 import { getInvoiceState } from '@/lib/invoice-state';
 import { FinancialLineChart } from '@/components/financial-line-chart';
-import { PremiumHero, PremiumKpi, PremiumBalance } from '@/components/dashboard/premium-kit';
+import { PremiumHero, PremiumKpi } from '@/components/dashboard/premium-kit';
 import { valueFontClass } from '@/lib/font-fit';
 
 type Props = { searchParams: Promise<{ period?: string; from?: string; to?: string; metric?: string }> };
@@ -56,19 +56,38 @@ export default async function DashboardPage({ searchParams }: Props) {
 
   return <div className="dashboard-view space-y-7 pb-8">
     <PremiumHero>
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-        <div className="max-w-3xl">
+      <div className="grid grid-cols-1 items-center gap-6 lg:grid-cols-[minmax(0,1.85fr)_minmax(260px,.95fr)]">
+        <div className="flex flex-col justify-center gap-4">
           <div className="flex flex-wrap items-center gap-3">
             <span className="kpi-pill">MACHINE FACTURAS</span>
             <span className="kpi-pill">{rangeLabel}</span>
           </div>
-          <h1 className="mt-4 text-2xl font-extrabold leading-[1.08] tracking-[-.04em] text-white sm:text-3xl lg:text-[36px]">
-            Olá, {tenant.name}.<br />
-            <span className="text-[#9dc4ff]">Aqui está a saúde financeira da sua empresa hoje.</span>
-          </h1>
-          <p className="mt-3 text-sm leading-6 text-[#a9c4ff]">Visão consolidada do período. Emita facturas, acompanhe recebimentos e identifique pagamentos em atraso.</p>
+          <h1 className="text-2xl font-extrabold leading-[1.08] tracking-[-.04em] text-white sm:text-3xl lg:text-[38px]">Olá, {tenant.name}.</h1>
+          <p className="text-lg font-semibold leading-snug text-[#cdd9ff] sm:text-xl">Aqui está a saúde financeira da sua empresa.</p>
+          <p className="max-w-prose text-sm leading-6 text-[#a9c4ff]">Acompanhe a facturação, os recebimentos e os pagamentos pendentes num só lugar, com dados actualizados ao período seleccionado.</p>
+          <div className="mt-1 flex flex-wrap items-center gap-3">
+            <Link href="/invoices/new" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-white px-5 text-sm font-extrabold text-[#041f52] shadow-[0_12px_30px_rgba(0,0,0,.18)] transition hover:-translate-y-0.5 hover:bg-[#e8edff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+              Emitir factura
+            </Link>
+          </div>
         </div>
-        <PremiumBalance label="Facturação no período" amount={money(metrics.invoiced)} trend={metrics.invoicedChangePercent != null ? `${metrics.invoicedChangePercent >= 0 ? '+' : ''}${metrics.invoicedChangePercent.toFixed(1)}% vs ant.` : 'Sem histórico'} />
+        <div aria-hidden="true" className="hidden select-none lg:block">
+          <div className="relative flex h-full min-h-[150px] items-center justify-center">
+            <div className="absolute inset-0 rounded-[22px] bg-[radial-gradient(ellipse_at_center,_rgba(120,170,255,.16),_transparent_55%)]" />
+            <div className="absolute flex h-36 w-36 rotate-6 items-end justify-center rounded-2xl border border-white/10 bg-white/5 p-3 backdrop-blur-sm">
+              <div className="flex h-3/4 w-2/3 flex-col gap-2">
+                <div className="h-2 w-3/4 rounded-full bg-white/20" />
+                <div className="h-2 w-2/3 rounded-full bg-white/20" />
+                <div className="h-2 w-1/2 rounded-full bg-white/20" />
+                <div className="h-2 w-2/3 rounded-full bg-white/10" />
+              </div>
+            </div>
+            <div className="absolute flex h-24 w-24 -rotate-6 items-center justify-center rounded-2xl border border-white/10 bg-white/5 p-2 backdrop-blur-sm">
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="text-[#aac4ff]"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+            </div>
+          </div>
+        </div>
       </div>
     </PremiumHero>
 
