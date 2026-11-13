@@ -54,7 +54,7 @@ export default async function CentroFerramentasPage() {
       </div>
 
       {/* Sobre + Como usar (duas colunas) */}
-      <section className="mt-6 grid gap-4 lg:grid-cols-[1fr_1fr]">
+      <section className="mt-12 grid gap-6 lg:grid-cols-[1fr_1fr] items-start">
         <div className="rounded-[18px] border border-[var(--line)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card)]">
           <h2 className="text-base font-extrabold text-[var(--text)]">Sobre o Centro de Ferramentas</h2>
           <p className="mt-2 text-sm leading-7 text-[var(--text-muted)]">
@@ -83,7 +83,7 @@ export default async function CentroFerramentasPage() {
       </section>
 
       {/* Aprende e pratica — cartões reais */}
-      <section aria-labelledby="aprende-title" className="mt-6">
+      <section aria-labelledby="aprende-title" className="mt-12">
         <h2 id="aprende-title" className="text-[10px] font-extrabold uppercase tracking-[.16em] text-[var(--text-muted)]">Aprende e pratica</h2>
         <div className="mt-2 grid gap-3 sm:grid-cols-3">
           {[
@@ -102,7 +102,7 @@ export default async function CentroFerramentasPage() {
       </section>
 
       {/* CTA final */}
-      <div className="mt-8 rounded-[20px] border border-[var(--line)] bg-gradient-to-br from-[#021f87] to-[#0634b8] px-6 py-8 text-center text-white shadow-[0_18px_42px_rgba(2,31,135,.35)] md:px-10">
+      <div className="mt-12 rounded-[20px] border border-[var(--line)] bg-gradient-to-br from-[#021f87] to-[#0634b8] px-6 py-8 text-center text-white shadow-[0_18px_42px_rgba(2,31,135,.35)] md:px-10">
         <h2 className="text-xl font-extrabold md:text-2xl">Queres isto tudo dentro do teu negócio?</h2>
         <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-[#b9d0ff]">No Machine Facturas, as facturas saem com o IVA calculado, assinadas e numeradas automaticamente. Grátis para começar — sem cartão.</p>
         <Link href="/register" className="mt-5 inline-flex min-h-12 items-center justify-center rounded-[14px] bg-white px-7 text-sm font-extrabold text-[#041f52] transition hover:bg-[#e8edff]">Criar conta grátis</Link>

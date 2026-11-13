@@ -29,7 +29,7 @@ export function ToolsHub({ ferramentas }: { ferramentas: FerramentaResumo[] }) {
   const emBreve = total - ativas;
 
   return (
-    <div className="mt-4 space-y-5">
+    <div className="mt-6 space-y-7">
       {/* Indicadores calculados a partir dos dados reais */}
       <section aria-label="Indicadores do catálogo" className="grid grid-cols-3 gap-2">
         {([
@@ -71,7 +71,7 @@ export function ToolsHub({ ferramentas }: { ferramentas: FerramentaResumo[] }) {
           {FILTROS.map((filtro) => {
             const active = categoria === filtro;
             return (
-              <button key={filtro} type="button" onClick={() => setCategoria(filtro)} aria-pressed={active} className={`min-h-9 rounded-full border px-4 text-xs font-semibold transition ${active ? 'border-transparent bg-[#021f87] text-white shadow-[0_6px_14px_rgba(2,31,135,.30)]' : 'border-[var(--line)] bg-[var(--surface-raised)] text-[var(--text)] hover:border-[#021f87] hover:text-[#021f87]'}`}>{filtro}</button>
+              <button key={filtro} type="button" onClick={() => setCategoria(filtro)} aria-pressed={active} className={`min-h-9 rounded-full border px-4 text-[12px] font-semibold transition ${active ? 'border-transparent bg-[#021f87] text-white shadow-[0_6px_14px_rgba(2,31,135,.30)]' : 'border-[var(--line)] bg-[var(--surface-raised)] text-[var(--text)] hover:border-[#021f87] hover:text-[#021f87]'}`}>{filtro}</button>
             );
           })}
         </div>
@@ -91,20 +91,20 @@ export function ToolsHub({ ferramentas }: { ferramentas: FerramentaResumo[] }) {
             const cat = categoryStyle[ferramenta.categoria] ?? categoryStyle['Fiscalidade']!;
             const ready = ferramenta.estado === 'ativa' && ferramenta.href;
             return (
-              <li key={ferramenta.id} className="group flex flex-col rounded-[18px] border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] transition hover:-translate-y-[1px] hover:border-[var(--blue)]">
+              <li key={ferramenta.id} className="group flex h-full flex-col rounded-[18px] border border-[var(--line)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card)] transition hover:-translate-y-[1px] hover:border-[var(--blue)]">
                 <div className="flex items-start justify-between gap-2">
-                  <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-[12px] ${cat.iconBg} ${cat.iconColor}`}>
+                  <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-[14px] ring-1 ring-[var(--line)] ${cat.iconBg} ${cat.iconColor}`}>
                     <ToolIcon icone={ferramenta.icone} className="h-6 w-6" />
                   </span>
-                  <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-[.12em] ${cat.badge}`}>{ferramenta.categoria}</span>
+                  <span className={`inline-flex items-center rounded-full px-3 py-1.5 text-[11px] font-bold uppercase tracking-[.11em] ${cat.badge}`}>{ferramenta.categoria}</span>
                 </div>
-                <h3 className="mt-3 font-extrabold text-[var(--text)]">{ferramenta.nome}</h3>
-                <p className="mt-1 text-[12px] leading-5 text-[var(--text-muted)]">{ferramenta.descricao}</p>
-                <div className="mt-auto pt-4">
+                <h3 className="mt-4 text-[17px] font-extrabold text-[var(--text)]">{ferramenta.nome}</h3>
+                <p className="mt-1.5 text-[14px] leading-6 text-[var(--text-muted)]">{ferramenta.descricao}</p>
+                <div className="mt-auto pt-5">
                   {ready ? (
-                    <Link href={ferramenta.href as string} className="inline-flex min-h-10 w-full items-center justify-center rounded-[12px] bg-[#021f87] px-4 text-xs font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#0634b8]">Abrir ferramenta →</Link>
+                    <Link href={ferramenta.href as string} className="inline-flex min-h-12 w-full items-center justify-center rounded-[12px] bg-[#021f87] px-4 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#0634b8]">Abrir ferramenta →</Link>
                   ) : (
-                    <span className="inline-flex w-full items-center justify-center gap-2 rounded-[12px] border border-dashed border-[var(--line)] bg-[var(--surface-raised)] px-4 py-2 text-[11px] font-bold uppercase tracking-[.1em] text-[var(--text-muted)]" title="Esta ferramenta está em desenvolvimento">
+                    <span className="inline-flex w-full items-center justify-center gap-2 rounded-[12px] border border-[var(--line)] bg-[var(--surface-raised)] px-4 py-2.5 text-[11px] font-bold uppercase tracking-[.1em] text-[var(--text-muted)]" title="Esta ferramenta está em desenvolvimento">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
                       Em desenvolvimento
                     </span>
