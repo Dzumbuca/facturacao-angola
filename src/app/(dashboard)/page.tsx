@@ -145,9 +145,9 @@ export default async function DashboardPage({ searchParams }: Props) {
     </section>
 
     <form action="/" method="get" className="grid grid-cols-2 items-end gap-3 sm:grid-cols-[minmax(130px,1fr)_minmax(130px,1fr)_minmax(130px,1fr)_auto]">
-      <div><label className="app-label" htmlFor="period">Período</label><select id="period" name="period" defaultValue={query.period || 'thisMonth'} className="app-input">{periodOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
-      <div><label className="app-label" htmlFor="from">De</label><input id="from" name="from" type="date" defaultValue={query.from} className="app-input" /></div>
-      <div><label className="app-label" htmlFor="to">Até</label><input id="to" name="to" type="date" defaultValue={query.to} className="app-input" /></div>
+      <div><label className="app-label" htmlFor="period">Período</label><select id="period" name="period" defaultValue={query.period || 'thisMonth'} className="ds-input">{periodOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
+      <div><label className="app-label" htmlFor="from">De</label><input id="from" name="from" type="date" defaultValue={query.from} className="ds-input" /></div>
+      <div><label className="app-label" htmlFor="to">Até</label><input id="to" name="to" type="date" defaultValue={query.to} className="ds-input" /></div>
       <input type="hidden" name="metric" value={selectedMetric} />
       <button className="min-h-11 rounded-[12px] border border-[var(--line)] bg-[var(--surface)] px-4 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-raised)]">Aplicar</button>
       <Link href="/?period=thisMonth" className="min-h-11 inline-flex items-center justify-center rounded-[12px] px-4 text-sm font-semibold text-[var(--text-muted)] transition hover:text-[var(--text)]">Limpar</Link>

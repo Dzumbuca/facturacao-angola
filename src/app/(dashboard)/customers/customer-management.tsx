@@ -151,19 +151,19 @@ export function CustomerManagement({ initialCustomers }: { initialCustomers: Cus
             <fieldset>
               <legend className="mb-2 text-[10px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">Dados fiscais</legend>
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="sm:col-span-2"><label htmlFor="customer-name" className="app-label">Nome do cliente <span className="text-[#c44747]">*</span></label><input id="customer-name" name="name" className="app-input" autoComplete="name" maxLength={160} required autoFocus defaultValue={editing?.name ?? ''} placeholder="Ex.: Teresa Quiar" /></div>
-                <div className="sm:col-span-2"><label htmlFor="customer-nif" className="app-label">NIF <span className="font-normal text-[var(--text-muted)]">(opcional)</span></label><input id="customer-nif" name="nif" className="app-input" inputMode="numeric" defaultValue={editing?.nif ?? ''} placeholder="Ex.: 004123456LA032" /></div>
+                <div className="sm:col-span-2"><label htmlFor="customer-name" className="app-label">Nome do cliente <span className="text-[#c44747]">*</span></label><input id="customer-name" name="name" className="ds-input" autoComplete="name" maxLength={160} required autoFocus defaultValue={editing?.name ?? ''} placeholder="Ex.: Teresa Quiar" /></div>
+                <div className="sm:col-span-2"><label htmlFor="customer-nif" className="app-label">NIF <span className="font-normal text-[var(--text-muted)]">(opcional)</span></label><input id="customer-nif" name="nif" className="ds-input" inputMode="numeric" defaultValue={editing?.nif ?? ''} placeholder="Ex.: 004123456LA032" /></div>
               </div>
             </fieldset>
             {/* Secção 2 — Contacto */}
             <fieldset>
               <legend className="mb-2 text-[10px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">Contacto</legend>
-              <div><label htmlFor="customer-email" className="app-label">Email</label><input id="customer-email" name="email" type="email" className="app-input" autoComplete="email" placeholder="cliente@empresa.ao" defaultValue={editing?.email ?? ''} /></div>
+              <div><label htmlFor="customer-email" className="app-label">Email</label><input id="customer-email" name="email" type="email" className="ds-input" autoComplete="email" placeholder="cliente@empresa.ao" defaultValue={editing?.email ?? ''} /></div>
             </fieldset>
             {/* Secção 3 — Localização */}
             <fieldset>
               <legend className="mb-2 text-[10px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">Localização</legend>
-              <div><label htmlFor="customer-address" className="app-label">Morada</label><textarea id="customer-address" name="address" rows={2} className="app-input" autoComplete="street-address" placeholder="Rua, bairro, cidade" defaultValue={editing?.address ?? ''} /></div>
+              <div><label htmlFor="customer-address" className="app-label">Morada</label><textarea id="customer-address" name="address" rows={2} className="ds-input" autoComplete="street-address" placeholder="Rua, bairro, cidade" defaultValue={editing?.address ?? ''} /></div>
             </fieldset>
             {error && <p role="alert" className="rounded-[10px] border border-[#f0d3d3] bg-[#fdf2f2] px-3 py-2 text-sm font-semibold text-[var(--danger)]">{error}</p>}
             <div className="flex flex-col-reverse gap-2 border-t border-[var(--line)] pt-4 sm:flex-row sm:justify-end">

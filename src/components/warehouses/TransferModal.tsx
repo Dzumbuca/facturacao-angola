@@ -80,7 +80,7 @@ export function TransferModal({ products, warehouses, open, onClose, onSuccess }
         <form className="space-y-4" onSubmit={submit}>
           <div>
             <label htmlFor="transfer-product" className="app-label">Produto <span className="text-[#c44747]">*</span></label>
-            <select id="transfer-product" value={productId} onChange={(e) => setProductId(e.target.value)} className="app-input" required>
+            <select id="transfer-product" value={productId} onChange={(e) => setProductId(e.target.value)} className="ds-input" required>
               <option value="">Seleccionar produto</option>
               {products.map((product) => (
                 <option key={product.id} value={product.id}>
@@ -92,14 +92,14 @@ export function TransferModal({ products, warehouses, open, onClose, onSuccess }
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="transfer-from" className="app-label">Armazém origem <span className="text-[#c44747]">*</span></label>
-              <select id="transfer-from" value={fromId} onChange={(e) => setFromId(e.target.value)} className="app-input" required>
+              <select id="transfer-from" value={fromId} onChange={(e) => setFromId(e.target.value)} className="ds-input" required>
                 <option value="">Selecionar</option>
                 {warehouses.map((w) => (<option key={w.id} value={w.id}>{w.name}</option>))}
               </select>
             </div>
             <div>
               <label htmlFor="transfer-to" className="app-label">Armazém destino <span className="text-[#c44747]">*</span></label>
-              <select id="transfer-to" value={toId} onChange={(e) => setToId(e.target.value)} className="app-input" required>
+              <select id="transfer-to" value={toId} onChange={(e) => setToId(e.target.value)} className="ds-input" required>
                 <option value="">Selecionar</option>
                 {warehouses.map((w) => (<option key={w.id} value={w.id}>{w.name}</option>))}
               </select>

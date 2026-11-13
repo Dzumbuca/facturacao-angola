@@ -50,7 +50,7 @@ export function OffboardDialog({ employeeId, employeeName }: { employeeId: strin
             <FormSection title="Confirmar desligamento">
               <div>
                 <FormField label="Motivo" name="off-reason" required>
-                  <select id="off-reason" name="reason" className="app-input" required defaultValue="">
+                  <select id="off-reason" name="reason" className="ds-input" required defaultValue="">
                     <option value="" disabled>Selecionar</option>
                     <option value="PEDIDO_DE_FUNCIONARIO">Pedido do funcionário</option>
                     <option value="RESILIACAO_PELO_EMPREGADOR">Resiliação pelo empregador</option>

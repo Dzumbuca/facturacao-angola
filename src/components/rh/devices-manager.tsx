@@ -64,7 +64,7 @@ export function DevicesManager({ devices }: { devices: Device[] }) {
           <div className="sm:col-span-2 flex flex-col gap-2 sm:flex-row sm:items-end">
             <div className="flex-1">
               <FormField label="Nome do terminal" name="device-name" required hint="Um terminal por quiosque registado">
-                <input id="device-name" className="app-input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Recepção, Loja 1…" required />
+                <input id="device-name" className="ds-input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Recepção, Loja 1…" required />
               </FormField>
             </div>
             <FormActions saving={saving} onCancel={() => {}} saveLabel={saving ? 'A registar…' : 'Registar dispositivo'} />

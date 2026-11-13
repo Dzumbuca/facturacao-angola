@@ -56,14 +56,14 @@ export function AnnouncementsManager({ items }: { items: Announcement[] }) {
         <h2 className="text-sm font-bold text-[var(--text)]">Novo comunicado</h2>
         <FormSection title="Detalhes do comunicado">
           <div className="sm:col-span-2">
-            <FormField label="Título" name="an-title" required><input id="an-title" name="title" className="app-input" required maxLength={200} /></FormField>
+            <FormField label="Título" name="an-title" required><input id="an-title" name="title" className="ds-input" required maxLength={200} /></FormField>
           </div>
           <div className="sm:col-span-2">
             <FormField label="Conteúdo" name="an-body" required><textarea id="an-body" name="body" className="app-input min-h-24" required maxLength={4000} /></FormField>
           </div>
           <div>
             <FormField label="Prioridade" name="an-priority">
-              <select id="an-priority" name="priority" className="app-input" defaultValue="NORMAL"><option value="BAIXA">Baixa</option><option value="NORMAL">Normal</option><option value="ALTA">Alta</option></select>
+              <select id="an-priority" name="priority" className="ds-input" defaultValue="NORMAL"><option value="BAIXA">Baixa</option><option value="NORMAL">Normal</option><option value="ALTA">Alta</option></select>
             </FormField>
           </div>
           <div>

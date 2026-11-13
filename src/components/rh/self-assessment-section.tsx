@@ -46,7 +46,7 @@ export function SelfAssessmentSection({ cycles, existing }: { cycles: Cycle[]; e
         <FormSection title="Autoavaliação">
           <div>
             <FormField label="Ciclo" name="sa-cycle">
-              <select id="sa-cycle" className="app-input" value={selected} onChange={(e) => {
+              <select id="sa-cycle" className="ds-input" value={selected} onChange={(e) => {
                 const next = e.target.value;
                 setSelected(next);
                 setSelfScore(existing[next]?.selfScore?.toString() ?? '');
@@ -58,7 +58,7 @@ export function SelfAssessmentSection({ cycles, existing }: { cycles: Cycle[]; e
             </FormField>
           </div>
           <div>
-            <FormField label="Pontuação (0–100)" name="sa-score"><input id="sa-score" type="number" min="0" max="100" className="app-input" value={selfScore} onChange={(e) => setSelfScore(e.target.value)} placeholder="Ex.: 80" /></FormField>
+            <FormField label="Pontuação (0–100)" name="sa-score"><input id="sa-score" type="number" min="0" max="100" className="ds-input" value={selfScore} onChange={(e) => setSelfScore(e.target.value)} placeholder="Ex.: 80" /></FormField>
           </div>
           <div className="sm:col-span-2">
             <FormField label="Comentários" name="sa-comments"><textarea id="sa-comments" className="app-input min-h-20" value={comments} onChange={(e) => setComments(e.target.value)} placeholder="O que correu bem, o que pode melhorar…" /></FormField>

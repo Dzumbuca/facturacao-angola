@@ -109,14 +109,14 @@ export function LeavesManager({ leaves, employees, vacationDaysPerYear }: {
         <FormSection title="Dados do pedido">
           <div className="sm:col-span-2">
             <FormField label="Funcionário" name="leave-employee" required>
-              <select id="leave-employee" className="app-input" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} required>
+              <select id="leave-employee" className="ds-input" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} required>
                 <option value="">Selecionar</option>{employees.map((employee) => <option key={employee.id} value={employee.id}>{employee.firstName} {employee.lastName} ({employee.employeeNumber})</option>)}
               </select>
             </FormField>
           </div>
           <div>
             <FormField label="Tipo" name="leave-type">
-              <select id="leave-type" className="app-input" value={type} onChange={(e) => setType(e.target.value)}>{Object.entries(TYPE_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+              <select id="leave-type" className="ds-input" value={type} onChange={(e) => setType(e.target.value)}>{Object.entries(TYPE_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
             </FormField>
           </div>
           <div>
@@ -126,7 +126,7 @@ export function LeavesManager({ leaves, employees, vacationDaysPerYear }: {
             <FormField label="Fim" name="leave-end" required><CalendarField id="leave-end" name="leave-end" value={endDate} onChange={setEndDate} required /></FormField>
           </div>
           <div className="sm:col-span-2">
-            <FormField label="Motivo" name="leave-reason"><input id="leave-reason" className="app-input" value={reason} onChange={(e) => setReason(e.target.value)} /></FormField>
+            <FormField label="Motivo" name="leave-reason"><input id="leave-reason" className="ds-input" value={reason} onChange={(e) => setReason(e.target.value)} /></FormField>
           </div>
         </FormSection>
         {message && <p role="status" className="mt-3 rounded-lg bg-[#eff9f4] px-3 py-2 text-sm text-[#267256]">{message}</p>}

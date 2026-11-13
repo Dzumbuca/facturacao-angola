@@ -66,20 +66,20 @@ export default function RegisterPage() {
         {!submitted && <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
             <label htmlFor="name" className="app-label">O seu nome</label>
-            <input id="name" name="name" type="text" autoComplete="name" required maxLength={120} className="app-input" />
+            <input id="name" name="name" type="text" autoComplete="name" required maxLength={120} className="ds-input" />
           </div>
           <label className="flex items-start gap-2 text-sm leading-5 text-[#708195]"><input name="marketingConsent" type="checkbox" className="mt-1"/><span>Quero receber novidades e comunicações comerciais da Machine Facturas. Posso cancelar a subscrição a qualquer momento.</span></label>
           <div>
             <label htmlFor="tenantName" className="app-label">Nome da empresa</label>
-            <input id="tenantName" name="tenantName" type="text" autoComplete="organization" required maxLength={160} className="app-input" />
+            <input id="tenantName" name="tenantName" type="text" autoComplete="organization" required maxLength={160} className="ds-input" />
           </div>
           <div>
             <label htmlFor="email" className="app-label">Email</label>
-            <input id="email" name="email" type="email" autoComplete="email" required maxLength={254} className="app-input" />
+            <input id="email" name="email" type="email" autoComplete="email" required maxLength={254} className="ds-input" />
           </div>
           <div>
             <label htmlFor="password" className="app-label">Criar palavra-passe</label>
-            <input id="password" name="password" type="password" autoComplete="new-password" minLength={8} maxLength={128} required className="app-input" />
+            <input id="password" name="password" type="password" autoComplete="new-password" minLength={8} maxLength={128} required className="ds-input" />
             <p className="mt-1.5 text-xs text-[#708195]">Use pelo menos 8 caracteres.</p>
           </div>
           {error && <p role="alert" className="rounded-lg border border-red-100 bg-red-50 px-3 py-2.5 text-sm text-[#a83939]">{error}</p>}

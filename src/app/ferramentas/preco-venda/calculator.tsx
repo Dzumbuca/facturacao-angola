@@ -64,7 +64,7 @@ export function PrecoVendaCalculator() {
 
     <div>
       <label htmlFor="preco-arredondamento" className="app-label">Arredondamento comercial (opcional)</label>
-      <select id="preco-arredondamento" className="app-input" value={arredondamento} onChange={(event) => setArredondamento(event.target.value)}>
+      <select id="preco-arredondamento" className="ds-input" value={arredondamento} onChange={(event) => setArredondamento(event.target.value)}>
         <option value="0">Não arredondar — mostrar o valor exacto</option>
         <option value="5">Arredondar para cima até 5 Kz</option>
         <option value="10">Arredondar para cima até 10 Kz</option>

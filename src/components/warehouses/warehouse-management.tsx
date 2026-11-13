@@ -489,11 +489,11 @@ export function WarehouseManagement({
             <form className="space-y-4" onSubmit={(e) => handleWarehouseSubmit(e)} key={editingWarehouse?.id ?? 'novo'}>
               <div>
                 <label htmlFor="warehouse-name" className="app-label">Nome do armazém <span className="text-[#c44747]">*</span></label>
-                <input id="warehouse-name" name="name" className="app-input" maxLength={160} required autoFocus defaultValue={editingWarehouse?.name ?? ''} />
+                <input id="warehouse-name" name="name" className="ds-input" maxLength={160} required autoFocus defaultValue={editingWarehouse?.name ?? ''} />
               </div>
               <div>
                 <label htmlFor="warehouse-location" className="app-label">Localização <span className="font-normal text-[#708195]">(opcional)</span></label>
-                <input id="warehouse-location" name="location" className="app-input" defaultValue={editingWarehouse?.location ?? ''} />
+                <input id="warehouse-location" name="location" className="ds-input" defaultValue={editingWarehouse?.location ?? ''} />
               </div>
               <div className="flex items-start gap-3">
                 <input id="warehouse-isdefault" name="isDefault" type="checkbox" className="h-5 w-5 text-[#2878d0] border-[#dce2e9] focus:ring-2 focus:ring-[#2878d0]" defaultChecked={editingWarehouse?.isDefault ?? false} />
@@ -528,7 +528,7 @@ export function WarehouseManagement({
                 <select
                   id="movement-product"
                   name="productId"
-                  className="app-input"
+                  className="ds-input"
                   value={movementProductId}
                   onChange={(e) => setMovementProductId(e.target.value)}
                   required
@@ -546,7 +546,7 @@ export function WarehouseManagement({
                 <select
                   id="movement-warehouse"
                   name="warehouseId"
-                  className="app-input"
+                  className="ds-input"
                   value={movementWarehouseId}
                   onChange={(e) => setMovementWarehouseId(e.target.value)}
                   required
@@ -565,7 +565,7 @@ export function WarehouseManagement({
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label htmlFor="movement-type" className="app-label">Tipo de movimento <span className="text-[#c44747]">*</span></label>
-                  <select id="movement-type" name="type" className="app-input" required>
+                  <select id="movement-type" name="type" className="ds-input" required>
                     <option value="IN">Entrada</option>
                     <option value="OUT">Saída</option>
                     <option value="ADJUSTMENT">Ajuste</option>
@@ -578,11 +578,11 @@ export function WarehouseManagement({
               </div>
               <div>
                 <label htmlFor="movement-reason" className="app-label">Motivo</label>
-                <input id="movement-reason" name="reason" className="app-input" placeholder="Motivo do movimento" />
+                <input id="movement-reason" name="reason" className="ds-input" placeholder="Motivo do movimento" />
               </div>
               <div>
                 <label htmlFor="movement-reference" className="app-label">Referência <span className="font-normal text-[#708195]">(opcional)</span></label>
-                <input id="movement-reference" name="reference" className="app-input" placeholder="Referência (opcional)" />
+                <input id="movement-reference" name="reference" className="ds-input" placeholder="Referência (opcional)" />
               </div>
               {error && <p role="alert" className="rounded-lg border border-red-100 bg-red-50 px-3 py-2.5 text-sm text-[#a83939]">{error}</p>}
               <div className="sticky bottom-0 -mx-5 -mb-5 mt-2 flex flex-col-reverse gap-2 border-t border-[#e7edf3] bg-white px-5 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-4 sm:static sm:mx-0 sm:mb-0 sm:flex-row sm:justify-end sm:px-0 sm:pb-0">

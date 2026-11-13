@@ -162,24 +162,24 @@ export function RecruitmentManager({ openings, candidates, departments, position
           <h2 className="text-sm font-bold text-[var(--text)]">Nova vaga</h2>
           <FormSection title="Dados da vaga">
             <div className="sm:col-span-2">
-              <FormField label="Título" name="jo-title" required><input id="jo-title" name="title" className="app-input" required /></FormField>
+              <FormField label="Título" name="jo-title" required><input id="jo-title" name="title" className="ds-input" required /></FormField>
             </div>
             <div>
               <FormField label="Departamento" name="jo-dept">
-                <select id="jo-dept" name="departmentId" className="app-input">
+                <select id="jo-dept" name="departmentId" className="ds-input">
                   <option value="">—</option>{departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
                 </select>
               </FormField>
             </div>
             <div>
               <FormField label="Cargo" name="jo-pos">
-                <select id="jo-pos" name="positionId" className="app-input">
+                <select id="jo-pos" name="positionId" className="ds-input">
                   <option value="">—</option>{positions.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}
                 </select>
               </FormField>
             </div>
             <div>
-              <FormField label="Nº de vagas" name="jo-openings"><input id="jo-openings" name="openings" type="number" min={1} defaultValue={1} className="app-input" /></FormField>
+              <FormField label="Nº de vagas" name="jo-openings"><input id="jo-openings" name="openings" type="number" min={1} defaultValue={1} className="ds-input" /></FormField>
             </div>
             <div>
               <FormField label="Fecha a" name="jo-close"><CalendarField id="jo-close" name="closesAt" value={closingIso} onChange={setClosingIso} /></FormField>
@@ -198,31 +198,31 @@ export function RecruitmentManager({ openings, candidates, departments, position
           <FormSection title="Dados do candidato">
             <div className="sm:col-span-2">
               <FormField label="Vaga" name="jc-opening" required>
-                <select id="jc-opening" value={openingId} onChange={(e) => setOpeningId(e.target.value)} className="app-input" required>
+                <select id="jc-opening" value={openingId} onChange={(e) => setOpeningId(e.target.value)} className="ds-input" required>
                   {openings.map((o) => <option key={o.id} value={o.id}>{o.title} ({o.candidateCount})</option>)}
                 </select>
               </FormField>
             </div>
             <div>
-              <FormField label="Nome" name="jc-fn" required><input id="jc-fn" name="firstName" className="app-input" required /></FormField>
+              <FormField label="Nome" name="jc-fn" required><input id="jc-fn" name="firstName" className="ds-input" required /></FormField>
             </div>
             <div>
-              <FormField label="Apelido" name="jc-ln" required><input id="jc-ln" name="lastName" className="app-input" required /></FormField>
+              <FormField label="Apelido" name="jc-ln" required><input id="jc-ln" name="lastName" className="ds-input" required /></FormField>
             </div>
             <div className="sm:col-span-2">
-              <FormField label="Email" name="jc-email" required><input id="jc-email" name="email" type="email" className="app-input" required /></FormField>
+              <FormField label="Email" name="jc-email" required><input id="jc-email" name="email" type="email" className="ds-input" required /></FormField>
             </div>
             <div>
-              <FormField label="Telefone" name="jc-phone"><input id="jc-phone" name="phone" className="app-input" /></FormField>
+              <FormField label="Telefone" name="jc-phone"><input id="jc-phone" name="phone" className="ds-input" /></FormField>
             </div>
             <div>
               <FormField label="CV" name="jc-cv-file" hint="PDF, PNG ou JPEG · até 10 MB">
-                <input id="jc-cv-file" type="file" accept="application/pdf,image/png,image/jpeg" className="app-input" onChange={handleCvUpload} />
+                <input id="jc-cv-file" type="file" accept="application/pdf,image/png,image/jpeg" className="ds-input" onChange={handleCvUpload} />
                 <input id="jc-cv-url" name="cvUrl" className="app-input mt-2" placeholder="Ou cole um URL…" />
               </FormField>
             </div>
             <div className="sm:col-span-2">
-              <FormField label="Notas" name="jc-notes"><input id="jc-notes" name="notes" className="app-input" /></FormField>
+              <FormField label="Notas" name="jc-notes"><input id="jc-notes" name="notes" className="ds-input" /></FormField>
             </div>
             <div className="sm:col-span-2">
               <FormActions saving={busy} disabled={openings.length === 0} onCancel={() => {}} saveLabel={busy ? 'A registar…' : 'Registar'} />

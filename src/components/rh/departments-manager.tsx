@@ -102,11 +102,11 @@ export function DepartmentsManager({ departments }: { departments: Department[] 
         <form onSubmit={submit} className="rounded-xl border border-[var(--line)] bg-white p-4">
           <FormSection title={editing ? `Editar departamento (${editing.name})` : 'Novo departamento'}>
             <div className="grid gap-3 sm:grid-cols-2">
-              <div><label htmlFor="dept-name" className="app-label">Nome *</label><input id="dept-name" name="name" className="app-input" required defaultValue={editing?.name ?? ''} /></div>
-              <div><label htmlFor="dept-code" className="app-label">Código</label><input id="dept-code" name="code" className="app-input" defaultValue={editing?.code ?? ''} /></div>
-              <div><label htmlFor="dept-manager" className="app-label">Responsável</label><input id="dept-manager" name="managerName" className="app-input" defaultValue={editing?.managerName ?? ''} /></div>
-              <div><label htmlFor="dept-parent" className="app-label">Departamento pai</label><select id="dept-parent" name="parentId" className="app-input" defaultValue={editing?.parentId ?? ''}><option value="">— (raiz)</option>{parentOptions.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}</select></div>
-              <div className="sm:col-span-2"><label htmlFor="dept-desc" className="app-label">Descrição</label><input id="dept-desc" name="description" className="app-input" defaultValue={editing?.description ?? ''} /></div>
+              <div><label htmlFor="dept-name" className="app-label">Nome *</label><input id="dept-name" name="name" className="ds-input" required defaultValue={editing?.name ?? ''} /></div>
+              <div><label htmlFor="dept-code" className="app-label">Código</label><input id="dept-code" name="code" className="ds-input" defaultValue={editing?.code ?? ''} /></div>
+              <div><label htmlFor="dept-manager" className="app-label">Responsável</label><input id="dept-manager" name="managerName" className="ds-input" defaultValue={editing?.managerName ?? ''} /></div>
+              <div><label htmlFor="dept-parent" className="app-label">Departamento pai</label><select id="dept-parent" name="parentId" className="ds-input" defaultValue={editing?.parentId ?? ''}><option value="">— (raiz)</option>{parentOptions.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}</select></div>
+              <div className="sm:col-span-2"><label htmlFor="dept-desc" className="app-label">Descrição</label><input id="dept-desc" name="description" className="ds-input" defaultValue={editing?.description ?? ''} /></div>
             </div>
           </FormSection>
           <FormError>{error}</FormError>

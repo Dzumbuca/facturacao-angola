@@ -46,7 +46,7 @@ export function PaymentForm({ plans }: { plans: PlanOption[] }) {
         <label htmlFor="pay-plan" className="app-label">Pacote</label>
         <select
           id="pay-plan"
-          className="app-input"
+          className="ds-input"
           value={planSlug}
           onChange={(event) => {
             const next = event.target.value as PaidPackageSlug;
@@ -60,7 +60,7 @@ export function PaymentForm({ plans }: { plans: PlanOption[] }) {
       </div>
       <div>
         <label htmlFor="pay-cycle" className="app-label">Pagamento</label>
-        <select id="pay-cycle" className="app-input" value={effectiveCycle} onChange={(event) => setCycle(event.target.value as BillingCycle)}>
+        <select id="pay-cycle" className="ds-input" value={effectiveCycle} onChange={(event) => setCycle(event.target.value as BillingCycle)}>
           <option value="MONTHLY">Mensal — 1 mês</option>
           {annualAvailable && <option value="ANNUAL">Anual — 12 meses (15% desconto)</option>}
         </select>
@@ -82,7 +82,7 @@ export function PaymentForm({ plans }: { plans: PlanOption[] }) {
     <div className="grid gap-4 sm:grid-cols-2">
       <div>
         <label htmlFor="pay-name" className="app-label">Nome de quem pagou <span className="text-[#c44747]">*</span></label>
-        <input id="pay-name" name="payerName" required maxLength={120} className="app-input" placeholder="Como aparece na transferência" />
+        <input id="pay-name" name="payerName" required maxLength={120} className="ds-input" placeholder="Como aparece na transferência" />
       </div>
       <div>
         <label htmlFor="pay-phone" className="app-label">Telefone do pagador <span className="text-[#c44747]">*</span></label>

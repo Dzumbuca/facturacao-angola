@@ -78,20 +78,20 @@ export function DocumentsManager({ documents, templates, employees }: {
         <FormSection title="Gerar documento">
           <div>
             <FormField label="Modelo" name="doc-template" required>
-              <select id="doc-template" className="app-input" value={templateId} onChange={(e) => setTemplateId(e.target.value)} required>
+              <select id="doc-template" className="ds-input" value={templateId} onChange={(e) => setTemplateId(e.target.value)} required>
                 <option value="">Selecionar</option>{templates.map((template) => <option key={template.id} value={template.id}>{template.name}</option>)}
               </select>
             </FormField>
           </div>
           <div>
             <FormField label="Funcionário" name="doc-employee">
-              <select id="doc-employee" className="app-input" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)}>
+              <select id="doc-employee" className="ds-input" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)}>
                 <option value="">Sem funcionário</option>{employees.map((employee) => <option key={employee.id} value={employee.id}>{employee.firstName} {employee.lastName} ({employee.employeeNumber})</option>)}
               </select>
             </FormField>
           </div>
           <div>
-            <FormField label="Título" name="doc-title" hint="Usa o nome do modelo"><input id="doc-title" className="app-input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Usa o nome do modelo" /></FormField>
+            <FormField label="Título" name="doc-title" hint="Usa o nome do modelo"><input id="doc-title" className="ds-input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Usa o nome do modelo" /></FormField>
           </div>
         </FormSection>
         {message && <p role="status" className="mt-3 rounded-lg bg-[#eff9f4] px-3 py-2 text-sm text-[#267256]">{message}</p>}

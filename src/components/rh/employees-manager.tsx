@@ -281,22 +281,22 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
               <FormSplit main={<>
               <FormSection title="Identificação pessoal">
 
-                  <div><label htmlFor="rh-first" className="app-label">Nome *</label><input id="rh-first" name="firstName" className="app-input" required defaultValue={editing?.firstName ?? ''} /></div>
-                  <div><label htmlFor="rh-last" className="app-label">Apelido *</label><input id="rh-last" name="lastName" className="app-input" required defaultValue={editing?.lastName ?? ''} /></div>
-                  <div><label htmlFor="rh-bi" className="app-label">BI</label><input id="rh-bi" name="bi" className="app-input" defaultValue={editing?.bi ?? ''} /></div>
-                  <div><label htmlFor="rh-nif" className="app-label">NIF</label><input id="rh-nif" name="nif" className="app-input" defaultValue={editing?.nif ?? ''} /></div>
+                  <div><label htmlFor="rh-first" className="app-label">Nome *</label><input id="rh-first" name="firstName" className="ds-input" required defaultValue={editing?.firstName ?? ''} /></div>
+                  <div><label htmlFor="rh-last" className="app-label">Apelido *</label><input id="rh-last" name="lastName" className="ds-input" required defaultValue={editing?.lastName ?? ''} /></div>
+                  <div><label htmlFor="rh-bi" className="app-label">BI</label><input id="rh-bi" name="bi" className="ds-input" defaultValue={editing?.bi ?? ''} /></div>
+                  <div><label htmlFor="rh-nif" className="app-label">NIF</label><input id="rh-nif" name="nif" className="ds-input" defaultValue={editing?.nif ?? ''} /></div>
                   <div><CalendarField id="rh-birth" name="birthDate" value={birthDateIso} onChange={setBirthDateIso} /></div>
-                  <div><label htmlFor="rh-gender" className="app-label">Género</label><select id="rh-gender" name="gender" className="app-input" defaultValue={editing?.gender ?? ''}><option value="">Não indicado</option><option value="M">Masculino</option><option value="F">Feminino</option><option value="OUTRO">Outro</option></select></div>
+                  <div><label htmlFor="rh-gender" className="app-label">Género</label><select id="rh-gender" name="gender" className="ds-input" defaultValue={editing?.gender ?? ''}><option value="">Não indicado</option><option value="M">Masculino</option><option value="F">Feminino</option><option value="OUTRO">Outro</option></select></div>
               </FormSection>
 
               <FormSection title="Contactos">
 
-                  <div><label htmlFor="rh-email" className="app-label">Email</label><input id="rh-email" name="email" type="email" className="app-input" defaultValue={editing?.email ?? ''} /></div>
-                  <div><label htmlFor="rh-phone" className="app-label">Telefone</label><input id="rh-phone" name="phone" className="app-input" defaultValue={editing?.phone ?? ''} /></div>
-                  <div className="sm:col-span-2"><label htmlFor="rh-address" className="app-label">Morada</label><input id="rh-address" name="address" className="app-input" defaultValue={editing?.address ?? ''} /></div>
+                  <div><label htmlFor="rh-email" className="app-label">Email</label><input id="rh-email" name="email" type="email" className="ds-input" defaultValue={editing?.email ?? ''} /></div>
+                  <div><label htmlFor="rh-phone" className="app-label">Telefone</label><input id="rh-phone" name="phone" className="ds-input" defaultValue={editing?.phone ?? ''} /></div>
+                  <div className="sm:col-span-2"><label htmlFor="rh-address" className="app-label">Morada</label><input id="rh-address" name="address" className="ds-input" defaultValue={editing?.address ?? ''} /></div>
                   <div className="sm:col-span-2">
   <label htmlFor="rh-photo-file" className="app-label">Fotografia (ficheiro)</label>
-  <input id="rh-photo-file" type="file" accept="image/png,image/jpeg,image/webp" className="app-input" onChange={handlePhotoUpload} />
+  <input id="rh-photo-file" type="file" accept="image/png,image/jpeg,image/webp" className="ds-input" onChange={handlePhotoUpload} />
   <input id="rh-photo-url" name="photoUrl" className="app-input mt-2" placeholder="Ou cole um URL…" defaultValue={editing?.photoUrl ?? ''} />
   {(photoPreview || editing?.photoUrl) && (
     <div className="mt-2 flex items-center gap-3">
@@ -311,13 +311,13 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
 
               <FormSection title="Informação profissional">
 
-                  <div><label htmlFor="rh-dept" className="app-label">Departamento</label><select id="rh-dept" name="departmentId" className="app-input" defaultValue={editing?.departmentId ?? ''}><option value="">—</option>{departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}</select></div>
-                  <div><label htmlFor="rh-pos" className="app-label">Cargo</label><select id="rh-pos" name="positionId" className="app-input" defaultValue={editing?.positionId ?? ''}><option value="">—</option>{positions.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}</select></div>
-                  <div><label htmlFor="rh-shift" className="app-label">Horário</label><select id="rh-shift" name="shiftId" className="app-input" defaultValue={editing?.shiftId ?? ''}><option value="">—</option>{shifts.map((shift) => <option key={shift.id} value={shift.id}>{shift.name} ({shift.startTime}–{shift.endTime})</option>)}</select></div>
+                  <div><label htmlFor="rh-dept" className="app-label">Departamento</label><select id="rh-dept" name="departmentId" className="ds-input" defaultValue={editing?.departmentId ?? ''}><option value="">—</option>{departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}</select></div>
+                  <div><label htmlFor="rh-pos" className="app-label">Cargo</label><select id="rh-pos" name="positionId" className="ds-input" defaultValue={editing?.positionId ?? ''}><option value="">—</option>{positions.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}</select></div>
+                  <div><label htmlFor="rh-shift" className="app-label">Horário</label><select id="rh-shift" name="shiftId" className="ds-input" defaultValue={editing?.shiftId ?? ''}><option value="">—</option>{shifts.map((shift) => <option key={shift.id} value={shift.id}>{shift.name} ({shift.startTime}–{shift.endTime})</option>)}</select></div>
                   <div><CalendarField id="rh-hire" name="hireDate" value={hireDateIso} onChange={setHireDateIso} required /></div>
-                  <div><label htmlFor="rh-contract" className="app-label">Tipo de contrato</label><select id="rh-contract" name="contractType" className="app-input" defaultValue={editing?.contractType ?? 'INDEFINIDO'}>{Object.entries(CONTRACT_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
+                  <div><label htmlFor="rh-contract" className="app-label">Tipo de contrato</label><select id="rh-contract" name="contractType" className="ds-input" defaultValue={editing?.contractType ?? 'INDEFINIDO'}>{Object.entries(CONTRACT_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
                   <div><label htmlFor="rh-salary" className="app-label">Salário-base (Kz) *</label><CurrencyInput id="rh-salary" name="baseSalary" value={baseSalaryValue} onChange={setBaseSalaryValue} required /></div>
-                  <div><label htmlFor="rh-status" className="app-label">Estado</label><select id="rh-status" name="status" className="app-input" defaultValue={editing?.status ?? 'ACTIVO'}>{Object.entries(STATUS_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
+                  <div><label htmlFor="rh-status" className="app-label">Estado</label><select id="rh-status" name="status" className="ds-input" defaultValue={editing?.status ?? 'ACTIVO'}>{Object.entries(STATUS_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
                   <div><label htmlFor="rh-pin" className="app-label">PIN do ponto <span className="font-normal text-[var(--text-muted)]">{editing?.hasPin ? '(definido)' : '(gerar automático)'}</span></label><input id="rh-pin" name="pin" type="password" inputMode="numeric" maxLength={8} className="app-input tracking-[.3em]" placeholder={editing?.hasPin ? 'Deixar vazio para manter' : 'Deixar vazio = gera automaticamente'} /></div>
               </FormSection>
 
@@ -351,9 +351,9 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
                 { label: 'Estado', value: effective.status || undefined },
               ]} footer={<p className="text-[11px] leading-5 text-[#8094a9]">A percentagem mostra campos obrigatórios preenchidos. Nenhum dado é enviado sem submeter o formulário.</p>} />} />
               <FormSection title="Dados bancários (restrito)" description="Acesso restrito a perfis com escrita de funcionários.">
-                <div><label htmlFor="rh-bank" className="app-label">Banco</label><input id="rh-bank" name="bankName" className="app-input" defaultValue={editing?.bankName ?? ''} /></div>
-                <div><label htmlFor="rh-account" className="app-label">Conta</label><input id="rh-account" name="bankAccount" className="app-input" defaultValue={editing?.bankAccount ?? ''} /></div>
-                <div><label htmlFor="rh-iban" className="app-label">IBAN</label><input id="rh-iban" name="bankIban" className="app-input" defaultValue={editing?.bankIban ?? ''} /></div>
+                <div><label htmlFor="rh-bank" className="app-label">Banco</label><input id="rh-bank" name="bankName" className="ds-input" defaultValue={editing?.bankName ?? ''} /></div>
+                <div><label htmlFor="rh-account" className="app-label">Conta</label><input id="rh-account" name="bankAccount" className="ds-input" defaultValue={editing?.bankAccount ?? ''} /></div>
+                <div><label htmlFor="rh-iban" className="app-label">IBAN</label><input id="rh-iban" name="bankIban" className="ds-input" defaultValue={editing?.bankIban ?? ''} /></div>
               </FormSection>
 
               <FormError>{error}</FormError>

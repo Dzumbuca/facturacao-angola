@@ -85,11 +85,11 @@ export function TemplatesManager({ templates }: { templates: Template[] }) {
         </div>
         <FormSection title="Detalhes do modelo">
           <div>
-            <FormField label="Nome" name="tpl-name" required><input id="tpl-name" className="app-input" value={name} onChange={(e) => setName(e.target.value)} required /></FormField>
+            <FormField label="Nome" name="tpl-name" required><input id="tpl-name" className="ds-input" value={name} onChange={(e) => setName(e.target.value)} required /></FormField>
           </div>
           <div>
             <FormField label="Tipo" name="tpl-type">
-              <select id="tpl-type" className="app-input" value={type} onChange={(e) => setType(e.target.value)}>{Object.entries(TYPE_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+              <select id="tpl-type" className="ds-input" value={type} onChange={(e) => setType(e.target.value)}>{Object.entries(TYPE_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
             </FormField>
           </div>
           <div className="sm:col-span-2">

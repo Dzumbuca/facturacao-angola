@@ -83,7 +83,7 @@ export function AttendanceManager({ entries, employees }: { entries: Entry[]; em
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <div>
             <label htmlFor="att-employee" className="app-label">Funcionário</label>
-            <select id="att-employee" className="app-input" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)}>
+            <select id="att-employee" className="ds-input" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)}>
               <option value="">Selecionar</option>
               {employees.map((employee) => (
                 <option key={employee.id} value={employee.id}>

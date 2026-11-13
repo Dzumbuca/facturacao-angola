@@ -108,13 +108,13 @@ export function AdminPlanEditor({ plans, applications }: { plans: AdminPlan[]; a
 
   return (
     <div className="mt-5 space-y-5">
-      <label className="block"><span className="app-label">Motivo (obrigatório para todas as alterações)</span><input value={reason} onChange={(e) => setReason(e.target.value)} placeholder={REASON_PLACEHOLDER} minLength={5} className="app-input" /></label>
+      <label className="block"><span className="app-label">Motivo (obrigatório para todas as alterações)</span><input value={reason} onChange={(e) => setReason(e.target.value)} placeholder={REASON_PLACEHOLDER} minLength={5} className="ds-input" /></label>
       {error && <p role="alert" className="rounded-lg bg-[#fdf3f3] px-3 py-2 text-sm text-[#a83939]">{error}</p>}
 
       <form onSubmit={createPlan} className="grid gap-3 rounded-xl border border-[#dfe7f0] bg-white p-4 sm:grid-cols-[1fr_1fr_1fr_auto]">
-        <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Nome do pacote" className="app-input" required />
-        <input value={newSlug} onChange={(e) => setNewSlug(e.target.value)} placeholder="slug (ex.: premium)" className="app-input" />
-        <input value={newPrice} onChange={(e) => setNewPrice(e.target.value)} placeholder="Preço (ex.: 2500)" className="app-input" inputMode="decimal" required />
+        <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Nome do pacote" className="ds-input" required />
+        <input value={newSlug} onChange={(e) => setNewSlug(e.target.value)} placeholder="slug (ex.: premium)" className="ds-input" />
+        <input value={newPrice} onChange={(e) => setNewPrice(e.target.value)} placeholder="Preço (ex.: 2500)" className="ds-input" inputMode="decimal" required />
         <button type="submit" disabled={busy === 'create'} className="rounded-lg bg-[#021f87] px-4 py-3 text-sm font-semibold text-white disabled:opacity-60">{busy === 'create' ? 'A criar…' : 'Criar pacote'}</button>
         <input value={newDesc} onChange={(e) => setNewDesc(e.target.value)} placeholder="Descrição" className="app-input sm:col-span-4" />
         <label className="flex items-center gap-2 text-sm sm:col-span-4"><input type="checkbox" checked={newBundle} onChange={(e) => setNewBundle(e.target.checked)} /> Bundle (preço inferior à soma dos módulos)</label>
@@ -134,14 +134,14 @@ export function AdminPlanEditor({ plans, applications }: { plans: AdminPlan[]; a
             <p className="mt-1 text-xs text-[#708195]">{plan.description}</p>
 
             <form action={(d) => savePlan(plan.id, d)} className="mt-3 grid gap-2 rounded-xl border border-[#eef2f6] p-3">
-              <label><span className="app-label">Nome</span><input name="name" defaultValue={plan.name} className="app-input" required /></label>
-              <label><span className="app-label">Descrição</span><input name="description" defaultValue={plan.description ?? ''} className="app-input" /></label>
-              <label><span className="app-label">Preço mensal (Kz)</span><input name="priceKz" inputMode="decimal" defaultValue={String(plan.priceKz).replace('.', ',')} className="app-input" required /></label>
+              <label><span className="app-label">Nome</span><input name="name" defaultValue={plan.name} className="ds-input" required /></label>
+              <label><span className="app-label">Descrição</span><input name="description" defaultValue={plan.description ?? ''} className="ds-input" /></label>
+              <label><span className="app-label">Preço mensal (Kz)</span><input name="priceKz" inputMode="decimal" defaultValue={String(plan.priceKz).replace('.', ',')} className="ds-input" required /></label>
               <div className="grid grid-cols-2 gap-2">
-                <label><span className="app-label">Preço trimestral</span><input name="priceQuarterly" inputMode="decimal" defaultValue={plan.priceQuarterly == null ? '' : String(plan.priceQuarterly).replace('.', ',')} placeholder="—" className="app-input" /></label>
-                <label><span className="app-label">Preço semestral</span><input name="priceSemiannual" inputMode="decimal" defaultValue={plan.priceSemiannual == null ? '' : String(plan.priceSemiannual).replace('.', ',')} placeholder="—" className="app-input" /></label>
-                <label><span className="app-label">Preço anual</span><input name="priceYearly" inputMode="decimal" defaultValue={plan.priceYearly == null ? '' : String(plan.priceYearly).replace('.', ',')} placeholder="—" className="app-input" /></label>
-                <label><span className="app-label">Preço anterior</span><input name="previousPriceKz" inputMode="decimal" defaultValue={plan.previousPriceKz == null ? '' : String(plan.previousPriceKz).replace('.', ',')} placeholder="—" className="app-input" /></label>
+                <label><span className="app-label">Preço trimestral</span><input name="priceQuarterly" inputMode="decimal" defaultValue={plan.priceQuarterly == null ? '' : String(plan.priceQuarterly).replace('.', ',')} placeholder="—" className="ds-input" /></label>
+                <label><span className="app-label">Preço semestral</span><input name="priceSemiannual" inputMode="decimal" defaultValue={plan.priceSemiannual == null ? '' : String(plan.priceSemiannual).replace('.', ',')} placeholder="—" className="ds-input" /></label>
+                <label><span className="app-label">Preço anual</span><input name="priceYearly" inputMode="decimal" defaultValue={plan.priceYearly == null ? '' : String(plan.priceYearly).replace('.', ',')} placeholder="—" className="ds-input" /></label>
+                <label><span className="app-label">Preço anterior</span><input name="previousPriceKz" inputMode="decimal" defaultValue={plan.previousPriceKz == null ? '' : String(plan.previousPriceKz).replace('.', ',')} placeholder="—" className="ds-input" /></label>
               </div>
               <label className="flex items-center gap-2 text-xs text-[#52667a]">Bundle<input name="isBundle" type="checkbox" defaultChecked={plan.isBundle} /></label>
               <button type="submit" disabled={busy === 'save-' + plan.id} className="self-end rounded-lg bg-[#021f87] px-3 py-2 text-xs font-semibold text-white">{busy === 'save-' + plan.id ? 'A guardar…' : 'Guardar alterações'}</button>

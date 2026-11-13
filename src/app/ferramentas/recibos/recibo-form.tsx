@@ -51,10 +51,10 @@ export function ReciboForm() {
   return <div className="app-calculator space-y-5">
     <div className="grid gap-4 sm:grid-cols-2">
       <Campo id="recibo-numero" label="Nº do recibo (opcional)">
-        <input id="recibo-numero" className="app-input" placeholder="Ex.: REC-004" value={numero} onChange={(event) => setNumero(event.target.value)} />
+        <input id="recibo-numero" className="ds-input" placeholder="Ex.: REC-004" value={numero} onChange={(event) => setNumero(event.target.value)} />
       </Campo>
       <Campo id="recibo-data" label="Data (opcional)">
-        <input id="recibo-data" type="date" className="app-input" value={data} onChange={(event) => setData(event.target.value)} />
+        <input id="recibo-data" type="date" className="ds-input" value={data} onChange={(event) => setData(event.target.value)} />
       </Campo>
     </div>
 
@@ -63,7 +63,7 @@ export function ReciboForm() {
         <input id="recibo-valor" inputMode="decimal" className="app-input tabular-nums text-lg" placeholder="Ex.: 25000" value={valor} onChange={(event) => setValor(event.target.value)} aria-invalid={valor.trim() !== '' && erros.valor ? true : undefined} />
       </Campo>
       <Campo id="recibo-metodo" label="Forma de pagamento">
-        <select id="recibo-metodo" className="app-input" value={metodo} onChange={(event) => setMetodo(event.target.value)}>
+        <select id="recibo-metodo" className="ds-input" value={metodo} onChange={(event) => setMetodo(event.target.value)}>
           {METODOS.map((opcao) => <option key={opcao} value={opcao}>{opcao}</option>)}
         </select>
       </Campo>
@@ -79,13 +79,13 @@ export function ReciboForm() {
       <legend className="px-1 text-xs font-bold uppercase tracking-[.12em] text-[#708195]">Emitido por</legend>
       <div className="grid gap-4 sm:grid-cols-3">
         <Campo id="recibo-emp-nome" label="Nome" obrigatorio erro={empresaNome.trim() !== '' && erros.empresaNome ? erros.empresaNome : null}>
-          <input id="recibo-emp-nome" className="app-input" placeholder="Ex.: Comércio Kiala Lda" value={empresaNome} onChange={(event) => setEmpresaNome(event.target.value)} />
+          <input id="recibo-emp-nome" className="ds-input" placeholder="Ex.: Comércio Kiala Lda" value={empresaNome} onChange={(event) => setEmpresaNome(event.target.value)} />
         </Campo>
         <Campo id="recibo-emp-nif" label="NIF (opcional)">
-          <input id="recibo-emp-nif" className="app-input" value={empresaNif} onChange={(event) => setEmpresaNif(event.target.value)} />
+          <input id="recibo-emp-nif" className="ds-input" value={empresaNif} onChange={(event) => setEmpresaNif(event.target.value)} />
         </Campo>
         <Campo id="recibo-emp-contacto" label="Contacto (opcional)">
-          <input id="recibo-emp-contacto" className="app-input" value={empresaContacto} onChange={(event) => setEmpresaContacto(event.target.value)} />
+          <input id="recibo-emp-contacto" className="ds-input" value={empresaContacto} onChange={(event) => setEmpresaContacto(event.target.value)} />
         </Campo>
       </div>
     </fieldset>
@@ -94,13 +94,13 @@ export function ReciboForm() {
       <legend className="px-1 text-xs font-bold uppercase tracking-[.12em] text-[#708195]">Recebido de</legend>
       <div className="grid gap-4 sm:grid-cols-3">
         <Campo id="recibo-cli-nome" label="Nome" obrigatorio erro={clienteNome.trim() !== '' && erros.clienteNome ? erros.clienteNome : null}>
-          <input id="recibo-cli-nome" className="app-input" placeholder="Ex.: Joana Mwangolé" value={clienteNome} onChange={(event) => setClienteNome(event.target.value)} />
+          <input id="recibo-cli-nome" className="ds-input" placeholder="Ex.: Joana Mwangolé" value={clienteNome} onChange={(event) => setClienteNome(event.target.value)} />
         </Campo>
         <Campo id="recibo-cli-nif" label="NIF (opcional)">
-          <input id="recibo-cli-nif" className="app-input" value={clienteNif} onChange={(event) => setClienteNif(event.target.value)} />
+          <input id="recibo-cli-nif" className="ds-input" value={clienteNif} onChange={(event) => setClienteNif(event.target.value)} />
         </Campo>
         <Campo id="recibo-cli-contacto" label="Contacto (opcional)">
-          <input id="recibo-cli-contacto" className="app-input" value={clienteContacto} onChange={(event) => setClienteContacto(event.target.value)} />
+          <input id="recibo-cli-contacto" className="ds-input" value={clienteContacto} onChange={(event) => setClienteContacto(event.target.value)} />
         </Campo>
       </div>
     </fieldset>

@@ -130,7 +130,7 @@ export function MovementModal({ products: _products, warehouses, open, onClose, 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="movement-type" className="app-label">Tipo de movimento <span className="text-[#c44747]">*</span></label>
-              <select id="movement-type" value={type} onChange={(e) => { setType(e.target.value as 'IN' | 'OUT' | 'ADJUSTMENT'); clearFieldError('quantity'); }} className="app-input" required>
+              <select id="movement-type" value={type} onChange={(e) => { setType(e.target.value as 'IN' | 'OUT' | 'ADJUSTMENT'); clearFieldError('quantity'); }} className="ds-input" required>
                 <option value="IN">Entrada</option>
                 <option value="OUT">Saída</option>
                 <option value="ADJUSTMENT">Ajuste</option>
@@ -156,7 +156,7 @@ export function MovementModal({ products: _products, warehouses, open, onClose, 
           </div>
           <div>
             <label htmlFor="movement-reason" className="app-label">Motivo <span className="font-normal text-[#708195]">(opcional)</span></label>
-            <input id="movement-reason" value={reason} onChange={(e) => setReason(e.target.value)} className="app-input" placeholder="Ex.: compra, venda, quebra" />
+            <input id="movement-reason" value={reason} onChange={(e) => setReason(e.target.value)} className="ds-input" placeholder="Ex.: compra, venda, quebra" />
           </div>
           {error && <p role="alert" className="rounded-lg border border-red-100 bg-red-50 px-3 py-2.5 text-sm text-[#a83939]">{error}</p>}
           <div className="sticky bottom-0 -mx-5 -mb-5 mt-2 flex flex-col-reverse gap-2 border-t border-[#e7edf3] bg-white px-5 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-4 sm:static sm:mx-0 sm:mb-0 sm:flex-row sm:justify-end sm:px-0 sm:pb-0">

@@ -44,7 +44,7 @@ export function ConversorIva() {
       </div>
       <div>
         <label htmlFor="conversor-taxa" className="app-label">Taxa de IVA</label>
-        <select id="conversor-taxa" className="app-input" value={taxa} onChange={(event) => setTaxa(event.target.value)}>
+        <select id="conversor-taxa" className="ds-input" value={taxa} onChange={(event) => setTaxa(event.target.value)}>
           {IVA_TAXAS.map((opcao) => (
             <option key={opcao.valor} value={opcao.valor}>{opcao.etiqueta}</option>
           ))}

@@ -21,14 +21,14 @@ export function IvaCalculator() {
     <div className="grid gap-4 sm:grid-cols-2">
       <div>
         <label htmlFor="iva-mode" className="app-label">O valor que tens já inclui IVA?</label>
-        <select id="iva-mode" className="app-input" value={mode} onChange={(event) => setMode(event.target.value as 'add' | 'remove')}>
+        <select id="iva-mode" className="ds-input" value={mode} onChange={(event) => setMode(event.target.value as 'add' | 'remove')}>
           <option value="add">Não — quero acrescentar o IVA</option>
           <option value="remove">Sim — quero retirar o IVA</option>
         </select>
       </div>
       <div>
         <label htmlFor="iva-rate" className="app-label">Taxa de IVA</label>
-        <select id="iva-rate" className="app-input" value={rate} onChange={(event) => setRate(event.target.value)}>
+        <select id="iva-rate" className="ds-input" value={rate} onChange={(event) => setRate(event.target.value)}>
           <option value="14">14% — taxa geral (Angola)</option>
           <option value="7">7% — regime simplificado / hotelaria e restauração</option>
           <option value="5">5% — bens alimentares e insumos abrangidos</option>

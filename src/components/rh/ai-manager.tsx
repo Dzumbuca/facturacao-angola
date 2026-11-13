@@ -47,7 +47,7 @@ export function AiManager({ configured, provider }: { configured: boolean; provi
         <FormSection title="Novo rascunho">
           <div>
             <FormField label="Tipo" name="ai-type">
-              <select id="ai-type" className="app-input" value={type} onChange={(e) => setType(e.target.value)}>
+              <select id="ai-type" className="ds-input" value={type} onChange={(e) => setType(e.target.value)}>
                 <option value="DECLARACAO_TRABALHO">Declaração de trabalho</option>
                 <option value="CONTRATO">Contrato</option>
                 <option value="DECLARACAO_FERIAS">Declaração de férias</option>
@@ -57,7 +57,7 @@ export function AiManager({ configured, provider }: { configured: boolean; provi
           </div>
           <div>
             <FormField label="Contexto factual" name="ai-context" hint="Dados concretos para o modelo">
-              <input id="ai-context" className="app-input" value={context} onChange={(e) => setContext(e.target.value)} placeholder="Ex.: João Silva, técnico, desde 01/02/2025, NIF da empresa…" />
+              <input id="ai-context" className="ds-input" value={context} onChange={(e) => setContext(e.target.value)} placeholder="Ex.: João Silva, técnico, desde 01/02/2025, NIF da empresa…" />
             </FormField>
           </div>
           <div className="sm:col-span-2">

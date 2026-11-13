@@ -60,12 +60,12 @@ export function ShiftsManager({ shifts }: { shifts: Shift[] }) {
         <form onSubmit={submit} className="rounded-xl border border-[var(--line)] bg-white p-4">
           <FormSection title="Horário / turno">
             <div className="grid gap-3 sm:grid-cols-4">
-              <div className="sm:col-span-2"><label htmlFor="shift-name" className="app-label">Nome *</label><input id="shift-name" name="name" className="app-input" placeholder="Turno geral" required /></div>
-              <div><label htmlFor="shift-start" className="app-label">Entrada *</label><input id="shift-start" name="startTime" type="time" className="app-input" required /></div>
-              <div><label htmlFor="shift-end" className="app-label">Saída *</label><input id="shift-end" name="endTime" type="time" className="app-input" required /></div>
-              <div><label htmlFor="shift-tol" className="app-label">Tolerância (min)</label><input id="shift-tol" name="toleranceMinutes" type="number" min="0" max="120" className="app-input" defaultValue="0" /></div>
+              <div className="sm:col-span-2"><label htmlFor="shift-name" className="app-label">Nome *</label><input id="shift-name" name="name" className="ds-input" placeholder="Turno geral" required /></div>
+              <div><label htmlFor="shift-start" className="app-label">Entrada *</label><input id="shift-start" name="startTime" type="time" className="ds-input" required /></div>
+              <div><label htmlFor="shift-end" className="app-label">Saída *</label><input id="shift-end" name="endTime" type="time" className="ds-input" required /></div>
+              <div><label htmlFor="shift-tol" className="app-label">Tolerância (min)</label><input id="shift-tol" name="toleranceMinutes" type="number" min="0" max="120" className="ds-input" defaultValue="0" /></div>
               <div className="flex items-end gap-2"><label className="flex items-center gap-2 text-sm font-medium text-[#52667a]"><input id="shift-night" name="isNight" type="checkbox" /> Nocturno</label></div>
-              <div><label htmlFor="shift-nightpct" className="app-label">Prémio nocturno (%)</label><input id="shift-nightpct" name="nightPremiumPercent" type="number" min="0" max="100" className="app-input" defaultValue="0" /></div>
+              <div><label htmlFor="shift-nightpct" className="app-label">Prémio nocturno (%)</label><input id="shift-nightpct" name="nightPremiumPercent" type="number" min="0" max="100" className="ds-input" defaultValue="0" /></div>
             </div>
           </FormSection>
           <FormError>{error}</FormError>

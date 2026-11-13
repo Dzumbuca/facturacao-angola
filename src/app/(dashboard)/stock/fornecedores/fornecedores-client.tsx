@@ -90,12 +90,12 @@ export function SuppliersClient() {
       <section className="rounded-xl border border-[#e3e9ef] bg-white p-4 sm:p-5">
         <h2 className="text-base font-semibold text-[#1c2d3f]">Novo fornecedor</h2>
         <form onSubmit={create} className="mt-3 grid gap-3 sm:grid-cols-2">
-          <div><FormField label="Nome *" name="name" required><input id="supplier-name" name="name" required className="app-input" placeholder="Ex.: Fornecedor Industrial Lda" maxLength={200} /></FormField></div>
-          <div><FormField label="NIF" name="nif"><input id="supplier-nif" name="nif" className="app-input" placeholder="000.000.000" maxLength={50} /></FormField></div>
-          <div><FormField label="Email" name="email"><input id="supplier-email" name="email" type="email" className="app-input" placeholder="compras@empresa.co.ao" maxLength={200} /></FormField></div>
-          <div><FormField label="Telefone" name="phone"><input id="supplier-phone" name="phone" className="app-input" placeholder="+244 923 000 000" maxLength={30} /></FormField></div>
-          <div><FormField label="Contacto" name="contact"><input id="supplier-contact" name="contact" className="app-input" placeholder="Pessoa de contacto" maxLength={200} /></FormField></div>
-          <div className="sm:col-span-2"><FormField label="Morada" name="address"><input id="supplier-address" name="address" className="app-input" placeholder="Endereço" maxLength={300} /></FormField></div>
+          <div><FormField label="Nome *" name="name" required><input id="supplier-name" name="name" required className="ds-input" placeholder="Ex.: Fornecedor Industrial Lda" maxLength={200} /></FormField></div>
+          <div><FormField label="NIF" name="nif"><input id="supplier-nif" name="nif" className="ds-input" placeholder="000.000.000" maxLength={50} /></FormField></div>
+          <div><FormField label="Email" name="email"><input id="supplier-email" name="email" type="email" className="ds-input" placeholder="compras@empresa.co.ao" maxLength={200} /></FormField></div>
+          <div><FormField label="Telefone" name="phone"><input id="supplier-phone" name="phone" className="ds-input" placeholder="+244 923 000 000" maxLength={30} /></FormField></div>
+          <div><FormField label="Contacto" name="contact"><input id="supplier-contact" name="contact" className="ds-input" placeholder="Pessoa de contacto" maxLength={200} /></FormField></div>
+          <div className="sm:col-span-2"><FormField label="Morada" name="address"><input id="supplier-address" name="address" className="ds-input" placeholder="Endereço" maxLength={300} /></FormField></div>
           {error && <p role="alert" className="sm:col-span-2 rounded-lg bg-[#fdf3f3] px-3 py-2 text-sm text-[#a83939]">{error}</p>}
           {info && <p role="status" className="sm:col-span-2 rounded-lg bg-[#effaf4] px-3 py-2 text-sm text-[#1f6d3d]">{info}</p>}
           <div className="sm:col-span-2"><button type="submit" disabled={busy} className="rounded-lg bg-[#021f87] px-4 py-3 text-sm font-semibold text-white disabled:opacity-60">{busy ? 'A criar…' : 'Adicionar fornecedor'}</button></div>
@@ -106,12 +106,12 @@ export function SuppliersClient() {
           <form onSubmit={saveEdit} className="w-full max-w-lg rounded-xl bg-white p-5 shadow-xl">
             <h2 className="text-lg font-bold text-[#1c2d3f]">Editar fornecedor</h2>
             <div className="mt-3 grid gap-3">
-              <FormField label="Nome *" name="name" required><input name="name" defaultValue={editing.name} required className="app-input" maxLength={200} /></FormField>
-              <FormField label="NIF" name="nif"><input name="nif" defaultValue={editing.nif ?? ''} className="app-input" maxLength={50} /></FormField>
-              <FormField label="Email" name="email"><input name="email" defaultValue={editing.email ?? ''} className="app-input" maxLength={200} /></FormField>
-              <FormField label="Telefone" name="phone"><input name="phone" defaultValue={editing.phone ?? ''} className="app-input" maxLength={30} /></FormField>
-              <FormField label="Contacto" name="contact"><input name="contact" defaultValue={editing.contact ?? ''} className="app-input" maxLength={200} /></FormField>
-              <FormField label="Morada" name="address"><input name="address" defaultValue={editing.address ?? ''} className="app-input" maxLength={300} /></FormField>
+              <FormField label="Nome *" name="name" required><input name="name" defaultValue={editing.name} required className="ds-input" maxLength={200} /></FormField>
+              <FormField label="NIF" name="nif"><input name="nif" defaultValue={editing.nif ?? ''} className="ds-input" maxLength={50} /></FormField>
+              <FormField label="Email" name="email"><input name="email" defaultValue={editing.email ?? ''} className="ds-input" maxLength={200} /></FormField>
+              <FormField label="Telefone" name="phone"><input name="phone" defaultValue={editing.phone ?? ''} className="ds-input" maxLength={30} /></FormField>
+              <FormField label="Contacto" name="contact"><input name="contact" defaultValue={editing.contact ?? ''} className="ds-input" maxLength={200} /></FormField>
+              <FormField label="Morada" name="address"><input name="address" defaultValue={editing.address ?? ''} className="ds-input" maxLength={300} /></FormField>
             </div>
             <div className="mt-4 flex justify-end gap-2">
               <button type="button" onClick={() => setEditing(null)} className="rounded-lg border border-[#e1e8f0] px-4 py-2 text-sm">Cancelar</button>

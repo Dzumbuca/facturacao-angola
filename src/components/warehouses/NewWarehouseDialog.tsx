@@ -64,11 +64,11 @@ export function NewWarehouseDialog({ onSuccess }: Props) {
             <form className="space-y-4" onSubmit={handleSubmit}>
               <div>
                 <label htmlFor="warehouse-name" className="app-label">Nome do armazém <span className="text-[#c44747]">*</span></label>
-                <input id="warehouse-name" name="name" className="app-input" maxLength={160} required autoFocus defaultValue={name} onChange={(e) => setName(e.target.value)} />
+                <input id="warehouse-name" name="name" className="ds-input" maxLength={160} required autoFocus defaultValue={name} onChange={(e) => setName(e.target.value)} />
               </div>
               <div>
                 <label htmlFor="warehouse-location" className="app-label">Localização <span className="font-normal text-[#708195]">(opcional)</span></label>
-                <input id="warehouse-location" name="location" className="app-input" defaultValue={location} onChange={(e) => setLocation(e.target.value)} />
+                <input id="warehouse-location" name="location" className="ds-input" defaultValue={location} onChange={(e) => setLocation(e.target.value)} />
               </div>
               <div className="flex items-start gap-3">
                 <input id="warehouse-isdefault" name="isDefault" type="checkbox" className="app-input h-5 w-5" checked={isDefault} onChange={(e) => setIsDefault(e.target.checked)} />

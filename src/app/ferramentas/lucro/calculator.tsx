@@ -40,7 +40,7 @@ export function LucroCalculator() {
   return <div className="app-calculator space-y-5">
     <div>
       <label htmlFor="lucro-nome" className="app-label">Nome do produto ou serviço (opcional)</label>
-      <input id="lucro-nome" className="app-input" placeholder="Ex.: Sacos de arroz 25 kg" value={nome} onChange={(event) => setNome(event.target.value)} />
+      <input id="lucro-nome" className="ds-input" placeholder="Ex.: Sacos de arroz 25 kg" value={nome} onChange={(event) => setNome(event.target.value)} />
     </div>
 
     <div className="grid gap-4 sm:grid-cols-2">

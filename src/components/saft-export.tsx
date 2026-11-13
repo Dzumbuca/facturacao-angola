@@ -14,13 +14,13 @@ export function SaftExport() {
   return <div className="flex flex-wrap items-end gap-2">
     <div>
       <label htmlFor="saft-month" className="app-label">Mês</label>
-      <select id="saft-month" className="app-input" value={month} onChange={(event) => setMonth(Number(event.target.value))}>
+      <select id="saft-month" className="ds-input" value={month} onChange={(event) => setMonth(Number(event.target.value))}>
         {MONTHS.map((name, index) => <option key={name} value={index + 1}>{name}</option>)}
       </select>
     </div>
     <div>
       <label htmlFor="saft-year" className="app-label">Ano</label>
-      <select id="saft-year" className="app-input" value={year} onChange={(event) => setYear(Number(event.target.value))}>
+      <select id="saft-year" className="ds-input" value={year} onChange={(event) => setYear(Number(event.target.value))}>
         {years.map((y) => <option key={y} value={y}>{y}</option>)}
       </select>
     </div>

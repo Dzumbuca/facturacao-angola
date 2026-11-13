@@ -63,11 +63,11 @@ export function PositionsManager({ positions, departments }: {
         <form onSubmit={submit} className="rounded-xl border border-[var(--line)] bg-white p-4">
           <FormSection title="Dados do cargo">
             <div className="grid gap-3 sm:grid-cols-2">
-              <div><label htmlFor="pos-title" className="app-label">Título *</label><input id="pos-title" name="title" className="app-input" required /></div>
-              <div><label htmlFor="pos-code" className="app-label">Código</label><input id="pos-code" name="code" className="app-input" /></div>
-              <div><label htmlFor="pos-dept" className="app-label">Departamento</label><select id="pos-dept" name="departmentId" className="app-input"><option value="">—</option>{departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}</select></div>
-              <div><label htmlFor="pos-level" className="app-label">Nível</label><input id="pos-level" name="level" type="number" min="1" className="app-input" /></div>
-              <div className="sm:col-span-2"><label htmlFor="pos-desc" className="app-label">Descrição</label><input id="pos-desc" name="description" className="app-input" /></div>
+              <div><label htmlFor="pos-title" className="app-label">Título *</label><input id="pos-title" name="title" className="ds-input" required /></div>
+              <div><label htmlFor="pos-code" className="app-label">Código</label><input id="pos-code" name="code" className="ds-input" /></div>
+              <div><label htmlFor="pos-dept" className="app-label">Departamento</label><select id="pos-dept" name="departmentId" className="ds-input"><option value="">—</option>{departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}</select></div>
+              <div><label htmlFor="pos-level" className="app-label">Nível</label><input id="pos-level" name="level" type="number" min="1" className="ds-input" /></div>
+              <div className="sm:col-span-2"><label htmlFor="pos-desc" className="app-label">Descrição</label><input id="pos-desc" name="description" className="ds-input" /></div>
             </div>
           </FormSection>
           <FormError>{error}</FormError>

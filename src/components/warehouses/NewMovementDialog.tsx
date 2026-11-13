@@ -83,7 +83,7 @@ export function NewMovementDialog({ products, onSuccess }: Props) {
             <form className="space-y-4" onSubmit={handleSubmit}>
               <div>
                 <label htmlFor="movement-product" className="app-label">Produto <span className="text-[#c44747]">*</span></label>
-                <select id="movement-product" value={productId} onChange={(e) => setProductId(e.target.value)} required className="app-input">
+                <select id="movement-product" value={productId} onChange={(e) => setProductId(e.target.value)} required className="ds-input">
                   <option value="">Seleccionar produto</option>
                   {products.map((product) => (
                     <option key={product.id} value={product.id}>
@@ -95,7 +95,7 @@ export function NewMovementDialog({ products, onSuccess }: Props) {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label htmlFor="movement-type" className="app-label">Tipo de movimento <span className="text-[#c44747]">*</span></label>
-                  <select id="movement-type" value={type} onChange={(e) => setType(e.target.value as 'IN' | 'OUT' | 'ADJUSTMENT')} required className="app-input">
+                  <select id="movement-type" value={type} onChange={(e) => setType(e.target.value as 'IN' | 'OUT' | 'ADJUSTMENT')} required className="ds-input">
                     <option value="IN">Entrada</option>
                     <option value="OUT">Saída</option>
                     <option value="ADJUSTMENT">Ajuste</option>
@@ -108,11 +108,11 @@ export function NewMovementDialog({ products, onSuccess }: Props) {
               </div>
               <div>
                 <label htmlFor="movement-reason" className="app-label">Motivo</label>
-                <input id="movement-reason" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Motivo do movimento" className="app-input" />
+                <input id="movement-reason" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Motivo do movimento" className="ds-input" />
               </div>
               <div>
                 <label htmlFor="movement-reference" className="app-label">Referência <span className="font-normal text-[#708195]">(opcional)</span></label>
-                <input id="movement-reference" value={reference} onChange={(e) => setReference(e.target.value)} placeholder="Referência (opcional)" className="app-input" />
+                <input id="movement-reference" value={reference} onChange={(e) => setReference(e.target.value)} placeholder="Referência (opcional)" className="ds-input" />
               </div>
               {error && <p role="alert" className="rounded-lg border border-red-100 bg-red-50 px-3 py-2.5 text-sm text-[#a83939]">{error}</p>}
               <div className="flex flex-col-reverse gap-2 border-t border-[#e7edf3] pt-4 sm:flex-row sm:justify-end">

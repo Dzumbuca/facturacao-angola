@@ -116,10 +116,10 @@ export function TrainingManager({ courses, employees, positions }: { courses: Co
           <h2 className="text-sm font-bold text-[var(--text)]">Novo curso</h2>
           <FormSection title="Detalhes do curso">
             <div className="sm:col-span-2">
-              <FormField label="Título" name="tc-title" required><input id="tc-title" name="title" className="app-input" required placeholder="Ex.: Segurança no trabalho" /></FormField>
+              <FormField label="Título" name="tc-title" required><input id="tc-title" name="title" className="ds-input" required placeholder="Ex.: Segurança no trabalho" /></FormField>
             </div>
             <div className="sm:col-span-2">
-              <FormField label="Formador" name="tc-trainer"><input id="tc-trainer" name="trainerName" className="app-input" placeholder="Nome ou entidade" /></FormField>
+              <FormField label="Formador" name="tc-trainer"><input id="tc-trainer" name="trainerName" className="ds-input" placeholder="Nome ou entidade" /></FormField>
             </div>
             <div>
               <FormField label="Início" name="tc-start" required><CalendarField id="tc-start" name="startDate" value={startIso} onChange={setStartIso} required /></FormField>
@@ -128,14 +128,14 @@ export function TrainingManager({ courses, employees, positions }: { courses: Co
               <FormField label="Fim" name="tc-end"><CalendarField id="tc-end" name="endDate" value={endIso} onChange={setEndIso} /></FormField>
             </div>
             <div>
-              <FormField label="Horas" name="tc-hours"><input id="tc-hours" name="cargaHoras" type="number" min={1} defaultValue={8} className="app-input" /></FormField>
+              <FormField label="Horas" name="tc-hours"><input id="tc-hours" name="cargaHoras" type="number" min={1} defaultValue={8} className="ds-input" /></FormField>
             </div>
             <div>
-              <FormField label="Local" name="tc-location"><input id="tc-location" name="location" className="app-input" placeholder="Presencial / online" /></FormField>
+              <FormField label="Local" name="tc-location"><input id="tc-location" name="location" className="ds-input" placeholder="Presencial / online" /></FormField>
             </div>
             <div className="sm:col-span-2">
               <FormField label="Exigido para cargo" name="tc-req">
-                <select id="tc-req" name="requiredForPositionId" className="app-input">
+                <select id="tc-req" name="requiredForPositionId" className="ds-input">
                   <option value="">—</option>{positions.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}
                 </select>
               </FormField>
@@ -151,14 +151,14 @@ export function TrainingManager({ courses, employees, positions }: { courses: Co
           <FormSection title="Inscrição">
             <div className="sm:col-span-2">
               <FormField label="Curso" name="te-course" required>
-                <select id="te-course" value={enrollCourseId} onChange={(e) => setEnrollCourseId(e.target.value)} className="app-input" required>
+                <select id="te-course" value={enrollCourseId} onChange={(e) => setEnrollCourseId(e.target.value)} className="ds-input" required>
                   {courses.map((c) => <option key={c.id} value={c.id}>{c.title} ({c.enrollments.length})</option>)}
                 </select>
               </FormField>
             </div>
             <div className="sm:col-span-2">
               <FormField label="Funcionário" name="te-employee" required>
-                <select id="te-employee" value={enrollEmployeeId} onChange={(e) => setEnrollEmployeeId(e.target.value)} className="app-input" required>
+                <select id="te-employee" value={enrollEmployeeId} onChange={(e) => setEnrollEmployeeId(e.target.value)} className="ds-input" required>
                   {employees.map((e) => <option key={e.id} value={e.id}>{e.firstName} {e.lastName} ({e.employeeNumber})</option>)}
                 </select>
               </FormField>

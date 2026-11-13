@@ -114,20 +114,26 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 
 .tabular-nums { font-variant-numeric: tabular-nums; }
-.app-input {
+.ds-input, .app-input {
   width: 100%;
   min-height: 44px;
+  padding: 10px 16px;
+  border-radius: .75rem;
   border: 1px solid var(--line);
-  border-radius: 12px;
   background: var(--field);
-  padding: 9px 14px;
   color: var(--text);
+  font-size: .9375rem;
   transition: border-color .18s, box-shadow .18s, background .18s;
-  font-size: .95rem;
 }
+.ds-input:focus, .app-input:focus {
+  outline: 0;
+  border-color: var(--blue);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgb(2 31 135 / 14%);
+}
+.ds-input:hover:not(:disabled):not(:focus), .app-input:hover:not(:disabled):not(:focus) { border-color: #b8c5d5; }
 .app-input::placeholder { color: var(--text-muted); opacity: .68; }
 .app-input:hover:not(:disabled):not(:focus) { border-color: #c6d1df; }
-.app-input:focus { border-color: var(--blue); outline: 0; background: #fff; box-shadow: 0 0 0 3px rgb(2 31 135 / 18%); }
 .app-label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: .8rem; font-weight: 650; letter-spacing: .03em; }
 .app-label { display: block; margin-bottom: 7px; color: var(--text-muted); font-size: .82rem; font-weight: 650; }
 .premium-card { border: 1px solid var(--line); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow-soft); }
@@ -657,3 +663,62 @@ main :where(.grid) > * { min-width: 0; }
   --font-sans: Onest, "Segoe UI", Arial, sans-serif;
 }
 body { font-family: Onest, "Segoe UI", Arial, sans-serif; }
+
+/* ============================================================
+   Design System 2.0 — Stripe/Linear primitives
+   Shared utilities to keep visual consistency across pages.
+   ============================================================ */
+
+/* Typography */
+.text-page-title { font-size: 1.75rem; line-height: 1.15; letter-spacing: -.02em; font-weight: 700; color: var(--text); }
+.text-subtitle { font-size: 1rem; line-height: 1.5; font-weight: 400; color: var(--text-muted); }
+.text-section-label { font-size: 11px; line-height: 1.3; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; color: var(--text-muted); }
+.text-body { font-size: .875rem; line-height: 1.6; color: var(--text); }
+.text-meta { font-size: .75rem; line-height: 1.5; color: var(--text-muted); }
+.value-num { font-variant-numeric: tabular-nums; font-weight: 700; }
+
+/* Cards SE — 8pt grid */
+.ds-card { background: var(--surface); border: 1px solid var(--line); border-radius: 1rem; box-shadow: 0 1px 2px rgb(18 36 68 / 6%), 0 4px 16px rgb(18 36 68 / 6%); }
+.ds-card-hover { transition: box-shadow .18s ease, transform .18s ease; }
+.ds-card-hover:hover { box-shadow: 0 2px 4px rgb(18 36 68 / 8%), 0 8px 28px rgb(18 36 68 / 10%); }
+.ds-divider { border-top: 1px solid var(--line); }
+
+/* Inputs SE */
+.ds-input { width: 100%; min-height: 44px; padding: 10px 16px; border-radius: .75rem; border: 1px solid var(--line); background: var(--field); color: var(--text); font-size: .9375rem; transition: border-color .18s, box-shadow .18s, background .18s; }
+.ds-input::placeholder { color: var(--text-muted); opacity: .7; }
+.ds-input:hover:not(:disabled):not(:focus) { border-color: #b8c5d5; }
+.ds-input:focus { outline: 0; border-color: var(--blue); background: #fff; box-shadow: 0 0 0 3px rgb(2 31 135 / 14%); }
+
+/* Buttons SE */
+.ds-btn-primary { background: var(--blue); color: #fff; padding: 10px 20px; border-radius: .75rem; font-weight: 600; font-size: .875rem; display: inline-flex; align-items: center; gap: .5rem; transition: background .18s, transform .18s; border: 0; }
+.ds-btn-primary:hover { background: #0634b8; }
+.ds-btn-primary:active { transform: translateY(1px); }
+.ds-btn-secondary { background: var(--surface); color: var(--text); padding: 8px 16px; border-radius: .625rem; font-weight: 500; font-size: .875rem; border: 1px solid var(--line); display: inline-flex; align-items: center; gap: .4rem; transition: background .18s, border-color .18s; }
+.ds-btn-secondary:hover { background: var(--surface-raised); border-color: #b8c5d5; }
+.ds-btn-ghost { color: var(--blue); padding: 4px 8px; border-radius: .375rem; font-weight: 500; font-size: .875rem; text-decoration: none; display: inline-flex; align-items: center; gap: .35rem; transition: background .15s; }
+.ds-btn-ghost:hover { background: rgb(2 31 135 / 6%); }
+.ds-btn-danger { background: var(--surface); color: #a83939; padding: 6px 12px; border-radius: .625rem; font-weight: 500; font-size: .875rem; border: 1px solid #f0d3d3; transition: background .15s; }
+.ds-btn-danger:hover { background: #fdf2f2; }
+
+/* Tables SE */
+.ds-table { width: 100%; border-collapse: collapse; }
+.ds-table thead th { background: var(--surface-raised); color: var(--text-muted); font-size: .6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; padding: 12px 16px; text-align: left; }
+.ds-table thead th.num, .ds-table td.num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.ds-table tbody td { padding: 14px 16px; font-size: .875rem; color: var(--text); border-bottom: 1px solid var(--line); }
+.ds-table tbody tr:last-child td { border-bottom: 0; }
+.ds-table tbody tr:hover { background: var(--surface-raised); }
+.ds-table tfoot td { background: var(--surface-raised); font-weight: 700; border-top: 2px solid var(--line); padding: 12px 16px; }
+
+/* Badges SE */
+.ds-badge { display: inline-flex; align-items: center; gap: .375rem; padding: 4px 10px; border-radius: 9999px; font-size: .6875rem; font-weight: 600; }
+.ds-badge::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 9999px; }
+.ds-badge-success { background: #ecfdf5; color: #047857; }
+.ds-badge-success::before { background: #10b981; }
+.ds-badge-info { background: #eff6ff; color: #1d4ed8; }
+.ds-badge-info::before { background: #3b82f6; }
+.ds-badge-warning { background: #fef9c3; color: #92400e; }
+.ds-badge-warning::before { background: #f59e0b; }
+.ds-badge-danger { background: #fef2f2; color: #b91c1c; }
+.ds-badge-danger::before { background: #ef4444; }
+.ds-badge-neutral { background: #f1f5f9; color: #334155; }
+.ds-badge-neutral::before { background: #94a3b8; }

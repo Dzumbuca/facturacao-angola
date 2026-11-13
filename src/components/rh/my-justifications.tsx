@@ -62,7 +62,7 @@ export function MyJustifications({ items, canSubmit }: { items: Item[]; canSubmi
             </div>
             <div>
               <FormField label="Tipo" name="mj-type" required>
-                <select id="mj-type" name="type" className="app-input" defaultValue="FALTA">
+                <select id="mj-type" name="type" className="ds-input" defaultValue="FALTA">
                   <option value="FALTA">Falta</option>
                   <option value="ATRASO">Atraso</option>
                   <option value="SAIDA_ANTECIPADA">Saída antecipada</option>
@@ -71,7 +71,7 @@ export function MyJustifications({ items, canSubmit }: { items: Item[]; canSubmi
               </FormField>
             </div>
             <div>
-              <FormField label="Motivo" name="mj-reason" required><input id="mj-reason" name="reason" className="app-input" required maxLength={1000} /></FormField>
+              <FormField label="Motivo" name="mj-reason" required><input id="mj-reason" name="reason" className="ds-input" required maxLength={1000} /></FormField>
             </div>
             <div className="sm:col-span-3">
               <FormError>{error}</FormError>

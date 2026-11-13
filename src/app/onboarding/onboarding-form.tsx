@@ -48,11 +48,11 @@ export default function OnboardingForm({ userName, userEmail }: { userName?: str
       </div>
       <div>
         <label htmlFor="tenantName" className="app-label">Nome da empresa</label>
-        <input id="tenantName" name="tenantName" type="text" autoComplete="organization" required maxLength={160} className="app-input" />
+        <input id="tenantName" name="tenantName" type="text" autoComplete="organization" required maxLength={160} className="ds-input" />
       </div>
       <div>
         <label htmlFor="nif" className="app-label">NIF da empresa <span className="font-normal text-[#708195]">(opcional)</span></label>
-        <input id="nif" name="nif" type="text" inputMode="numeric" autoComplete="off" maxLength={14} pattern="(\d{10}|\d{9}[A-Za-z]{2}\d{3})?" title="10 dígitos, ou 9 dígitos + 2 letras + 3 dígitos. Pode deixar vazio." className="app-input" placeholder="Ex.: 5417089312" />
+        <input id="nif" name="nif" type="text" inputMode="numeric" autoComplete="off" maxLength={14} pattern="(\d{10}|\d{9}[A-Za-z]{2}\d{3})?" title="10 dígitos, ou 9 dígitos + 2 letras + 3 dígitos. Pode deixar vazio." className="ds-input" placeholder="Ex.: 5417089312" />
         <p className="mt-1.5 text-xs text-[#708195]">Pode deixar vazio e preencher depois no perfil da empresa.</p>
       </div>
       {error && <p role="alert" className="rounded-lg border border-red-100 bg-red-50 px-3 py-2.5 text-sm text-[#a83939]">{error}</p>}

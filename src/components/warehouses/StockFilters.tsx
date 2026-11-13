@@ -23,11 +23,11 @@ export function StockFilters({ search, onSearchChange, categories, category, onC
         />
         <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#607286]"><circle cx="11" cy="11" r="8"/><path d="m21 21l-4.35-4.35"/></svg>
       </div>
-      <select value={category} onChange={(e) => onCategoryChange(e.target.value)} className="app-input">
+      <select value={category} onChange={(e) => onCategoryChange(e.target.value)} className="ds-input">
         <option value="">Todas as categorias</option>
         {categories.map((cat) => (<option key={cat} value={cat}>{cat}</option>))}
       </select>
-      <select value={availability} onChange={(e) => onAvailabilityChange(e.target.value)} className="app-input">
+      <select value={availability} onChange={(e) => onAvailabilityChange(e.target.value)} className="ds-input">
         <option value="">Disponibilidade</option>
         <option value="stock">Com stock</option>
         <option value="low">Stock baixo</option>

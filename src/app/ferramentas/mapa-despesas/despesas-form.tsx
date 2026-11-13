@@ -64,23 +64,23 @@ export function DespesasForm() {
       <legend className="px-1 text-xs font-bold uppercase tracking-[.12em] text-[#708195]">A sua empresa</legend>
       <div className="grid gap-4 sm:grid-cols-3">
         <Campo id="desp-emp-nome" label="Nome" obrigatorio erro={empresaNome.trim() !== '' && erros.empresaNome ? erros.empresaNome : null}>
-          <input id="desp-emp-nome" className="app-input" placeholder="Ex.: Comércio Kiala Lda" value={empresaNome} onChange={(event) => setEmpresaNome(event.target.value)} />
+          <input id="desp-emp-nome" className="ds-input" placeholder="Ex.: Comércio Kiala Lda" value={empresaNome} onChange={(event) => setEmpresaNome(event.target.value)} />
         </Campo>
         <Campo id="desp-emp-nif" label="NIF (opcional)">
-          <input id="desp-emp-nif" className="app-input" value={empresaNif} onChange={(event) => setEmpresaNif(event.target.value)} />
+          <input id="desp-emp-nif" className="ds-input" value={empresaNif} onChange={(event) => setEmpresaNif(event.target.value)} />
         </Campo>
         <Campo id="desp-emp-contacto" label="Contacto (opcional)">
-          <input id="desp-emp-contacto" className="app-input" value={empresaContacto} onChange={(event) => setEmpresaContacto(event.target.value)} />
+          <input id="desp-emp-contacto" className="ds-input" value={empresaContacto} onChange={(event) => setEmpresaContacto(event.target.value)} />
         </Campo>
       </div>
     </fieldset>
 
     <div className="grid gap-4 sm:grid-cols-2">
       <Campo id="desp-periodo-de" label="Período — de (opcional)">
-        <input id="desp-periodo-de" type="date" className="app-input" value={periodoDe} onChange={(event) => setPeriodoDe(event.target.value)} />
+        <input id="desp-periodo-de" type="date" className="ds-input" value={periodoDe} onChange={(event) => setPeriodoDe(event.target.value)} />
       </Campo>
       <Campo id="desp-periodo-ate" label="Período — até (opcional)">
-        <input id="desp-periodo-ate" type="date" className="app-input" value={periodoAte} onChange={(event) => setPeriodoAte(event.target.value)} />
+        <input id="desp-periodo-ate" type="date" className="ds-input" value={periodoAte} onChange={(event) => setPeriodoAte(event.target.value)} />
       </Campo>
     </div>
 
@@ -94,8 +94,8 @@ export function DespesasForm() {
       <div className="mt-2 space-y-2">
         {linhas.map((linha, indice) => <div key={indice} className="grid grid-cols-[92px_1fr_88px_32px] items-start gap-2 sm:grid-cols-[110px_1fr_130px_96px_32px]">
           <input aria-label={`Data da despesa ${indice + 1}`} type="date" className="app-input tabular-nums" value={linha.data} onChange={(event) => atualizarLinha(indice, 'data', event.target.value)} />
-          <input aria-label={`Descrição da despesa ${indice + 1}`} className="app-input" placeholder={`Despesa ${indice + 1} — descrição`} value={linha.descricao} onChange={(event) => atualizarLinha(indice, 'descricao', event.target.value)} />
-          <input aria-label={`Categoria da despesa ${indice + 1}`} className="app-input" placeholder="Categoria" value={linha.categoria} onChange={(event) => atualizarLinha(indice, 'categoria', event.target.value)} />
+          <input aria-label={`Descrição da despesa ${indice + 1}`} className="ds-input" placeholder={`Despesa ${indice + 1} — descrição`} value={linha.descricao} onChange={(event) => atualizarLinha(indice, 'descricao', event.target.value)} />
+          <input aria-label={`Categoria da despesa ${indice + 1}`} className="ds-input" placeholder="Categoria" value={linha.categoria} onChange={(event) => atualizarLinha(indice, 'categoria', event.target.value)} />
           <input aria-label={`Valor da despesa ${indice + 1}`} inputMode="decimal" className="app-input tabular-nums" placeholder="Kz" value={linha.valor} onChange={(event) => atualizarLinha(indice, 'valor', event.target.value)} />
           <button type="button" aria-label={`Remover despesa ${indice + 1}`} disabled={linhas.length === 1} onClick={() => setLinhas((actuais) => actuais.filter((_, i) => i !== indice))} className="mt-1 rounded-lg px-2 py-1.5 text-sm font-bold text-[#a13d3d] transition hover:bg-[#fdf2f2] disabled:opacity-30">✕</button>
         </div>)}

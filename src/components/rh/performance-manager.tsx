@@ -113,7 +113,7 @@ export function PerformanceManager({ cycles }: { cycles: Cycle[] }) {
         <h2 className="text-sm font-bold text-[var(--text)]">Novo ciclo</h2>
         <FormSection title="Ciclo de avaliação">
           <div className="sm:col-span-2">
-            <FormField label="Nome" name="pc-name" required><input id="pc-name" name="name" className="app-input" required placeholder="Ex.: Avaliação semestral 2026" /></FormField>
+            <FormField label="Nome" name="pc-name" required><input id="pc-name" name="name" className="ds-input" required placeholder="Ex.: Avaliação semestral 2026" /></FormField>
           </div>
           <div>
             <FormField label="Início" name="pc-start" required><CalendarField id="pc-start" name="startsAt" value={startsAtIso} onChange={setStartsAtIso} required /></FormField>

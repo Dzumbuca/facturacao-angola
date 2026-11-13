@@ -74,14 +74,14 @@ export function DeductionsManager({ employeeId, deductions, canWrite }: { employ
           <FormSplit main={<>
           <FormSection title="Novo desconto recorrente">
             <div className="sm:col-span-2">
-              <FormField label="Descrição" name="ded-desc" required><input id="ded-desc" name="description" className="app-input" required maxLength={200} placeholder="Ex.: Adiantamento salário Maio" /></FormField>
+              <FormField label="Descrição" name="ded-desc" required><input id="ded-desc" name="description" className="ds-input" required maxLength={200} placeholder="Ex.: Adiantamento salário Maio" /></FormField>
             </div>
             <div>
               <FormField label="Valor (Kz)" name="ded-amount" required><CurrencyInput id="ded-amount" name="amount" value={amountValue} onChange={setAmountValue} required /></FormField>
             </div>
             <div>
               <FormField label="Tipo" name="ded-type">
-                <select id="ded-type" name="type" className="app-input" value={deductionType} onChange={(e) => setDeductionType(e.target.value)}>
+                <select id="ded-type" name="type" className="ds-input" value={deductionType} onChange={(e) => setDeductionType(e.target.value)}>
                   <option value="ADIANTAMENTO">Adiantamento</option>
                   <option value="EMPRESTIMO">Empréstimo</option>
                   <option value="OUTRO">Outro</option>
@@ -89,7 +89,7 @@ export function DeductionsManager({ employeeId, deductions, canWrite }: { employ
               </FormField>
             </div>
             <div className="sm:col-span-2">
-              <FormField label="Prestações" name="ded-installments" hint="Vazio = indefinido"><input id="ded-installments" name="installments" type="number" min="1" className="app-input" placeholder="3" /></FormField>
+              <FormField label="Prestações" name="ded-installments" hint="Vazio = indefinido"><input id="ded-installments" name="installments" type="number" min="1" className="ds-input" placeholder="3" /></FormField>
             </div>
             <div className="sm:col-span-2">
               <FormError>{error}</FormError>

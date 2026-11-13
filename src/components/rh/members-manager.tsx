@@ -61,11 +61,11 @@ export function MembersManager({ members }: { members: Member[] }) {
       <form onSubmit={submit} className="rounded-xl border border-[var(--line)] bg-white p-4">
         <FormSection title="Adicionar membro RH">
           <div className="sm:col-span-2">
-            <FormField label="Email do utilizador" name="member-email" required><input id="member-email" type="email" className="app-input" value={email} onChange={(e) => setEmail(e.target.value)} required /></FormField>
+            <FormField label="Email do utilizador" name="member-email" required><input id="member-email" type="email" className="ds-input" value={email} onChange={(e) => setEmail(e.target.value)} required /></FormField>
           </div>
           <div>
             <FormField label="Função" name="member-role">
-              <select id="member-role" className="app-input" value={role} onChange={(e) => setRole(e.target.value)}>{Object.entries(ROLES).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+              <select id="member-role" className="ds-input" value={role} onChange={(e) => setRole(e.target.value)}>{Object.entries(ROLES).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
             </FormField>
           </div>
         </FormSection>

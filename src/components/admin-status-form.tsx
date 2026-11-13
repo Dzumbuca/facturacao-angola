@@ -9,8 +9,8 @@ function StatusForm({ action, id, title, options }: { action: (state: State, dat
   const [state, formAction, pending] = useActionState(action, initial);
   return <form action={formAction} onSubmit={(event) => { if (!window.confirm('Confirmas esta alteração administrativa? O motivo ficará registado na auditoria.')) event.preventDefault(); }} className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-[1fr_1fr_auto]">
     <input type="hidden" name="id" value={id} />
-    <label><span className="app-label">{title}</span><select className="app-input" name="value" required>{options.map(([v, label]) => <option value={v} key={v}>{label}</option>)}</select></label>
-    <label><span className="app-label">Motivo (obrigatório)</span><input className="app-input" name="reason" minLength={5} maxLength={500} required /></label>
+    <label><span className="app-label">{title}</span><select className="ds-input" name="value" required>{options.map(([v, label]) => <option value={v} key={v}>{label}</option>)}</select></label>
+    <label><span className="app-label">Motivo (obrigatório)</span><input className="ds-input" name="reason" minLength={5} maxLength={500} required /></label>
     <button disabled={pending} className="self-end rounded-lg bg-[#021f87] px-4 py-3 font-semibold text-white disabled:opacity-60">{pending ? 'A guardar…' : 'Guardar'}</button>
     {state.message && <p role="status" className={state.ok ? 'text-sm text-emerald-700 sm:col-span-3' : 'text-sm text-red-700 sm:col-span-3'}>{state.message}</p>}
   </form>;
@@ -63,8 +63,8 @@ export function AdminRenewForm({ id, currentExpiry }: { id: string; currentExpir
   return <form action={formAction} onSubmit={(event) => { if (!window.confirm('Renovar plano da empresa?')) event.preventDefault(); }} className="mt-3 grid gap-3 rounded-xl border border-[#e1e8f0] bg-white p-4 sm:grid-cols-[1fr_auto_auto_auto]">
     <input type="hidden" name="id" value={id} />
     <div><span className="app-label">Validade actual</span><p className="mt-1 text-sm font-semibold text-[#1c2d3f]">{currentExpiry ? new Date(currentExpiry).toLocaleDateString('pt-AO', { timeZone: 'Africa/Luanda' }) : 'Perpétuo'}</p>{nextMonth && <p className="text-xs text-[#708195]">Renovar até {nextMonth}</p>}</div>
-    <label><span className="app-label">Renovar por</span><select className="app-input" name="months" defaultValue="1"><option value="1">1 mês</option><option value="3">3 meses</option><option value="6">6 meses</option><option value="12">12 meses</option></select></label>
-    <label><span className="app-label">Motivo</span><input className="app-input" name="reason" placeholder="Ex.: renovação paga" minLength={5} maxLength={500} required /></label>
+    <label><span className="app-label">Renovar por</span><select className="ds-input" name="months" defaultValue="1"><option value="1">1 mês</option><option value="3">3 meses</option><option value="6">6 meses</option><option value="12">12 meses</option></select></label>
+    <label><span className="app-label">Motivo</span><input className="ds-input" name="reason" placeholder="Ex.: renovação paga" minLength={5} maxLength={500} required /></label>
     <button disabled={pending} className="self-end rounded-lg bg-[#021f87] px-4 py-3 font-semibold text-white disabled:opacity-60">{pending ? 'A guardar…' : 'Renovar'}</button>
     {state.message && <p role="status" className={state.ok ? 'text-sm text-emerald-700 sm:col-span-4' : 'text-sm text-red-700 sm:col-span-4'}>{state.message}</p>}
   </form>;
@@ -79,15 +79,15 @@ export function AdminCommercialPlanForm({ id, current, currentExpiry }: { id: st
   const isPaid = planSlug !== 'free';
   return <form action={formAction} onSubmit={(event) => { if (!window.confirm('Confirmas esta alteração comercial? A atribuição ficará auditada.')) event.preventDefault(); }} className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-[1fr_1fr_auto_auto]">
     <input type="hidden" name="id" value={id} />
-    <label><span className="app-label">Plano Machine</span><select className="app-input" name="value" required value={planSlug} onChange={(e) => setPlanSlug(e.target.value)}>{COMMERCIAL_PLANS.map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select></label>
+    <label><span className="app-label">Plano Machine</span><select className="ds-input" name="value" required value={planSlug} onChange={(e) => setPlanSlug(e.target.value)}>{COMMERCIAL_PLANS.map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select></label>
     <label><span className="app-label">Data de validade {isPaid ? '*' : ''}</span>
       <div className="flex items-center gap-3">
-        <input type="date" className="app-input" name="expiresAt" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} disabled={!isPaid || perpetual} required={isPaid && !perpetual} aria-required={(isPaid && !perpetual) || undefined} />
+        <input type="date" className="ds-input" name="expiresAt" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} disabled={!isPaid || perpetual} required={isPaid && !perpetual} aria-required={(isPaid && !perpetual) || undefined} />
         {isPaid && <label className="flex items-center gap-1 whitespace-nowrap text-xs text-slate-600"><input type="checkbox" name="perpetual" checked={perpetual} onChange={(e) => setPerpetual(e.target.checked)} /> Perpétuo (decisão explícita)</label>}
         {!isPaid && <span className="text-xs text-slate-500">Free é permanente</span>}
       </div>
     </label>
-    <label><span className="app-label">Motivo</span><input className="app-input" name="reason" minLength={5} maxLength={500} placeholder="Ex.: pagamento recebido" required /></label>
+    <label><span className="app-label">Motivo</span><input className="ds-input" name="reason" minLength={5} maxLength={500} placeholder="Ex.: pagamento recebido" required /></label>
     <button disabled={pending} className="self-end rounded-lg bg-[#021f87] px-4 py-3 font-semibold text-white disabled:opacity-60">{pending ? 'A guardar…' : 'Guardar'}</button>
     {state.message && <p role="status" className={state.ok ? 'text-sm text-emerald-700 sm:col-span-4' : 'text-sm text-red-700 sm:col-span-4'}>{state.message}</p>}
   </form>;

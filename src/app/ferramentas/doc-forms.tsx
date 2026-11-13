@@ -134,13 +134,13 @@ export function OrcamentoProformaForm({ tipo }: { tipo: 'orcamento' | 'proforma'
   return <div className="app-calculator space-y-5">
     <div className="grid gap-4 sm:grid-cols-3">
       <Campo id={`doc-numero-${tipo}`} label={`Nº do ${rotulo(tipo).toLowerCase()} (opcional)`}>
-        <input id={`doc-numero-${tipo}`} className="app-input" placeholder="Ex.: ORC-2026-001" value={numero} onChange={(event) => setNumero(event.target.value)} />
+        <input id={`doc-numero-${tipo}`} className="ds-input" placeholder="Ex.: ORC-2026-001" value={numero} onChange={(event) => setNumero(event.target.value)} />
       </Campo>
       <Campo id={`doc-data-${tipo}`} label="Data (opcional)">
-        <input id={`doc-data-${tipo}`} type="date" className="app-input" value={data} onChange={(event) => setData(event.target.value)} />
+        <input id={`doc-data-${tipo}`} type="date" className="ds-input" value={data} onChange={(event) => setData(event.target.value)} />
       </Campo>
       <Campo id={`doc-iva-${tipo}`} label="IVA a destacar">
-        <select id={`doc-iva-${tipo}`} className="app-input" value={iva} onChange={(event) => setIva(event.target.value)}>
+        <select id={`doc-iva-${tipo}`} className="ds-input" value={iva} onChange={(event) => setIva(event.target.value)}>
           <option value="0">Sem IVA destacado</option>
           {IVA_TAXAS.filter((t) => t.valor > 0).map((taxa) => (
             <option key={taxa.valor} value={taxa.valor}>{taxa.etiqueta}</option>
@@ -153,13 +153,13 @@ export function OrcamentoProformaForm({ tipo }: { tipo: 'orcamento' | 'proforma'
       <legend className="px-1 text-xs font-bold uppercase tracking-[.12em] text-[#708195]">A sua empresa</legend>
       <div className="grid gap-4 sm:grid-cols-3">
         <Campo id={`doc-emp-nome-${tipo}`} label="Nome" obrigatorio erro={erros.empresaNome}>
-          <input id={`doc-emp-nome-${tipo}`} className="app-input" placeholder="Ex.: Comércio Kiala Lda" value={empresaNome} onChange={(event) => setEmpresaNome(event.target.value)} aria-invalid={Boolean(erros.empresaNome) || undefined} />
+          <input id={`doc-emp-nome-${tipo}`} className="ds-input" placeholder="Ex.: Comércio Kiala Lda" value={empresaNome} onChange={(event) => setEmpresaNome(event.target.value)} aria-invalid={Boolean(erros.empresaNome) || undefined} />
         </Campo>
         <Campo id={`doc-emp-nif-${tipo}`} label="NIF (opcional)">
-          <input id={`doc-emp-nif-${tipo}`} className="app-input" placeholder="Ex.: 5417000123" value={empresaNif} onChange={(event) => setEmpresaNif(event.target.value)} />
+          <input id={`doc-emp-nif-${tipo}`} className="ds-input" placeholder="Ex.: 5417000123" value={empresaNif} onChange={(event) => setEmpresaNif(event.target.value)} />
         </Campo>
         <Campo id={`doc-emp-contacto-${tipo}`} label="Contacto (opcional)">
-          <input id={`doc-emp-contacto-${tipo}`} className="app-input" placeholder="Ex.: 923 000 000" value={empresaContacto} onChange={(event) => setEmpresaContacto(event.target.value)} />
+          <input id={`doc-emp-contacto-${tipo}`} className="ds-input" placeholder="Ex.: 923 000 000" value={empresaContacto} onChange={(event) => setEmpresaContacto(event.target.value)} />
         </Campo>
       </div>
     </fieldset>
@@ -168,13 +168,13 @@ export function OrcamentoProformaForm({ tipo }: { tipo: 'orcamento' | 'proforma'
       <legend className="px-1 text-xs font-bold uppercase tracking-[.12em] text-[#708195]">Cliente</legend>
       <div className="grid gap-4 sm:grid-cols-3">
         <Campo id={`doc-cli-nome-${tipo}`} label="Nome" obrigatorio erro={erros.clienteNome}>
-          <input id={`doc-cli-nome-${tipo}`} className="app-input" placeholder="Ex.: Padaria Bom Jesus" value={clienteNome} onChange={(event) => setClienteNome(event.target.value)} aria-invalid={Boolean(erros.clienteNome) || undefined} />
+          <input id={`doc-cli-nome-${tipo}`} className="ds-input" placeholder="Ex.: Padaria Bom Jesus" value={clienteNome} onChange={(event) => setClienteNome(event.target.value)} aria-invalid={Boolean(erros.clienteNome) || undefined} />
         </Campo>
         <Campo id={`doc-cli-nif-${tipo}`} label="NIF (opcional)">
-          <input id={`doc-cli-nif-${tipo}`} className="app-input" value={clienteNif} onChange={(event) => setClienteNif(event.target.value)} />
+          <input id={`doc-cli-nif-${tipo}`} className="ds-input" value={clienteNif} onChange={(event) => setClienteNif(event.target.value)} />
         </Campo>
         <Campo id={`doc-cli-contacto-${tipo}`} label="Contacto (opcional)">
-          <input id={`doc-cli-contacto-${tipo}`} className="app-input" value={clienteContacto} onChange={(event) => setClienteContacto(event.target.value)} />
+          <input id={`doc-cli-contacto-${tipo}`} className="ds-input" value={clienteContacto} onChange={(event) => setClienteContacto(event.target.value)} />
         </Campo>
       </div>
     </fieldset>
@@ -188,7 +188,7 @@ export function OrcamentoProformaForm({ tipo }: { tipo: 'orcamento' | 'proforma'
       </div>
       <div className="mt-2 space-y-2">
         {itens.map((linha, indice) => <div key={indice} className="grid grid-cols-[1fr_64px_92px_32px] items-start gap-2 sm:grid-cols-[1fr_70px_100px_32px]">
-          <input aria-label={`Descrição do item ${indice + 1}`} className="app-input" placeholder={`Item ${indice + 1} — descrição`} value={linha.descricao} onChange={(event) => atualizarLinha(indice, 'descricao', event.target.value)} />
+          <input aria-label={`Descrição do item ${indice + 1}`} className="ds-input" placeholder={`Item ${indice + 1} — descrição`} value={linha.descricao} onChange={(event) => atualizarLinha(indice, 'descricao', event.target.value)} />
           <input aria-label={`Quantidade do item ${indice + 1}`} inputMode="decimal" className="app-input tabular-nums" placeholder="Qtd." value={linha.quantidade} onChange={(event) => atualizarLinha(indice, 'quantidade', event.target.value)} />
           <input aria-label={`Preço unitário do item ${indice + 1}`} inputMode="decimal" className="app-input tabular-nums" placeholder="Preço" value={linha.preco} onChange={(event) => atualizarLinha(indice, 'preco', event.target.value)} />
           <button type="button" aria-label={`Remover item ${indice + 1}`} disabled={itens.length === 1} onClick={() => setItens((actuais) => actuais.filter((_, i) => i !== indice))} className="mt-1 rounded-lg px-2 py-1.5 text-sm font-bold text-[#a13d3d] transition hover:bg-[#fdf2f2] disabled:opacity-30">✕</button>
@@ -217,7 +217,7 @@ export function OrcamentoProformaForm({ tipo }: { tipo: 'orcamento' | 'proforma'
     </Campo>
 
     {tipo === 'proforma' && <Campo id={`doc-validade-${tipo}`} label="Validade da proforma">
-      <select id={`doc-validade-${tipo}`} className="app-input" value={validadeDias} onChange={(event) => setValidadeDias(event.target.value)}>
+      <select id={`doc-validade-${tipo}`} className="ds-input" value={validadeDias} onChange={(event) => setValidadeDias(event.target.value)}>
         <option value="7">7 dias</option>
         <option value="15">15 dias</option>
         <option value="30">30 dias</option>

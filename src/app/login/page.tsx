@@ -60,11 +60,11 @@ export default function LoginPage() {
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
             <label htmlFor="email" className="app-label">Email</label>
-            <input id="email" name="email" type="email" autoComplete="email" required className="app-input" />
+            <input id="email" name="email" type="email" autoComplete="email" required className="ds-input" />
           </div>
           <div>
             <label htmlFor="password" className="app-label">Palavra-passe</label>
-            <input id="password" name="password" type="password" autoComplete="current-password" required className="app-input" />
+            <input id="password" name="password" type="password" autoComplete="current-password" required className="ds-input" />
             <Link href="/forgot-password" className="mt-2 inline-block text-sm font-semibold text-[#2878d0] hover:underline">Esqueci-me da palavra-passe</Link>
           </div>
           {error && <p role="alert" className="rounded-lg border border-red-100 bg-red-50 px-3 py-2.5 text-sm text-[#a83939]">{error}</p>}

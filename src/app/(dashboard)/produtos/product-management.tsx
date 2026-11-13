@@ -191,20 +191,20 @@ export function ProductManagement({ initialProducts, wmsEnabled }: { initialProd
           <form id="product-form" className="flex-1 overflow-y-auto overscroll-contain px-5 py-4 sm:px-6" onSubmit={handleSubmit} key={editing?.id ?? 'novo'}>
             <fieldset className="space-y-3">
               <legend className="text-[10px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">Identificação</legend>
-              <div><label htmlFor="product-name" className="app-label">Nome do produto <span className="text-[#c44747]">*</span></label><input id="product-name" name="nome" className="app-input" maxLength={160} required autoFocus defaultValue={editing?.name ?? ''} placeholder="Ex.: Deo Colónia Feminino Humor" /></div>
+              <div><label htmlFor="product-name" className="app-label">Nome do produto <span className="text-[#c44747]">*</span></label><input id="product-name" name="nome" className="ds-input" maxLength={160} required autoFocus defaultValue={editing?.name ?? ''} placeholder="Ex.: Deo Colónia Feminino Humor" /></div>
               <div className="grid gap-3 sm:grid-cols-2">
-                <div><label htmlFor="product-code" className="app-label">SKU / Código interno <span className="font-normal text-[var(--text-muted)]">(auto se vazio)</span></label><input id="product-code" name="codigo" className="app-input" placeholder="SKU-ABC123" defaultValue={editing?.codigo ?? ''} /></div>
-                <div><label htmlFor="product-barcode" className="app-label">Código de barras <span className="font-normal text-[var(--text-muted)]">(opcional)</span></label><input id="product-barcode" name="barcode" className="app-input" inputMode="numeric" placeholder="1234567890123" defaultValue={editing?.barcode ?? ''} /><p className="mt-1 text-[10px] text-[var(--text-muted)]">Formato EAN-13 (opcional)</p></div>
+                <div><label htmlFor="product-code" className="app-label">SKU / Código interno <span className="font-normal text-[var(--text-muted)]">(auto se vazio)</span></label><input id="product-code" name="codigo" className="ds-input" placeholder="SKU-ABC123" defaultValue={editing?.codigo ?? ''} /></div>
+                <div><label htmlFor="product-barcode" className="app-label">Código de barras <span className="font-normal text-[var(--text-muted)]">(opcional)</span></label><input id="product-barcode" name="barcode" className="ds-input" inputMode="numeric" placeholder="1234567890123" defaultValue={editing?.barcode ?? ''} /><p className="mt-1 text-[10px] text-[var(--text-muted)]">Formato EAN-13 (opcional)</p></div>
               </div>
             </fieldset>
 
             <fieldset className="mt-5 border-t border-[var(--line)] pt-5">
               <legend className="text-[10px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">Organização</legend>
               <div className="mt-2 grid gap-3 sm:grid-cols-2">
-                <div><label htmlFor="product-category" className="app-label">Categoria <span className="font-normal text-[var(--text-muted)]">(opcional)</span></label><input id="product-category" name="categoria" className="app-input" defaultValue={editing?.categoria ?? 'GERAL'} /></div>
-                <div><label htmlFor="product-subcategory" className="app-label">Subcategoria <span className="font-normal text-[var(--text-muted)]">(opcional)</span></label><input id="product-subcategory" name="subcategoria" className="app-input" defaultValue={editing?.subcategoria ?? ''} /></div>
-                <div><label htmlFor="product-brand" className="app-label">Marca <span className="font-normal text-[var(--text-muted)]">(opcional)</span></label><input id="product-brand" name="marca" className="app-input" defaultValue={editing?.marca ?? ''} /></div>
-                <div><label htmlFor="product-model" className="app-label">Modelo / Referência <span className="font-normal text-[var(--text-muted)]">(opcional)</span></label><input id="product-model" name="modelo" className="app-input" defaultValue={editing?.modelo ?? ''} /></div>
+                <div><label htmlFor="product-category" className="app-label">Categoria <span className="font-normal text-[var(--text-muted)]">(opcional)</span></label><input id="product-category" name="categoria" className="ds-input" defaultValue={editing?.categoria ?? 'GERAL'} /></div>
+                <div><label htmlFor="product-subcategory" className="app-label">Subcategoria <span className="font-normal text-[var(--text-muted)]">(opcional)</span></label><input id="product-subcategory" name="subcategoria" className="ds-input" defaultValue={editing?.subcategoria ?? ''} /></div>
+                <div><label htmlFor="product-brand" className="app-label">Marca <span className="font-normal text-[var(--text-muted)]">(opcional)</span></label><input id="product-brand" name="marca" className="ds-input" defaultValue={editing?.marca ?? ''} /></div>
+                <div><label htmlFor="product-model" className="app-label">Modelo / Referência <span className="font-normal text-[var(--text-muted)]">(opcional)</span></label><input id="product-model" name="modelo" className="ds-input" defaultValue={editing?.modelo ?? ''} /></div>
               </div>
             </fieldset>
 
@@ -213,7 +213,7 @@ export function ProductManagement({ initialProducts, wmsEnabled }: { initialProd
               <div className="mt-2 grid gap-3 sm:grid-cols-3">
                 <div className="relative"><label htmlFor="product-price" className="app-label">Preço de venda <span className="text-[#c44747]">*</span></label><input id="product-price" name="preco" type="number" className="app-input tabular-nums pr-10" min="0" step="0.01" required placeholder="0,00" defaultValue={editing?.price ?? ''} /><span aria-hidden="true" className="pointer-events-none absolute right-3 bottom-3 text-xs font-bold text-[var(--text-muted)]">Kz</span></div>
                 <div><label htmlFor="product-purchase" className="app-label">Preço de compra <span className="font-normal text-[var(--text-muted)]">(opcional)</span></label><input id="product-purchase" name="purchasePrice" type="number" className="app-input tabular-nums" min="0" step="0.01" placeholder="0,00" defaultValue={editing?.purchasePrice ?? ''} /></div>
-                <div><label htmlFor="product-unit" className="app-label">Unidade <span className="font-normal text-[var(--text-muted)]">(opcional)</span></label><select id="product-unit" name="unidade" className="app-input" defaultValue={editing?.unidade ?? 'un'}><option value="un">un</option><option value="kg">kg</option><option value="g">g</option><option value="lt">lt</option><option value="ml">ml</option><option value="m">m</option><option value="cm">cm</option><option value="cx">cx</option><option value="pc">pc</option><option value="dz">dz</option></select></div>
+                <div><label htmlFor="product-unit" className="app-label">Unidade <span className="font-normal text-[var(--text-muted)]">(opcional)</span></label><select id="product-unit" name="unidade" className="ds-input" defaultValue={editing?.unidade ?? 'un'}><option value="un">un</option><option value="kg">kg</option><option value="g">g</option><option value="lt">lt</option><option value="ml">ml</option><option value="m">m</option><option value="cm">cm</option><option value="cx">cx</option><option value="pc">pc</option><option value="dz">dz</option></select></div>
               </div>
               {wmsEnabled && (
                 <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -232,7 +232,7 @@ export function ProductManagement({ initialProducts, wmsEnabled }: { initialProd
                   <div className="min-w-0 flex-1"><p className="text-[10px] uppercase tracking-[.14em] text-[var(--text-muted)]">Imagem actual</p><p className="truncate text-[11px] text-[var(--text-muted)]">{editing?.imageUrl}</p></div>
                 </div>
               ) : null}
-              <div className="mt-2"><label htmlFor="product-image" className="app-label">URL da imagem <span className="font-normal text-[var(--text-muted)]">(opcional)</span></label><input id="product-image" name="imageUrl" className="app-input" type="url" placeholder="https://…" defaultValue={editing?.imageUrl ?? ''} /><p className="mt-1 text-[10px] text-[var(--text-muted)]">URL público da imagem (gestor de ficheiros externo)</p></div>
+              <div className="mt-2"><label htmlFor="product-image" className="app-label">URL da imagem <span className="font-normal text-[var(--text-muted)]">(opcional)</span></label><input id="product-image" name="imageUrl" className="ds-input" type="url" placeholder="https://…" defaultValue={editing?.imageUrl ?? ''} /><p className="mt-1 text-[10px] text-[var(--text-muted)]">URL público da imagem (gestor de ficheiros externo)</p></div>
             </fieldset>
 
             {error && <p role="alert" className="mt-3 rounded-[10px] border border-[#f0d3d3] bg-[#fdf2f2] px-3 py-2 text-sm font-semibold text-[var(--danger)]">{error}</p>}

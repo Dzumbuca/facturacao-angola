@@ -73,14 +73,14 @@ export function PaymentsManager({ batches, runs }: { batches: Batch[]; runs: Run
         <FormSection title="Criar lote de pagamentos">
           <div className="sm:col-span-2">
             <FormField label="Processamento aprovado" name="pay-run" required>
-              <select id="pay-run" className="app-input" value={runId} onChange={(e) => setRunId(e.target.value)} required>
+              <select id="pay-run" className="ds-input" value={runId} onChange={(e) => setRunId(e.target.value)} required>
                 <option value="">Selecionar</option>{runs.map((run) => <option key={run.id} value={run.id}>{run.period} — {money(run.totalNet)}</option>)}
               </select>
             </FormField>
           </div>
           <div>
             <FormField label="Canal" name="pay-provider">
-              <select id="pay-provider" className="app-input" value={provider} onChange={(e) => setProvider(e.target.value)}><option value="MANUAL">Manual</option><option value="EMIS">EMIS (abstração)</option></select>
+              <select id="pay-provider" className="ds-input" value={provider} onChange={(e) => setProvider(e.target.value)}><option value="MANUAL">Manual</option><option value="EMIS">EMIS (abstração)</option></select>
             </FormField>
           </div>
           {runs.length === 0 && <p className="mt-2 text-xs text-[#8a5a00]">Não há processamentos aprovados disponíveis.</p>}

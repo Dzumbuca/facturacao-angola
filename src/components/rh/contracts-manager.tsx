@@ -85,19 +85,19 @@ export function ContractsManager({ contracts, employees }: {
           <FormSection title="Dados do contrato">
             <div className="sm:col-span-2">
               <FormField label="Funcionário" name="ct-employee" required>
-                <select id="ct-employee" name="employeeId" className="app-input" required value={selectedEmployeeId} onChange={(e) => setSelectedEmployeeId(e.target.value)}>
+                <select id="ct-employee" name="employeeId" className="ds-input" required value={selectedEmployeeId} onChange={(e) => setSelectedEmployeeId(e.target.value)}>
                   <option value="">Selecionar</option>{employees.map((employee) => <option key={employee.id} value={employee.id}>{employee.firstName} {employee.lastName} ({employee.employeeNumber})</option>)}
                 </select>
               </FormField>
             </div>
             <div>
               <FormField label="Tipo" name="ct-type" required>
-                <select id="ct-type" name="type" className="app-input" value={selectedType} onChange={(e) => setSelectedType(e.target.value)}>{Object.entries(TYPE_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+                <select id="ct-type" name="type" className="ds-input" value={selectedType} onChange={(e) => setSelectedType(e.target.value)}>{Object.entries(TYPE_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
               </FormField>
             </div>
             <div>
               <FormField label="Estado" name="ct-status">
-                <select id="ct-status" name="status" className="app-input" defaultValue="RASCUNHO">{Object.entries(STATUS_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+                <select id="ct-status" name="status" className="ds-input" defaultValue="RASCUNHO">{Object.entries(STATUS_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
               </FormField>
             </div>
             <div>
@@ -110,7 +110,7 @@ export function ContractsManager({ contracts, employees }: {
               <FormField label="Salário (Kz)" name="ct-salary" required><CurrencyInput id="ct-salary" name="salary" value={salaryValue} onChange={setSalaryValue} required /></FormField>
             </div>
             <div>
-              <FormField label="Notas" name="ct-notes"><input id="ct-notes" name="notes" className="app-input" /></FormField>
+              <FormField label="Notas" name="ct-notes"><input id="ct-notes" name="notes" className="ds-input" /></FormField>
             </div>
           </FormSection>
           <FormError>{error}</FormError>

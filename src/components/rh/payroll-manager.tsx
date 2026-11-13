@@ -138,8 +138,8 @@ export function PayrollManager({ rulesets, runs }: { rulesets: RuleSet[]; runs: 
               <p className="mt-2 text-sm text-[#8a5a00]">Crie primeiro um conjunto de regras salariais (separador ao lado).</p>
             ) : (
               <FormSection title="Período de processamento">
-                <FormField label="Período" name="run-period" required><input id="run-period" type="month" className="app-input" value={period} onChange={(e) => setPeriod(e.target.value)} required /></FormField>
-                <FormField label="Regras salariais" name="run-ruleset" required><select id="run-ruleset" className="app-input" value={rulesetId} onChange={(e) => setRulesetId(e.target.value)} required>{rulesets.map((ruleset) => <option key={ruleset.id} value={ruleset.id}>{ruleset.name}</option>)}</select></FormField>
+                <FormField label="Período" name="run-period" required><input id="run-period" type="month" className="ds-input" value={period} onChange={(e) => setPeriod(e.target.value)} required /></FormField>
+                <FormField label="Regras salariais" name="run-ruleset" required><select id="run-ruleset" className="ds-input" value={rulesetId} onChange={(e) => setRulesetId(e.target.value)} required>{rulesets.map((ruleset) => <option key={ruleset.id} value={ruleset.id}>{ruleset.name}</option>)}</select></FormField>
                 <div className="flex items-end"><FormActions saving={saving} onCancel={() => {}} saveLabel={saving ? 'A calcular…' : 'Calcular folha'} /></div>
               </FormSection>
             )}
@@ -180,12 +180,12 @@ export function PayrollManager({ rulesets, runs }: { rulesets: RuleSet[]; runs: 
           <form onSubmit={createRuleset} className="rounded-xl border border-[var(--line)] bg-white p-4">
             <h2 className="text-sm font-bold text-[var(--text)]">Novo conjunto de regras</h2>
             <FormSection title="Definição das regras" description="Os valores são definidos pela empresa após validação jurídica. Nada fica VALIDADO sem evidência documental.">
-              <div className="sm:col-span-2"><FormField label="Nome" name="rule-name" required><input id="rule-name" className="app-input" value={name} onChange={(e) => setName(e.target.value)} required /></FormField></div>
+              <div className="sm:col-span-2"><FormField label="Nome" name="rule-name" required><input id="rule-name" className="ds-input" value={name} onChange={(e) => setName(e.target.value)} required /></FormField></div>
               <div><FormField label="Vigência" name="rule-from" required><CalendarField id="rule-from" name="rule-from" value={effectiveFrom} onChange={setEffectiveFrom} required /></FormField></div>
-              <div><FormField label="INSS trabalhador (%)" name="rule-inss-emp"><input id="rule-inss-emp" type="number" min="0" max="100" step="0.01" className="app-input" value={inssEmployeeRate} onChange={(e) => setInssEmployeeRate(e.target.value)} required /></FormField></div>
-              <div><FormField label="INSS entidade (%)" name="rule-inss-empr"><input id="rule-inss-empr" type="number" min="0" max="100" step="0.01" className="app-input" value={inssEmployerRate} onChange={(e) => setInssEmployerRate(e.target.value)} required /></FormField></div>
-              <div><FormField label="Subsídio alimentação (Kz)" name="rule-food"><input id="rule-food" type="number" min="0" step="0.01" className="app-input" value={foodAllowance} onChange={(e) => setFoodAllowance(e.target.value)} required /></FormField></div>
-              <div><FormField label="Subsídio transporte (Kz)" name="rule-transport"><input id="rule-transport" type="number" min="0" step="0.01" className="app-input" value={transportAllowance} onChange={(e) => setTransportAllowance(e.target.value)} required /></FormField></div>
+              <div><FormField label="INSS trabalhador (%)" name="rule-inss-emp"><input id="rule-inss-emp" type="number" min="0" max="100" step="0.01" className="ds-input" value={inssEmployeeRate} onChange={(e) => setInssEmployeeRate(e.target.value)} required /></FormField></div>
+              <div><FormField label="INSS entidade (%)" name="rule-inss-empr"><input id="rule-inss-empr" type="number" min="0" max="100" step="0.01" className="ds-input" value={inssEmployerRate} onChange={(e) => setInssEmployerRate(e.target.value)} required /></FormField></div>
+              <div><FormField label="Subsídio alimentação (Kz)" name="rule-food"><input id="rule-food" type="number" min="0" step="0.01" className="ds-input" value={foodAllowance} onChange={(e) => setFoodAllowance(e.target.value)} required /></FormField></div>
+              <div><FormField label="Subsídio transporte (Kz)" name="rule-transport"><input id="rule-transport" type="number" min="0" step="0.01" className="ds-input" value={transportAllowance} onChange={(e) => setTransportAllowance(e.target.value)} required /></FormField></div>
             </FormSection>
             <div className="mt-3">
               <FormField label="Escalões IRT (JSON)" name="rule-brackets" required hint="Cada escalão: limite superior (`upTo`, `null` no último), taxa e dedução."><textarea id="rule-brackets" className="app-input min-h-28 font-mono text-xs" value={brackets} onChange={(e) => setBrackets(e.target.value)} placeholder={'[{"upTo":100000,"rate":0,"deduction":0},{"upTo":null,"rate":10,"deduction":0}]'} required /></FormField>
