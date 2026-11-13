@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { FormSection, FormField, FormActions, FormError } from '@/components/rh/form-kit';
 import { DOCUMENT_TYPES, documentTypeById, buildInstruction, CATEGORIES, type DocumentField } from '@/lib/rh-ai-studio';
 import { AiDocumentPreview } from './ai-document-preview';
+import { RhModuleHero } from './premium-kit';
 
 type Step = 'choose' | 'form' | 'editor';
 type StoredDraft = { id: string; title: string; typeId: string; content: string; updatedAt: number };
@@ -136,11 +137,12 @@ export function RhAiStudio({ configured, provider }: { configured: boolean; prov
   if (step === 'choose') {
     return (
       <div className="space-y-4">
-        <div>
-          <p className="text-sm text-[#708195]">Machine RH · Assistente IA</p>
-          <h1 className="mt-1 text-2xl font-bold text-[#1c2d3f]">Estúdio de Documentos IA</h1>
-          <p className="mt-1 text-sm text-[#607286]">Cria documentos profissionais em 5 passos: escolher → introduzir dados → gerar → rever e editar → descarregar. Limites do Groq: 10 pedidos/minuto por utilizador.</p>
-        </div>
+        <RhModuleHero
+          eyebrow="Machine RH · Assistente IA"
+          title="Estúdio de Documentos IA"
+          description="Cria declarações, contratos, cartas e propostas em 5 passos: escolher → dados → gerar → rever → descarregar. A IA formata como documento empresarial — não como texto técnico."
+          icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l1.6 4.7 4.7 1.6-4.7 1.6L12 14.6l-1.6-4.7-4.7-1.6 4.7-1.6L12 2z"/><path d="M19 13l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2z"/></svg>}
+        />
         <div className={`rounded-xl border p-3 text-xs ${configured ? 'border-[#cbe8dc] bg-[#eff9f4] text-[#267256]' : 'border-[#f0e0b8] bg-[#fffbef] text-[#8a5a00]'}`}>{configured ? <>Activo via <strong>{provider}</strong>.</> : <>IA não configurada. Defina <code>GROQ_API_KEY</code>.</>}</div>
         <div className="flex flex-wrap gap-2">
           <button type="button" onClick={() => setCategoryFilter('')} className={`rounded-full border px-3 py-1 text-xs font-semibold ${!categoryFilter ? 'border-[#021f87] bg-[#021f87] text-white' : 'border-[#d4e0ea] text-[#3c4f66]'}`}>Todas</button>
@@ -148,7 +150,7 @@ export function RhAiStudio({ configured, provider }: { configured: boolean; prov
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           {visibleTypes.map((t) => (
-            <button key={t.id} type="button" onClick={() => { setTypeId(t.id); setStep('form'); }} className="rounded-xl border border-[#dfe7f0] bg-white p-3 text-left transition hover:border-[#021f87]/40 hover:bg-[#f7faff]">
+            <button key={t.id} type="button" onClick={() => { setTypeId(t.id); setStep('form'); }} className="group relative overflow-hidden rounded-2xl border border-[#e4e9f0] bg-white p-4 text-left transition hover:-translate-y-0.5 hover:border-[#021f87]/40 hover:shadow-[0_20px_40px_rgba(2,31,135,.14)]">
               <p className="text-sm font-semibold text-[#1c2d3f]">{t.label}</p>
               <p className="mt-0.5 text-xs text-[#708195]">{t.description}</p>
               <p className="mt-2 text-[10px] uppercase tracking-[.12em] text-[#8aa1bd]">Ex.: {t.example}</p>
@@ -179,8 +181,8 @@ export function RhAiStudio({ configured, provider }: { configured: boolean; prov
   if (step === 'form') {
     return (
       <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <button type="button" onClick={() => setStep('choose')} className="text-xs font-semibold text-[#021f87]">← Voltar</button>
+        <div className="flex items-center justify-between gap-3">
+          <button type="button" onClick={() => setStep('choose')} className="grid h-9 w-9 place-items-center rounded-lg border border-[#d4e0ea] text-[#52667a] transition hover:bg-[#f4f7fb]" aria-label="Voltar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
           <p className="text-xs font-bold uppercase tracking-[.16em] text-[#708195]">{chosen.label}</p>
         </div>
         <form onSubmit={(e) => { e.preventDefault(); void generate(); }} className="rounded-xl border border-[#dfe7f0] bg-white p-4">
