@@ -5,6 +5,7 @@ import { isApplicationEnabled } from '@/lib/platform-apps';
 import { runWithTenant } from '@/lib/tenant-db';
 import { MyJustifications } from '@/components/rh/my-justifications';
 import { SelfAssessmentSection } from '@/components/rh/self-assessment-section';
+import { Assistant } from '@/components/assistant/assistant';
 
 function money(value: unknown) {
   return new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', maximumFractionDigits: 2 }).format(Number(value) || 0);
@@ -99,7 +100,7 @@ export default async function MyRhPage() {
           <table className="data-table min-w-[420px]"><thead><tr><th>Período</th><th>Dias</th><th>Estado</th></tr></thead>
             <tbody>{leaves.map((leave: any) => <tr key={leave.id}><td data-mobile-primary className="tabular-nums">{day(leave.startDate)} → {day(leave.endDate)}</td><td className="tabular-nums">{leave.days}</td><td>{leave.status}</td></tr>)}
               {leaves.length === 0 && <tr><td colSpan={3} className="px-4 py-8 text-center text-sm text-[#708195]">Sem pedidos.</td></tr>}</tbody></table>
-        </div>
+</div>
       </section>
 
       <MyJustifications
@@ -154,6 +155,7 @@ export default async function MyRhPage() {
           {documents.length === 0 && <li className="px-4 py-8 text-center text-sm text-[#708195]">Sem documentos.</li>}
         </ul>
       </section>
+          <Assistant />
     </main>
   );
 }

@@ -10,6 +10,7 @@ import { MobileBottomNav } from '@/components/mobile-bottom-nav';
 import { ResponsiveTables } from '@/components/responsive-tables';
 import { PwaInstall } from '@/components/pwa-install';
 import { visibleNavGroups } from '@/lib/navigation';
+import { Assistant } from '@/components/assistant/assistant';
 
 type NavLink = { href: string; label: string; icon: string };
 const groups: { title: string; links: NavLink[] }[] = [
@@ -101,6 +102,7 @@ export function AppShell({ children, platformAdmin = false, plan = 'FREE', adHtm
         <main className="mx-auto w-full max-w-[1440px] px-4 pb-36 pt-5 md:px-8 md:pb-10 md:pt-8">{children}</main>
       </div>
 
+      <Assistant />
       <MobileBottomNav platformAdmin={platformAdmin} plan={plan} planExpired={planExpired} wmsEnabled={wmsEnabled} />
       <PwaInstall />
       <ResponsiveTables />

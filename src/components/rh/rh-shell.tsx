@@ -8,6 +8,7 @@ import { DashboardIcon, IconBuilding, IconBriefcase, IconFileText, IconClock, Ic
 import { ResponsiveTables } from '@/components/responsive-tables';
 
 import type { ComponentType, SVGProps } from 'react';
+import { Assistant } from '@/components/assistant/assistant';
 type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
 const activeLinks: { href: string; label: string; icon: IconComponent }[] = [
   { href: '/rh/dashboard', label: 'Dashboard', icon: DashboardIcon },
@@ -129,6 +130,7 @@ export function RhShell({ children, canManageMembers = false }: { children: Reac
           </Link>
         ))}
       </nav>
+      <Assistant />
       <ResponsiveTables />
     </div>
   );

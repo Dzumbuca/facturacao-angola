@@ -3,6 +3,7 @@ import { adminSignOut } from '@/lib/admin-signout';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { AdminMobileNav } from '@/components/admin-mobile-nav';
 import { ResponsiveTables } from '@/components/responsive-tables';
+import { Assistant } from '@/components/assistant/assistant';
 
 const links = [
   ['/admin', 'Visão geral', 'dashboard.read'], ['/admin/empresas', 'Empresas', 'companies.read'], ['/admin/planos', 'Planos comerciais', 'companies.update'],
@@ -34,5 +35,6 @@ export function AdminShell({ children, operator, platformName }: { children: Rea
       footer={<form action={adminSignOut}><button className="w-full rounded-xl border border-[#f0c9c9] bg-red-50 px-4 py-3 text-sm font-semibold text-[#a83939] transition active:bg-red-100">Terminar sessão</button></form>}
     />
     <ResponsiveTables />
-  </div>;
+        <Assistant />
+    </div>;
 }
