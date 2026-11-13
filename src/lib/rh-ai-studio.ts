@@ -58,8 +58,8 @@ export const DOCUMENT_TYPES: DocumentType[] = [
     category: 'DECLARACOES',
     fields: [
       { key: 'funcionarioNome', label: 'Nome do funcionário', placeholder: 'Ex.: João Kaluana' },
-      { key: 'funcionarioBi', label: 'BI', placeholder: 'Ex.: 000123456LA036' },
-      { key: 'funcionarioNif', label: 'NIF', placeholder: 'Ex.: 512345678' },
+      { key: 'funcionarioBi', label: 'BI (Bilhete de Identidade)', placeholder: 'Ex.: 000123456LA036' },
+      { key: 'funcionarioNif', label: 'NIF', placeholder: 'Preenchido automaticamente com o BI, se vazio' },
       { key: 'cargo', label: 'Cargo', placeholder: 'Ex.: Técnico Contabilidade' },
       { key: 'departamento', label: 'Departamento', placeholder: 'Ex.: Contabilidade', optional: true },
       { key: 'dataAdmissao', label: 'Data de admissão', placeholder: 'DD/MM/AAAA', kind: 'date' },
@@ -147,8 +147,8 @@ export const DOCUMENT_TYPES: DocumentType[] = [
     category: 'CONTRATOS',
     fields: [
       { key: 'funcionarioNome', label: 'Nome do funcionário', placeholder: 'Ex.: João Kaluana' },
-      { key: 'funcionarioBi', label: 'BI', placeholder: 'Ex.: 000123456LA036' },
-      { key: 'funcionarioNif', label: 'NIF', placeholder: 'Ex.: 512345678' },
+      { key: 'funcionarioBi', label: 'BI (Bilhete de Identidade)', placeholder: 'Ex.: 000123456LA036' },
+      { key: 'funcionarioNif', label: 'NIF', placeholder: 'Preenchido automaticamente com o BI, se vazio' },
       { key: 'cargo', label: 'Cargo', placeholder: 'Ex.: Técnico Contabilidade' },
       { key: 'salario', label: 'Salário mensal bruto (Kz)', placeholder: 'Ex.: 150.000,00' },
       { key: 'dataInicio', label: 'Início', placeholder: 'DD/MM/AAAA', kind: 'date' },
@@ -314,6 +314,7 @@ export function buildInstruction(type: DocumentType, values: Record<string, stri
   lines.push('Segue rigorosamente os factos fornecidos; não inventes nomes, NIF, datas ou valores.');
   lines.push('Se algum dado não foi fornecido, escreve [A PREENCHER: descrição] no lugar correspondente; nunca inventes.');
   lines.push('Usa Markdown simples: # títulos, ## subtítulos, listas com -, tabelas com |.');
+  lines.push('Para cidadãos angolanos, o NIF pode coincidir com o BI. Se o NIF não for fornecido mas o BI for, usa o BI no campo NIF.');
   for (const field of type.fields) {
     const value = answer(field.key);
     if (value) lines.push(`${field.label}: ${value}`);

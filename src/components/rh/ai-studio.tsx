@@ -53,7 +53,13 @@ export function RhAiStudio({ configured, provider }: { configured: boolean; prov
   const chosen = documentTypeById(typeId) ?? DOCUMENT_TYPES[0];
   const visibleTypes = useMemo(() => DOCUMENT_TYPES.filter((t) => !categoryFilter || t.category === categoryFilter), [categoryFilter]);
 
-  const setValue = (key: string, value: string) => setValues((v) => ({ ...v, [key]: value }));
+  const setValue = (key: string, value: string) => setValues((v) => {
+    const next = { ...v, [key]: value };
+    // Para cidadãos angolanos, NIF pode coincidir com o BI.
+    if (key === 'funcionarioBi' && !v.funcionarioNif) next.funcionarioNif = value;
+    if (key === 'funcionarioNif' && value && !v.funcionarioNif) { /* utilizador apagou NIF manual: manter*/ }
+    return next;
+  });
 
   async function generate() {
     setLoading(true); setError(''); setResult('');
