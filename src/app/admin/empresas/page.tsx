@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { listAdminTenants } from '@/lib/admin-data';
 import { AdminSearchFilters } from '@/components/admin-search-filters';
+import { EmptyState } from '@/components/ui/data-table';
 import { AdminPagination } from '@/components/admin-pagination';
 import { AdminStatusBadge, AdminErrorState } from '@/components/admin-ui';
 

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { DataTable, StatusBadge, stateTone } from '@/components/ui/data-table';
+import { DataTable, StatusBadge, stateTone, EmptyState } from '@/components/ui/data-table';
 
 type IssuedRow = {
   id: string;
@@ -67,7 +67,7 @@ export function InvoicesTabs({ issuedRows, draftRows }: { issuedRows: IssuedRow[
               </tr>
             ))}
             {issuedRows.length === 0 && (
-              <tr><td colSpan={6} className="px-5 py-10 text-center text-sm text-[#8094a9]">Nenhuma factura encontrada para este filtro.</td></tr>
+              <tr><td colSpan={6} className="px-4 py-4"><EmptyState title="Nenhuma factura" description="Não há facturas para o filtro seleccionado. Ajuste a vista ou emita uma nova factura." /></td></tr>
             )}
           </tbody>
         </DataTable>

@@ -1,5 +1,6 @@
 import { getAdminPlanPayments } from '@/lib/admin-data';
 import { AdminStatusBadge, AdminErrorState } from '@/components/admin-ui';
+import { EmptyState } from '@/components/ui/data-table';
 import { PlanPaymentReviewForm } from '@/components/plan-payment-review';
 
 type Params = Promise<Record<string, string | string[] | undefined>>;
@@ -42,7 +43,7 @@ export default async function AdminPagamentosPage({ searchParams }: { searchPara
           {v.status === 'PENDENTE' && <PlanPaymentReviewForm id={v.id} done={false} />}
           {v.status !== 'PENDENTE' && v.adminNote && <p className="mt-2 text-sm text-slate-500">Nota: {v.adminNote}</p>}
         </article>)}
-        {!payments.length && <p className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-500">Nenhum pagamento nesta lista.</p>}
+        {!payments.length && <div className="p-4"><EmptyState title="Sem registos" description="Nenhum pagamento nesta lista." /></div>}
       </section>
     </div>;
   } catch { return <AdminErrorState title="Pagamentos de planos" />; }

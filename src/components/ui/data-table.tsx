@@ -26,13 +26,13 @@ export function DataTable({ children, className = '' }: { children: ReactNode; c
 
 export function EmptyState({ title, description, action }: { title: string; description: string; action?: ReactNode }) {
   return (
-    <div className="rounded-[18px] border border-dashed border-[#dfe6ee] bg-[#fbfcfe] px-6 py-12 text-center dark:border-[#1e2a44] dark:bg-[#0d1627]">
-      <div className="mx-auto grid h-14 w-14 place-items-center rounded-[14px] bg-white shadow-sm dark:bg-[#1a2940]">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+    <div className="rounded-[20px] border border-dashed border-[#dfe6ee] bg-gradient-to-b from-[#fbfcfe] to-[#f7f9fd] px-6 py-12 text-center shadow-[inset_0_1px_0_rgba(255,255,255,.7)] dark:border-[#1e2a44] dark:from-[#0d1627] dark:to-[#0b1220]">
+      <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-white shadow-[0_8px_24px_rgba(18,36,68,.07)] dark:bg-[#162038]">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="text-[#c0cbda] dark:text-[#8295b4]"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
       </div>
-      <h3 className="mt-4 text-sm font-bold text-[#1c2d3f] dark:text-slate-100">{title}</h3>
-      <p className="mt-1 text-xs leading-5 text-[#8094a9] dark:text-slate-400">{description}</p>
-      {action && <div className="mt-4">{action}</div>}
+      <h3 className="mt-4 text-sm font-extrabold tracking-tight text-[#1c2d3f] dark:text-slate-100">{title}</h3>
+      <p className="mx-auto mt-1.5 max-w-xs text-xs leading-6 text-[#8094a9] dark:text-slate-400">{description}</p>
+      {action && <div className="mt-5">{action}</div>}
     </div>
   );
 }
