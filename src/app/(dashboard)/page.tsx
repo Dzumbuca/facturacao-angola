@@ -63,34 +63,70 @@ export default async function DashboardPage({ searchParams }: Props) {
           </div>
         </div>
 
-        <div aria-hidden="true" className="relative hidden h-full min-h-[180px] select-none items-center justify-center lg:flex">
-          {/* Camada 1 — cartão maior (traseira) */}
-          <div className="hero-entrance absolute" style={{ animationDelay: '100ms' }}>
-            <div className="hero-float absolute h-56 w-44 rounded-[20px] border border-white/10 bg-white/[0.04] backdrop-blur-[2px] shadow-[0_10px_30px_rgba(0,0,0,.25)]" style={{ transform: 'rotate(-8deg)' }}>
-              <div className="flex h-full flex-col justify-between p-4">
-                <div className="space-y-2"><div className="h-2 w-16 rounded-full bg-white/20" /><div className="h-2 w-10 rounded-full bg-white/15" /></div>
-                <div className="space-y-2"><div className="h-2 w-12 rounded-full bg-white/15" /><div className="h-2 w-20 rounded-full bg-white/20" /></div>
+        <div aria-hidden="true" className="relative hidden h-full min-h-[210px] w-full max-w-[380px] select-none lg:block">
+          {/* Elemento 1 — Mini gráfico financeiro */}
+          <div className="hero-entrance absolute left-1 top-0" style={{ animationDelay: '120ms' }}>
+            <div className="hero-float rounded-[16px] border border-white/15 bg-white/[0.10] p-3 shadow-[0_10px_24px_rgba(2,31,135,.45)] backdrop-blur-xl" style={{ animationDelay: '0s', transform: 'rotate(-2deg)' }}>
+              <p className="text-[9px] font-extrabold uppercase tracking-[.14em] text-[#b9d0ff]">EVOLUÇÃO</p>
+              <svg width="132" height="56" viewBox="0 0 132 56" fill="none" className="mt-1.5">
+                <defs>
+                  <linearGradient id="mini-grad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#a8c6ff" stopOpacity="0.55"/>
+                    <stop offset="100%" stopColor="#a8c6ff" stopOpacity="0.02"/>
+                  </linearGradient>
+                </defs>
+                <path d="M2 44 L22 38 L40 41 L58 30 L75 34 L94 22 L112 26 L130 12 L130 54 L2 54 Z" fill="url(#mini-grad)"/>
+                <path d="M2 44 L22 38 L40 41 L58 30 L75 34 L94 22 L112 26 L130 12" stroke="#c8dbff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="130" cy="12" r="3" fill="#8ec0ff" stroke="#021f87" strokeWidth="1.6"/>
+              </svg>
+            </div>
+          </div>
+
+          {/* Elemento 2 — Cartão de Factura (elemento central) */}
+          <div className="hero-entrance absolute left-[30px] top-[72px]" style={{ animationDelay: '280ms' }}>
+            <div className="hero-float w-[188px] rounded-[18px] border border-white/25 bg-gradient-to-br from-[#0a2766]/90 to-[#021f87]/70 p-3 shadow-[0_22px_50px_rgba(2,31,135,.55)] backdrop-blur-xl" style={{ animationDelay: '1s', transform: 'rotate(6deg)' }}>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="grid h-8 w-8 place-items-center rounded-[10px] bg-white/15">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dce7ff" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-[#aac4ff]">FACTURA</p>
+                    <p className="text-[10px] font-semibold text-[#e8efff]">FT ····</p>
+                  </div>
+                </div>
+                <span className="rounded-full border border-white/20 bg-emerald-400/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-emerald-300">OK</span>
+              </div>
+              <div className="my-2.5 h-px bg-white/10" />
+              <div className="space-y-1.5">
+                <div className="h-[3px] w-full rounded-full bg-white/15" />
+                <div className="h-[3px] w-4/5 rounded-full bg-white/15" />
+                <div className="h-[3px] w-3/5 rounded-full bg-white/15" />
+              </div>
+              <div className="mt-3 flex items-center justify-between gap-2">
+                <span className="text-[9px] font-bold uppercase tracking-[.12em] text-[#aac4ff]">Total</span>
+                <span className="tabular-nums text-[13px] font-extrabold text-white">—</span>
               </div>
             </div>
           </div>
-          {/* Camada 2 — cartão intermédio */}
-          <div className="hero-entrance absolute" style={{ animationDelay: '250ms' }}>
-            <div className="hero-float absolute h-52 w-40 rounded-[18px] border border-white/15 bg-white/[0.08] backdrop-blur-md shadow-[0_14px_36px_rgba(0,0,0,.32)]" style={{ transform: 'rotate(4deg)' }}>
-              <div className="flex h-full flex-col justify-between p-4">
-                <div className="space-y-2"><div className="h-2 w-14 rounded-full bg-white/35" /><div className="h-2 w-20 rounded-full bg-white/25" /></div>
-                <div className="space-y-2"><div className="h-2 w-16 rounded-full bg-white/30" /><div className="h-2 w-10 rounded-full bg-white/20" /></div>
+
+          {/* Elemento 3 — Indicador de Recebimentos */}
+          <div className="hero-entrance absolute right-1 bottom-2" style={{ animationDelay: '440ms' }}>
+            <div className="hero-float flex w-[140px] flex-col gap-2 rounded-[16px] border border-white/20 bg-white/[0.14] p-2.5 shadow-[0_12px_28px_rgba(2,31,135,.40)] backdrop-blur-xl" style={{ animationDelay: '2s', transform: 'rotate(-4deg)' }}>
+              <div className="flex items-center gap-1.5">
+                <div className="grid h-6 w-6 place-items-center rounded-lg bg-emerald-400/25">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7ef0a1" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12h18"/><path d="M19 10l2 2-2 2"/><path d="M7 6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2z"/></svg>
+                </div>
+                <span className="text-[8px] font-extrabold uppercase tracking-[.14em] text-[#a0e4b5]">RECEBIMENTOS</span>
               </div>
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+                <div className="h-full w-[68%] rounded-full bg-gradient-to-r from-emerald-400 via-emerald-300 to-lime-300"/>
+              </div>
+              <p className="text-[8px] text-[#c2d4ff]">entradas confirmadas</p>
             </div>
-          </div>
-          {/* Camada 3 — cartão frontal + ícone central */}
-          <div className="hero-entrance relative flex h-56 w-44 items-center justify-center rounded-[22px] border border-white/25 bg-white/[0.14] backdrop-blur-xl shadow-[0_22px_50px_rgba(2,31,135,.45)]" style={{ animationDelay: '400ms' }}>
-            <svg width="78" height="78" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="hero-icon-glow text-[#dce7ff]" style={{ animationDelay: '550ms' }}>
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/>
-            </svg>
           </div>
         </div>
-      </div>
+</div>
     </PremiumHero>
 
     <section aria-label="Atalhos" className="grid gap-3 sm:grid-cols-3">
