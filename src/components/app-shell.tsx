@@ -17,10 +17,10 @@ import { ShellAside, ShellTopbar, ShellMain } from '@/components/system/shell';
 
 type NavLink = { href: string; label: string; icon: string };
 const groups: { title: string; links: NavLink[] }[] = [
-  { title: 'Principal', links: [{ href: '/', label: 'Dashboard', icon: 'grid' }, { href: '/apps', label: 'Aplicações', icon: 'grid' }] },
-  { title: 'Documentos Empresariais', links: [{ href: '/documentos', label: 'Documentos', icon: 'file' }] },
-  { title: 'Ferramentas', links: [{ href: '/ferramentas', label: 'Centro de ferramentas', icon: 'tools' }] },
-  { title: 'Operações', links: [{ href: '/invoices', label: 'Facturas', icon: 'file' }, { href: '/customers', label: 'Clientes', icon: 'users' }, { href: '/produtos', label: 'Produtos e serviços', icon: 'box' }, { href: '/warehouses', label: 'Armazéns', icon: 'building' }] },
+  { title: 'Principal', links: [{ href: '/', label: 'Dashboard', icon: 'layout' }, { href: '/apps', label: 'Aplicações', icon: 'puzzle' }] },
+  { title: 'Documentos', links: [{ href: '/invoices', label: 'Facturas', icon: 'file' }, { href: '/documentos', label: 'Documentos', icon: 'receipt' }, { href: '/customers', label: 'Clientes', icon: 'users' }, { href: '/produtos', label: 'Produtos', icon: 'package' }] },
+  { title: 'Ferramentas', links: [{ href: '/ferramentas', label: 'Centro de ferramentas', icon: 'calculator' }] },
+  { title: 'Operações', links: [{ href: '/warehouses', label: 'Armazéns', icon: 'building' }] },
   { title: 'Análise', links: [{ href: '/reports', label: 'Relatórios', icon: 'chart' }] },
   { title: 'Empresa', links: [{ href: '/empresa', label: 'Perfil da empresa', icon: 'building' }] },
 ];
@@ -49,7 +49,7 @@ export function AppShell({ children, platformAdmin = false, plan = 'FREE', adHtm
           <img src="/logo.png" width="800" height="600" alt="Facturação" className="h-9 w-auto max-w-[44px] rounded-lg bg-white object-contain px-1 py-1 md:max-w-[52px] lg:max-w-[92px]" />
           <span className="hidden leading-tight lg:block"><strong className="block text-[13px] tracking-[.12em]">MACHINE FACTURAS</strong><span className="text-[9px] uppercase tracking-[.1em] text-slate-400">Gestão financeira</span></span>
         </Link>
-        <nav aria-label="Navegação principal" className="min-h-0 flex-1 space-y-2 overflow-x-hidden overflow-y-auto overscroll-contain py-1">
+        <nav aria-label="Navegação principal" className="min-h-0 flex-1 space-y-2 overflow-x-hidden overflow-y-auto overscroll-contain py-1 sidebar-scroll">
           {visibleGroups.map((group) => <section key={group.title} aria-label={group.title}>
             <h2 className="mb-1 hidden lg:block px-3 text-[9px] font-extrabold uppercase tracking-[.16em] text-slate-500">{group.title}</h2>
             <ul className="space-y-0.5">{group.links.map(({ href, label, icon }) => {
@@ -62,7 +62,7 @@ export function AppShell({ children, platformAdmin = false, plan = 'FREE', adHtm
             <ul className="space-y-0.5"><li><Link href="/admin" aria-current={pathname === '/admin' || pathname.startsWith('/admin/') ? 'page' : undefined} className={`relative flex items-center justify-center gap-0 rounded-xl px-2 py-2.5 text-[13px] font-medium transition-all lg:justify-start lg:gap-3 lg:px-3 lg:py-2 ${pathname === '/admin' || pathname.startsWith('/admin/') ? 'bg-white/10 font-semibold text-white before:absolute before:inset-y-1.5 before:left-0 before:w-[3px] before:rounded-full before:bg-gradient-to-b before:from-[#7795ff] before:to-[#2878d0]' : 'text-slate-300 hover:bg-white/[.07] hover:text-white'}`}><NavIcon name="building" /><span className="hidden lg:inline">Administração da plataforma</span></Link></li></ul>
           </section>}
         </nav>
-        <div className="mt-3 max-h-[46vh] shrink-0 space-y-3 overflow-y-auto overscroll-contain border-t border-white/10 px-2 pt-3 hidden md:block lg:px-3">
+        <div className="mt-2 shrink-0 space-y-3 border-t border-white/10 px-2 pt-3 hidden md:block lg:px-3">
           <div>
             <p className="text-[10px] uppercase tracking-[.12em] text-slate-500">Moeda da conta</p>
             <p className="mt-1 text-xs font-medium text-slate-300">Kwanza · AOA</p>

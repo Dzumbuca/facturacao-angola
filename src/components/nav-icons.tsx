@@ -1,6 +1,11 @@
 import type { ReactNode } from 'react';
 
 const paths: Record<string, ReactNode> = {
+  layout: <><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M9 3v18M3 9h18M3 15h18M14 3v6M14 15v6" /></>,
+  puzzle: <><path d="M4 7h6V5a2 2 0 1 1 4 0v2h6a1 1 0 0 1 1 1v4h2a2 2 0 1 1 0 4h-2v4a1 1 0 0 1-1 1h-4v2a2 2 0 1 1-4 0v-2H4a1 1 0 0 1-1-1v-4H1a2 2 0 1 1 0-4h2V8a1 1 0 0 1 1-1Z"/></>,
+  calculator: <><rect x="4" y="2" width="16" height="20" rx="2" /><path d="M8 6h8M9 12h.01M12 12h.01M15 12h.01M9 16h.01M12 16h.01M15 16h.01" /></>,
+  package: <><path d="M3.5 7.5 12 3l8.5 4.5-8.5 4.5L3.5 7.5Z" /><path d="M3.5 7.5v9L12 21l8.5-4.5v-9" /><path d="M12 12v9" /></>,
+  inbox: <><path d="M22 12h-6l-2 3h-8l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z"/></>,
   grid: <><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></>,
   home: <><path d="M3 10.5 12 3l9 7.5" /><path d="M5 9.5V21h14V9.5" /><path d="M9.5 21v-6h5v6" /></>,
   receipt: <><path d="M6 2h12v20l-3-2-3 2-3-2-3 2V2Z" /><path d="M9 7h6M9 11h6M9 15h3" /></>,
