@@ -51,6 +51,12 @@ const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
+    title: 'ANÁLISE',
+    links: [
+      { href: '/rh/relatorios', label: 'Relatórios', icon: IconFileText },
+    ],
+  },
+  {
     title: 'SALÁRIO',
     links: [
       { href: '/rh/processamento-salarial', label: 'Processamento', icon: IconCurrency },
