@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 
 /** Secção premium: cartão branco com título, ícone e conteúdo consistente. */
 export function FormSection({ title, description, children, tone = 'default' }: { title: string; description?: string; children: ReactNode; tone?: 'default' | 'soft' | 'danger' }) {
@@ -138,13 +138,21 @@ function startOfGrid(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), 1 - offset);
 }
 
-/** Calendário pop-over estilo Apple com seleção única de data. */
+/** Calendário com input manual + pop-over com navegação de mês/ano e teclado. */
 export function CalendarField({ id, name, value, onChange, required = false, placeholder = 'DD/MM/AAAA' }: {
   id?: string; name?: string; value: string; onChange: (iso: string) => void; required?: boolean; placeholder?: string;
 }) {
   const selected = fromISO(value);
   const [open, setOpen] = useState(false);
   const [view, setView] = useState(() => selected ?? new Date());
+  const [draft, setDraft] = useState(() => value ? formatPtDate(value) : '');
+  const [error, setError] = useState('');
+
+  // Mantém o campo sincronizado com o valor externo (ex.: reset após guardar).
+  useEffect(() => {
+    setDraft(value ? formatPtDate(value) : '');
+    if (!value) setView(new Date());
+  }, [value]);
 
   const gridStart = startOfGrid(view);
   const cells = Array.from({ length: 42 }, (_, i) => new Date(gridStart.getFullYear(), gridStart.getMonth(), gridStart.getDate() + i));
@@ -153,23 +161,78 @@ export function CalendarField({ id, name, value, onChange, required = false, pla
   const isToday = (d: Date) => iso(d) === iso(new Date());
   const inMonth = (d: Date) => d.getMonth() === view.getMonth();
 
+  const commitDraft = (raw: string) => {
+    const trimmed = raw.trim();
+    if (!trimmed) { setError(''); onChange(''); return; }
+    const match = trimmed.match(/^(\d{1,2})[\/\-\.-](\d{1,2})[\/\-\.-](\d{4})$/);
+    if (!match) { setError('Formato inválido. Exemplo: 31/12/2026'); return; }
+    const [, dd, mm, yyyy] = match;
+    const date = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+    if (date.getFullYear() !== Number(yyyy) || date.getMonth() !== Number(mm) - 1 || date.getDate() !== Number(dd)) {
+      setError('Data inválida. Verifica o dia e o mês.'); return;
+    }
+    setError('');
+    onChange(iso(date));
+    setView(date);
+  };
+
+  const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') { event.preventDefault(); commitDraft(draft); }
+    if (event.key === 'Escape') setOpen(false);
+  };
+
+  const navigate = (delta: number, unit: 'day' | 'month' | 'year') => {
+    setView((v) => {
+      if (unit === 'day') return new Date(v.getFullYear(), v.getMonth(), v.getDate() + delta);
+      if (unit === 'month') return new Date(v.getFullYear(), v.getMonth() + delta, 1);
+      return new Date(v.getFullYear() + delta, v.getMonth(), 1);
+    });
+  };
+
+  const yearOptions = Array.from({ length: 81 }, (_, i) => new Date().getFullYear() - 60 + i); // 60 anos atrás → 20 à frente
+
   return (
     <div className="relative">
-      <button
-        id={id} type="button" aria-required={required || undefined}
-        onClick={() => setOpen((v: boolean) => !v)}
-        className="flex min-h-11 w-full items-center justify-between gap-2 rounded-[10px] border border-[#e1e8f0] bg-[#f8fafc] px-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-[#1a3aa8]/40"
-      >
-        <span className="tabular-nums">{selected ? formatPtDate(value) : placeholder}</span>
-        <CalendarIcon />
-      </button>
+      <div className="flex min-h-11 w-full items-stretch overflow-hidden rounded-[10px] border border-[#e1e8f0] bg-[#f8fafc] focus-within:ring-2 focus-within:ring-[#1a3aa8]/40 focus-within:outline-none">
+        <input
+          id={id}
+          name={name === undefined ? undefined : undefined}
+          type="text"
+          inputMode="numeric"
+          autoComplete="off"
+          spellCheck={false}
+          aria-required={required || undefined}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? `${id ?? 'cal'}-error` : undefined}
+          className="min-w-0 flex-1 bg-transparent px-3 py-2 tabular-nums outline-none placeholder:text-[#b6c2ce]"
+          placeholder={placeholder}
+          value={draft}
+          onChange={(e) => { setDraft(e.target.value); if (error) setError(''); }}
+          onBlur={() => commitDraft(draft)}
+          onKeyDown={onKeyDown}
+          onFocus={() => setOpen(true)}
+        />
+        <button
+          type="button"
+          aria-label="Abrir calendário"
+          aria-expanded={open}
+          onClick={() => setOpen((v) => !v)}
+          className="flex w-11 shrink-0 items-center justify-center border-l border-[#e1e8f0] text-[#021f87] transition hover:bg-[#eef4ff]"
+        >
+          <CalendarIcon />
+        </button>
+      </div>
       <input type="hidden" name={name} value={value} />
+      {error && <p id={`${id ?? 'cal'}-error`} role="alert" className="mt-1 text-xs font-medium text-[#a83939]">{error}</p>}
       {open && (
-        <div className="absolute z-50 mt-2 w-72 rounded-2xl border border-[#e1e8f0] bg-white p-3 shadow-xl" role="dialog" aria-label="Calendário">
-          <div className="mb-2 flex items-center justify-between">
-            <button type="button" aria-label="Mês anterior" onClick={() => setView(new Date(view.getFullYear(), view.getMonth() - 1, 1))} className="rounded-lg p-1 hover:bg-[#f1f5fb]"><NavIcon dir="left" /></button>
-            <strong className="text-sm">{MONTHS_PT[view.getMonth()]} {view.getFullYear()}</strong>
-            <button type="button" aria-label="Mês seguinte" onClick={() => setView(new Date(view.getFullYear(), view.getMonth() + 1, 1))} className="rounded-lg p-1 hover:bg-[#f1f5fb]"><NavIcon dir="right" /></button>
+        <div className="absolute z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-2xl border border-[#e1e8f0] bg-white p-3 shadow-xl" role="dialog" aria-label="Calendário">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <button type="button" aria-label="Mês anterior" onClick={() => navigate(-1, 'month')} className="rounded-lg p-1 hover:bg-[#f1f5fb]"><NavIcon dir="left" /></button>
+            <div className="flex items-center gap-2">
+              <select aria-label="Mês" value={view.getMonth()} onChange={(e) => setView(new Date(view.getFullYear(), Number(e.target.value), 1))} className="rounded-lg border border-[#e1e8f0] bg-white px-2 py-1 text-sm font-semibold text-[#1c2d3f]">{MONTHS_PT.map((m, i) => <option key={m} value={i}>{m}</option>)}</select>
+              <select aria-label="Ano" value={view.getFullYear()} onChange={(e) => setView(new Date(Number(e.target.value), view.getMonth(), 1))} className="rounded-lg border border-[#e1e8f0] bg-white px-2 py-1 text-sm font-semibold text-[#1c2d3f] tabular-nums">{yearOptions.map((y) => <option key={y} value={y}>{y}</option>)}</select>
+            </div>
+            <button type="button" aria-label="Mês seguinte" onClick={() => navigate(1, 'month')} className="rounded-lg p-1 hover:bg-[#f1f5fb]"><NavIcon dir="right" /></button>
           </div>
           <div className="mb-1 grid grid-cols-7 gap-1 text-center text-[10px] font-bold uppercase text-[#8a99ab]">
             {WEEKDAYS_PT.map((w) => <span key={w}>{w}</span>)}
@@ -181,14 +244,15 @@ export function CalendarField({ id, name, value, onChange, required = false, pla
               return (
                 <button
                   key={i} type="button"
-                  onClick={() => { onChange(iso(d)); setOpen(false); }}
+                  tabIndex={0}
+                  onClick={() => { onChange(iso(d)); setDraft(formatPtDate(iso(d))); setOpen(false); setError(''); }}
                   className={`h-9 rounded-lg text-xs font-semibold transition ${active ? 'bg-[#021f87] text-white' : inMonth(d) ? 'text-[#1c2d3f] hover:bg-[#eef4ff]' : 'text-[#b6c2ce]'} ${today && !active ? 'ring-1 ring-[#021f87]/40' : ''}`}
                 >{d.getDate()}</button>
               );
             })}
           </div>
           <div className="mt-2 flex justify-between">
-            <button type="button" onClick={() => { onChange(iso(new Date())); setOpen(false); }} className="rounded-lg px-2 py-1 text-xs font-semibold text-[#021f87] hover:bg-[#eef4ff]">Hoje</button>
+            <button type="button" onClick={() => { const now = new Date(); onChange(iso(now)); setDraft(formatPtDate(iso(now))); setView(now); setOpen(false); setError(''); }} className="rounded-lg px-2 py-1 text-xs font-semibold text-[#021f87] hover:bg-[#eef4ff]">Hoje</button>
             <button type="button" onClick={() => setOpen(false)} className="rounded-lg px-2 py-1 text-xs font-semibold text-[#607286] hover:bg-[#f1f5fb]">Fechar</button>
           </div>
         </div>
