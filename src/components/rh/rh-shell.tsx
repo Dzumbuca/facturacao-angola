@@ -9,7 +9,6 @@ import { ResponsiveTables } from '@/components/responsive-tables';
 import { ThemeToggle } from '@/components/theme-toggle';
 
 import type { ComponentType, SVGProps } from 'react';
-import { Assistant } from '@/components/assistant/assistant';
 import { ShellAside, ShellTopbar, ShellMain } from '@/components/system/shell';
 type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
 const activeLinks: { href: string; label: string; icon: IconComponent }[] = [
@@ -53,7 +52,7 @@ export function RhShell({ children, canManageMembers = false }: { children: Reac
   };
 
   return (
-    <div className="min-h-dvh bg-[#f5f7fb] text-[#1c2d3f] dark:bg-[#050e20] dark:text-slate-100">
+    <div className="min-h-dvh bg-[var(--background)] text-[var(--text)]">
       <ShellAside tone="navy" width="md:w-[236px]">
         <Link href="/rh/dashboard" className="flex items-center gap-3 rounded-lg px-2">
           <img src="/icons/rh-logo.png" alt="Machine RH" className="h-10 w-auto rounded-lg bg-white object-contain p-1" />
@@ -128,7 +127,6 @@ export function RhShell({ children, canManageMembers = false }: { children: Reac
           </Link>
         ))}
       </nav>
-      <Assistant />
       <ResponsiveTables />
     </div>
   );

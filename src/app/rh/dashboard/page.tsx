@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { runWithTenant } from '@/lib/tenant-db';
 import { requireRhPage } from '@/lib/rh-page';
 import { rhFullName } from '@/lib/rh-service';
+import { IconUsers, IconBuilding, IconCheckSquare, IconCurrency, IconFileText } from '@/components/rh/icons';
 import { PremiumHero, PremiumKpi, PremiumPanel } from '@/components/dashboard/premium-kit';
 import { MonthlyAdmissionsChart, type MonthAdmission } from '@/components/rh/monthly-admissions-chart';
 import { EmptyState } from '@/components/ui/data-table';
@@ -43,11 +44,12 @@ export default async function RhDashboardPage() {
     return { total, active, departments, contractsExpiring, monthly: Number(salaryAgg._sum.baseSalary ?? 0), recent, admissionsByMonth };
   }, { userId: access.userId });
 
+  const activeLabel = data.active === 1 ? 'activo' : 'activos';
   const kpis = [
-    { label: 'Funcionários', value: data.total, hint: `${data.active} activos` },
-    { label: 'Departamentos', value: data.departments, hint: 'estrutura actual' },
-    { label: 'Contratos a vencer', value: data.contractsExpiring, hint: 'próximos 30 dias' },
-    { label: 'Custo mensal base', value: money(data.monthly), hint: 'salários activos' },
+    { label: 'Funcionários', value: data.total, hint: `${data.active} ${activeLabel}`, tone: 'neutral' as const, icon: <IconUsers width={18} height={18} /> },
+    { label: 'Departamentos', value: data.departments, hint: data.departments === 0 ? 'sem estrutura' : 'estrutura actual', tone: (data.departments === 0 ? 'warning' : 'success') as 'warning' | 'success', icon: <IconBuilding width={18} height={18} /> },
+    { label: 'Contratos a vencer', value: data.contractsExpiring, hint: 'próximos 30 dias', tone: (data.contractsExpiring === 0 ? 'success' : 'warning') as 'warning' | 'success', icon: <IconCheckSquare width={18} height={18} /> },
+    { label: 'Custo mensal base', value: money(data.monthly), hint: 'salários activos', tone: 'primary' as const, icon: <IconCurrency width={18} height={18} /> },
   ];
 
   return (
@@ -58,16 +60,16 @@ export default async function RhDashboardPage() {
             <span className="kpi-pill">MACHINE RH</span>
             <span className="kpi-pill">Equipa activa</span>
           </div>
-          <h1 className="mt-4 text-3xl font-extrabold leading-[1.05] tracking-[-.04em] text-white sm:text-4xl">Bom dia — aqui está a saúde da sua equipa.</h1>
-          <p className="mt-3 text-sm leading-6 text-[#a9c4ff]">Pessoas, contratos, assiduidade e custos com pessoal. Tudo num só sítio, actualizado a partir dos vossos dados.</p>
+          <h1 className="mt-4 text-3xl font-extrabold leading-[1.05] tracking-[-.04em] text-white sm:text-4xl">{new Date().getHours() < 12 ? 'Bom dia' : new Date().getHours() < 19 ? 'Boa tarde' : 'Boa noite'} — aqui está a saúde da sua equipa.</h1>
+          <p className="mt-3 text-sm leading-6 text-[#a9c4ff]">Pessoas, contratos, assiduidade e custos com pessoal. Tudo num só sítio, actualizado a partir dos seus dados.</p>
+          <Link href="/rh/funcionarios" className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-[14px] bg-white px-5 text-sm font-bold text-[#041f52] transition hover:bg-[#eef2ff]"><span aria-hidden="true">+</span>Registar funcionário</Link>
         </div>
       </PremiumHero>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-        {kpis.map((kpi) => {
-          const tone = kpi.label === 'Custo mensal base' ? 'primary' : kpi.label === 'Contratos a vencer' ? 'warning' : 'neutral';
-          return <PremiumKpi key={kpi.label} label={kpi.label} value={typeof kpi.value === 'number' ? kpi.value.toLocaleString('pt-AO') : String(kpi.value)} detail={kpi.hint} tone={tone} />;
-        })}
+        {kpis.map((kpi) => (
+          <PremiumKpi key={kpi.label} label={kpi.label} value={typeof kpi.value === 'number' ? kpi.value.toLocaleString('pt-AO') : String(kpi.value)} detail={kpi.hint} tone={kpi.tone} icon={kpi.icon} />
+        ))}
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
@@ -77,14 +79,21 @@ export default async function RhDashboardPage() {
               <p className="text-xs font-bold uppercase tracking-[.12em] text-[var(--text-muted)]">Funcionários contratados por mês</p>
               <p className="mt-0.5 text-lg font-extrabold text-[var(--text)]">{(data.admissionsByMonth as MonthAdmission[]).reduce((sum, m) => sum + m.count, 0)} admissões este ano</p>
             </div>
-            <span className="kpi-pill !bg-[var(--surface-raised)] !text-[#021f87] !border-[#dbe2ff]">REAL</span>
+            <span className="text-[10px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">Ano corrente</span>
           </div>
           <div className="mt-4">
-            <MonthlyAdmissionsChart months={data.admissionsByMonth as MonthAdmission[]} />
+            {(data.admissionsByMonth as MonthAdmission[]).reduce((sum, m) => sum + m.count, 0) === 0 ? (
+              <div className="flex h-44 flex-col items-center justify-center rounded-[18px] border border-dashed border-[var(--line)] bg-[var(--surface-raised)] text-center">
+                <p className="text-sm font-semibold text-[var(--text)]">Ainda sem histórico suficiente para mostrar tendência.</p>
+                <p className="mt-1 text-xs text-[var(--text-muted)]">As admissões aparecerão aqui quando os primeiros funcionários forem registados.</p>
+              </div>
+            ) : (
+              <MonthlyAdmissionsChart months={data.admissionsByMonth as MonthAdmission[]} />
+            )}
           </div>
         </PremiumPanel>
 
-        <PremiumPanel title="Admissões recentes" kicker="Últimas 5">
+        <PremiumPanel title="Admissões recentes" kicker={data.recent.length === 1 ? "Última admissão" : `Últimas ${Math.min(data.recent.length, 5)}`}>
           <div className="flex items-center justify-between">
             <span />
             <Link href="/rh/funcionarios" className="text-xs font-semibold text-[#021f87] underline-offset-4 hover:underline">Ver todos →</Link>
@@ -107,16 +116,35 @@ export default async function RhDashboardPage() {
         </PremiumPanel>
 
         <PremiumPanel title="Módulos implementados" kicker="Disponível agora">
-          <ul className="mt-3 space-y-2 text-sm text-[var(--text-muted)]">
-            <li className="flex justify-between"><span>Funcionários e organização</span><span className="text-[10px] font-semibold uppercase text-[#267256]">Activo</span></li>
-            <li className="flex justify-between"><span>Contratos e vencimentos</span><span className="text-[10px] font-semibold uppercase text-[#267256]">Activo</span></li>
-            <li className="flex justify-between"><span>Assiduidade (Machine Point)</span><span className="text-[10px] font-semibold uppercase text-[#267256]">Activo</span></li>
-            <li className="flex justify-between"><span>Documentos oficiais com IA</span><span className="text-[10px] font-semibold uppercase text-[#267256]">Activo</span></li>
-            <li className="flex justify-between"><span>Férias e licenças</span><span className="text-[10px] font-semibold uppercase text-[#267256]">Activo</span></li>
+          <ul className="mt-3 divide-y divide-[var(--line)] text-sm">
+            {['Funcionários e organização','Contratos e vencimentos','Assiduidade (Machine Point)','Documentos oficiais com IA','Férias e licenças'].map((m) => (
+              <li key={m} className="flex items-center justify-between gap-3 py-3"><span className="text-[var(--text)]">{m}</span><span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-700"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />Activo</span></li>
+            ))}
           </ul>
           <p className="mt-4 rounded-lg bg-[#f5f8fc] p-3 text-xs text-[var(--text-muted)]">
             Use o menu RH para navegar entre Funcionários, Contratos, Assiduidade, Documentos e Processamento Salarial.
           </p>
+        </PremiumPanel>
+
+        <PremiumPanel title="Próximos passos" kicker="Acesso rápido">
+          <ul className="mt-3 space-y-2">
+            {[
+              { href: '/rh/funcionarios', label: 'Registar funcionário', desc: 'Criar colaborador com contrato e departamento' },
+              { href: '/rh/contratos', label: 'Criar contrato', desc: 'Vínculo, vencimento e salário base' },
+              { href: '/rh/assiduidade', label: 'Ver assiduidade', desc: 'Presença e entradas dos funcionários' },
+              { href: '/rh/documentos', label: 'Gerar documentos', desc: 'Contratos, declarações e comunicados com IA' },
+            ].map((item) => (
+              <li key={item.href}>
+                <Link href={item.href} className="flex items-start gap-3 rounded-xl border border-[var(--line)] bg-[var(--surface-raised)] px-4 py-3 transition hover:border-[#021f87] hover:bg-[var(--surface)]">
+                  <IconFileText width={18} height={18} className="mt-0.5 shrink-0 text-[#021f87]" />
+                  <span>
+                    <span className="block text-sm font-semibold text-[var(--text)]">{item.label}</span>
+                    <span className="mt-0.5 block text-xs text-[var(--text-muted)]">{item.desc}</span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </PremiumPanel>
       </div>
     </div>
