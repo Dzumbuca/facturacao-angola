@@ -159,6 +159,17 @@ export async function POST(req: Request) {
 
       if (existing) return { code: 'PIN_DUPLICATE' as const };
 
+      // Protege contra colisão com PINs legados (pinLookup nulo): compara bcrypt contra todos.
+      const legacyWithPin = await tx.rhEmployee.findMany({
+        where: { tenantId: access.tenantId, pinHash: { not: null } },
+        select: { pinHash: true },
+      });
+      for (const row of legacyWithPin) {
+        if (row.pinHash && (await bcrypt.compare(pin, row.pinHash))) {
+          return { code: 'PIN_DUPLICATE' as const };
+        }
+      }
+
       const employee = await tx.rhEmployee.create({
 
         data: {
@@ -254,6 +265,9 @@ export async function POST(req: Request) {
 
   } catch (error: any) {
 
+    if (error?.code === 'P2002') {
+      return NextResponse.json({ error: 'Este PIN já está em uso. Gera outro.' }, { status: 409 });
+    }
     if (['DEPARTMENT_NOT_FOUND', 'POSITION_NOT_FOUND', 'SHIFT_NOT_FOUND'].includes(error?.message)) {
 
       return NextResponse.json({ error: 'Departamento ou cargo inválido.' }, { status: 400 });

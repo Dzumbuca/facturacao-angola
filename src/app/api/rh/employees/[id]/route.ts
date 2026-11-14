@@ -124,6 +124,7 @@ export async function PATCH(req: Request, { params }: Context) {
     if (body.status !== undefined && STATUSES.includes(body.status)) data.status = body.status;
 
     let pinLookupForUpdate: string | null = null;
+    let pinRawForUpdate: string | null = null;
 
     if (body.pin !== undefined) {
 
@@ -132,6 +133,7 @@ export async function PATCH(req: Request, { params }: Context) {
       if (pin && !isValidPinFormat(pin)) return NextResponse.json({ error: 'O PIN deve ter exactamente 6 dígitos.' }, { status: 400 });
 
       if (pin) {
+        pinRawForUpdate = pin;
         pinLookupForUpdate = pinLookup(pin);
         data.pinHash = await bcrypt.hash(pin, 10);
         data.pinLookup = pinLookupForUpdate;
@@ -154,9 +156,19 @@ export async function PATCH(req: Request, { params }: Context) {
 
       if (!existing) return null;
 
-      if (pinLookupForUpdate) {
+      if (pinRawForUpdate) {
         const clash = await tx.rhEmployee.findFirst({ where: { tenantId: access.tenantId, pinLookup: pinLookupForUpdate, id: { not: id } }, select: { id: true } });
         if (clash) return { code: 'PIN_DUPLICATE' as const };
+        // Protege contra colisão com PINs legados: compara bcrypt nas credentials antigas (excluindo o próprio).
+        const legacy = await tx.rhEmployee.findMany({
+          where: { tenantId: access.tenantId, pinHash: { not: null }, id: { not: id } },
+          select: { pinHash: true },
+        });
+        for (const row of legacy) {
+          if (row.pinHash && (await bcrypt.compare(pinRawForUpdate, row.pinHash))) {
+            return { code: 'PIN_DUPLICATE' as const };
+          }
+        }
       }
 
       const oldSalary = Number(existing.baseSalary);
@@ -211,6 +223,9 @@ export async function PATCH(req: Request, { params }: Context) {
 
   } catch (error: any) {
 
+    if (error?.code === 'P2002') {
+      return NextResponse.json({ error: 'Este PIN já está em uso. Gera outro.' }, { status: 409 });
+    }
     if (['DEPARTMENT_NOT_FOUND', 'POSITION_NOT_FOUND', 'SHIFT_NOT_FOUND'].includes(error?.message)) {
 
       return NextResponse.json({ error: 'Departamento ou cargo inválido.' }, { status: 400 });
