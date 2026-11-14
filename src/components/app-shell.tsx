@@ -10,7 +10,6 @@ import { MobileBottomNav } from '@/components/mobile-bottom-nav';
 import { ResponsiveTables } from '@/components/responsive-tables';
 import { PwaInstall } from '@/components/pwa-install';
 import { visibleNavGroups } from '@/lib/navigation';
-import { Assistant } from '@/components/assistant/assistant';
 import { GlobalSearch } from '@/components/global-search';
 import { NotificationsBell } from '@/components/notifications-bell';
 import { ShellAside, ShellTopbar, ShellMain } from '@/components/system/shell';
@@ -100,7 +99,6 @@ export function AppShell({ children, platformAdmin = false, plan = 'FREE', adHtm
         <ShellMain maxWidth="max-w-[1440px]" className="pb-36 md:pb-10">{children}</ShellMain>
       </div>
 
-      <Assistant />
       <MobileBottomNav platformAdmin={platformAdmin} plan={plan} planExpired={planExpired} wmsEnabled={wmsEnabled} />
       <PwaInstall />
       <ResponsiveTables />

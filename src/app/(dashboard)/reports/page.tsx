@@ -102,6 +102,25 @@ export default async function ReportsPage({ searchParams }: Props) {
           {dataset.rows.length > 0 && <tfoot className="border-t-2 border-[var(--line)] font-extrabold text-[var(--text)]"><tr>{dataset.totals.map((cell, index) => <td key={index} className="tabular-nums whitespace-nowrap px-4 py-3 text-right">{typeof cell === 'number' ? cell.toLocaleString('pt-AO', { maximumFractionDigits: 2 }) : cell ?? '—'}</td>)}</tr></tfoot>}
         </table>
       </div>
+
+      {/* Mobile: totalizador em card com labels */}
+      {dataset.rows.length > 0 && dataset.headers.length >= 5 && (() => {
+        const totalIdx = dataset.headers.findIndex((h) => /total/i.test(h));
+        const openIdx = dataset.headers.findIndex((h) => /aberto|pendente/i.test(h));
+        const receivedIdx = dataset.headers.findIndex((h) => /recebido/i.test(h));
+        const fmt = (v: unknown) => (typeof v === 'number' ? v.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' Kz' : String(v ?? '—'));
+        return (
+          <div className="mt-4 rounded-2xl border border-[var(--line)] bg-slate-50 p-4 sm:hidden">
+            <p className="text-[10px] font-bold uppercase tracking-[.12em] text-[var(--text-muted)]">Total</p>
+            <div className="mt-2 space-y-2 text-sm">
+              {totalIdx >= 0 && <div className="flex items-center justify-between gap-4"><span className="text-[var(--text-muted)]">Total</span><span className="font-bold tabular-nums text-[var(--text)]">{fmt(dataset.totals[totalIdx])}</span></div>}
+              {receivedIdx >= 0 && <div className="flex items-center justify-between gap-4"><span className="text-[var(--text-muted)]">Recebido confirmado</span><span className="font-bold tabular-nums text-[var(--text)]">{fmt(dataset.totals[receivedIdx])}</span></div>}
+              {openIdx >= 0 && <div className="flex items-center justify-between gap-4"><span className="text-[var(--text-muted)]">Em aberto</span><span className="font-bold tabular-nums text-amber-700">{fmt(dataset.totals[openIdx])}</span></div>}
+            </div>
+          </div>
+        );
+      })()}
+
       {dataset.rows.length === 0 && <EmptyState title="Sem dados" description="Os filtros seleccionados não devolvem registos. Ajuste o período ou o tipo de relatório." />}
     </section>
     <p className="text-xs text-[#708195]">Os recebimentos pendentes estão identificados e não contam como valores recebidos. Não há conversão de moeda nem cálculo de lucro.</p>
