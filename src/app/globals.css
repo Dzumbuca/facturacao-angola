@@ -731,6 +731,8 @@ body { font-family: Onest, "Segoe UI", Arial, sans-serif; }
 .sidebar-scroll::-webkit-scrollbar-thumb { background: rgb(255 255 255 / .25); border-radius: 3px; }
 
 
-/* Formulário sempre claro — não afectado pelo remap dark de bg-white */
+/* Formulário: branco no tema claro, surface elevado no escuro */
 .form-card-light { background-color: #ffffff !important; color: #18273c; }
 .form-card-light :where(input, select, textarea, button) { color-scheme: light; }
+:root[data-theme="dark"] .form-card-light { background-color: var(--surface) !important; color: var(--text); color-scheme: dark; }
+:root[data-theme="dark"] .form-card-light :where(input, select, textarea, button) { color-scheme: dark; }
