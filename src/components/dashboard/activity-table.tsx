@@ -52,7 +52,7 @@ export function ActivityTable({ invoices }: { invoices: RecentInvoice[] }) {
 
       {rows.length ? (
         <>
-          <div className="mt-4 hidden sm:block">
+          <div className="mt-4 hidden overflow-x-auto sm:block">
             <table className="w-full min-w-[560px] text-left text-sm">
               <caption className="sr-only">Quatro facturas mais recentes da empresa, ordenadas da mais recente para a mais antiga.</caption>
               <thead>
