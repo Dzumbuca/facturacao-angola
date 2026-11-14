@@ -57,7 +57,7 @@ export function ShiftsManager({ shifts }: { shifts: Shift[] }) {
       </div>
 
       {open && (
-        <form onSubmit={submit} className="rounded-xl border border-[var(--line)] bg-white p-4">
+        <form onSubmit={submit} className="form-card-light rounded-xl border border-[#e6eaf0] p-4">
           <FormSection title="Horário / turno">
             <div className="grid gap-3 sm:grid-cols-4">
               <div className="sm:col-span-2"><label htmlFor="shift-name" className="app-label">Nome *</label><input id="shift-name" name="name" className="ds-input" placeholder="Turno geral" required /></div>
@@ -73,7 +73,7 @@ export function ShiftsManager({ shifts }: { shifts: Shift[] }) {
         </form>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-[var(--line)] bg-white">
+      <div className="form-card-light overflow-x-auto rounded-xl border border-[#e6eaf0]">
         <table className="data-table min-w-[560px]">
           <thead><tr><th>Horário</th><th>Entrada</th><th>Saída</th><th>Tolerância</th><th>Funcionários</th><th>Estado</th></tr></thead>
           <tbody>

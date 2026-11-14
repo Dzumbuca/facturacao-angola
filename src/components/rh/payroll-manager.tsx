@@ -132,7 +132,7 @@ export function PayrollManager({ rulesets, runs }: { rulesets: RuleSet[]; runs: 
 
       {tab === 'runs' && (
         <>
-          <form onSubmit={calculate} className="rounded-xl border border-[var(--line)] bg-white p-4">
+          <form onSubmit={calculate} className="form-card-light rounded-xl border border-[#e6eaf0] p-4">
             <h2 className="text-sm font-bold text-[var(--text)]">Novo processamento</h2>
             {rulesets.length === 0 ? (
               <p className="mt-2 text-sm text-[#8a5a00]">Crie primeiro um conjunto de regras salariais (separador ao lado).</p>
@@ -145,7 +145,7 @@ export function PayrollManager({ rulesets, runs }: { rulesets: RuleSet[]; runs: 
             )}
           </form>
 
-          <div className="overflow-x-auto rounded-xl border border-[var(--line)] bg-white">
+          <div className="form-card-light overflow-x-auto rounded-xl border border-[#e6eaf0]">
             <table className="data-table min-w-[820px]">
               <thead><tr><th>Período</th><th>Regras</th><th>Bruto</th><th>INSS</th><th>IRT</th><th>Líquido</th><th>Estado</th><th>Acções</th></tr></thead>
               <tbody>
@@ -177,7 +177,7 @@ export function PayrollManager({ rulesets, runs }: { rulesets: RuleSet[]; runs: 
 
       {tab === 'rules' && (
         <>
-          <form onSubmit={createRuleset} className="rounded-xl border border-[var(--line)] bg-white p-4">
+          <form onSubmit={createRuleset} className="form-card-light rounded-xl border border-[#e6eaf0] p-4">
             <h2 className="text-sm font-bold text-[var(--text)]">Novo conjunto de regras</h2>
             <FormSection title="Definição das regras" description="Os valores são definidos pela empresa após validação jurídica. Nada fica VALIDADO sem evidência documental.">
               <div className="sm:col-span-2"><FormField label="Nome" name="rule-name" required><input id="rule-name" className="ds-input" value={name} onChange={(e) => setName(e.target.value)} required /></FormField></div>
@@ -193,7 +193,7 @@ export function PayrollManager({ rulesets, runs }: { rulesets: RuleSet[]; runs: 
             <div className="mt-3"><FormActions saving={saving} onCancel={() => {}} saveLabel={saving ? 'A guardar…' : 'Guardar regras'} /></div>
           </form>
 
-          <div className="rounded-xl border border-[var(--line)] bg-white">
+          <div className="form-card-light rounded-xl border border-[#e6eaf0]">
             <ul className="divide-y divide-[var(--line)]">
               {rulesets.map((ruleset) => (
                 <li key={ruleset.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">

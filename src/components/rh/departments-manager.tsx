@@ -99,7 +99,7 @@ export function DepartmentsManager({ departments }: { departments: Department[] 
       />
 
       {open && (
-        <form onSubmit={submit} className="rounded-xl border border-[var(--line)] bg-white p-4">
+        <form onSubmit={submit} className="form-card-light rounded-xl border border-[#e6eaf0] p-4">
           <FormSection title={editing ? `Editar departamento (${editing.name})` : 'Novo departamento'}>
             <div className="grid gap-3 sm:grid-cols-2">
               <div><label htmlFor="dept-name" className="app-label">Nome *</label><input id="dept-name" name="name" className="ds-input" required defaultValue={editing?.name ?? ''} /></div>
@@ -114,7 +114,7 @@ export function DepartmentsManager({ departments }: { departments: Department[] 
         </form>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-[var(--line)] bg-white">
+      <div className="form-card-light overflow-x-auto rounded-xl border border-[#e6eaf0]">
         <table className="data-table min-w-[640px]">
           <thead><tr><th>Departamento</th><th>Código</th><th>Responsável</th><th>Funcionários</th><th>Cargos</th><th>Sub-departamentos</th><th>Acções</th></tr></thead>
           <tbody>

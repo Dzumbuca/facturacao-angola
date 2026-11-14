@@ -52,7 +52,7 @@ export function AnnouncementsManager({ items }: { items: Announcement[] }) {
 
       <FormError>{error}</FormError>
 
-      <form onSubmit={submit} className="rounded-xl border border-[var(--line)] bg-white p-4">
+      <form onSubmit={submit} className="form-card-light rounded-xl border border-[#e6eaf0] p-4">
         <h2 className="text-sm font-bold text-[var(--text)]">Novo comunicado</h2>
         <FormSection title="Detalhes do comunicado">
           <div className="sm:col-span-2">
@@ -75,7 +75,7 @@ export function AnnouncementsManager({ items }: { items: Announcement[] }) {
         </FormSection>
       </form>
 
-      <ul className="divide-y divide-[var(--line)] overflow-hidden rounded-xl border border-[var(--line)] bg-white">
+      <ul className="form-card-light divide-y divide-[#e6eaf0] overflow-hidden rounded-xl border border-[#e6eaf0]">
         {items.map((item) => (
           <li key={item.id} className="px-4 py-4">
             <div className="flex flex-wrap items-center gap-2">

@@ -109,7 +109,7 @@ export function PerformanceManager({ cycles }: { cycles: Cycle[] }) {
 
       <FormError>{error}</FormError>
 
-            <form onSubmit={createCycle} className="rounded-xl border border-[var(--line)] bg-white p-4">
+            <form onSubmit={createCycle} className="form-card-light rounded-xl border border-[#e6eaf0] p-4">
         <h2 className="text-sm font-bold text-[var(--text)]">Novo ciclo</h2>
         <FormSection title="Ciclo de avaliação">
           <div className="sm:col-span-2">
@@ -133,7 +133,7 @@ export function PerformanceManager({ cycles }: { cycles: Cycle[] }) {
       </form>
 
       {cycles.map((cycle) => (
-        <section key={cycle.id} className="rounded-xl border border-[var(--line)] bg-white">
+        <section key={cycle.id} className="form-card-light rounded-xl border border-[#e6eaf0]">
           <div className="flex flex-col justify-between gap-3 border-b border-[#eef2f6] px-4 py-3 sm:flex-row sm:items-center">
             <div>
               <h2 className="text-sm font-bold text-[var(--text)]">{cycle.name}</h2>
@@ -185,7 +185,7 @@ export function PerformanceManager({ cycles }: { cycles: Cycle[] }) {
           </div>
         </section>
       ))}
-      {cycles.length === 0 && <p className="rounded-xl border border-[var(--line)] bg-white px-4 py-10 text-center text-sm text-[var(--text-muted)]">Sem ciclos. Crie o primeiro acima.</p>}
+      {cycles.length === 0 && <p className="form-card-light rounded-xl border border-[#e6eaf0] px-4 py-10 text-center text-sm text-[var(--text-muted)]">Sem ciclos. Crie o primeiro acima.</p>}
     </div>
   );
 }

@@ -59,7 +59,7 @@ export function KioskManager() {
         <p className="mt-1 text-sm text-blue-100">{now.toLocaleDateString('pt-AO', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}</p>
       </div>
 
-      <div className="rounded-xl border border-[var(--line)] bg-white p-5">
+      <div className="form-card-light rounded-xl border border-[#e6eaf0] p-5">
         <label htmlFor="kiosk-token" className="app-label">QR do funcionário</label>
         <textarea
           id="kiosk-token"
@@ -80,7 +80,7 @@ export function KioskManager() {
         <FormError>{error}</FormError>
       </div>
 
-      <div className="rounded-xl border border-[var(--line)] bg-white p-4">
+      <div className="form-card-light rounded-xl border border-[#e6eaf0] p-4">
         <button type="button" onClick={() => setShowDevice((value) => !value)} className="flex w-full items-center justify-between text-left text-xs font-semibold text-[#52667a]">
           <span>Terminal {deviceToken ? 'configurado' : 'não configurado'}</span>
           <span aria-hidden="true">{showDevice ? '−' : '+'}</span>

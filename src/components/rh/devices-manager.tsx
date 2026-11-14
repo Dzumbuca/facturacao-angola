@@ -59,7 +59,7 @@ export function DevicesManager({ devices }: { devices: Device[] }) {
         <p className="mt-1 text-sm text-[var(--text-muted)]">Terminais autorizados a registar ponto por QR.</p>
       </div>
 
-      <form onSubmit={create} className="rounded-xl border border-[var(--line)] bg-white p-4">
+      <form onSubmit={create} className="form-card-light rounded-xl border border-[#e6eaf0] p-4">
         <FormSection title="Registar dispositivo">
           <div className="sm:col-span-2 flex flex-col gap-2 sm:flex-row sm:items-end">
             <div className="flex-1">
@@ -82,7 +82,7 @@ export function DevicesManager({ devices }: { devices: Device[] }) {
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-[var(--line)] bg-white">
+      <div className="form-card-light overflow-x-auto rounded-xl border border-[#e6eaf0]">
         <table className="data-table min-w-[560px]">
           <thead><tr><th>Dispositivo</th><th>Estado</th><th>Último uso</th><th>Criado</th><th>Acções</th></tr></thead>
           <tbody>

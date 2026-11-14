@@ -254,7 +254,7 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
 
       {generatedPin && (
         <div role="dialog" aria-modal="true" aria-labelledby="rh-pin-title" className="fixed inset-0 z-[60] flex items-end justify-center bg-[#102b46]/50 p-0 backdrop-blur-[2px] sm:items-center sm:p-5">
-          <div className="w-full max-w-md rounded-t-2xl bg-white p-6 shadow-2xl sm:rounded-2xl">
+          <div className="form-card-light w-full max-w-md rounded-t-2xl border-[#e6eaf0] p-6 shadow-2xl sm:rounded-2xl">
             <h2 id="rh-pin-title" className="text-lg font-bold text-[var(--text)]">Funcionário criado</h2>
             <p className="mt-1 text-sm text-[var(--text-muted)]">O PIN do ponto gerado automaticamente é mostrado uma única vez. Anota-o agora e entrega ao funcionário.</p>
             <div className="mt-4 rounded-lg border border-[var(--line)] bg-[var(--surface-raised)] p-4 text-center">
@@ -267,7 +267,7 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
       )}
       {open && !generatedPin && (
         <div className="fixed inset-0 z-[60] flex items-end justify-center bg-[#102b46]/50 p-0 backdrop-blur-[2px] sm:items-center sm:p-5" onMouseDown={(e) => { if (e.target === e.currentTarget && !saving) setOpen(false); }}>
-          <section role="dialog" aria-modal="true" aria-labelledby="rh-employee-title" className="max-h-[92dvh] w-full overflow-y-auto overscroll-contain rounded-t-2xl bg-white p-5 shadow-2xl sm:max-w-2xl sm:rounded-2xl sm:p-7">
+          <section role="dialog" aria-modal="true" aria-labelledby="rh-employee-title" className="form-card-light max-h-[92dvh] w-full overflow-y-auto overscroll-contain rounded-t-2xl border border-[#e6eaf0] p-5 shadow-2xl sm:max-w-2xl sm:rounded-2xl sm:p-7">
             <div className="mb-4 flex items-start justify-between gap-4">
               <FormHero eyebrow="Machine RH" title={editing ? 'Editar funcionário' : 'Novo funcionário'} description="Os dados ficam neste formulário até ao envio. A barra lateral mostra o que já está preenchido." icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 20a6 6 0 0 1 12 0"/></svg>} />
               <button type="button" aria-label="Fechar" disabled={saving} onClick={() => setOpen(false)} className="flex h-10 w-10 items-center justify-center rounded-lg text-xl text-[var(--text-muted)] hover:bg-[#f0f4f8]">×</button>

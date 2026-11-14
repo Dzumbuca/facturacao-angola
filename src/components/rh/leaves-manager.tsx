@@ -97,13 +97,13 @@ export function LeavesManager({ leaves, employees, vacationDaysPerYear }: {
       />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="rounded-xl border border-[var(--line)] bg-white p-4"><p className="text-xs text-[var(--text-muted)]">Aprovadas</p><p className="mt-1 text-xl font-bold tabular-nums">{approved} d</p></div>
-        <div className="rounded-xl border border-[var(--line)] bg-white p-4"><p className="text-xs text-[var(--text-muted)]">Pendentes</p><p className="mt-1 text-xl font-bold tabular-nums">{pending} d</p></div>
-        <div className="rounded-xl border border-[var(--line)] bg-white p-4"><p className="text-xs text-[var(--text-muted)]">Direito anual</p><p className="mt-1 text-xl font-bold tabular-nums">{vacationDaysPerYear === null ? '—' : `${vacationDaysPerYear} d`}</p></div>
-        <div className="rounded-xl border border-[var(--line)] bg-white p-4"><p className="text-xs text-[var(--text-muted)]">Saldo</p><p className={`mt-1 text-xl font-bold tabular-nums ${balance !== null && balance < 0 ? 'text-[#a83939]' : ''}`}>{balance === null ? '—' : `${balance} d`}</p></div>
+        <div className="form-card-light rounded-xl border border-[#e6eaf0] p-4"><p className="text-xs text-[var(--text-muted)]">Aprovadas</p><p className="mt-1 text-xl font-bold tabular-nums">{approved} d</p></div>
+        <div className="form-card-light rounded-xl border border-[#e6eaf0] p-4"><p className="text-xs text-[var(--text-muted)]">Pendentes</p><p className="mt-1 text-xl font-bold tabular-nums">{pending} d</p></div>
+        <div className="form-card-light rounded-xl border border-[#e6eaf0] p-4"><p className="text-xs text-[var(--text-muted)]">Direito anual</p><p className="mt-1 text-xl font-bold tabular-nums">{vacationDaysPerYear === null ? '—' : `${vacationDaysPerYear} d`}</p></div>
+        <div className="form-card-light rounded-xl border border-[#e6eaf0] p-4"><p className="text-xs text-[var(--text-muted)]">Saldo</p><p className={`mt-1 text-xl font-bold tabular-nums ${balance !== null && balance < 0 ? 'text-[#a83939]' : ''}`}>{balance === null ? '—' : `${balance} d`}</p></div>
       </div>
 
-      <form onSubmit={submit} className="rounded-[18px] border border-[#e4e9f0] bg-white p-4 shadow-[var(--shadow-card)]">
+      <form onSubmit={submit} className="form-card-light rounded-[18px] border border-[#e4e9f0] p-4 shadow-[var(--shadow-card)]">
         <FormSplit main={<>
         <h2 className="text-sm font-bold text-[var(--text)]">Novo pedido</h2>
         <FormSection title="Dados do pedido">
@@ -145,7 +145,7 @@ export function LeavesManager({ leaves, employees, vacationDaysPerYear }: {
         ]} footer={<p className="text-[11px] leading-5 text-[#8094a9]">A percentagem reflecte campos preenchidos. O saldo só é aplicado quando o pedido for aprovado.</p>} />} />
       </form>
 
-      <div className="overflow-x-auto rounded-xl border border-[var(--line)] bg-white">
+      <div className="form-card-light overflow-x-auto rounded-xl border border-[#e6eaf0]">
         <table className="data-table min-w-[760px]">
           <thead><tr><th>Funcionário</th><th>Tipo</th><th>Período</th><th>Dias</th><th>Estado</th><th>Acções</th></tr></thead>
           <tbody>

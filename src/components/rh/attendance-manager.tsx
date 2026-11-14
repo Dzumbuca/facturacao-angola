@@ -72,13 +72,13 @@ export function AttendanceManager({ entries, employees }: { entries: Entry[]; em
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="rounded-xl border border-[var(--line)] bg-white p-4"><p className="text-xs text-[var(--text-muted)]">Presentes hoje</p><p className="mt-1 text-xl font-bold tabular-nums"><CountUp value={present} durationMs={900} /></p></div>
-        <div className="rounded-xl border border-[var(--line)] bg-white p-4"><p className="text-xs text-[var(--text-muted)]">Marcações hoje</p><p className="mt-1 text-xl font-bold tabular-nums"><CountUp value={entries.length} durationMs={900} /></p></div>
-        <div className="rounded-xl border border-[var(--line)] bg-white p-4"><p className="text-xs text-[var(--text-muted)]">Funcionários com PIN</p><p className="mt-1 text-xl font-bold tabular-nums">{employees.filter((e) => e.hasPin).length}</p></div>
-        <div className="rounded-xl border border-[var(--line)] bg-white p-4"><p className="text-xs text-[var(--text-muted)]">Atrasados hoje</p><p className="mt-1 text-xl font-bold tabular-nums text-[#a83939]"><CountUp value={late} durationMs={900} /></p></div>
+        <div className="form-card-light rounded-xl border border-[#e6eaf0] p-4"><p className="text-xs text-[var(--text-muted)]">Presentes hoje</p><p className="mt-1 text-xl font-bold tabular-nums"><CountUp value={present} durationMs={900} /></p></div>
+        <div className="form-card-light rounded-xl border border-[#e6eaf0] p-4"><p className="text-xs text-[var(--text-muted)]">Marcações hoje</p><p className="mt-1 text-xl font-bold tabular-nums"><CountUp value={entries.length} durationMs={900} /></p></div>
+        <div className="form-card-light rounded-xl border border-[#e6eaf0] p-4"><p className="text-xs text-[var(--text-muted)]">Funcionários com PIN</p><p className="mt-1 text-xl font-bold tabular-nums">{employees.filter((e) => e.hasPin).length}</p></div>
+        <div className="form-card-light rounded-xl border border-[#e6eaf0] p-4"><p className="text-xs text-[var(--text-muted)]">Atrasados hoje</p><p className="mt-1 text-xl font-bold tabular-nums text-[#a83939]"><CountUp value={late} durationMs={900} /></p></div>
       </div>
 
-      <section className="rounded-xl border border-[var(--line)] bg-white p-5">
+      <section className="form-card-light rounded-xl border border-[#e6eaf0] p-5">
         <h2 className="text-sm font-bold text-[var(--text)]">Registar marcação</h2>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <div>
@@ -109,7 +109,7 @@ export function AttendanceManager({ entries, employees }: { entries: Entry[]; em
         <FormError>{error}</FormError>
       </section>
 
-      <section className="rounded-xl border border-[var(--line)] bg-white">
+      <section className="form-card-light rounded-xl border border-[#e6eaf0]">
         <div className="border-b border-[#eef2f6] px-4 py-3"><h2 className="text-sm font-bold text-[var(--text)]">Marcações de hoje</h2></div>
         <div className="overflow-x-auto">
           <table className="data-table min-w-[560px]">

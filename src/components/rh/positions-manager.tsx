@@ -60,7 +60,7 @@ export function PositionsManager({ positions, departments }: {
       />
 
       {open && (
-        <form onSubmit={submit} className="rounded-xl border border-[var(--line)] bg-white p-4">
+        <form onSubmit={submit} className="form-card-light rounded-xl border border-[#e6eaf0] p-4">
           <FormSection title="Dados do cargo">
             <div className="grid gap-3 sm:grid-cols-2">
               <div><label htmlFor="pos-title" className="app-label">Título *</label><input id="pos-title" name="title" className="ds-input" required /></div>
@@ -75,7 +75,7 @@ export function PositionsManager({ positions, departments }: {
         </form>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-[var(--line)] bg-white">
+      <div className="form-card-light overflow-x-auto rounded-xl border border-[#e6eaf0]">
         <table className="data-table min-w-[560px]">
           <thead><tr><th>Cargo</th><th>Código</th><th>Departamento</th><th>Nível</th><th>Funcionários</th></tr></thead>
           <tbody>

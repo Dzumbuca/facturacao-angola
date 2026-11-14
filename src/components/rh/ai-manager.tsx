@@ -43,7 +43,7 @@ export function AiManager({ configured, provider }: { configured: boolean; provi
           : <>Assistente não configurado. Crie uma chave gratuita na Groq e defina <code>GROQ_API_KEY</code>; opcionalmente <code>OPENROUTER_API_KEY</code> como fallback.</>}
       </div>
 
-      <form onSubmit={generate} className="rounded-xl border border-[var(--line)] bg-white p-4">
+      <form onSubmit={generate} className="form-card-light rounded-xl border border-[#e6eaf0] p-4">
         <FormSection title="Novo rascunho">
           <div>
             <FormField label="Tipo" name="ai-type">
@@ -73,7 +73,7 @@ export function AiManager({ configured, provider }: { configured: boolean; provi
       </form>
 
       {result && (
-        <section className="rounded-xl border border-[var(--line)] bg-white p-4">
+        <section className="form-card-light rounded-xl border border-[#e6eaf0] p-4">
           <div className="flex items-center justify-between gap-2">
             <h2 className="text-sm font-bold text-[var(--text)]">Rascunho</h2>
             <button type="button" onClick={() => navigator.clipboard?.writeText(result)} className="min-h-9 rounded-lg border border-[var(--line)] px-3 text-xs font-semibold text-[var(--blue)]">Copiar</button>

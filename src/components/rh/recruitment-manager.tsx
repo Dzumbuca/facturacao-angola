@@ -158,7 +158,7 @@ export function RecruitmentManager({ openings, candidates, departments, position
       <FormError>{error}</FormError>
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <form onSubmit={createOpening} className="rounded-xl border border-[var(--line)] bg-white p-4">
+        <form onSubmit={createOpening} className="form-card-light rounded-xl border border-[#e6eaf0] p-4">
           <h2 className="text-sm font-bold text-[var(--text)]">Nova vaga</h2>
           <FormSection title="Dados da vaga">
             <div className="sm:col-span-2">
@@ -193,7 +193,7 @@ export function RecruitmentManager({ openings, candidates, departments, position
           </FormSection>
         </form>
 
-        <form onSubmit={createCandidate} className="rounded-xl border border-[var(--line)] bg-white p-4">
+        <form onSubmit={createCandidate} className="form-card-light rounded-xl border border-[#e6eaf0] p-4">
           <h2 className="text-sm font-bold text-[var(--text)]">Registar candidato</h2>
           <FormSection title="Dados do candidato">
             <div className="sm:col-span-2">
@@ -231,7 +231,7 @@ export function RecruitmentManager({ openings, candidates, departments, position
         </form>
       </div>
 
-      <section className="rounded-xl border border-[var(--line)] bg-white">
+      <section className="form-card-light rounded-xl border border-[#e6eaf0]">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#eef2f6] px-4 py-3">
           <h2 className="text-sm font-bold text-[var(--text)]">Vagas</h2>
         </div>
@@ -250,7 +250,7 @@ export function RecruitmentManager({ openings, candidates, departments, position
         </div>
       </section>
 
-      <section className="rounded-xl border border-[var(--line)] bg-white">
+      <section className="form-card-light rounded-xl border border-[#e6eaf0]">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#eef2f6] px-4 py-3">
           <h2 className="text-sm font-bold text-[var(--text)]">Candidatos</h2>
           <select aria-label="Filtrar estado" value={candidateStatus} onChange={(e) => setCandidateStatus(e.target.value)} className="app-input max-w-[220px]">

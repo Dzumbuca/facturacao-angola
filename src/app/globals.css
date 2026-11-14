@@ -729,3 +729,8 @@ body { font-family: Onest, "Segoe UI", Arial, sans-serif; }
 .sidebar-scroll::-webkit-scrollbar { width: 6px; }
 .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
 .sidebar-scroll::-webkit-scrollbar-thumb { background: rgb(255 255 255 / .25); border-radius: 3px; }
+
+
+/* Formulário sempre claro — não afectado pelo remap dark de bg-white */
+.form-card-light { background-color: #ffffff !important; color: #18273c; }
+.form-card-light :where(input, select, textarea, button) { color-scheme: light; }

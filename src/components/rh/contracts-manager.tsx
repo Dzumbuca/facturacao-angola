@@ -126,7 +126,7 @@ export function ContractsManager({ contracts, employees }: {
         </form>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-[var(--line)] bg-white">
+      <div className="form-card-light overflow-x-auto rounded-xl border border-[#e6eaf0]">
         <table className="data-table min-w-[760px]">
           <thead><tr><th>Funcionário</th><th>Tipo</th><th>Início</th><th>Fim</th><th>Salário</th><th>Estado</th></tr></thead>
           <tbody>

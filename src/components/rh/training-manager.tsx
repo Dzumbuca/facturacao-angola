@@ -112,7 +112,7 @@ export function TrainingManager({ courses, employees, positions }: { courses: Co
       <FormError>{error}</FormError>
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <form onSubmit={createCourse} className="rounded-xl border border-[var(--line)] bg-white p-4">
+        <form onSubmit={createCourse} className="form-card-light rounded-xl border border-[#e6eaf0] p-4">
           <h2 className="text-sm font-bold text-[var(--text)]">Novo curso</h2>
           <FormSection title="Detalhes do curso">
             <div className="sm:col-span-2">
@@ -146,7 +146,7 @@ export function TrainingManager({ courses, employees, positions }: { courses: Co
           </FormSection>
         </form>
 
-        <form onSubmit={enroll} className="rounded-xl border border-[var(--line)] bg-white p-4">
+        <form onSubmit={enroll} className="form-card-light rounded-xl border border-[#e6eaf0] p-4">
           <h2 className="text-sm font-bold text-[var(--text)]">Inscrever funcionário</h2>
           <FormSection title="Inscrição">
             <div className="sm:col-span-2">
@@ -171,7 +171,7 @@ export function TrainingManager({ courses, employees, positions }: { courses: Co
       </div>
 
       {courses.map((course) => (
-        <section key={course.id} className="rounded-xl border border-[var(--line)] bg-white">
+        <section key={course.id} className="form-card-light rounded-xl border border-[#e6eaf0]">
           <div className="flex flex-col justify-between gap-2 border-b border-[#eef2f6] px-4 py-3 sm:flex-row sm:items-center">
             <div>
               <h2 className="text-sm font-bold text-[var(--text)]">{course.title}</h2>
@@ -197,7 +197,7 @@ export function TrainingManager({ courses, employees, positions }: { courses: Co
           </div>
         </section>
       ))}
-      {courses.length === 0 && <p className="rounded-xl border border-[var(--line)] bg-white px-4 py-10 text-center text-sm text-[var(--text-muted)]">Sem cursos. Crie o primeiro acima.</p>}
+      {courses.length === 0 && <p className="form-card-light rounded-xl border border-[#e6eaf0] px-4 py-10 text-center text-sm text-[var(--text-muted)]">Sem cursos. Crie o primeiro acima.</p>}
     </div>
   );
 }

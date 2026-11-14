@@ -78,7 +78,7 @@ export function TemplatesManager({ templates }: { templates: Template[] }) {
         icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M10 12h4"/><path d="M10 16h4"/></svg>}
       />
 
-      <form onSubmit={submit} className="rounded-xl border border-[var(--line)] bg-white p-4">
+      <form onSubmit={submit} className="form-card-light rounded-xl border border-[#e6eaf0] p-4">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-bold text-[var(--text)]">{editing ? `Editar modelo (cria v${editing.version + 1})` : 'Novo modelo'}</h2>
           {editing && <button type="button" onClick={reset} className="text-xs font-semibold text-[#52667a]">Cancelar</button>}
@@ -106,7 +106,7 @@ export function TemplatesManager({ templates }: { templates: Template[] }) {
       </form>
 
       {history && (
-        <section className="rounded-xl border border-[var(--line)] bg-white p-4">
+        <section className="form-card-light rounded-xl border border-[#e6eaf0] p-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-bold text-[var(--text)]">Histórico — {history.name}</h2>
             <button type="button" onClick={() => setHistory(null)} className="text-xs font-semibold text-[#52667a]">Fechar</button>
@@ -123,7 +123,7 @@ export function TemplatesManager({ templates }: { templates: Template[] }) {
         </section>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-[var(--line)] bg-white">
+      <div className="form-card-light overflow-x-auto rounded-xl border border-[#e6eaf0]">
         <table className="data-table min-w-[720px]">
           <thead><tr><th>Modelo</th><th>Tipo</th><th>Versão</th><th>Jurídico</th><th>Estado</th><th>Acções</th></tr></thead>
           <tbody>

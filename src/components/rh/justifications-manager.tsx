@@ -58,7 +58,7 @@ export function JustificationsManager({ items }: { items: Justification[] }) {
 
       <FormError>{error}</FormError>
 
-      <div className="overflow-x-auto rounded-xl border border-[var(--line)] bg-white">
+      <div className="form-card-light overflow-x-auto rounded-xl border border-[#e6eaf0]">
         <table className="data-table min-w-[760px]">
           <thead><tr><th>Data</th><th>Funcionário</th><th>Tipo</th><th>Motivo</th><th>Estado</th><th>Acções</th></tr></thead>
           <tbody>

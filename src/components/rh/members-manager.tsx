@@ -58,7 +58,7 @@ export function MembersManager({ members }: { members: Member[] }) {
         icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="7" r="4"/><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><path d="M19 11l2 2 4-4"/></svg>}
       />
 
-      <form onSubmit={submit} className="rounded-xl border border-[var(--line)] bg-white p-4">
+      <form onSubmit={submit} className="form-card-light rounded-xl border border-[#e6eaf0] p-4">
         <FormSection title="Adicionar membro RH">
           <div className="sm:col-span-2">
             <FormField label="Email do utilizador" name="member-email" required><input id="member-email" type="email" className="ds-input" value={email} onChange={(e) => setEmail(e.target.value)} required /></FormField>
@@ -76,7 +76,7 @@ export function MembersManager({ members }: { members: Member[] }) {
         </div>
       </form>
 
-      <div className="overflow-x-auto rounded-xl border border-[var(--line)] bg-white">
+      <div className="form-card-light overflow-x-auto rounded-xl border border-[#e6eaf0]">
         <table className="data-table min-w-[560px]">
           <thead><tr><th>Utilizador</th><th>Email</th><th>Função</th></tr></thead>
           <tbody>

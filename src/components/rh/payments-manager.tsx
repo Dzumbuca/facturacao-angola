@@ -69,7 +69,7 @@ export function PaymentsManager({ batches, runs }: { batches: Batch[]; runs: Run
         <p className="mt-1 text-sm text-[var(--text-muted)]">Lotes manuais. Nenhuma transferência bancária real é executada nesta versão.</p>
       </div>
 
-      <form onSubmit={create} className="rounded-xl border border-[var(--line)] bg-white p-4">
+      <form onSubmit={create} className="form-card-light rounded-xl border border-[#e6eaf0] p-4">
         <FormSection title="Criar lote de pagamentos">
           <div className="sm:col-span-2">
             <FormField label="Processamento aprovado" name="pay-run" required>
@@ -92,7 +92,7 @@ export function PaymentsManager({ batches, runs }: { batches: Batch[]; runs: Run
         </FormSection>
       </form>
 
-      <div className="overflow-x-auto rounded-xl border border-[var(--line)] bg-white">
+      <div className="form-card-light overflow-x-auto rounded-xl border border-[#e6eaf0]">
         <table className="data-table min-w-[720px]">
           <thead><tr><th>Período</th><th>Canal</th><th>Funcionários</th><th>Total</th><th>Estado</th><th>Acções</th></tr></thead>
           <tbody>
