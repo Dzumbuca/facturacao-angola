@@ -222,7 +222,36 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
         </select>
       </div>
 
-      <DataTable>
+      {/* Mobile cards */}
+      <ul className="grid grid-cols-1 gap-3 sm:hidden" aria-label="Lista de funcionários">
+        {filtered.map((employee) => {
+          const tone = employee.status === 'ACTIVO' ? { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' } : employee.status === 'SUSPENSO' ? { bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500' } : employee.status === 'INACTIVO' ? { bg: 'bg-slate-100', text: 'text-slate-600', dot: 'bg-slate-400' } : { bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500' };
+          return (
+            <li key={employee.id} className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-4 shadow-[var(--shadow-card)]">
+              <div className="flex items-start gap-3">
+                <SignedImage path={employee.photoUrl} alt={`${employee.firstName} ${employee.lastName}`} className="h-14 w-14 shrink-0 rounded-2xl border border-[var(--line)] object-cover" fallback={<div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-[#021f87] text-base font-bold text-white">{employee.firstName.charAt(0).toUpperCase()}{employee.lastName.charAt(0).toUpperCase()}</div>} />
+                <div className="min-w-0 flex-1">
+                  <Link href={`/rh/funcionarios/${employee.id}`} className="block truncate text-sm font-bold text-[var(--text)]">{employee.firstName} {employee.lastName}</Link>
+                  <p className="mt-0.5 truncate text-[11px] text-[var(--text-muted)]">{employee.email || '—'}</p>
+                  <p className="mt-0.5 block break-words text-[11px] leading-4 text-[var(--text-muted)]">{employee.position?.title ?? '—'} · {employee.department?.name ?? '—'}</p>
+                </div>
+                <span className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold ${tone.bg} ${tone.text}`}><span className={`h-1.5 w-1.5 rounded-full ${tone.dot}`} />{STATUS_LABEL[employee.status] ?? employee.status}</span>
+              </div>
+              <div className="mt-3 flex items-center justify-between gap-3 border-t border-[var(--line)] pt-3">
+                <div className="min-w-0">
+                  <p className="text-[9px] font-bold uppercase tracking-[.12em] text-[var(--text-muted)]">Salário</p>
+                  <p className="mt-0.5 tabular-nums text-sm font-extrabold text-[var(--text)]">{money(employee.baseSalary)}</p>
+                  <p className="mt-0.5 text-[10px] text-[var(--text-muted)]">Nº {employee.employeeNumber}</p>
+                </div>
+                <button type="button" onClick={() => openEdit(employee)} aria-label={`Editar ${employee.firstName} ${employee.lastName}`} className="inline-flex h-11 shrink-0 items-center gap-2 rounded-xl border border-[var(--line)] bg-[var(--surface-raised)] px-4 text-xs font-semibold text-[var(--blue)] transition active:scale-95"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width={14} height={14} aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L10 16l-4 1 1-4 9.5-9.5z"/></svg>Editar</button>
+              </div>
+            </li>
+          );
+        })}
+        {filtered.length === 0 && <li className="rounded-2xl border border-dashed border-[var(--line)] bg-[var(--surface-raised)] px-4 py-6 text-center text-sm text-[var(--text-muted)]">Nenhum funcionário corresponde à pesquisa.</li>}
+      </ul>
+
+      <div className="hidden sm:block"><DataTable>
         <thead><tr><th className="sticky top-0 z-10 border-b border-[var(--line)] bg-[var(--surface-raised)] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[var(--text-muted)]">Funcionário</th><th className="border-b border-[var(--line)] bg-[var(--surface-raised)] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[var(--text-muted)]">Nº</th><th className="border-b border-[var(--line)] bg-[var(--surface-raised)] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[var(--text-muted)]">Cargo / Departamento</th><th className="border-b border-[var(--line)] bg-[var(--surface-raised)] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[var(--text-muted)]">Admissão</th><th className="border-b border-[var(--line)] bg-[var(--surface-raised)] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[var(--text-muted)]">Salário</th><th className="border-b border-[var(--line)] bg-[var(--surface-raised)] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[var(--text-muted)]">Estado</th><th className="border-b border-[var(--line)] bg-[var(--surface-raised)] px-5 py-3.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-[var(--text-muted)]">Acções</th></tr></thead>
           <tbody>
             {filtered.map((employee) => (
@@ -253,7 +282,7 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
               <tr><td colSpan={7} className="px-4 py-6 text-center text-sm text-[#7094aa]">Nenhum funcionário encontrado para a pesquisa</td></tr>
             )}
           </tbody>
-      </DataTable>
+      </DataTable></div>
 
       {generatedPin && (
         <div role="dialog" aria-modal="true" aria-labelledby="rh-pin-title" className="fixed inset-0 z-[60] flex items-end justify-center bg-[#102b46]/50 p-0 backdrop-blur-[2px] sm:items-center sm:p-5">
