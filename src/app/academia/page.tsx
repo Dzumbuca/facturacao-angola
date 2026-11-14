@@ -39,6 +39,34 @@ const artigos = [
     categoria: 'Facturação',
     tempoLeitura: '7 min',
   },
+  {
+    slug: 'como-organizar-facturacao-pequena-empresa',
+    titulo: 'Como organizar a facturação de uma pequena empresa em Angola',
+    descricao: 'Uma rotina simples e eficaz para emitir, guardar e controlar facturas com consistência — do arquivo ao pagamento.',
+    categoria: 'Gestão',
+    tempoLeitura: '8 min',
+  },
+  {
+    slug: 'checklist-facturacao-pme',
+    titulo: 'Checklist completa de facturação para PME angolanas',
+    descricao: 'Tudo o que precisa de verificar antes, durante e depois de emitir a factura — organizado em passos práticos.',
+    categoria: 'Facturação',
+    tempoLeitura: '6 min',
+  },
+  {
+    slug: 'escolher-software-facturacao',
+    titulo: 'Como escolher um software de facturação para a sua empresa',
+    descricao: 'Critérios práticos para avaliar opções de software consoante o tamanho, a equipa e as necessidades da sua empresa.',
+    categoria: 'Decisão',
+    tempoLeitura: '7 min',
+  },
+  {
+    slug: 'emitir-primeira-factura-correctamente',
+    titulo: 'Como emitir a sua primeira factura correctamente',
+    descricao: 'Um guia claro para quem vai emitir a sua primeira factura: preparação, passos e boas práticas.',
+    categoria: 'Iniciação',
+    tempoLeitura: '7 min',
+  },
 ];
 
 export default async function AcademiaPage() {
