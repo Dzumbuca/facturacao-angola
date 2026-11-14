@@ -412,6 +412,32 @@ describe('Machine RH - núcleo e isolamento entre empresas', () => {
     expect(ruleset.status).toBe(201);
     payrollRulesetId = (await ruleset.json()).id;
 
+    // Regras pendentes de validação legal — processamento oficial bloqueado (Etapa A).
+    const blockedRun = await authenticatedFetch('/api/rh/payroll/runs', session, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ period: '2026-01', rulesetId: payrollRulesetId }),
+    });
+    const blockedText = await blockedRun.text();
+    expect(blockedRun.status, blockedText).toBe(403);
+    expect(JSON.parse(blockedText).code).toBe('REGRAS_SALARIAIS_NAO_VALIDADAS');
+
+    // Simulação (modo SIMULACAO) calcula sem persistir.
+    const simulated = await authenticatedFetch('/api/rh/payroll/runs', session, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ period: '2026-01', rulesetId: payrollRulesetId, mode: 'SIMULACAO' }),
+    });
+    expect(simulated.status).toBe(200);
+    const simulatedData = await simulated.json();
+    expect(simulatedData.simulation).toBe(true);
+    expect(Number(simulatedData.totals.gross)).toBe(350000);
+
+    // Validar regras legalmente (evidência documental obrigatória) para testar o fluxo oficial.
+    const validateResponse = await authenticatedFetch('/api/rh/payroll/legal-validate', session, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rulesetId: payrollRulesetId, documentUrl: 'https://example.com/evidence-e2e.pdf', validatedByName: 'Auditor E2E Staging' }),
+    });
+    expect(validateResponse.status).toBe(200);
+
     const run = await authenticatedFetch('/api/rh/payroll/runs', session, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ period: '2026-01', rulesetId: payrollRulesetId }),
