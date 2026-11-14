@@ -55,6 +55,7 @@ const NAV_SECTIONS: NavSection[] = [
     links: [
       { href: '/rh/processamento-salarial', label: 'Processamento', icon: IconCurrency },
       { href: '/rh/pagamentos', label: 'Pagamentos', icon: IconSparkles },
+      { href: '/rh/descontos', label: 'Descontos', icon: IconCheckSquare },
     ],
   },
   {
