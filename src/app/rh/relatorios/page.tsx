@@ -32,15 +32,19 @@ export default async function RhRelatoriosPage({ searchParams }: Props) {
   if (query.employeeId) exportQuery.set('employeeId', query.employeeId);
   if (query.status) exportQuery.set('status', query.status);
 
-  const [dataset, filters] = await runWithTenant(access.tenantId, async (tx) => {
-    const [departments, employees] = await Promise.all([
+  // Duas transacções independentes: a página primeiro carrega listas (departamentos/funcionários)
+  // e depois delega ao getRhReportDataset, que abre a sua própria transacção.
+  const filterStatus = query.status ?? null;
+  const [departments, employees] = await runWithTenant(access.tenantId, async (tx) => {
+    return Promise.all([
       tx.rhDepartment.findMany({ where: { tenantId: access.tenantId }, orderBy: [{ name: 'asc' }], select: { id: true, name: true } }),
       tx.rhEmployee.findMany({ where: { tenantId: access.tenantId }, orderBy: [{ firstName: 'asc' }], take: 200, select: { id: true, firstName: true, lastName: true } }),
     ]);
-    const filterStatus = query.status ?? null;
-    const result = await getRhReportDataset(access.tenantId, period, kind, query.departmentId || null, query.employeeId || null, filterStatus);
-    return [result, { departments, employees }];
   });
+  const [dataset] = await Promise.all([
+    getRhReportDataset(access.tenantId, period, kind, query.departmentId || null, query.employeeId || null, filterStatus),
+  ]);
+  const filters = { departments, employees };
 
   const periodLabel = `${period.start.toLocaleDateString('pt-AO', { timeZone: 'Africa/Luanda' })} — ${new Date(period.endExclusive.getTime() - 1).toLocaleDateString('pt-AO', { timeZone: 'Africa/Luanda' })}`;
 
