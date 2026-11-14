@@ -38,6 +38,12 @@ export function IconCpu(props: Props) {
 export function IconSparkles(props: Props) {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M12 3l2.2 6.2L20 12l-5.8 2.8L12 21l-2.2-6.2L4 12l5.8-2.8L12 3z"/></svg>;
 }
+export function IconWallet(props: Props) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M21 7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16V7"/><path d="M18 12a2 2 0 0 0 .01 4"/></svg>;
+}
+export function IconBanknote(props: Props) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" {...props}><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 12h.01M18 12h.01"/></svg>;
+}
 export function IconCurrency(props: Props) {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" {...props}><circle cx="12" cy="12" r="10"/><path d="M9 9.5a2.5 2.5 0 0 1 3 .9L12 13l-.2 2.6a1 1 0 0 0 1.5.8l1.7-1.4"/><circle cx="12" cy="12" r="1"/></svg>;
 }

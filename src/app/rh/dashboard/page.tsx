@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { runWithTenant } from '@/lib/tenant-db';
 import { requireRhPage } from '@/lib/rh-page';
 import { rhFullName } from '@/lib/rh-service';
-import { IconUsers, IconBuilding, IconCheckSquare, IconCurrency, IconFileText } from '@/components/rh/icons';
+import { IconUsers, IconBuilding, IconCheckSquare, IconFileText, IconWallet } from '@/components/rh/icons';
 import { PremiumHero, PremiumKpi, PremiumPanel } from '@/components/dashboard/premium-kit';
 import { MonthlyAdmissionsChart, type MonthAdmission } from '@/components/rh/monthly-admissions-chart';
 import { EmptyState } from '@/components/ui/data-table';
@@ -49,7 +49,7 @@ export default async function RhDashboardPage() {
     { label: 'Funcionários', value: data.total, hint: `${data.active} ${activeLabel}`, tone: 'neutral' as const, icon: <IconUsers width={18} height={18} /> },
     { label: 'Departamentos', value: data.departments, hint: data.departments === 0 ? 'sem estrutura' : 'estrutura actual', tone: (data.departments === 0 ? 'warning' : 'success') as 'warning' | 'success', icon: <IconBuilding width={18} height={18} /> },
     { label: 'Contratos a vencer', value: data.contractsExpiring, hint: 'próximos 30 dias', tone: (data.contractsExpiring === 0 ? 'success' : 'warning') as 'warning' | 'success', icon: <IconCheckSquare width={18} height={18} /> },
-    { label: 'Custo mensal base', value: money(data.monthly), hint: 'salários activos', tone: 'primary' as const, icon: <IconCurrency width={18} height={18} /> },
+    { label: 'Custo mensal base', value: money(data.monthly), hint: 'salários activos', tone: 'primary' as const, icon: <IconWallet width={20} height={20} /> },
   ];
 
   return (

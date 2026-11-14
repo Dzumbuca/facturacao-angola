@@ -41,8 +41,8 @@ export function PremiumKpi({ label, value, detail, tone = 'neutral', icon }: {
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] ring-1" style={{ background: styles.bg, color: styles.color, borderColor: styles.ring }}>{icon}</span>
         </div>
         <div className="min-w-0 flex-1">
-          <p className={`tabular-nums font-extrabold leading-none tracking-tight text-[var(--text)] ${valueFontClass(value)}`} style={{ color: styles.color }}>{value}</p>
-          {detail && <p className="mt-2 text-[12px] leading-4 text-[var(--text-muted)]">{detail}</p>}
+          <p className={`tabular-nums whitespace-nowrap font-extrabold leading-none tracking-tight text-[var(--text)] ${valueFontClass(value)}`} style={{ color: styles.color }}>{value}</p>
+          {detail && <p className="mt-2 text-[11px] leading-snug text-[var(--text-muted)] whitespace-normal break-words">{detail}</p>}
         </div>
       </div>
     </article>
