@@ -26,11 +26,11 @@ export function PremiumKpi({ label, value, detail, tone = 'neutral', icon }: {
 }) {
   // Cores semânticas — remapeadas por tokens; nunca fixas.
   const toneStyle: Record<typeof tone, { color: string; ring: string; bg: string }> = {
-    neutral: { color: 'var(--text)', ring: 'var(--line)', bg: 'var(--surface-raised)' },
+    neutral: { color: '#1c2d3f', ring: '#d8e1ec', bg: '#eef2f6' },
     primary: { color: 'var(--blue)', ring: '#cfe0ff', bg: '#eef5ff' },
-    success: { color: 'var(--success)', ring: '#c7e5d1', bg: '#effaf4' },
-    warning: { color: '#946000', ring: '#f3dfae', bg: '#fdf6e9' },
-    danger:  { color: 'var(--danger)', ring: '#f3d0d0', bg: '#fdf2f2' },
+    success: { color: '#1e6b47', ring: '#c7e5d1', bg: '#effaf4' },
+    warning: { color: '#8a5a00', ring: '#f3dfae', bg: '#fdf6e9' },
+    danger:  { color: '#a83939', ring: '#f3d0d0', bg: '#fdf2f2' },
   };
   const styles = toneStyle[tone];
   return (
@@ -38,7 +38,7 @@ export function PremiumKpi({ label, value, detail, tone = 'neutral', icon }: {
       <div className="flex h-full min-w-0 flex-col gap-4">
         <div className="flex items-start justify-between gap-3">
           <p className="text-[11px] font-semibold uppercase leading-4 tracking-[.12em] text-[var(--text-muted)]">{label}</p>
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] ring-1" style={{ background: styles.bg, color: styles.color, borderColor: styles.ring }}>{icon}</span>
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[12px]" style={{ background: styles.bg, color: styles.color, boxShadow: `inset 0 0 0 1px ${styles.ring}` }}>{icon}</span>
         </div>
         <div className="min-w-0 flex-1">
           <p className={`tabular-nums whitespace-nowrap font-extrabold leading-none tracking-tight text-[var(--text)] ${valueFontClass(value)}`} style={{ color: styles.color }}>{value}</p>

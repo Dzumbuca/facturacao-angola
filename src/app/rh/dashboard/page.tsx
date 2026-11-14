@@ -66,7 +66,7 @@ export default async function RhDashboardPage() {
         </div>
       </PremiumHero>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
         {kpis.map((kpi) => (
           <PremiumKpi key={kpi.label} label={kpi.label} value={typeof kpi.value === 'number' ? kpi.value.toLocaleString('pt-AO') : String(kpi.value)} detail={kpi.hint} tone={kpi.tone} icon={kpi.icon} />
         ))}
