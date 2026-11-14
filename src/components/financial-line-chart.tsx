@@ -26,13 +26,13 @@ export function FinancialLineChart({ points, label, color }: { points: Point[]; 
         {[0, .5, 1].map((ratio) => {
           const y = bottom - ratio * (bottom - top);
           return <g key={ratio}>
-            <line x1={left} x2={right} y1={y} y2={y} stroke="#e8edf3" strokeDasharray={ratio === 0 ? undefined : '3 5'} />
+            <line x1={left} x2={right} y1={y} y2={y} stroke="var(--line)" strokeDasharray={ratio === 0 ? undefined : '3 5'} />
             <text x={left - 12} y={y + 4} textAnchor="end" className="fill-[#7b8998] text-[11px]">{new Intl.NumberFormat('pt-AO', { notation: 'compact', maximumFractionDigits: 1 }).format(axisMax * ratio)}</text>
           </g>;
         })}
         <path d={area} fill={areaColor} fillOpacity=".075" />
         <path d={line} fill="none" stroke={lineColor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-        {coords.map((point) => <circle key={point.date} cx={point.x} cy={point.y} r="4" fill="white" stroke={lineColor} strokeWidth="2.5"><title>{`${shortDate(point.date)} · ${money(point.value)}`}</title></circle>)}
+        {coords.map((point) => <circle key={point.date} cx={point.x} cy={point.y} r="4" fill="var(--surface)" stroke={lineColor} strokeWidth="2.5"><title>{`${shortDate(point.date)} · ${money(point.value)}`}</title></circle>)}
         {tickIndexes.map((index) => <text key={points[index].date} x={coords[index].x} y={bottom + 29} textAnchor={index === 0 ? 'start' : index === points.length - 1 ? 'end' : 'middle'} className="fill-[#7b8998] text-[11px]">{shortDate(points[index].date)}</text>)}
       </svg>
     </div>

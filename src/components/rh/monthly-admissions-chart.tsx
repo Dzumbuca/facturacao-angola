@@ -15,7 +15,7 @@ export function MonthlyAdmissionsChart({ months }: { months: MonthAdmission[] })
     <div className="space-y-3">
       <svg viewBox={`0 0 ${months.length * 42} 170`} className="h-44 w-full min-w-0 overflow-visible" role="img" aria-label="Admissões por mês">
         {[0, 0.5, 1].map((ratio, index) => (
-          <line key={index} x1={0} x2={months.length * 42} y1={150 - ratio * 130} y2={150 - ratio * 130} stroke="#e6ebf1" strokeDasharray={index === 0 ? undefined : '3 5'} />
+          <line key={index} x1={0} x2={months.length * 42} y1={150 - ratio * 130} y2={150 - ratio * 130} stroke="var(--line)" strokeDasharray={index === 0 ? undefined : '3 5'} />
         ))}
         {months.map((point, index) => {
           const height = (point.count / max) * 130;
@@ -31,7 +31,7 @@ export function MonthlyAdmissionsChart({ months }: { months: MonthAdmission[] })
                   <text x={x + 15} y={y - 14} textAnchor="middle" className="fill-white text-[9px] font-bold">{point.count}</text>
                 </g>
               )}
-              <text x={x + 15} y={166} textAnchor="middle" className="fill-[#7b8799] text-[11px] font-semibold">{MONTHS[new Date(point.fullDate).getMonth()]}</text>
+              <text x={x + 15} y={166} textAnchor="middle" className="fill-[var(--text-muted)] text-[11px] font-semibold">{MONTHS[new Date(point.fullDate).getMonth()]}</text>
             </g>
           );
         })}
