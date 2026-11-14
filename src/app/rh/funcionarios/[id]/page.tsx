@@ -50,7 +50,8 @@ export default async function EmployeeDetailPage({ params }: { params: Promise<{
 
   return (
     <div className="space-y-5">
-      <Link href="/rh/funcionarios" className="text-xs font-semibold text-[#021f87]">← Funcionários</Link>
+      <Link href="/rh/funcionarios" className="text-xs font-semibold text-[var(--text-muted)] hover:text-[var(--blue)]">← Funcionários</Link>
+      <p className="text-[11px] text-[var(--text-muted)]">Funcionário · <span className="font-mono">{e.employeeNumber}</span></p>
 
       {data.offboarding && (
         <div role="status" className="rounded-xl border border-[#f0dcb9] bg-[#fdf6e9] p-4 text-sm text-[#8a5a10]">
@@ -59,42 +60,57 @@ export default async function EmployeeDetailPage({ params }: { params: Promise<{
         </div>
       )}
 
-      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
-        <div className="flex items-center gap-4">
+      <div className="rounded-2xl border border-[#e1e8f0] bg-white p-4 shadow-[var(--shadow-card)] sm:p-5">
+        <div className="flex items-start gap-3 sm:gap-4">
           <SignedImage
             path={e.photoUrl}
             alt={`${e.firstName} ${e.lastName}`}
-            className="h-16 w-16 rounded-full border border-[#e1e8f0] object-cover sm:h-20 sm:w-20"
-            fallback={<div className="grid h-16 w-16 place-items-center rounded-full bg-[#021f87] text-base font-bold text-white sm:h-20 sm:w-20 sm:text-xl">{e.firstName.charAt(0).toUpperCase()}{e.lastName.charAt(0).toUpperCase()}</div>}
+            className="h-14 w-14 shrink-0 rounded-full border border-[#e1e8f0] object-cover ring-2 ring-[#e6ecf5] sm:h-16 sm:w-16"
+            fallback={<div className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-[#021f87] text-sm font-bold text-white ring-2 ring-[#e6ecf5] sm:h-16 sm:w-16 sm:text-lg">{e.firstName.charAt(0).toUpperCase()}{e.lastName.charAt(0).toUpperCase()}</div>}
           />
-          <div className="min-w-0">
-            <p className="text-xs font-mono text-[#708195]">{e.employeeNumber}</p>
-            <h1 className="mt-0.5 text-xl font-bold leading-snug break-words text-[#1c2d3f] sm:text-2xl">{e.firstName} {e.lastName}</h1>
-            <p className="mt-1 text-sm text-[#607286] break-words">{e.position?.title ?? '—'} · {e.department?.name ?? '—'}</p>
-            <p className="mt-0.5 text-xs text-[#8a99ab]">{e.shift ? `${e.shift.name} ${e.shift.startTime}–${e.shift.endTime}` : 'Sem horário'}</p>
-            <div className="mt-2">{(() => {
+          <div className="min-w-0 flex-1">
+            <h1 className="text-lg font-bold leading-snug break-words text-[#1c2d3f] sm:text-xl">{e.firstName} {e.lastName}</h1>
+            <p className="mt-0.5 text-[11px] leading-relaxed break-all text-[#708195]">{e.email ?? '—'}</p>
+            <p className="mt-1 text-xs text-[#607286] break-words">{e.position?.title ?? '—'} · {e.department?.name ?? '—'}</p>
+            <p className="mt-0.5 text-[10px] text-[#8a99ab]">{e.shift ? `${e.shift.name} ${e.shift.startTime}–${e.shift.endTime}` : 'Sem horário'}</p>
+          </div>
+          <div className="flex shrink-0 flex-col items-end gap-1.5">
+            <span className="text-[10px] font-mono text-[#8a99ab]">{e.employeeNumber}</span>
+            {(() => {
               const tone = e.status === 'ACTIVO' ? { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' } : e.status === 'SUSPENSO' ? { bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500' } : e.status === 'INACTIVO' ? { bg: 'bg-slate-100', text: 'text-slate-600', dot: 'bg-slate-400' } : { bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500' };
-              return <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${tone.bg} ${tone.text}`}><span className={`h-1.5 w-1.5 rounded-full ${tone.dot}`} />{STATUS_LABEL[e.status] ?? e.status}</span>;
-            })()}</div>
+              return <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold ${tone.bg} ${tone.text}`}><span className={`h-1.5 w-1.5 rounded-full ${tone.dot}`} />{STATUS_LABEL[e.status] ?? e.status}</span>;
+            })()}
           </div>
         </div>
+
         {canWrite && !data.offboarding && (
-          <OffboardDialog employeeId={id} employeeName={`${e.firstName} ${e.lastName}`} />
+          <div className="mt-4 flex gap-2 border-t border-[#eef2f6] pt-4">
+            <Link href="/rh/funcionarios" aria-label="Editar funcionário na lista" className="inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-xl border border-[#e1e8f0] bg-white px-3 text-xs font-semibold text-[#1c2d3f] transition hover:border-[#021f87] hover:text-[#021f87]"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width={14} height={14} aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L10 16l-4 1 1-4 9.5-9.5z"/></svg>Editar</Link>
+            <Link href="/rh/contratos" aria-label="Ver contratos do funcionário" className="inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-xl border border-[#e1e8f0] bg-white px-3 text-xs font-semibold text-[#1c2d3f] transition hover:border-[#021f87] hover:text-[#021f87]"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width={14} height={14} aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></svg>Contrato</Link>
+            <Link href="/rh/ferias" aria-label="Ver férias do funcionário" className="inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#021f87] px-3 text-xs font-semibold text-white transition hover:bg-[#011566]"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width={14} height={14} aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Férias</Link>
+          </div>
+        )}
+        {data.offboarding && (
+          <div className="mt-4 border-t border-[#eef2f6] pt-4">
+            <OffboardDialog employeeId={id} employeeName={`${e.firstName} ${e.lastName}`} />
+          </div>
         )}
       </div>
 
       <section className="rounded-xl border border-[#e1e8f0] bg-white p-5">
         <h2 className="text-sm font-bold text-[#1c2d3f]">Dados pessoais e profissionais</h2>
-        <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-3">
-          <div><dt className="text-[#708195]">BI / NIF</dt><dd className="font-semibold">{[e.bi, e.nif].filter(Boolean).join(' · ') || '—'}</dd></div>
-          <div><dt className="text-[#708195]">Contactos</dt><dd className="font-semibold">{[e.phone, e.email].filter(Boolean).join(' · ') || '—'}</dd></div>
-          <div><dt className="text-[#708195]">Morada</dt><dd className="font-semibold">{e.address ?? '—'}</dd></div>
-          <div><dt className="text-[#708195]">Admissão</dt><dd className="font-semibold">{day(e.hireDate)}</dd></div>
-          <div><dt className="text-[#708195]">Vínculo</dt><dd className="font-semibold">{e.contractType}</dd></div>
-          <div className="sm:col-span-3 bg-[#f5f8fc] -mx-1 rounded-xl px-4 py-2.5"><dt className="text-[10px] font-bold uppercase tracking-[.12em] text-[#708195]">Salário-base</dt><dd className="mt-1 tabular-nums text-lg font-extrabold text-[#021f87]">{money(e.baseSalary)}</dd></div>
-          <div><dt className="text-[#708195]">Banco</dt><dd className="font-semibold">{e.bankName ?? '—'} · {bankAccount ?? '—'}</dd></div>
-          <div><dt className="text-[#708195]">IBAN {canWrite ? '' : '(mascarado)'}</dt><dd className="font-mono text-xs">{bankIban ?? '—'}</dd></div>
-          <div><dt className="text-[#708195]">PIN do ponto</dt><dd className="font-semibold">{e.hasPin ? 'Definido' : 'Não definido'}</dd></div>
+        <dl className="mt-3 divide-y divide-[#eef2f6] text-sm">
+          <div className="flex items-center justify-between gap-4 py-2.5"><dt className="shrink-0 text-xs font-medium text-[#708195]">BI / NIF</dt><dd className="min-w-0 break-all text-right font-semibold text-[#1c2d3f]">{[e.bi, e.nif].filter(Boolean).join(' · ') || '—'}</dd></div>
+          <div className="flex items-center justify-between gap-4 py-2.5"><dt className="shrink-0 text-xs font-medium text-[#708195]">Contactos</dt><dd className="min-w-0 break-all text-right font-semibold text-[#1c2d3f]">{[e.phone, e.email].filter(Boolean).join(' · ') || '—'}</dd></div>
+          <div className="flex items-start justify-between gap-4 py-2.5"><dt className="shrink-0 text-xs font-medium text-[#708195]">Morada</dt><dd className="min-w-0 break-words text-right font-semibold text-[#1c2d3f]">{e.address ?? '—'}</dd></div>
+          <div className="flex items-center justify-between gap-4 py-2.5"><dt className="shrink-0 text-xs font-medium text-[#708195]">Cargo</dt><dd className="min-w-0 break-words text-right font-semibold text-[#1c2d3f]">{e.position?.title ?? '—'}</dd></div>
+          <div className="flex items-center justify-between gap-4 py-2.5"><dt className="shrink-0 text-xs font-medium text-[#708195]">Departamento</dt><dd className="min-w-0 break-words text-right font-semibold text-[#1c2d3f]">{e.department?.name ?? '—'}</dd></div>
+          <div className="flex items-center justify-between gap-4 py-2.5"><dt className="shrink-0 text-xs font-medium text-[#708195]">Admissão</dt><dd className="min-w-0 break-words text-right font-semibold tabular-nums text-[#1c2d3f]">{day(e.hireDate)}</dd></div>
+          <div className="flex items-center justify-between gap-4 py-2.5"><dt className="shrink-0 text-xs font-medium text-[#708195]">Vínculo</dt><dd className="min-w-0 break-words text-right font-semibold text-[#1c2d3f]">{e.contractType}</dd></div>
+          <div className="-mx-1 my-1 flex items-center justify-between gap-4 rounded-xl bg-[#f5f8fc] px-4 py-3"><dt className="shrink-0 text-[10px] font-bold uppercase tracking-[.12em] text-[#708195]">Salário-base</dt><dd className="min-w-0 break-words text-right text-base font-extrabold tabular-nums text-[#021f87]">{money(e.baseSalary)}</dd></div>
+          <div className="flex items-center justify-between gap-4 py-2.5"><dt className="shrink-0 text-xs font-medium text-[#708195]">Banco</dt><dd className="min-w-0 break-words text-right font-semibold text-[#1c2d3f]">{e.bankName ?? '—'} · {bankAccount ?? '—'}</dd></div>
+          <div className="flex items-center justify-between gap-4 py-2.5"><dt className="shrink-0 text-xs font-medium text-[#708195]">IBAN {canWrite ? '' : '(mascarado)'}</dt><dd className="min-w-0 break-all text-right font-mono text-[11px] text-[#1c2d3f]">{bankIban ?? '—'}</dd></div>
+          <div className="flex items-center justify-between gap-4 py-2.5"><dt className="shrink-0 text-xs font-medium text-[#708195]">PIN do ponto</dt><dd className="min-w-0 break-words text-right font-semibold text-[#1c2d3f]">{e.hasPin ? 'Definido' : 'Não definido'}</dd></div>
         </dl>
         {!canWrite && <p className="mt-3 text-xs text-[#8a5a00]">Dados bancários completos apenas para perfis com escrita de funcionários.</p>}
       </section>
