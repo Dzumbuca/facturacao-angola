@@ -120,6 +120,10 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
 
     async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    // Bloqueia submissões enquanto está a gravar (sem janela de corridas).
+    if (saving) return;
+    // Barreira rígida: NUNCA cria/actualiza por submissão implícita no passo 1.
+    if (step !== 2) { setStep(2); return; }
     const form = new FormData(event.currentTarget);
     const payload: Record<string, unknown> = {
       firstName: String(form.get('firstName') ?? ''),
@@ -288,7 +292,7 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
 
             <FormStepper steps={[{ label: 'Identificação e vínculo' }, { label: 'Informações complementares' }]} current={step - 1} />
 
-            <form className="mt-4 space-y-4" onSubmit={submit} key={editing?.id ?? 'novo'} noValidate>
+            <form className="mt-4 space-y-4" onSubmit={submit} key={editing?.id ?? 'novo'} noValidate onKeyDown={(e) => { if (e.key === 'Enter' && (e.target as HTMLElement).tagName !== 'BUTTON') e.preventDefault(); }}>
 
               {/* PASSO 1 — Identificação e vínculo */}
               <div hidden={step !== 1} className="space-y-4" aria-hidden={step !== 1}>
