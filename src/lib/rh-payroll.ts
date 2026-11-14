@@ -170,3 +170,40 @@ export function computeTimeAdjustments(input: {
     absenceDeduction: round2((absenceHours * hourlyRate * absenceRate) / 100),
   };
 }
+
+/** Snapshot imutável das regras utilizadas no processamento (não afecta recibos históricos). */
+export type RuleSnapshot = {
+  rulesetId: string;
+  rulesetName: string;
+  legalStatusAtProcessing: string;
+  legalDocumentUrl: string | null;
+  inssEmployeeRate: number;
+  inssEmployerRate: number;
+  foodAllowance: number;
+  transportAllowance: number;
+  monthlyHours: number;
+  overtimeRatePercent: number;
+  absenceRatePercent: number;
+  irtBracketCount: number;
+};
+
+/** Constrói o snapshot das regras para persistir como JSON nas linhas do processamento. */
+export function buildRuleSnapshot(
+  config: PayrollConfig,
+  ruleset: { id: string; name: string; legalStatus?: string | null; legalDocumentUrl?: string | null },
+): RuleSnapshot {
+  return {
+    rulesetId: ruleset.id,
+    rulesetName: ruleset.name,
+    legalStatusAtProcessing: ruleset.legalStatus ?? 'PENDENTE',
+    legalDocumentUrl: ruleset.legalDocumentUrl ?? null,
+    inssEmployeeRate: config.inssEmployeeRate,
+    inssEmployerRate: config.inssEmployerRate,
+    foodAllowance: config.foodAllowance,
+    transportAllowance: config.transportAllowance,
+    monthlyHours: config.monthlyHours ?? 220,
+    overtimeRatePercent: config.overtimeRatePercent ?? 0,
+    absenceRatePercent: config.absenceRatePercent ?? 0,
+    irtBracketCount: config.irtBrackets.length,
+  };
+}
