@@ -127,7 +127,7 @@ export async function getRhReportDataset(
 
     if (kind === 'deductions') {
       const rows: DeductionRow[] = await tx.rhEmployeeDeduction.findMany({
-        where: { tenantId, ...(employeeId ? { employeeId } : {}), ...(status ? { active: status === 'ativo' } : {}) },
+        where: { tenantId, ...(employeeId ? { employeeId } : {}), ...(status ? { active: status === 'ativo' || status === 'true' } : {}) },
         include: { employee: { select: { firstName: true, lastName: true, employeeNumber: true, department: { select: { name: true } } } } },
         orderBy: [{ active: 'desc' }, { createdAt: 'desc' }],
         take: 10000,
