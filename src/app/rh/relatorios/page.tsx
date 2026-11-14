@@ -4,18 +4,27 @@ import { runWithTenant } from '@/lib/tenant-db';
 import { requireRhPage } from '@/lib/rh-page';
 import { EmptyState } from '@/components/ui/data-table';
 import { parseReportPeriod } from '@/lib/report-period';
-import { IconUsers, IconClock, IconCoffee, IconCurrency, IconBanknote, IconFileText } from '@/components/rh/icons';
+import { IconUsers, IconClock, IconCoffee, IconWallet, IconCurrency, IconFileText, IconCheckSquare } from '@/components/rh/icons';
 import { getRhReportDataset, isRhReportKind, RH_REPORT_KINDS, type RhReportKind } from '@/lib/rh-reports';
 
 type Props = { searchParams: Promise<{ kind?: string; period?: string; from?: string; to?: string; departmentId?: string; employeeId?: string; status?: string }> };
 
-const KIND_META: Record<RhReportKind, { label: string; description: string; icon: (className?: string) => ReactNode }> = {
-  employees: { label: 'Funcionários', description: 'Cadastro, salários e estado', icon: (c) => <IconUsers className={c} aria-hidden /> },
-  attendance: { label: 'Assiduidade', description: 'Entradas, saídas e dias presenciais', icon: (c) => <IconClock className={c} aria-hidden /> },
-  leaves: { label: 'Férias', description: 'Pedidos aprovados, pendentes e rejeitados', icon: (c) => <IconCoffee className={c} aria-hidden /> },
-  payroll: { label: 'Processamento', description: 'Bruto, líquido, INSS e IRT', icon: (c) => <IconCurrency className={c} aria-hidden /> },
-  deductions: { label: 'Descontos', description: 'Activos e concluídos por funcionário', icon: (c) => <IconBanknote className={c} aria-hidden /> },
-  contracts: { label: 'Contratos', description: 'Vigentes, a vencer e vencidos', icon: (c) => <IconFileText className={c} aria-hidden /> },
+const KIND_META: Record<RhReportKind, { label: string; description: string; icon: (className?: string) => ReactNode; color: 'blue' | 'emerald' | 'amber' | 'purple' | 'rose' | 'indigo' }> = {
+  employees:   { label: 'Funcionários',  description: 'Cadastro, salários e estado',        icon: (c) => <IconUsers className={c} aria-hidden />,     color: 'blue' },
+  attendance:  { label: 'Assiduidade',   description: 'Entradas, saídas e dias presenciais', icon: (c) => <IconClock className={c} aria-hidden />,     color: 'emerald' },
+  leaves:      { label: 'Férias',        description: 'Aprovadas, pendentes e rejeitadas',   icon: (c) => <IconCoffee className={c} aria-hidden />,    color: 'amber' },
+  payroll:     { label: 'Processamento', description: 'Bruto, líquido, INSS e IRT',          icon: (c) => <IconWallet className={c} aria-hidden />,    color: 'purple' },
+  deductions:  { label: 'Descontos',     description: 'Activos e concluídos por funcionário', icon: (c) => <IconCurrency className={c} aria-hidden />,  color: 'rose' },
+  contracts:   { label: 'Contratos',     description: 'Vigentes, a vencer e vencidos',       icon: (c) => <IconFileText className={c} aria-hidden />,  color: 'indigo' },
+};
+
+const COLOR: Record<string, { icon: string }> = {
+  blue:    { icon: 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300' },
+  emerald: { icon: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300' },
+  amber:   { icon: 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300' },
+  purple:  { icon: 'bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300' },
+  rose:    { icon: 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300' },
+  indigo:  { icon: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300' },
 };
 
 function fmtCell(cell: string | number | null): string {
@@ -27,22 +36,22 @@ function fmtCell(cell: string | number | null): string {
 function statusPill(cell: string | number | null): ReactNode | null {
   const value = typeof cell === 'string' ? cell : '';
   const map: Record<string, string> = {
-    ACTIVO: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300',
-    APROVADO: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300',
-    PENDENTE: 'bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300',
-    RENOVADO: 'bg-blue-50 text-blue-800 dark:bg-blue-950/50 dark:text-blue-300',
-    SUSPENSO: 'bg-rose-50 text-rose-800 dark:bg-rose-950/50 dark:text-rose-300',
-    VENCIDO: 'bg-rose-50 text-rose-800 dark:bg-rose-950/50 dark:text-rose-300',
-    REJEITADO: 'bg-rose-50 text-rose-800 dark:bg-rose-950/50 dark:text-rose-300',
-    CONCLUIDO: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
-    CANCELADO: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
-    INACTIVO: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
+    ACTIVO: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300',
+    APROVADO: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300',
+    PENDENTE: 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300',
+    RENOVADO: 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300',
+    SUSPENSO: 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300',
+    VENCIDO: 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300',
+    REJEITADO: 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300',
+    CONCLUIDO: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+    CANCELADO: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+    INACTIVO: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
   };
   const classes = map[value];
   if (!classes) return null;
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-[.05em] ${classes}`}>
-      <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" aria-hidden />
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-semibold tracking-wide ${classes}`}>
+      <span className="h-1.5 w-1.5 rounded-full bg-current opacity-80" aria-hidden />
       {value}
     </span>
   );
@@ -74,7 +83,6 @@ export default async function RhRelatoriosPage({ searchParams }: Props) {
     return `/rh/relatorios?${q.toString()}`;
   };
 
-  // Duas transacções independentes: listas numa, dataset na outra.
   const filterStatus = query.status ?? null;
   const [departments, employees] = await runWithTenant(access.tenantId, async (tx) => {
     return Promise.all([
@@ -92,61 +100,71 @@ export default async function RhRelatoriosPage({ searchParams }: Props) {
 
   return (
     <div className="space-y-6 pb-8">
-      {/* Cabeçalho — eyebrow → título → subtítulo + exportação unificada */}
-      <header className="flex flex-wrap items-end justify-between gap-y-4 gap-x-8">
+      {/* Cabeçalho — compacto; exportação unificada à direita */}
+      <header className="flex flex-wrap items-end justify-between gap-y-4 gap-x-8 border-b border-[var(--line)] pb-5">
         <div className="min-w-0">
           <p className="text-[10px] font-bold uppercase tracking-[.2em] text-[var(--blue)]">Machine RH · Relatórios</p>
-          <h1 className="mt-1.5 text-[26px] font-semibold leading-tight tracking-[-.03em] text-[var(--text)] md:text-[32px]">Relatórios de gestão</h1>
-          <p className="mt-1.5 max-w-xl text-sm leading-6 text-[var(--text-muted)]">Dados reais da sua empresa, com isolamento por tenant e exportação em três formatos.</p>
+          <h1 className="mt-1.5 text-[24px] font-semibold leading-tight tracking-[-.02em] text-[var(--text)] md:text-[30px]">Relatórios de gestão</h1>
+          <p className="mt-1 text-sm text-[var(--text-muted)]">Gerados a partir dos seus dados reais · {periodLabel}</p>
         </div>
         <div className="flex items-center gap-2" role="group" aria-label="Exportar relatório">
           {(['pdf', 'xlsx', 'csv'] as const).map((format) => (
             <a
               key={format}
               href={exportHref(format)}
-              className="inline-flex min-h-10 items-center gap-2 rounded-[10px] border border-[var(--line)] bg-[var(--surface)] px-3 text-[11px] font-semibold uppercase tracking-[.06em] text-[var(--text-muted)] transition hover:border-[var(--blue)] hover:text-[var(--blue)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--blue)]"
+              className="inline-flex min-h-10 items-center gap-2.5 rounded-[10px] border border-[var(--line)] bg-[var(--surface)] px-4 text-xs font-bold uppercase tracking-[.05em] text-[var(--text)] transition hover:border-[var(--blue)] hover:text-[var(--blue)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--blue)] shadow-[var(--shadow-card)]"
             >
-              <span className="grid h-5 w-5 place-items-center rounded-[5px] border border-[var(--line)] bg-[var(--surface-raised)] text-[9px] font-bold text-inherit" aria-hidden>
-                {format === 'pdf' ? 'PDF' : format === 'xlsx' ? 'XL' : 'CS'}
-              </span>
+              <svg viewBox="0 0 24 24" className="h-4 w-4 text-current opacity-80" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>
+              </svg>
               {format === 'pdf' ? 'PDF' : format === 'xlsx' ? 'Excel' : 'CSV'}
             </a>
           ))}
         </div>
       </header>
 
-      {/* Seis cartões — grelha consistente, ícones monocromáticos, sem emojis */}
-      <div className="grid gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 xl:grid-cols-6">
+      {/* Seis cartões — cores distintas, estado seleccionado claro e legível */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {RH_REPORT_KINDS.map((k) => {
           const meta = KIND_META[k];
           const active = k === kind;
+          const tone = COLOR[meta.color].icon;
           return (
             <Link
               key={k}
               href={forKind(k)}
               aria-current={active ? 'page' : undefined}
-              className={`group flex min-h-[108px] flex-col rounded-[16px] border p-4 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--blue)] ${active ? 'border-[var(--blue)] bg-[#eef5ff] shadow-[0_4px_14px_rgb(2_31_135_/_.1)] dark:bg-[#0e1a33] dark:shadow-[0_4px_14px_rgb(0_0_0_/_.4)]' : 'border-[var(--line)] bg-[var(--surface)] hover:-translate-y-0.5 hover:border-[var(--blue)] hover:shadow-[var(--shadow-card)]'}`}
+              className={`group flex min-h-[128px] flex-col rounded-2xl border p-4 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--blue)] ${active ? 'border-[var(--blue)] bg-[var(--surface-raised)] ring-2 ring-[var(--blue)]/15' : 'border-[var(--line)] bg-[var(--surface)] hover:-translate-y-0.5 hover:border-[var(--blue)] hover:shadow-[var(--shadow-card)]'}`}
             >
-              <span className={`inline-flex h-9 w-9 items-center justify-center rounded-[10px] border ${active ? 'border-[var(--blue)] bg-[#eef5ff] text-[var(--blue)] dark:bg-[#0e1a33] dark:text-blue-300' : 'border-[var(--line)] bg-[var(--surface-raised)] text-[#52667a] group-hover:border-[var(--blue)] group-hover:text-[var(--blue)]'}`}>
-                {meta.icon('h-4 w-4')}
+              <span className={`inline-flex h-11 w-11 items-center justify-center rounded-xl ${tone}`}>
+                {meta.icon('h-5 w-5')}
               </span>
               <span className="mt-3 text-[13px] font-bold leading-snug text-[var(--text)]">{meta.label}</span>
               <span className="mt-1 text-[11px] leading-snug text-[var(--text-muted)]">{meta.description}</span>
-              {active && <span className="mt-auto pt-2 text-[10px] font-bold uppercase tracking-[.14em] text-[var(--blue)]">Seleccionado</span>}
+              {active && (
+                <span className="mt-auto inline-flex w-fit items-center gap-1.5 rounded-full bg-[var(--blue)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[.08em] text-white">
+                  <IconCheckSquare className="h-3 w-3" aria-hidden />
+                  Selecionado
+                </span>
+              )}
             </Link>
           );
         })}
       </div>
 
-      {/* Filtros — compactos, alinhados, intuitivos */}
+      {/* Filtros — secção compacta, alinhada e identificada */}
       <form
         action="/rh/relatorios"
         method="get"
-        className="rounded-[16px] border border-[var(--line)] bg-[var(--surface)] p-3 shadow-[var(--shadow-card)] sm:p-4"
+        className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-4 shadow-[var(--shadow-card)] sm:p-5"
         aria-label="Filtros do relatório"
       >
         <input type="hidden" name="kind" value={kind} />
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-6">
+        <div className="flex items-center justify-between gap-3 border-b border-[var(--line)] pb-3">
+          <h2 className="text-sm font-bold text-[var(--text)]">Filtrar relatório</h2>
+          <p className="text-[11px] text-[var(--text-muted)]">{periodLabel}</p>
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-6">
           <div className="col-span-2 sm:col-span-1">
             <label htmlFor="report-period" className="app-label">Período</label>
             <select id="report-period" name="period" defaultValue={query.period ?? 'thisMonth'} className="ds-input">
@@ -183,8 +201,8 @@ export default async function RhRelatoriosPage({ searchParams }: Props) {
             </select>
           </div>
         </div>
-        <div className="mt-2 flex flex-wrap items-end justify-between gap-2 border-t border-[var(--line)] pt-3">
-          <div className="flex flex-wrap items-end gap-2">
+        <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
+          <div className="flex flex-wrap items-end gap-3">
             {kind !== 'attendance' && kind !== 'payroll' && (
               <div className="min-w-[160px]">
                 <label htmlFor="report-status" className="app-label">{kind === 'leaves' ? 'Estado' : 'Situação'}</label>
@@ -197,20 +215,19 @@ export default async function RhRelatoriosPage({ searchParams }: Props) {
                 </select>
               </div>
             )}
-            <p className="text-[11px] text-[var(--text-muted)]">{periodLabel}</p>
           </div>
           <button type="submit" className="inline-flex min-h-10 items-center gap-2 rounded-[10px] bg-[#021f87] px-5 text-sm font-semibold text-white transition hover:bg-[#011566] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"><IconFileText className="h-4 w-4" aria-hidden />Aplicar filtros</button>
         </div>
       </form>
 
-      {/* Tabela — hierarquia tipográfica, alinhamento e chips de estado */}
-      <section className="overflow-hidden rounded-[16px] border border-[var(--line)] bg-[var(--surface)] shadow-[var(--shadow-card)]" aria-label="Resultado do relatório">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--line)] bg-[var(--surface-raised)] px-4 py-3 sm:px-5">
+      {/* Tabela — tipografia, alinhamento e chips de estado */}
+      <section className="overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--surface)] shadow-[var(--shadow-card)]" aria-label="Resultado do relatório">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--line)] bg-[var(--surface-raised)] px-4 py-3.5 sm:px-6">
           <div className="min-w-0">
-            <h2 className="truncate text-[15px] font-bold tracking-[-.01em] text-[var(--text)]">{dataset.title}</h2>
+            <h2 className="truncate text-base font-bold tracking-[-.01em] text-[var(--text)]">{dataset.title}</h2>
             <p className="mt-0.5 text-[11px] font-medium text-[var(--text-muted)]"><span className="tabular-nums">{dataset.rows.length}</span> {dataset.rows.length === 1 ? 'registo' : 'registos'} · {periodLabel}</p>
           </div>
-          <span className="hidden items-center gap-1.5 rounded-full border border-[var(--line)] bg-[var(--surface)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[.12em] text-[var(--text-muted)] sm:inline-flex"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden />Fonte: dados reais</span>
+          <span className="hidden items-center gap-1.5 rounded-full border border-[var(--line)] bg-[var(--surface)] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[.12em] text-[var(--text-muted)] sm:inline-flex"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden />Dados reais</span>
         </div>
         {dataset.rows.length === 0 ? (
           <div className="py-10">
@@ -222,15 +239,15 @@ export default async function RhRelatoriosPage({ searchParams }: Props) {
               <thead className="bg-[var(--surface-raised)]">
                 <tr>
                   {dataset.headers.map((header) => (
-                    <th key={header} scope="col" className="border-b border-[var(--line)] px-4 py-2.5 text-[10px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">{header}</th>
+                    <th key={header} scope="col" className="border-b border-[var(--line)] px-5 py-3 text-[10px] font-bold uppercase tracking-[.14em] text-[var(--text-muted)]">{header}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--line)]">
                 {dataset.rows.map((row, index) => (
-                  <tr key={index} className="align-middle transition hover:bg-[var(--surface-raised)]/60">
+                  <tr key={index} className="align-middle transition hover:bg-[var(--surface-raised)]">
                     {row.map((cell, columnIndex) => (
-                      <td key={columnIndex} className="px-4 py-2.5 text-[var(--text)]">{maybePill(cell)}</td>
+                      <td key={columnIndex} className="px-5 py-3 text-[var(--text)]">{maybePill(cell)}</td>
                     ))}
                   </tr>
                 ))}
@@ -238,7 +255,7 @@ export default async function RhRelatoriosPage({ searchParams }: Props) {
               <tfoot>
                 <tr className="border-t-2 border-[var(--line)] bg-[var(--surface-raised)]">
                   {dataset.totals.map((cell, index) => (
-                    <td key={index} className="px-4 py-3 text-[11px] font-bold uppercase tracking-[.05em] text-[var(--text)]">{fmtCell(cell)}</td>
+                    <td key={index} className="px-5 py-3.5 text-[11px] font-bold uppercase tracking-[.05em] text-[var(--text)]">{fmtCell(cell)}</td>
                   ))}
                 </tr>
               </tfoot>
