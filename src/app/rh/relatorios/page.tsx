@@ -34,7 +34,7 @@ export default async function RhRelatoriosPage({ searchParams }: Props) {
 
   const [dataset, filters] = await runWithTenant(access.tenantId, async (tx) => {
     const [departments, employees] = await Promise.all([
-      tx.rhDepartment.findMany({ where: { tenantId: access.tenantId, isActive: true }, orderBy: [{ name: 'asc' }], select: { id: true, name: true } }),
+      tx.rhDepartment.findMany({ where: { tenantId: access.tenantId }, orderBy: [{ name: 'asc' }], select: { id: true, name: true } }),
       tx.rhEmployee.findMany({ where: { tenantId: access.tenantId }, orderBy: [{ firstName: 'asc' }], take: 200, select: { id: true, firstName: true, lastName: true } }),
     ]);
     const filterStatus = query.status ?? null;
