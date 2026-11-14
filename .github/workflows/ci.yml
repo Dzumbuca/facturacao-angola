@@ -74,6 +74,8 @@ jobs:
       NEXTAUTH_SECRET: "valor-apenas-para-e2e-0123456789abcdef0123456789abcdef"
       AUTH_TRUST_HOST: "true"
       NEXTAUTH_URL: "http://localhost:3002"
+      # Exclusivo para testes E2E — nunca usar o PIN_PEPPER de produção aqui.
+      PIN_PEPPER: ${{ secrets.E2E_PIN_PEPPER }}
     steps:
       - uses: actions/checkout@v4
 
@@ -94,6 +96,15 @@ jobs:
       - name: Build de produção
         run: npm run build
 
+      - name: Verificar segredo E2E_PIN_PEPPER
+        run: |
+          if [ -z "$PIN_PEPPER" ]; then
+            echo "E2E_PIN_PEPPER não configurado nos secrets do repositório."
+            echo "A ausência do segredo quebra todos os endpoints de funcionário (POST /api/rh/employees)."
+            echo "Configure exclusivamente um segredo de teste E2E — NÃO o PIN_PEPPER de produção."
+            exit 1
+          fi
+          echo "E2E_PIN_PEPPER configurado (${#PIN_PEPPER} caracteres, mascarado nos logs)."
+
       - name: E2E completo (vitest HTTP + Playwright UI)
         run: node scripts/e2e-local.cjs --skip-build
-
