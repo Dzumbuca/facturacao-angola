@@ -44,7 +44,7 @@ export function MyJustifications({ items, canSubmit }: { items: Item[]; canSubmi
   }
 
   return (
-    <section className="rounded-xl border border-[#e1e8f0] bg-white">
+    <section className="form-card-light rounded-xl border border-[#e1e8f0]">
       <div className="flex items-center justify-between border-b border-[#eef2f6] px-4 py-3">
         <h2 className="text-sm font-bold text-[#1c2d3f]">Justificações</h2>
         {canSubmit && !open && (

@@ -5,7 +5,7 @@ import { type ReactNode } from 'react';
 /** Card premium: fundo arejado, sombra suave, cantos grandes. */
 export function PremiumCard({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`premium-card overflow-hidden bg-white/95 p-5 backdrop-blur-sm sm:p-6 ${className}`}>{children}</div>
+    <div className={`premium-card form-card-light overflow-hidden p-5 backdrop-blur-sm sm:p-6 ${className}`}>{children}</div>
   );
 }
 
@@ -92,7 +92,7 @@ export function FormHero({ eyebrow, title, description, icon }: { eyebrow?: stri
 /** Cabeçalho pasta nível de formulário/módulo (lista de topo das páginas RH). */
 export function RhModuleHero({ eyebrow, title, description, icon, action }: { eyebrow: string; title: string; description: string; icon: ReactNode; action?: ReactNode }) {
   return (
-    <div className="flex flex-col gap-4 rounded-[22px] border border-[#e4e9f0] bg-white p-4 shadow-[0_16px_36px_rgba(18,36,68,.07)] sm:flex-row sm:items-center sm:justify-between sm:p-5">
+    <div className="form-card-light flex flex-col gap-4 rounded-[22px] border border-[#e4e9f0] p-4 shadow-[0_16px_36px_rgba(18,36,68,.07)] sm:flex-row sm:items-center sm:justify-between sm:p-5">
       <div className="flex items-start gap-3">
         <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[#021f87] via-[#0b2b6b] to-[#1b3a7a] text-white shadow-[var(--shadow-cta)]">{icon}</div>
         <div className="min-w-0">

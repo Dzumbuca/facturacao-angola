@@ -38,7 +38,7 @@ export function SelfAssessmentSection({ cycles, existing }: { cycles: Cycle[]; e
   }
 
   return (
-    <section className="rounded-xl border border-[#e1e8f0] bg-white p-4">
+    <section className="form-card-light rounded-xl border border-[#e1e8f0] p-4">
       <h2 className="text-sm font-bold text-[#1c2d3f]">Autoavaliação</h2>
       <p className="mt-0.5 text-xs text-[#607286]">Avalie o seu desempenho num ciclo aberto.</p>
 
