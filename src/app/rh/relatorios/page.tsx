@@ -17,6 +17,7 @@ const KIND_META: Record<RhReportKind, { label: string; description: string; icon
 type Props = { searchParams: Promise<{ kind?: string; period?: string; from?: string; to?: string; departmentId?: string; employeeId?: string; status?: string }> };
 
 export default async function RhRelatoriosPage({ searchParams }: Props) {
+  try {
   const access = await requireRhPage();
   const query = await searchParams;
   const kind = (isRhReportKind(query.kind ?? '') ? query.kind! : 'employees') as RhReportKind;
@@ -126,4 +127,15 @@ export default async function RhRelatoriosPage({ searchParams }: Props) {
       </section>
     </div>
   );
+
+  } catch (error) {
+    console.error('RH Reports error:', error);
+    return (
+      <div style={{ padding: '32px', fontFamily: 'monospace', whiteSpace: 'pre-wrap', fontSize: '12px', color: '#b91c1c', background: '#fff5f5', borderRadius: '8px' }}>
+        <h1 style={{ fontSize: '16px', fontWeight: 700 }}>ERRO NO SERVIDOR (debug temporário)</h1>
+        <p>digest: {(error as any)?.digest ?? '(sem)'}</p>
+        <pre>{(error as any)?.stack ?? String(error)}</pre>
+      </div>
+    );
+  }
 }
