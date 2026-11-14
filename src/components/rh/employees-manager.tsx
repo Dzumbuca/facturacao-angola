@@ -230,8 +230,8 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
                 <td data-mobile-primary>
                   <div className="flex items-center gap-2">
                     <SignedImage path={employee.photoUrl} alt={`${employee.firstName} ${employee.lastName}`} className="h-9 w-9 rounded-full border border-[var(--line)] object-cover" fallback={<div className="grid h-9 w-9 place-items-center rounded-full bg-[#eef2ff] text-xs font-bold text-[var(--blue)]">{employee.firstName.charAt(0).toUpperCase()}{employee.lastName.charAt(0).toUpperCase()}</div>} />
-                    <Link href={`/rh/funcionarios/${employee.id}`} className="block font-semibold text-[var(--text)] underline-offset-2 hover:underline">{employee.firstName} {employee.lastName}
-                      <span className="block text-xs text-[var(--text-muted)]">{employee.email || '—'}</span>
+                    <Link href={`/rh/funcionarios/${employee.id}`} className="block font-semibold text-[var(--text)] break-words leading-snug underline-offset-2 hover:underline">{employee.firstName} {employee.lastName}
+                      <span className="block text-xs text-[var(--text-muted)] break-all">{employee.email || '—'}</span>
                     </Link>
                   </div>
                 </td>
@@ -241,9 +241,12 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
                   <span className="block text-xs text-[var(--text-muted)]">{employee.department?.name ?? '—'}</span>
                 </td>
                 <td className="tabular-nums">{date(employee.hireDate)}</td>
-                <td className="tabular-nums">{money(employee.baseSalary)}</td>
-                <td><span className="rounded-full bg-[var(--surface-raised)] px-2 py-0.5 text-[11px] font-semibold text-[var(--blue)]">{STATUS_LABEL[employee.status] ?? employee.status}</span></td>
-                <td data-mobile-actions><button type="button" onClick={() => openEdit(employee)} className="min-h-10 rounded-lg border border-[var(--line)] px-3 text-sm font-semibold text-[var(--blue)]">Editar</button></td>
+                <td className="tabular-nums font-bold text-[var(--text)]">{money(employee.baseSalary)}</td>
+                <td>{(() => {
+                  const tone = employee.status === 'ACTIVO' ? { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' } : employee.status === 'SUSPENSO' ? { bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500' } : employee.status === 'INACTIVO' ? { bg: 'bg-slate-100', text: 'text-slate-600', dot: 'bg-slate-400' } : { bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500' };
+                  return <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${tone.bg} ${tone.text}`}><span className={`h-1.5 w-1.5 rounded-full ${tone.dot}`} />{STATUS_LABEL[employee.status] ?? employee.status}</span>;
+                })()}</td>
+                <td data-mobile-actions><button type="button" onClick={() => openEdit(employee)} aria-label={`Editar ${employee.firstName} ${employee.lastName}`} className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-lg border border-[var(--line)] bg-white px-3 text-sm font-semibold text-[var(--blue)] transition hover:border-[var(--blue)]"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width={14} height={14} aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L10 16l-4 1 1-4 9.5-9.5z"/></svg>Editar</button></td>
               </tr>
             ))}
             {filtered.length === 0 && (

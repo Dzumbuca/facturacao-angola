@@ -64,13 +64,18 @@ export default async function EmployeeDetailPage({ params }: { params: Promise<{
           <SignedImage
             path={e.photoUrl}
             alt={`${e.firstName} ${e.lastName}`}
-            className="h-20 w-20 rounded-full border border-[#e1e8f0] object-cover"
-            fallback={<div className="grid h-20 w-20 place-items-center rounded-full bg-[#eef2ff] text-xl font-bold text-[#021f87]">{e.firstName.charAt(0).toUpperCase()}{e.lastName.charAt(0).toUpperCase()}</div>}
+            className="h-16 w-16 rounded-full border border-[#e1e8f0] object-cover sm:h-20 sm:w-20"
+            fallback={<div className="grid h-16 w-16 place-items-center rounded-full bg-[#021f87] text-base font-bold text-white sm:h-20 sm:w-20 sm:text-xl">{e.firstName.charAt(0).toUpperCase()}{e.lastName.charAt(0).toUpperCase()}</div>}
           />
-          <div>
-            <p className="text-sm text-[#708195]">{e.employeeNumber} · {STATUS_LABEL[e.status] ?? e.status}</p>
-            <h1 className="mt-1 text-2xl font-bold text-[#1c2d3f]">{e.firstName} {e.lastName}</h1>
-            <p className="mt-1 text-sm text-[#607286]">{e.position?.title ?? '—'} · {e.department?.name ?? '—'} · {e.shift ? `${e.shift.name} ${e.shift.startTime}–${e.shift.endTime}` : 'Sem horário'}</p>
+          <div className="min-w-0">
+            <p className="text-xs font-mono text-[#708195]">{e.employeeNumber}</p>
+            <h1 className="mt-0.5 text-xl font-bold leading-snug break-words text-[#1c2d3f] sm:text-2xl">{e.firstName} {e.lastName}</h1>
+            <p className="mt-1 text-sm text-[#607286] break-words">{e.position?.title ?? '—'} · {e.department?.name ?? '—'}</p>
+            <p className="mt-0.5 text-xs text-[#8a99ab]">{e.shift ? `${e.shift.name} ${e.shift.startTime}–${e.shift.endTime}` : 'Sem horário'}</p>
+            <div className="mt-2">{(() => {
+              const tone = e.status === 'ACTIVO' ? { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' } : e.status === 'SUSPENSO' ? { bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500' } : e.status === 'INACTIVO' ? { bg: 'bg-slate-100', text: 'text-slate-600', dot: 'bg-slate-400' } : { bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500' };
+              return <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${tone.bg} ${tone.text}`}><span className={`h-1.5 w-1.5 rounded-full ${tone.dot}`} />{STATUS_LABEL[e.status] ?? e.status}</span>;
+            })()}</div>
           </div>
         </div>
         {canWrite && !data.offboarding && (
@@ -86,7 +91,7 @@ export default async function EmployeeDetailPage({ params }: { params: Promise<{
           <div><dt className="text-[#708195]">Morada</dt><dd className="font-semibold">{e.address ?? '—'}</dd></div>
           <div><dt className="text-[#708195]">Admissão</dt><dd className="font-semibold">{day(e.hireDate)}</dd></div>
           <div><dt className="text-[#708195]">Vínculo</dt><dd className="font-semibold">{e.contractType}</dd></div>
-          <div><dt className="text-[#708195]">Salário-base</dt><dd className="font-semibold tabular-nums">{money(e.baseSalary)}</dd></div>
+          <div className="sm:col-span-3 bg-[#f5f8fc] -mx-1 rounded-xl px-4 py-2.5"><dt className="text-[10px] font-bold uppercase tracking-[.12em] text-[#708195]">Salário-base</dt><dd className="mt-1 tabular-nums text-lg font-extrabold text-[#021f87]">{money(e.baseSalary)}</dd></div>
           <div><dt className="text-[#708195]">Banco</dt><dd className="font-semibold">{e.bankName ?? '—'} · {bankAccount ?? '—'}</dd></div>
           <div><dt className="text-[#708195]">IBAN {canWrite ? '' : '(mascarado)'}</dt><dd className="font-mono text-xs">{bankIban ?? '—'}</dd></div>
           <div><dt className="text-[#708195]">PIN do ponto</dt><dd className="font-semibold">{e.hasPin ? 'Definido' : 'Não definido'}</dd></div>
