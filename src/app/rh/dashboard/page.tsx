@@ -47,7 +47,7 @@ export default async function RhDashboardPage() {
   const activeLabel = data.active === 1 ? 'activo' : 'activos';
   const kpis = [
     { label: 'Funcionários', value: data.total, hint: `${data.active} ${activeLabel}`, tone: 'neutral' as const, icon: <IconUsers width={18} height={18} /> },
-    { label: 'Departamentos', value: data.departments, hint: data.departments === 0 ? 'sem estrutura' : 'estrutura actual', tone: (data.departments === 0 ? 'warning' : 'success') as 'warning' | 'success', icon: <IconBuilding width={18} height={18} /> },
+    { label: 'Departamentos', value: data.departments, hint: data.departments === 0 ? 'sem estrutura' : 'estrutura actual', tone: (data.departments === 0 ? 'warning' : 'success') as 'warning' | 'success', icon: <IconBuilding width={19} height={19} /> },
     { label: 'Contratos a vencer', value: data.contractsExpiring, hint: 'próximos 30 dias', tone: (data.contractsExpiring === 0 ? 'success' : 'warning') as 'warning' | 'success', icon: <IconCheckSquare width={18} height={18} /> },
     { label: 'Custo mensal base', value: money(data.monthly), hint: 'salários activos', tone: 'primary' as const, icon: <IconWallet width={20} height={20} /> },
   ];

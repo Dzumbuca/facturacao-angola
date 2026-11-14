@@ -27,7 +27,7 @@ export function PremiumKpi({ label, value, detail, tone = 'neutral', icon }: {
   // Cores semânticas — remapeadas por tokens; nunca fixas.
   const toneStyle: Record<typeof tone, { color: string; ring: string; bg: string }> = {
     neutral: { color: 'var(--text)', ring: 'var(--line)', bg: 'var(--surface-raised)' },
-    primary: { color: 'var(--blue)', ring: '#cfe0ff', bg: 'var(--surface-raised)' },
+    primary: { color: 'var(--blue)', ring: '#cfe0ff', bg: '#eef5ff' },
     success: { color: 'var(--success)', ring: '#c7e5d1', bg: '#effaf4' },
     warning: { color: '#946000', ring: '#f3dfae', bg: '#fdf6e9' },
     danger:  { color: 'var(--danger)', ring: '#f3d0d0', bg: '#fdf2f2' },
