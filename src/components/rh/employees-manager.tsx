@@ -3,8 +3,8 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { SignedImage } from '@/components/rh/signed-image';
-import { FormSection, FormActions, FormError, CurrencyInput, CalendarField } from '@/components/rh/form-kit';
-import { FormSplit, FormSidebar, FormHero } from '@/components/rh/premium-kit';
+import { FormSection, FormError, CurrencyInput, CalendarField } from '@/components/rh/form-kit';
+import { FormHero, FormStepper } from '@/components/rh/premium-kit';
 import { DataTable } from '@/components/ui/data-table';
 
 type Department = { id: string; name: string };
@@ -38,8 +38,6 @@ type Employee = {
   shift: { id: string; name: string; startTime: string; endTime: string } | null;
 };
 
-const WATCHED_KEYS = ['firstName','lastName','bi','nif','email','phone','departmentId','positionId','shiftId','contractType','status'] as const;
-
 const STATUS_LABEL: Record<string, string> = {
   ACTIVO: 'Activo', SUSPENSO: 'Suspenso', FERIAS: 'Férias', CESSAO: 'Cessão', INACTIVO: 'Inactivo',
 };
@@ -69,29 +67,12 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
   const [birthDateIso, setBirthDateIso] = useState('');
   const [baseSalaryValue, setBaseSalaryValue] = useState<number | null>(null);
   const [generatedPin, setGeneratedPin] = useState<string | null>(null);
-  const [formValues, setFormValues] = useState<Record<string, string>>({});
-  const effective = useMemo(() => {
-    const base: Record<string, string> = {};
-    WATCHED_KEYS.forEach((k) => { base[k] = formValues[k] ?? String((editing as any)?.[k] ?? ''); });
-    base['departmentId'] = formValues['departmentId'] ?? String(editing?.departmentId ?? '');
-    base['positionId'] = formValues['positionId'] ?? String(editing?.positionId ?? '');
-    return base;
-  }, [formValues, editing]);
-  const progress = useMemo(() => {
-    const weights: Record<string, number> = { firstName: 10, lastName: 10, bi: 10, nif: 10, email: 10, phone: 10, departmentId: 10, positionId: 10, shiftId: 10, contractType: 10, status: 10 };
-    let score = 0;
-    Object.entries(weights).forEach(([k, w]) => { if (String(effective[k] ?? '').trim()) score += w; });
-    if (baseSalaryValue != null) score += 0; // already weighted above
-    return Math.min(100, score);
-  }, [effective, baseSalaryValue]);
-  const resolvedDepartment = departments.find((d) => d.id === effective['departmentId'])?.name ?? '';
-  const resolvedPosition = positions.find((pos) => pos.id === effective['positionId'])?.title ?? '';
+  const [step, setStep] = useState<1 | 2>(1);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [qr, setQr] = useState<{ svg: string; name: string; expiresAt: string } | null>(null);
   const [qrLoading, setQrLoading] = useState(false);
-
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
     return employees.filter((employee) => {
@@ -204,7 +185,7 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
           <h1 className="mt-1 text-2xl font-bold text-[var(--text)]">Funcionários</h1>
           <p className="mt-1 text-sm text-[var(--text-muted)]">Cadastro, organização e dados profissionais da equipa.</p>
         </div>
-        <button type="button" onClick={openCreate} className="min-h-11 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white hover:bg-[#061965]">Novo funcionário</button>
+        <button type="button" onClick={() => { setStep(1); openCreate(); }} className="min-h-11 rounded-lg bg-[#021f87] px-4 text-sm font-semibold text-white hover:bg-[#061965]">Novo funcionário</button>
       </div>
 
       <div className="flex flex-col gap-2 sm:flex-row">
@@ -243,7 +224,7 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
                   <p className="mt-0.5 tabular-nums text-sm font-extrabold text-[var(--text)]">{money(employee.baseSalary)}</p>
                   <p className="mt-0.5 text-[10px] text-[var(--text-muted)]">Nº {employee.employeeNumber}</p>
                 </div>
-                <button type="button" onClick={() => openEdit(employee)} aria-label={`Editar ${employee.firstName} ${employee.lastName}`} className="inline-flex h-11 shrink-0 items-center gap-2 rounded-xl border border-[var(--line)] bg-[var(--surface-raised)] px-4 text-xs font-semibold text-[var(--blue)] transition active:scale-95"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width={14} height={14} aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L10 16l-4 1 1-4 9.5-9.5z"/></svg>Editar</button>
+                <button type="button" onClick={() => { setStep(1); openEdit(employee); }} aria-label={`Editar ${employee.firstName} ${employee.lastName}`} className="inline-flex h-11 shrink-0 items-center gap-2 rounded-xl border border-[var(--line)] bg-[var(--surface-raised)] px-4 text-xs font-semibold text-[var(--blue)] transition active:scale-95"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width={14} height={14} aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L10 16l-4 1 1-4 9.5-9.5z"/></svg>Editar</button>
               </div>
             </li>
           );
@@ -275,7 +256,7 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
                   const tone = employee.status === 'ACTIVO' ? { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' } : employee.status === 'SUSPENSO' ? { bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500' } : employee.status === 'INACTIVO' ? { bg: 'bg-slate-100', text: 'text-slate-600', dot: 'bg-slate-400' } : { bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500' };
                   return <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${tone.bg} ${tone.text}`}><span className={`h-1.5 w-1.5 rounded-full ${tone.dot}`} />{STATUS_LABEL[employee.status] ?? employee.status}</span>;
                 })()}</td>
-                <td data-mobile-actions><button type="button" onClick={() => openEdit(employee)} aria-label={`Editar ${employee.firstName} ${employee.lastName}`} className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-lg border border-[var(--line)] bg-white px-3 text-sm font-semibold text-[var(--blue)] transition hover:border-[var(--blue)]"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width={14} height={14} aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L10 16l-4 1 1-4 9.5-9.5z"/></svg>Editar</button></td>
+                <td data-mobile-actions><button type="button" onClick={() => { setStep(1); openEdit(employee); }} aria-label={`Editar ${employee.firstName} ${employee.lastName}`} className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-lg border border-[var(--line)] bg-white px-3 text-sm font-semibold text-[var(--blue)] transition hover:border-[var(--blue)]"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width={14} height={14} aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L10 16l-4 1 1-4 9.5-9.5z"/></svg>Editar</button></td>
               </tr>
             ))}
             {filtered.length === 0 && (
@@ -300,49 +281,33 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
       {open && !generatedPin && (
         <div className="fixed inset-0 z-[60] flex items-end justify-center bg-[#102b46]/50 p-0 backdrop-blur-[2px] sm:items-center sm:p-5" onMouseDown={(e) => { if (e.target === e.currentTarget && !saving) setOpen(false); }}>
           <section role="dialog" aria-modal="true" aria-labelledby="rh-employee-title" className="form-card-light max-h-[92dvh] w-full overflow-y-auto overscroll-contain rounded-t-2xl border border-[#e6eaf0] p-5 shadow-2xl sm:max-w-2xl sm:rounded-2xl sm:p-7">
-            <div className="mb-4 flex items-start justify-between gap-4">
-              <FormHero eyebrow="Machine RH" title={editing ? 'Editar funcionário' : 'Novo funcionário'} description="Os dados ficam neste formulário até ao envio. A barra lateral mostra o que já está preenchido." icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 20a6 6 0 0 1 12 0"/></svg>} />
+            <div className="mb-3 flex items-start justify-between gap-4">
+              <FormHero eyebrow="Machine RH" title={editing ? 'Editar funcionário' : 'Novo funcionário'} description="Preenche os dois passos. Nenhum dado é enviado sem submeter o formulário." icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 20a6 6 0 0 1 12 0"/></svg>} />
               <button type="button" aria-label="Fechar" disabled={saving} onClick={() => setOpen(false)} className="flex h-10 w-10 items-center justify-center rounded-lg text-xl text-[var(--text-muted)] hover:bg-[#f0f4f8]">×</button>
             </div>
-            <form className="space-y-4" onSubmit={submit} key={editing?.id ?? 'novo'} noValidate
-              onInput={(e) => {
-                const target = e.target as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
-                if (!target.name) return;
-                setFormValues((prev) => ({ ...prev, [target.name]: target.value }));
-              }}>
-              <FormSplit main={<>
-              <FormSection title="Identificação pessoal">
 
+            <FormStepper steps={[{ label: 'Identificação e vínculo' }, { label: 'Informações complementares' }]} current={step - 1} />
+
+            <form className="mt-4 space-y-4" onSubmit={submit} key={editing?.id ?? 'novo'} noValidate>
+
+              {/* PASSO 1 — Identificação e vínculo */}
+              <div hidden={step !== 1} className="space-y-4" aria-hidden={step !== 1}>
+                <FormSection title="Identificação pessoal">
                   <div><label htmlFor="rh-first" className="app-label">Nome *</label><input id="rh-first" name="firstName" className="ds-input" required defaultValue={editing?.firstName ?? ''} /></div>
                   <div><label htmlFor="rh-last" className="app-label">Apelido *</label><input id="rh-last" name="lastName" className="ds-input" required defaultValue={editing?.lastName ?? ''} /></div>
                   <div><label htmlFor="rh-bi" className="app-label">BI</label><input id="rh-bi" name="bi" className="ds-input" defaultValue={editing?.bi ?? ''} /></div>
                   <div><label htmlFor="rh-nif" className="app-label">NIF</label><input id="rh-nif" name="nif" className="ds-input" defaultValue={editing?.nif ?? ''} /></div>
                   <div><CalendarField id="rh-birth" name="birthDate" value={birthDateIso} onChange={setBirthDateIso} /></div>
                   <div><label htmlFor="rh-gender" className="app-label">Género</label><select id="rh-gender" name="gender" className="ds-input" defaultValue={editing?.gender ?? ''}><option value="">Não indicado</option><option value="M">Masculino</option><option value="F">Feminino</option><option value="OUTRO">Outro</option></select></div>
-              </FormSection>
+                </FormSection>
 
-              <FormSection title="Contactos">
-
+                <FormSection title="Contactos">
                   <div><label htmlFor="rh-email" className="app-label">Email</label><input id="rh-email" name="email" type="email" className="ds-input" defaultValue={editing?.email ?? ''} /></div>
                   <div><label htmlFor="rh-phone" className="app-label">Telefone</label><input id="rh-phone" name="phone" className="ds-input" defaultValue={editing?.phone ?? ''} /></div>
                   <div className="sm:col-span-2"><label htmlFor="rh-address" className="app-label">Morada</label><input id="rh-address" name="address" className="ds-input" defaultValue={editing?.address ?? ''} /></div>
-                  <div className="sm:col-span-2">
-  <label htmlFor="rh-photo-file" className="app-label">Fotografia (ficheiro)</label>
-  <input id="rh-photo-file" type="file" accept="image/png,image/jpeg,image/webp" className="ds-input" onChange={handlePhotoUpload} />
-  <input id="rh-photo-url" name="photoUrl" className="app-input mt-2" placeholder="Ou cole um URL…" defaultValue={editing?.photoUrl ?? ''} />
-  {(photoPreview || editing?.photoUrl) && (
-    <div className="mt-2 flex items-center gap-3">
-      {photoPreview
-        ? <img src={photoPreview} alt="Pré-visualização da fotografia" className="h-16 w-16 rounded-full border border-[var(--line)] object-cover" />
-        : <SignedImage path={editing?.photoUrl} alt={editing ? `${editing.firstName} ${editing.lastName}` : 'Fotografia do funcionário'} className="h-16 w-16 rounded-full border border-[var(--line)] object-cover" fallback={<div className="grid h-16 w-16 place-items-center rounded-full bg-[#eef2ff] text-lg font-bold text-[var(--blue)]">{editing?.firstName.charAt(0).toUpperCase()}{editing?.lastName.charAt(0).toUpperCase()}</div>} />}
-      <span className="text-xs text-[var(--text-muted)]">Pré-visualização da fotografia</span>
-    </div>
-  )}
-</div>
-              </FormSection>
+                </FormSection>
 
-              <FormSection title="Informação profissional">
-
+                <FormSection title="Informação profissional">
                   <div><label htmlFor="rh-dept" className="app-label">Departamento</label><select id="rh-dept" name="departmentId" className="ds-input" defaultValue={editing?.departmentId ?? ''}><option value="">—</option>{departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}</select></div>
                   <div><label htmlFor="rh-pos" className="app-label">Cargo</label><select id="rh-pos" name="positionId" className="ds-input" defaultValue={editing?.positionId ?? ''}><option value="">—</option>{positions.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}</select></div>
                   <div><label htmlFor="rh-shift" className="app-label">Horário</label><select id="rh-shift" name="shiftId" className="ds-input" defaultValue={editing?.shiftId ?? ''}><option value="">—</option>{shifts.map((shift) => <option key={shift.id} value={shift.id}>{shift.name} ({shift.startTime}–{shift.endTime})</option>)}</select></div>
@@ -351,45 +316,68 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
                   <div><label htmlFor="rh-salary" className="app-label">Salário-base (Kz) *</label><CurrencyInput id="rh-salary" name="baseSalary" value={baseSalaryValue} onChange={setBaseSalaryValue} required /></div>
                   <div><label htmlFor="rh-status" className="app-label">Estado</label><select id="rh-status" name="status" className="ds-input" defaultValue={editing?.status ?? 'ACTIVO'}>{Object.entries(STATUS_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
                   <div><label htmlFor="rh-pin" className="app-label">PIN do ponto <span className="font-normal text-[var(--text-muted)]">{editing?.hasPin ? '(definido)' : '(gerar automático)'}</span></label><input id="rh-pin" name="pin" type="password" inputMode="numeric" maxLength={8} className="app-input tracking-[.3em]" placeholder={editing?.hasPin ? 'Deixar vazio para manter' : 'Deixar vazio = gera automaticamente'} /></div>
-              </FormSection>
+                </FormSection>
+              </div>
 
-              {editing && (
-                <div className="rounded-lg border border-[var(--line)] bg-[var(--surface-raised)] p-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-xs font-semibold text-[#4a5d70]">QR do ponto (expira em 5 min)</p>
-                    <button type="button" onClick={loadQr} disabled={qrLoading} className="min-h-9 rounded-lg border border-[var(--line)] bg-white px-3 text-xs font-semibold text-[var(--blue)] disabled:opacity-50">{qrLoading ? 'A gerar…' : 'Gerar QR'}</button>
-                  </div>
-                  {qr && (
-                    <div className="mt-2 flex items-center gap-3">
-                      <div className="h-28 w-28 shrink-0 rounded bg-white p-1 [&>svg]:h-full [&>svg]:w-full" dangerouslySetInnerHTML={{ __html: qr.svg }} />
-                      <div className="text-xs text-[var(--text-muted)]">
-                        <p className="font-semibold text-[var(--text)]">{qr.name}</p>
-                        <p className="mt-1">Expira às {new Date(qr.expiresAt).toLocaleTimeString('pt-AO', { hour: '2-digit', minute: '2-digit' })}.</p>
-                        <p className="mt-1">Use no quiosque em /rh/ponto.</p>
+              {/* PASSO 2 — Informações complementares */}
+              <div hidden={step !== 2} className="space-y-4" aria-hidden={step !== 2}>
+                <FormSection title="Fotografia">
+                  <div className="sm:col-span-2">
+                    <label htmlFor="rh-photo-file" className="app-label">Fotografia (ficheiro)</label>
+                    <input id="rh-photo-file" type="file" accept="image/png,image/jpeg,image/webp" className="ds-input" onChange={handlePhotoUpload} />
+                    <input id="rh-photo-url" name="photoUrl" className="app-input mt-2" placeholder="Ou cole um URL…" defaultValue={editing?.photoUrl ?? ''} />
+                    {(photoPreview || editing?.photoUrl) && (
+                      <div className="mt-2 flex items-center gap-3">
+                        {photoPreview
+                          ? <img src={photoPreview} alt="Pré-visualização da fotografia" className="h-16 w-16 rounded-full border border-[var(--line)] object-cover" />
+                          : <SignedImage path={editing?.photoUrl} alt={editing ? `${editing.firstName} ${editing.lastName}` : 'Fotografia do funcionário'} className="h-16 w-16 rounded-full border border-[var(--line)] object-cover" fallback={<div className="grid h-16 w-16 place-items-center rounded-full bg-[#eef2ff] text-lg font-bold text-[var(--blue)]">{editing?.firstName.charAt(0).toUpperCase()}{editing?.lastName.charAt(0).toUpperCase()}</div>} />}
+                        <span className="text-xs text-[var(--text-muted)]">Pré-visualização da fotografia</span>
                       </div>
-                    </div>
-                  )}
-                </div>
-              )}
+                    )}
+                  </div>
+                </FormSection>
 
-              </>}
-              sidebar={<FormSidebar title="Resumo do funcionário" progress={progress} lines={[
-                { label: 'Nome', value: `${effective.firstName} ${effective.lastName}`.trim() || undefined },
-                { label: 'BI', value: effective.bi || undefined },
-                { label: 'NIF', value: effective.nif || undefined },
-                { label: 'Departamento', value: resolvedDepartment || undefined },
-                { label: 'Cargo', value: resolvedPosition || undefined },
-                { label: 'Contrato', value: effective.contractType === 'INDEFINIDO' ? 'Tempo indeterminado' : effective.contractType ? 'A prazo (termo/estágio/prestação)' : undefined },
-                { label: 'Estado', value: effective.status || undefined },
-              ]} footer={<p className="text-[11px] leading-5 text-[#8094a9]">A percentagem mostra campos obrigatórios preenchidos. Nenhum dado é enviado sem submeter o formulário.</p>} />} />
-              <FormSection title="Dados bancários (restrito)" description="Acesso restrito a perfis com escrita de funcionários.">
-                <div><label htmlFor="rh-bank" className="app-label">Banco</label><input id="rh-bank" name="bankName" className="ds-input" defaultValue={editing?.bankName ?? ''} /></div>
-                <div><label htmlFor="rh-account" className="app-label">Conta</label><input id="rh-account" name="bankAccount" className="ds-input" defaultValue={editing?.bankAccount ?? ''} /></div>
-                <div><label htmlFor="rh-iban" className="app-label">IBAN</label><input id="rh-iban" name="bankIban" className="ds-input" defaultValue={editing?.bankIban ?? ''} /></div>
-              </FormSection>
+                <FormSection title="Dados bancários (restrito)" description="Acesso restrito a perfis com escrita de funcionários.">
+                  <div><label htmlFor="rh-bank" className="app-label">Banco</label><input id="rh-bank" name="bankName" className="ds-input" defaultValue={editing?.bankName ?? ''} /></div>
+                  <div><label htmlFor="rh-account" className="app-label">Conta</label><input id="rh-account" name="bankAccount" className="ds-input" defaultValue={editing?.bankAccount ?? ''} /></div>
+                  <div><label htmlFor="rh-iban" className="app-label">IBAN</label><input id="rh-iban" name="bankIban" className="ds-input" defaultValue={editing?.bankIban ?? ''} /></div>
+                </FormSection>
+
+                {editing && (
+                  <div className="rounded-lg border border-[var(--line)] bg-[var(--surface-raised)] p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-xs font-semibold text-[#4a5d70]">QR do ponto (expira em 5 min)</p>
+                      <button type="button" onClick={loadQr} disabled={qrLoading} className="min-h-9 rounded-lg border border-[var(--line)] bg-white px-3 text-xs font-semibold text-[var(--blue)] disabled:opacity-50">{qrLoading ? 'A gerar…' : 'Gerar QR'}</button>
+                    </div>
+                    {qr && (
+                      <div className="mt-2 flex items-center gap-3">
+                        <div className="h-28 w-28 shrink-0 rounded bg-white p-1 [&>svg]:h-full [&>svg]:w-full" dangerouslySetInnerHTML={{ __html: qr.svg }} />
+                        <div className="text-xs text-[var(--text-muted)]">
+                          <p className="font-semibold text-[var(--text)]">{qr.name}</p>
+                          <p className="mt-1">Expira às {new Date(qr.expiresAt).toLocaleTimeString('pt-AO', { hour: '2-digit', minute: '2-digit' })}.</p>
+                          <p className="mt-1">Use no quiosque em /rh/ponto.</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
 
               <FormError>{error}</FormError>
-              <FormActions saving={saving} onCancel={() => setOpen(false)} saveLabel={editing ? 'Guardar alterações' : 'Criar funcionário'} />
+
+              <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-between">
+                {step === 1 ? (
+                  <>
+                    <button type="button" onClick={() => setOpen(false)} className="min-h-11 rounded-[12px] border border-[#cdd6e3] bg-white px-5 text-sm font-semibold text-[#52667a] transition hover:bg-[#f3f6fa]">Cancelar</button>
+                    <button type="button" onClick={() => { const form = document.querySelector<HTMLFormElement>('form'); if (!form) return; const firstInvalid = form.querySelector<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(':invalid'); if (firstInvalid) { firstInvalid.reportValidity(); setError(`Campo obrigatório em falta: ${firstInvalid.closest('div')?.querySelector('label')?.textContent ?? 'campo'}`); return; } setError(''); setStep(2); }} className="min-h-11 rounded-[12px] bg-[#021f87] px-6 text-sm font-bold text-white transition hover:bg-[#011566]">Continuar →</button>
+                  </>
+                ) : (
+                  <>
+                    <button type="button" onClick={() => setStep(1)} disabled={saving} className="min-h-11 rounded-[12px] border border-[#cdd6e3] bg-white px-5 text-sm font-semibold text-[#52667a] transition hover:bg-[#f3f6fa]">← Anterior</button>
+                    <button type="submit" disabled={saving} className="min-h-11 rounded-[12px] bg-gradient-to-br from-[#021f87] via-[#0b2b6b] to-[#1b3a7a] px-6 text-sm font-bold text-white shadow-[var(--shadow-cta)] transition hover:-translate-y-0.5 disabled:opacity-60">{saving ? 'A guardar…' : editing ? 'Guardar alterações' : 'Guardar funcionário'}</button>
+                  </>
+                )}
+              </div>
             </form>
           </section>
         </div>
