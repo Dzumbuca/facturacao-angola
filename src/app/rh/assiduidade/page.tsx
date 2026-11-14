@@ -30,7 +30,7 @@ export default async function RhAttendancePage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end"><a href={`/api/rh/export/attendance?from=${monthFrom}&to=${monthTo}`} className="inline-flex min-h-9 items-center rounded-lg border border-[#cdddeb] bg-white px-3 text-xs font-semibold text-[#021f87]">Exportar CSV (mês)</a></div>
+      <div className="flex justify-end"><a href={`/api/rh/export/attendance?from=${monthFrom}&to=${monthTo}`} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#e1e8f0] bg-white px-3 text-xs font-semibold text-[#1c2d3f] transition hover:border-[#021f87] hover:text-[#021f87]"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" width={14} height={14} aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v3h16v-3"/></svg>Exportar CSV (mês)</a></div>
       <AttendanceManager
         entries={(data.entries as any[]).map((entry) => ({ ...entry, occurredAt: entry.occurredAt.toISOString(), lateMinutes: entry.type === 'ENTRADA' ? lateMinutesFor(entry.occurredAt, entry.employee.shift) : 0, shiftName: entry.employee.shift?.name ?? null }))}
         employees={(data.employees as any[]).map(({ pinHash, ...employee }) => ({ ...employee, hasPin: Boolean(pinHash) }))}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -15,11 +15,11 @@ type Entry = {
 const TYPE_LABEL: Record<string, string> = {
   ENTRADA: 'Entrada', SAIDA_ALMOCO: 'Saída almoço', REGRESSO_ALMOCO: 'Regresso almoço', SAIDA: 'Saída',
 };
-const ACTIONS: { type: string; label: string; tone: string }[] = [
-  { type: 'ENTRADA', label: 'Entrada', tone: 'bg-[#0f6b4f] hover:bg-[#0b5941]' },
-  { type: 'SAIDA_ALMOCO', label: 'Saída almoço', tone: 'bg-[#8a5a00] hover:bg-[#714a00]' },
-  { type: 'REGRESSO_ALMOCO', label: 'Regresso', tone: 'bg-[#021f87] hover:bg-[#061965]' },
-  { type: 'SAIDA', label: 'Saída', tone: 'bg-[#7a2f2f] hover:bg-[#642626]' },
+const ACTIONS: { type: string; label: string; tone: string; icon: ReactNode }[] = [
+  { type: 'ENTRADA', label: 'Entrada', tone: 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width={18} height={18}><path d="M3 12h18"/><path d="M19 10l2 2-2 2"/><path d="M9 6l6 6-6 6"/></svg> },
+  { type: 'SAIDA_ALMOCO', label: 'Saída almoço', tone: 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width={18} height={18}><path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/></svg> },
+  { type: 'REGRESSO_ALMOCO', label: 'Regresso', tone: 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width={18} height={18}><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg> },
+  { type: 'SAIDA', label: 'Saída', tone: 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width={18} height={18}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg> },
 ];
 
 function time(value: string) {
@@ -64,22 +64,25 @@ export function AttendanceManager({ entries, employees }: { entries: Entry[]; em
 
   return (
     <div className="space-y-5">
-      <div>
-        <p className="text-sm text-[var(--text-muted)]">Machine Point</p>
-        <h1 className="mt-1 text-2xl font-bold text-[var(--text)]">Assiduidade</h1>
-        <Link href="/rh/ponto" className="mt-2 inline-flex min-h-9 items-center rounded-lg border border-[var(--line)] bg-white px-3 text-xs font-semibold text-[var(--blue)]">Abrir quiosque →</Link>
-        <p className="mt-1 text-sm text-[var(--text-muted)]">Registo de ponto por PIN. Horários, turnos e QR chegam nas próximas fases.</p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-[11px] font-extrabold uppercase tracking-[.14em] text-[var(--text-muted)]">Machine Point</p>
+          <h1 className="mt-1 text-2xl font-bold text-[var(--text)]">Assiduidade</h1>
+          <p className="mt-1 text-sm text-[var(--text-muted)]">Registo de ponto por PIN.</p>
+        </div>
+        <Link href="/rh/ponto" className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl border border-[#e1e8f0] bg-white px-4 text-sm font-medium text-[#1c2d3f] transition hover:border-[#021f87] hover:text-[#021f87]"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" width={16} height={16} aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Abrir quiosque</Link>
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="form-card-light rounded-xl border border-[#e6eaf0] p-4"><p className="text-xs text-[var(--text-muted)]">Presentes hoje</p><p className="mt-1 text-xl font-bold tabular-nums"><CountUp value={present} durationMs={900} /></p></div>
-        <div className="form-card-light rounded-xl border border-[#e6eaf0] p-4"><p className="text-xs text-[var(--text-muted)]">Marcações hoje</p><p className="mt-1 text-xl font-bold tabular-nums"><CountUp value={entries.length} durationMs={900} /></p></div>
-        <div className="form-card-light rounded-xl border border-[#e6eaf0] p-4"><p className="text-xs text-[var(--text-muted)]">Funcionários com PIN</p><p className="mt-1 text-xl font-bold tabular-nums">{employees.filter((e) => e.hasPin).length}</p></div>
-        <div className="form-card-light rounded-xl border border-[#e6eaf0] p-4"><p className="text-xs text-[var(--text-muted)]">Atrasados hoje</p><p className="mt-1 text-xl font-bold tabular-nums text-[#a83939]"><CountUp value={late} durationMs={900} /></p></div>
+        <div className="form-card-light rounded-xl border border-[#e6eaf0] p-4"><div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-700"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width={18} height={18}><path d="M17 21v-2a4 4 0 0 0-4-4H7"/><circle cx="10" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg></div><p className="mt-2 text-xs text-[var(--text-muted)]">Presentes hoje</p><p className="mt-1 text-xl font-bold tabular-nums"><CountUp value={present} durationMs={900} /></p></div>
+        <div className="form-card-light rounded-xl border border-[#e6eaf0] p-4"><div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-700"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width={18} height={18}><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><p className="mt-2 text-xs text-[var(--text-muted)]">Marcações hoje</p><p className="mt-1 text-xl font-bold tabular-nums"><CountUp value={entries.length} durationMs={900} /></p></div>
+        <div className="form-card-light rounded-xl border border-[#e6eaf0] p-4"><div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-50 text-amber-700"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width={18} height={18}><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div><p className="mt-2 text-xs text-[var(--text-muted)]">Com PIN</p><p className="mt-1 text-xl font-bold tabular-nums">{employees.filter((e) => e.hasPin).length}</p></div>
+        <div className="form-card-light rounded-xl border border-[#e6eaf0] p-4"><div className={`flex h-9 w-9 items-center justify-center rounded-lg ${late > 0 ? 'bg-red-50 text-[#a83939]' : 'bg-slate-100 text-slate-600'}`}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width={18} height={18}><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></div><p className="mt-2 text-xs text-[var(--text-muted)]">Atrasados hoje</p><p className={`mt-1 text-xl font-bold tabular-nums ${late > 0 ? 'text-[#a83939]' : 'text-[var(--text)]'}`}><CountUp value={late} durationMs={900} /></p></div>
       </div>
 
       <section className="form-card-light rounded-xl border border-[#e6eaf0] p-5">
         <h2 className="text-sm font-bold text-[var(--text)]">Registar marcação</h2>
+        <div className="mt-2 flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-[#607286]"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width={14} height={14} aria-hidden="true"><path d="M12 3l2.2 6.2L20 12l-5.8 2.8L12 21l-2.2-6.2L4 12l5.8-2.8L12 3z"/></svg>Horários, turnos e QR Code disponíveis em breve neste módulo.</div>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <div>
             <label htmlFor="att-employee" className="app-label">Funcionário</label>
@@ -94,14 +97,14 @@ export function AttendanceManager({ entries, employees }: { entries: Entry[]; em
           </div>
           <div>
             <label htmlFor="att-pin" className="app-label">PIN</label>
-            <input id="att-pin" type="password" inputMode="numeric" autoComplete="off" maxLength={8} className="app-input tracking-[.3em]" value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))} placeholder="••••" />
+            <input id="att-pin" type="password" inputMode="numeric" autoComplete="off" maxLength={4} className="ds-input text-center text-2xl font-mono tracking-[.5em]" value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))} placeholder="••••" />
           </div>
         </div>
         {selected && !selected.hasPin && <p className="mt-2 text-xs text-[#a83939]">Este funcionário ainda não tem PIN. Defina-o em Funcionários → Editar.</p>}
         <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
           {ACTIONS.map((action) => (
-            <button key={action.type} type="button" disabled={Boolean(savingType)} onClick={() => clock(action.type)} className={`min-h-12 rounded-lg px-3 text-sm font-semibold text-white transition disabled:opacity-50 ${action.tone}`}>
-              {savingType === action.type ? 'A registar…' : action.label}
+            <button key={action.type} type="button" disabled={Boolean(savingType)} onClick={() => clock(action.type)} aria-label={`Registar ${action.label}`} className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border px-3 text-sm font-semibold transition disabled:opacity-50 ${action.tone}`}>
+              {savingType === action.type ? 'A registar…' : <>{action.icon}{action.label}</>}
             </button>
           ))}
         </div>
@@ -123,7 +126,7 @@ export function AttendanceManager({ entries, employees }: { entries: Entry[]; em
                   <td><span className="rounded-full bg-[var(--surface-raised)] px-2 py-0.5 text-[11px] font-semibold text-[var(--blue)]">{entry.source}</span></td>
                 </tr>
               ))}
-              {entries.length === 0 && <tr><td colSpan={4} className="px-4 py-10 text-center text-sm text-[var(--text-muted)]">Ainda não há marcações hoje.</td></tr>}
+              {entries.length === 0 && <tr><td colSpan={4}><div className="flex flex-col items-center justify-center py-10 text-center"><div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-400"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" width={28} height={28} aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><p className="mt-3 text-sm font-semibold text-[var(--text)]">Ainda não há marcações hoje.</p><p className="mt-1 text-xs text-[var(--text-muted)]">As marcações dos funcionários aparecerão aqui.</p></div></td></tr>}
             </tbody>
           </table>
         </div>
