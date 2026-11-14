@@ -347,6 +347,17 @@ export function EmployeesManager({ initialEmployees, departments, positions, shi
                   <div><label htmlFor="rh-iban" className="app-label">IBAN</label><input id="rh-iban" name="bankIban" className="ds-input" defaultValue={editing?.bankIban ?? ''} /></div>
                 </FormSection>
 
+                <FormSection title="PIN de identificação" description="Credencial do quiosque de assiduidade. Deve ter 6 dígitos e ser único dentro da empresa.">
+                  <div className="sm:col-span-2 flex flex-wrap items-end gap-3">
+                    <div className="min-w-0 flex-1">
+                      <label htmlFor="rh-pin" className="app-label">PIN do ponto {editing?.hasPin ? <span className="font-normal text-[var(--text-muted)]">(definido)</span> : <span className="font-normal text-[var(--text-muted)]">(gerar automático se vazio)</span>}</label>
+                      <input id="rh-pin" name="pin" type="text" inputMode="numeric" maxLength={6} pattern="\d{6}" className="app-input font-mono tracking-[.4em]" placeholder={editing?.hasPin ? 'Deixar vazio para manter' : 'Deixar vazio = gera automaticamente'} />
+                      <p className="mt-1 text-[10px] text-[var(--text-muted)]">O PIN fica visível apenas para quem o define; nunca é apresentado novamente.</p>
+                    </div>
+                    <button type="button" onClick={() => { const pin = String(Math.floor(100000 + Math.random() * 900000)); const input = document.getElementById('rh-pin') as HTMLInputElement | null; if (input) input.value = pin; }} className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl border border-[#e1e8f0] bg-white px-4 text-sm font-semibold text-[#1c2d3f] transition hover:border-[#021f87] hover:text-[#021f87]">Gerar PIN</button>
+                  </div>
+                </FormSection>
+
                 {editing && (
                   <div className="rounded-lg border border-[var(--line)] bg-[var(--surface-raised)] p-3">
                     <div className="flex items-center justify-between gap-2">

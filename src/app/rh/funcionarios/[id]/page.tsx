@@ -7,6 +7,7 @@ import { hasRhPermission } from '@/lib/rh-policy';
 import { OffboardDialog } from '@/components/rh/offboard-dialog';
 import { DeductionsManager } from '@/components/rh/deductions-manager';
 import { SignedImage } from '@/components/rh/signed-image';
+import { PinDeactivateButton } from '@/components/rh/pin-deactivate-button';
 
 function money(value: unknown) {
   return new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', maximumFractionDigits: 2 }).format(Number(value) || 0);
@@ -96,6 +97,16 @@ export default async function EmployeeDetailPage({ params }: { params: Promise<{
           </div>
         )}
       </div>
+
+      <section className="rounded-xl border border-[#e1e8f0] bg-white p-5">
+        <h2 className="text-sm font-bold text-[#1c2d3f]">PIN de identificação</h2>
+        <div className="mt-3 flex flex-wrap items-center gap-4">
+          <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold ${e.pinHash ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}><span className={`h-2 w-2 rounded-full ${e.pinHash ? 'bg-emerald-500' : 'bg-slate-400'}`} />{e.pinHash ? 'Definido' : 'Não definido'}</span>
+          {e.pinChangedAt && <span className="text-xs text-[#607286]">Última alteração: {day(e.pinChangedAt)}</span>}
+          <Link href="/rh/funcionarios" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#e1e8f0] bg-white px-4 text-xs font-semibold text-[var(--blue)] transition hover:border-[var(--blue)]"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width={16} height={16} aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L10 16l-4 1 1-4 9.5-9.5z"/></svg>Redefinir/editar</Link>
+          {e.pinHash && <PinDeactivateButton employeeId={id} />}
+        </div>
+      </section>
 
       <section className="rounded-xl border border-[#e1e8f0] bg-white p-5">
         <h2 className="text-sm font-bold text-[#1c2d3f]">Dados pessoais e profissionais</h2>

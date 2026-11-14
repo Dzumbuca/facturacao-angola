@@ -8,6 +8,7 @@ import { requireRhAccess, rhAccessResponse } from '@/lib/rh-access';
 import { sendEmployeeWelcomeEmail } from '@/lib/rh-welcome-email';
 
 import { assertDepartmentInTenant, assertPositionInTenant, assertShiftInTenant, maskAccount, nextEmployeeNumber, rhAudit } from '@/lib/rh-service';
+import { pinLookup, generatePin, isValidPinFormat } from '@/lib/rh-pin';
 
 type RhContractType = 'INDEFINIDO' | 'TERMO_CERTO' | 'ESTAGIO' | 'PRESTACAO_SERVICOS';
 
@@ -16,7 +17,7 @@ type RhEmployeeStatus = 'ACTIVO' | 'SUSPENSO' | 'FERIAS' | 'CESSAO' | 'INACTIVO'
 
 
 function serializeEmployee(employee: any) {
-  const { pinHash, bankAccount, bankIban, ...rest } = employee;
+  const { pinHash, pinLookup: _pinLookup, bankAccount, bankIban, ...rest } = employee;
   return { ...rest, baseSalary: Number(rest.baseSalary), hasPin: Boolean(pinHash), bankAccount: maskAccount(bankAccount), bankIban: maskAccount(bankIban) };
 }
 
@@ -136,10 +137,11 @@ export async function POST(req: Request) {
 
     const rawPin = typeof body.pin === 'string' ? body.pin.trim() : '';
 
-    if (rawPin && !/^\d{4,8}$/.test(rawPin)) return NextResponse.json({ error: 'O PIN deve ter 4 a 8 dígitos.' }, { status: 400 });
+    if (rawPin && !isValidPinFormat(rawPin)) return NextResponse.json({ error: 'O PIN deve ter exactamente 6 dígitos.' }, { status: 400 });
 
-    const pin = rawPin || String(Math.floor(100000 + Math.random() * 900000));
+    const pin = rawPin || generatePin();
     const generatedPin = rawPin ? null : pin;
+    const lookup = pinLookup(pin);
     const pinHash = await bcrypt.hash(pin, 10);
 
 
@@ -152,6 +154,10 @@ export async function POST(req: Request) {
       const shiftId = await assertShiftInTenant(tx, access.tenantId, body.shiftId);
 
       const employeeNumber = await nextEmployeeNumber(tx, access.tenantId);
+
+      const existing = await tx.rhEmployee.findFirst({ where: { tenantId: access.tenantId, pinLookup: lookup }, select: { id: true } });
+
+      if (existing) return { code: 'PIN_DUPLICATE' as const };
 
       const employee = await tx.rhEmployee.create({
 
@@ -201,6 +207,8 @@ export async function POST(req: Request) {
           bankIban: body.bankIban?.trim() || null,
 
           pinHash,
+          pinLookup: lookup,
+          pinChangedAt: new Date(),
 
         },
 
@@ -218,6 +226,9 @@ export async function POST(req: Request) {
 
     }, { userId: access.userId });
 
+    if ((created as any)?.code === 'PIN_DUPLICATE') {
+      return NextResponse.json({ error: 'Este PIN já está em uso. Gera outro.' }, { status: 409 });
+    }
     // Envia email de boas-vindas (não bloqueia a criação se falhar)
     const welcomeEmail = (created as any).email as string | null | undefined;
     if (welcomeEmail) {

@@ -2658,6 +2658,8 @@ model RhEmployee {
   bankIban       String?
 
   pinHash        String?
+  pinLookup      String?
+  pinChangedAt   DateTime?
 
   createdAt      DateTime         @default(now())
 
@@ -2689,6 +2691,7 @@ model RhEmployee {
 
 
   @@unique([tenantId, employeeNumber])
+  @@unique([tenantId, pinLookup])
 
   @@index([tenantId, status])
 

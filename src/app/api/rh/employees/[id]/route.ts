@@ -8,6 +8,7 @@ import { requireRhAccess, rhAccessResponse } from '@/lib/rh-access';
 
 import { assertDepartmentInTenant, assertPositionInTenant, assertShiftInTenant, maskAccount, rhAudit } from '@/lib/rh-service';
 import { hasRhPermission } from '@/lib/rh-policy';
+import { pinLookup, isValidPinFormat } from '@/lib/rh-pin';
 
 type RhContractType = 'INDEFINIDO' | 'TERMO_CERTO' | 'ESTAGIO' | 'PRESTACAO_SERVICOS';
 
@@ -16,7 +17,7 @@ type RhEmployeeStatus = 'ACTIVO' | 'SUSPENSO' | 'FERIAS' | 'CESSAO' | 'INACTIVO'
 
 
 function serializeEmployee(employee: any) {
-  const { pinHash, bankAccount, bankIban, ...rest } = employee;
+  const { pinHash, pinLookup: _pinLookup, bankAccount, bankIban, ...rest } = employee;
   return { ...rest, baseSalary: Number(rest.baseSalary), hasPin: Boolean(pinHash), bankAccount: maskAccount(bankAccount), bankIban: maskAccount(bankIban) };
 }
 
@@ -64,7 +65,7 @@ export async function GET(_req: Request, { params }: Context) {
 
     const canSeeBank = hasRhPermission(access.permissions, 'employees:write');
 
-    const { pinHash, bankAccount, bankIban, ...rest } = employee;
+    const { pinHash, pinLookup: _pinLookup, bankAccount, bankIban, ...rest } = employee;
 
     return NextResponse.json({ ...rest, baseSalary: Number(rest.baseSalary), hasPin: Boolean(pinHash), bankAccount: canSeeBank ? bankAccount : maskAccount(bankAccount), bankIban: canSeeBank ? bankIban : maskAccount(bankIban) });
 
@@ -122,13 +123,24 @@ export async function PATCH(req: Request, { params }: Context) {
 
     if (body.status !== undefined && STATUSES.includes(body.status)) data.status = body.status;
 
+    let pinLookupForUpdate: string | null = null;
+
     if (body.pin !== undefined) {
 
       const pin = String(body.pin ?? '').trim();
 
-      if (pin && !/^\d{4,8}$/.test(pin)) return NextResponse.json({ error: 'O PIN deve ter 4 a 8 dígitos.' }, { status: 400 });
+      if (pin && !isValidPinFormat(pin)) return NextResponse.json({ error: 'O PIN deve ter exactamente 6 dígitos.' }, { status: 400 });
 
-      data.pinHash = pin ? await bcrypt.hash(pin, 10) : null;
+      if (pin) {
+        pinLookupForUpdate = pinLookup(pin);
+        data.pinHash = await bcrypt.hash(pin, 10);
+        data.pinLookup = pinLookupForUpdate;
+        data.pinChangedAt = new Date();
+      } else {
+        data.pinHash = null;
+        data.pinLookup = null;
+        data.pinChangedAt = null;
+      }
 
     }
 
@@ -141,6 +153,11 @@ export async function PATCH(req: Request, { params }: Context) {
       const existing = await tx.rhEmployee.findFirst({ where: { id, tenantId: access.tenantId }, select: { id: true, baseSalary: true } });
 
       if (!existing) return null;
+
+      if (pinLookupForUpdate) {
+        const clash = await tx.rhEmployee.findFirst({ where: { tenantId: access.tenantId, pinLookup: pinLookupForUpdate, id: { not: id } }, select: { id: true } });
+        if (clash) return { code: 'PIN_DUPLICATE' as const };
+      }
 
       const oldSalary = Number(existing.baseSalary);
 
@@ -187,6 +204,7 @@ export async function PATCH(req: Request, { params }: Context) {
 
 
 
+    if ((updated as any)?.code === 'PIN_DUPLICATE') return NextResponse.json({ error: 'Este PIN já está em uso. Gera outro.' }, { status: 409 });
     if (!updated) return NextResponse.json({ error: 'Funcionário não encontrado.' }, { status: 404 });
 
     return NextResponse.json(serializeEmployee(updated));
