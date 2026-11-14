@@ -9,7 +9,7 @@ import { DesktopOfflineBootstrap } from '@/components/desktop-offline-bootstrap'
 
 export default async function DashboardLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const session = await auth();
-  if (!session?.user) redirect('/login');
+  if (!session?.user) redirect('/inicio');
   let access;
   try {
     access = await getTenantAccess();
