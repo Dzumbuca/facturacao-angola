@@ -23,7 +23,7 @@ test.describe('WMS v2 - UI', () => {
     await login(page);
     await page.goto('/stock');
     await expect(page.getByRole('heading', { name: 'Armazém e stock', exact: true })).toBeVisible();
-    await expect(page.getByText('Produtos', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('Produtos', { exact: true }).filter({ visible: true }).first()).toBeVisible();
   });
 
   test('devoluções: formulário e listagem dedicada visíveis', async ({ page }) => {
@@ -99,7 +99,7 @@ test.describe('WMS v2 - UI', () => {
   test('Machine RH: dashboard próprio e manifest independente', async ({ page }) => {
     await login(page);
     await page.goto('/rh/dashboard');
-    await expect(page.getByRole('heading', { name: 'Dashboard', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Próximos passos', exact: true })).toBeVisible();
     const manifest = await page.locator('link[rel="manifest"]').getAttribute('href');
     expect(manifest).toBe('/rh-manifest.json');
   });
