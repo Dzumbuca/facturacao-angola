@@ -140,7 +140,7 @@ describe('Machine RH - núcleo e isolamento entre empresas', () => {
       body: JSON.stringify({
         firstName: 'E2E', lastName: `RH ${stamp}`, employeeNumber: 'ignorado', departmentId,
         hireDate: '2026-01-15', contractType: 'INDEFINIDO', baseSalary: 350000, shiftId,
-        bi: '000000000LA000', email: `e2e-rh-${stamp}@machinefacturas.test`, pin: '1234',
+        bi: '000000000LA000', email: `e2e-rh-${stamp}@machinefacturas.test`, pin: '123456',
       }),
     });
     expect(employee.status).toBe(201);
@@ -228,13 +228,13 @@ describe('Machine RH - núcleo e isolamento entre empresas', () => {
     // Machine Point: PIN errado, entrada, duplicado no último minuto.
     const wrongPin = await authenticatedFetch('/api/rh/attendance/clock', session, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ employeeId, type: 'ENTRADA', pin: '9999' }),
+      body: JSON.stringify({ employeeId, type: 'ENTRADA', pin: '999999' }),
     });
     expect(wrongPin.status).toBe(401);
 
     const clock = await authenticatedFetch('/api/rh/attendance/clock', session, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ employeeId, type: 'ENTRADA', pin: '1234' }),
+      body: JSON.stringify({ employeeId, type: 'ENTRADA', pin: '123456' }),
     });
     expect(clock.status).toBe(201);
     const clockData = await clock.json();
@@ -243,7 +243,7 @@ describe('Machine RH - núcleo e isolamento entre empresas', () => {
 
     const duplicate = await authenticatedFetch('/api/rh/attendance/clock', session, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ employeeId, type: 'ENTRADA', pin: '1234' }),
+      body: JSON.stringify({ employeeId, type: 'ENTRADA', pin: '123456' }),
     });
     expect(duplicate.status).toBe(409);
 
@@ -271,7 +271,7 @@ describe('Machine RH - núcleo e isolamento entre empresas', () => {
 
     const clockB = await authenticatedFetch('/api/rh/attendance/clock', sessionB, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ employeeId, type: 'ENTRADA', pin: '1234' }),
+      body: JSON.stringify({ employeeId, type: 'ENTRADA', pin: '123456' }),
     });
     expect(clockB.status).toBe(404);
 
