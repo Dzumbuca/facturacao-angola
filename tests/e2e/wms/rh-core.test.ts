@@ -66,8 +66,12 @@ afterAll(async () => {
   if (document2Id) await prisma.rhDocument.deleteMany({ where: { tenantId: tenantAId, id: document2Id } });
   if (documentTemplateId) await prisma.rhDocumentTemplate.deleteMany({ where: { tenantId: tenantAId, id: documentTemplateId } });
   if (paymentBatchId) await prisma.rhPaymentBatch.deleteMany({ where: { tenantId: tenantAId, id: paymentBatchId } });
+  // Garantir limpeza mesmo quando uma asserção falha (ex.: run criado mas pendente de validação)
+  if (payrollRulesetId) {
+    await prisma.rhPayrollRun.deleteMany({ where: { tenantId: tenantAId, rulesetId: payrollRulesetId } });
+    await prisma.rhPayrollRuleSet.deleteMany({ where: { tenantId: tenantAId, id: payrollRulesetId } });
+  }
   if (payrollRunId) await prisma.rhPayrollRun.deleteMany({ where: { tenantId: tenantAId, id: payrollRunId } });
-  if (payrollRulesetId) await prisma.rhPayrollRuleSet.deleteMany({ where: { tenantId: tenantAId, id: payrollRulesetId } });
   if (memberPayrollRulesetId) await prisma.rhPayrollRuleSet.deleteMany({ where: { tenantId: tenantAId, id: memberPayrollRulesetId } });
   if (rhMemberId) await prisma.rhMember.deleteMany({ where: { tenantId: tenantAId, id: rhMemberId } });
   await prisma.rhLeaveRequest.deleteMany({ where: { tenantId: tenantAId } });
@@ -444,13 +448,13 @@ describe('Machine RH - núcleo e isolamento entre empresas', () => {
     });
     const runText = await run.text();
     expect(run.status, runText).toBe(201);
-    const runData = JSON.parse(runText);
-    payrollRunId = runData.id;
-    expect(runData.status).toBe('CALCULADO');
-    expect(Number(runData.totalGross)).toBe(350000);
-    expect(Number(runData.totalInss)).toBe(10500);
-    expect(Number(runData.totalIrt)).toBe(33950);
-    expect(Number(runData.totalNet)).toBe(305550);
+    const runData = JSON.parse(runText) as { run: { id: string; status: string; totalGross: number | string; totalInss: number | string; totalIrt: number | string; totalNet: number | string } };
+    payrollRunId = runData.run.id;
+    expect(runData.run.status).toBe('CALCULADO');
+    expect(Number(runData.run.totalGross)).toBe(350000);
+    expect(Number(runData.run.totalInss)).toBe(10500);
+    expect(Number(runData.run.totalIrt)).toBe(33950);
+    expect(Number(runData.run.totalNet)).toBe(305550);
 
     const duplicate = await authenticatedFetch('/api/rh/payroll/runs', session, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
