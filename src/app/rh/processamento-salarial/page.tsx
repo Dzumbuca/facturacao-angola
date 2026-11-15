@@ -9,7 +9,7 @@ export default async function RhPayrollPage() {
       tx.rhPayrollRuleSet.findMany({ where: { tenantId: access.tenantId }, orderBy: { effectiveFrom: 'desc' } }),
       tx.rhPayrollRun.findMany({
         where: { tenantId: access.tenantId },
-        include: { ruleset: { select: { name: true } }, _count: { select: { payslips: true } } },
+        include: { ruleset: { select: { name: true, legalStatus: true } }, _count: { select: { payslips: true } } },
         orderBy: { period: 'desc' },
         take: 100,
       }),
@@ -24,6 +24,7 @@ export default async function RhPayrollPage() {
         ...run,
         totalGross: Number(run.totalGross), totalNet: Number(run.totalNet),
         totalInss: Number(run.totalInss), totalIrt: Number(run.totalIrt),
+        ruleset: run.ruleset ? { ...run.ruleset, legalStatus: (run.ruleset as any).legalStatus } : null,
       }))}
     />
   );

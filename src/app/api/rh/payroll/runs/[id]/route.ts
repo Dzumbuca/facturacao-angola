@@ -41,6 +41,18 @@ export async function PATCH(req: Request, { params }: Context) {
     const result = await runWithTenant(access.tenantId, async (tx) => {
       const run = await tx.rhPayrollRun.findFirst({ where: { id, tenantId: access.tenantId } });
       if (!run) return { code: 'NOT_FOUND' as const };
+
+      // Bloqueio duro: aprovar exige regras legalmente validadas.
+      const isApproving = run.status === 'CALCULADO' && target === 'APROVADO';
+      if (isApproving) {
+        const ruleset = run.rulesetId
+          ? await tx.rhPayrollRuleSet.findFirst({ where: { id: run.rulesetId, tenantId: access.tenantId }, select: { legalStatus: true } })
+          : null;
+        if (!ruleset || ruleset.legalStatus !== 'VALIDADO') {
+          return { code: 'REGRAS_SALARIAIS_NAO_VALIDADAS' as const };
+        }
+      }
+
       const allowed = TRANSITIONS[run.status] ?? [];
       if (!allowed.includes(target)) return { code: 'INVALID_TRANSITION' as const, from: run.status };
       const updated = await tx.rhPayrollRun.update({
@@ -56,6 +68,12 @@ export async function PATCH(req: Request, { params }: Context) {
     }, { userId: access.userId });
 
     if (result.code === 'NOT_FOUND') return NextResponse.json({ error: 'Processamento não encontrado.' }, { status: 404 });
+    if (result.code === 'REGRAS_SALARIAIS_NAO_VALIDADAS') {
+      return NextResponse.json({
+        code: 'REGRAS_SALARIAIS_NAO_VALIDADAS',
+        error: 'Este processamento não pode ser aprovado porque existem regras salariais pendentes de validação legal. Apresente a documentação necessária e solicite a validação.',
+      }, { status: 403 });
+    }
     if (result.code === 'INVALID_TRANSITION') return NextResponse.json({ code: 'INVALID_TRANSITION', error: `Transição inválida a partir de ${result.from}.` }, { status: 409 });
     return NextResponse.json(result.updated);
   } catch (error) {

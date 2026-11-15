@@ -131,3 +131,30 @@ describe('computeTimeAdjustments', () => {
     expect(result.overtimePay).toBe(0);
   });
 });
+
+describe('buildRuleSnapshot', () => {
+  it('captures ruleset and rates exactly as configured', async () => {
+    const { buildRuleSnapshot } = await import('./rh-payroll');
+    const config = { inssEmployeeRate: 5, inssEmployerRate: 10, foodAllowance: 15000, transportAllowance: 7000, irtBrackets: [{ upTo: null, rate: 10, deduction: 0 }], monthlyHours: 180, overtimeRatePercent: 50, absenceRatePercent: 25 };
+    const snap = buildRuleSnapshot(config, { id: 'r1', name: 'Regras v1', legalStatus: 'VALIDADO', legalDocumentUrl: 'https://example.com/parecere.pdf' });
+    expect(snap.rulesetId).toBe('r1');
+    expect(snap.rulesetName).toBe('Regras v1');
+    expect(snap.legalStatusAtProcessing).toBe('VALIDADO');
+    expect(snap.legalDocumentUrl).toBe('https://example.com/parecere.pdf');
+    expect(snap.inssEmployeeRate).toBe(5);
+    expect(snap.inssEmployerRate).toBe(10);
+    expect(snap.foodAllowance).toBe(15000);
+    expect(snap.transportAllowance).toBe(7000);
+    expect(snap.monthlyHours).toBe(180);
+    expect(snap.overtimeRatePercent).toBe(50);
+    expect(snap.absenceRatePercent).toBe(25);
+    expect(snap.irtBracketCount).toBe(1);
+  });
+  it('defaults legalStatus to PENDENTE when omitted', async () => {
+    const { buildRuleSnapshot } = await import('./rh-payroll');
+    const config = { inssEmployeeRate: 0, inssEmployerRate: 0, foodAllowance: 0, transportAllowance: 0, irtBrackets: [{ upTo: null, rate: 0, deduction: 0 }] };
+    const snap = buildRuleSnapshot(config, { id: 'r1', name: 'Regras' });
+    expect(snap.legalStatusAtProcessing).toBe('PENDENTE');
+    expect(snap.legalDocumentUrl).toBeNull();
+  });
+});

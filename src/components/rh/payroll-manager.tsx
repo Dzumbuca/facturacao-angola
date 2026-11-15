@@ -5,10 +5,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { FormSection, FormField, FormActions, FormError, CalendarField } from '@/components/rh/form-kit';
-type RuleSet = { id: string; name: string; effectiveFrom: string; status: string; legalStatus?: string };
+type RuleSet = { id: string; name: string; effectiveFrom: string; status: string; legalStatus: string };
 type Run = {
   id: string; period: string; status: string; totalGross: number; totalNet: number;
-  totalInss: number; totalIrt: number; ruleset: { name: string } | null; _count: { payslips: number };
+  totalInss: number; totalIrt: number; ruleset: { name: string; legalStatus: string } | null; _count: { payslips: number };
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -53,17 +53,34 @@ export function PayrollManager({ rulesets, runs }: { rulesets: RuleSet[]; runs: 
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
-  async function calculate(event: FormEvent<HTMLFormElement>) {
+  const selectedRuleset = rulesets.find((r) => r.id === rulesetId);
+  const isValidated = selectedRuleset?.legalStatus === 'VALIDADO';
+
+  async function submitOfficial(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!isValidated) {
+      setError('Processamento bloqueado: regras salariais pendentes de validação legal.');
+      return;
+    }
     setSaving(true); setError(''); setMessage('');
+    await executePayroll('OFICIAL');
+  }
+  async function submitSimulation() {
+    if (!period) { setError('Indique o período para simular.'); return; }
+    setSaving(true); setError(''); setMessage('');
+    await executePayroll('SIMULACAO');
+  }
+  async function executePayroll(mode: 'OFICIAL' | 'SIMULACAO') {
     try {
       const response = await fetch('/api/rh/payroll/runs', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ period, rulesetId }),
+        body: JSON.stringify({ period, rulesetId, mode }),
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data?.error ?? 'Não foi possível calcular.');
-      setMessage(`Processamento de ${period} calculado.`);
+      setMessage(mode === 'SIMULACAO'
+        ? `Simulação de ${period} concluída (nada foi persistido).`
+        : `Processamento de ${period} calculado.`);
       setPeriod('');
       router.refresh();
     } catch (err: any) {
@@ -132,15 +149,28 @@ export function PayrollManager({ rulesets, runs }: { rulesets: RuleSet[]; runs: 
 
       {tab === 'runs' && (
         <>
-          <form onSubmit={calculate} className="form-card-light rounded-xl border border-[#e6eaf0] p-4">
+          <form onSubmit={submitOfficial} className="form-card-light rounded-xl border border-[#e6eaf0] p-4">
             <h2 className="text-sm font-bold text-[var(--text)]">Novo processamento</h2>
             {rulesets.length === 0 ? (
               <p className="mt-2 text-sm text-[#8a5a00]">Crie primeiro um conjunto de regras salariais (separador ao lado).</p>
             ) : (
               <FormSection title="Período de processamento">
                 <FormField label="Período" name="run-period" required><input id="run-period" type="month" className="ds-input" value={period} onChange={(e) => setPeriod(e.target.value)} required /></FormField>
-                <FormField label="Regras salariais" name="run-ruleset" required><select id="run-ruleset" className="ds-input" value={rulesetId} onChange={(e) => setRulesetId(e.target.value)} required>{rulesets.map((ruleset) => <option key={ruleset.id} value={ruleset.id}>{ruleset.name}</option>)}</select></FormField>
-                <div className="flex items-end"><FormActions saving={saving} onCancel={() => {}} saveLabel={saving ? 'A calcular…' : 'Calcular folha'} /></div>
+                <FormField label="Regras salariais" name="run-ruleset" required><select id="run-ruleset" className="ds-input" value={rulesetId} onChange={(e) => setRulesetId(e.target.value)} required>{rulesets.map((ruleset) => <option key={ruleset.id} value={ruleset.id}>{ruleset.name}{ruleset.legalStatus !== 'VALIDADO' ? ' ⚠ Regras pendentes' : ''}</option>)}</select></FormField>
+                {!isValidated && (
+                  <div role="status" className="sm:col-span-2 rounded-lg border border-[#f2e1b6] bg-[#fffaf0] px-3 py-2 text-xs leading-snug text-[#8a5a00]">
+                    <p className="font-bold">Processamento oficial bloqueado</p>
+                    <p className="mt-1">Regras salariais pendentes de validação legal. Apresente a documentação necessária e solicite a validação ao contabilista ou especialista laboral.</p>
+                    <p className="mt-1 font-semibold">Simulação disponível sem consequências.</p>
+                  </div>
+                )}
+                <div className="flex flex-wrap items-end gap-3">
+                  {isValidated ? (
+                    <FormActions saving={saving} onCancel={() => {}} saveLabel={saving ? 'A calcular…' : 'Calcular folha'} />
+                  ) : (
+                    <button type="button" onClick={submitSimulation} disabled={saving} className="min-h-11 rounded-[10px] border border-[var(--blue)] px-5 text-sm font-bold text-[var(--blue)] transition hover:bg-[var(--surface-raised)] disabled:opacity-60">{saving ? 'A simular…' : 'Simular cálculo'}</button>
+                  )}
+                </div>
               </FormSection>
             )}
           </form>
@@ -161,7 +191,9 @@ export function PayrollManager({ rulesets, runs }: { rulesets: RuleSet[]; runs: 
                     <td data-mobile-actions>
                       <div className="flex flex-wrap gap-2">
                         <Link href={`/rh/processamento-salarial/${run.id}`} className="inline-flex min-h-9 items-center rounded-lg border border-[var(--line)] px-3 text-xs font-semibold text-[var(--blue)]">Ver</Link>
-                        {(run.status === 'CALCULADO' || run.status === 'EM_REVISAO') && <button type="button" onClick={() => transition(run.id, 'APROVADO')} className="min-h-9 rounded-lg border border-[#cbe8dc] px-3 text-xs font-semibold text-[#267256]">Aprovar</button>}
+                        {(run.status === 'CALCULADO' || run.status === 'EM_REVISAO') && (run.ruleset && run.ruleset.legalStatus === 'VALIDADO'
+                          ? <button type="button" onClick={() => transition(run.id, 'APROVADO')} className="min-h-9 rounded-lg border border-[#cbe8dc] px-3 text-xs font-semibold text-[#267256]">Aprovar</button>
+                          : <span title="Regras pendentes de validação legal" className="min-h-9 inline-flex items-center rounded-lg border border-[#f2e1b6] bg-[#fffaf0] px-3 text-[10px] font-semibold text-[#8a5a00]">Aprovação bloqueada</span>)}
                         {run.status === 'APROVADO' && <button type="button" onClick={() => transition(run.id, 'PENDENTE_PAGAMENTO')} className="min-h-9 rounded-lg border border-[#e6d29a] px-3 text-xs font-semibold text-[#8a5a00]">Preparar pagamento</button>}
                         {run.status === 'PENDENTE_PAGAMENTO' && <button type="button" onClick={() => transition(run.id, 'PAGO')} className="min-h-9 rounded-lg border border-[#cbe8dc] px-3 text-xs font-semibold text-[#267256]">Marcar pago</button>}
                       </div>

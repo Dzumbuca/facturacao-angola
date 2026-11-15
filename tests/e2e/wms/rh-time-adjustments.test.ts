@@ -25,8 +25,12 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  // Garantir limpeza mesmo quando uma asserção falha (ex.: run criado mas pendente de validação)
+  if (rulesetId) {
+    await prisma.rhPayrollRun.deleteMany({ where: { tenantId: tenantAId, rulesetId } });
+    await prisma.rhPayrollRuleSet.deleteMany({ where: { tenantId: tenantAId, id: rulesetId } });
+  }
   if (runId) await prisma.rhPayrollRun.deleteMany({ where: { tenantId: tenantAId, id: runId } });
-  if (rulesetId) await prisma.rhPayrollRuleSet.deleteMany({ where: { tenantId: tenantAId, id: rulesetId } });
   if (employeeId) await prisma.rhEmployee.deleteMany({ where: { tenantId: tenantAId, id: employeeId } });
   if (shiftId) await prisma.rhShift.deleteMany({ where: { tenantId: tenantAId, id: shiftId } });
   await prisma.$disconnect();
@@ -70,13 +74,20 @@ describe('Machine RH — payroll com ajuste por tempo', () => {
     const rulesetData = await ruleset.json();
     rulesetId = rulesetData.id;
 
+    // Marcar o ruleset como VALIDADO (evidência fictícia e isolada de teste) para permitir o processamento OFICIAL
+    const validateResponse = await authenticatedFetch('/api/rh/payroll/legal-validate', admin, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rulesetId, documentUrl: 'https://example.com/evidence-e2e.pdf', validatedByName: 'Auditor E2E Staging' }),
+    });
+    expect(validateResponse.status).toBe(200);
+
     const run = await authenticatedFetch('/api/rh/payroll/runs', admin, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ period, rulesetId }),
     });
     expect(run.status).toBe(201);
-    const runData = await run.json();
-    runId = runData.id;
+    const runData = (await run.json()) as { run: { id: string } }
+    runId = runData.run.id;
 
     const slip = await prisma.rhPayslip.findFirst({ where: { tenantId: tenantAId, runId, employeeId } });
     expect(slip).not.toBeNull();
