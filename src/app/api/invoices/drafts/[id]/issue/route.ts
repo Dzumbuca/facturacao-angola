@@ -6,7 +6,7 @@ import { getInvoiceQuota, quotaBlocked, quotaMessage, InvoiceQuotaExceededError 
 
 type Context = { params: Promise<{ id: string }> };
 
-export async function POST(_request: NextRequest, { params }: Context) {
+export async function POST(request: NextRequest, { params }: Context) {
   const access = await getTenantWriteAccess();
   if (!access.ok) return NextResponse.json(access.body, { status: access.status });
   const { tenantId, userId } = access.access;
@@ -17,7 +17,8 @@ export async function POST(_request: NextRequest, { params }: Context) {
   }
   try {
     let pdf: Buffer | undefined;
-    const invoice = await issueInvoiceDraft((await params).id, tenantId, async (document) => { pdf = await generateInvoicePDF(document); }, userId);
+    const idempotencyKey = request.headers.get('Idempotency-Key')?.trim() || undefined;
+    const invoice = await issueInvoiceDraft((await params).id, tenantId, async (document) => { pdf = await generateInvoicePDF(document); }, userId, idempotencyKey);
     if (!pdf) throw new Error('O PDF não foi gerado.');
     return new NextResponse(pdf as any, {
       headers: {
