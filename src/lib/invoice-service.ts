@@ -224,7 +224,7 @@ export const issueInvoice = async (
         customerId: customer.id,
         number: invoiceNumber,
         type: 'FT',
-        status: 'ISSUED',
+        status: 'DRAFT',
         seriesCode,
         documentType,
         year,
@@ -275,6 +275,12 @@ export const issueInvoice = async (
       if (usedThisMonth >= invoiceLimit) throw new InvoiceQuotaExceededError(usedThisMonth, invoiceLimit);
     }
     const saved = await transaction.invoice.create(invoiceCreateData);
+    // Selar documento: transição DRAFT→ISSUED dentro da mesma transação.
+    // O trigger só permite transição documental com OLD.status ≠ ISSUED/ANULADA.
+    await transaction.invoice.update({
+      where: { id: saved.id },
+      data: { status: 'ISSUED' },
+    });
 
     // Avançar a cadeia criptográfica DEPOIS de criada a factura. Se falhar, a transação faz rollback completo.
     await transaction.$executeRaw`UPDATE "InvoiceChainState"
