@@ -1,303 +1,317 @@
-# MACHINE FACTURAS — Plano Técnico de Consolidação da Facturação
-## v0.1 — Base saneante, faseamento e critérios de aceitação
+# MACHINE FACTURAS — Consolidação da Facturação
+## v0.1 — Plano técnico fundamentado em código, sem alterações
 
 **Data:** 2026-11-16
-**Decisão:** plano baseado no código real e na auditoria anterior; nenhum executa alteração.
-**Código:** `feat/machine-rh-b1-calendar` (HEAD `f9706b2`).
-**Staging:** localhost:5432/machine_facturas_staging (read-only).
-**Regras de produção:** zero escrita; zero migrations executadas; preservar dados.
+**Natureza:** planeamento. Nenhuma alteração funcional, migração ou escrita foi executada.
+**Staging:** `localhost:5432/machine_facturas_staging` (read-only).
+**Código:** `feat/machine-rh-b1-calendar`.
 
 ---
 
-## 0. Reconciliação dos dados da auditoria anterior
+## 1. Resumo executivo
 
-| Satus na auditoria v0.1 | Confirmação neste plano |
-|---|---|
-| **F-P0-01** — Tipo/estado de factura String sem enum | ✅ CONFIRMADO |
-| **F-P0-02** — Numeração via count+1, sem sequencial/OK por tenant | ✅ CONFIRMADO (e pior que o descrito) |
-| **F-P0-03** — Endpoints públicos sem rate-limit | 🟡 PARCIAL — `informed-payment` não tem limiter; a secção de email já tem `allowEmailRequest` reutilizável |
-| **F-P1-01** — Clientes duplicados no registo | ✅ CONFIRMADO |
-| **F-P1-02** — Isenções fiscais ausentes (só 14% default) | ✅ CONFIRMADO |
-| **F-P1-03** — Produtos vs Serviços indistinguíveis | ✅ CONFIRMADO |
-| **F-P1-05** — SAFT-AO não validado | 🟡 PARCIAL — a geração existe (`SoftwareCertificateNumber` sério e AGT hash); o validador externo não existe; o código merece cuidado mas foi **inadequadamente descrito como ausente na auditoria anterior** como ausente |
-| **F-P1-06** — Histórico do cliente comburia | 🟡 PARCIAL — a relação `Invoice` → `Customer` permite histórico, o que falta é uma página consolidada |
+A facturação está significativamente aproveitável: emissão, pagamentos, recibos, PDF e dashboard financeiro funcionam. No entanto, **a comercialização está bloqueada por três problemas iniciais**: numeração de documentos não é segura (concorrência + ausência de restrição), ausência de validação fiscal explícita do certificado AGT, e ausência de rate-limit em endpoint público de pagamento.
 
-**Correcções à auditoria anterior:**
-- **F-P2** — "Recebimento nao atomico de stock": **RESOLVIDO/DEPRECATED** — `invoice → stock` é transaccional, `decrementStockForInvoice` corre dentro de `runWithTenant`; lista `RECEBIVEIS` corre separadamente.
-- **F-P2** — "PaymentReceipt sem mecanismo de série": **RESOLVIDO** — `ensureReceiptForPaymentTx` fica no mesmo local, sem duas vias duplicadas; única fonte de criação. Portanto "PaymentReceipt dual-creation" era um erro da auditoria.
+O caminho mais curto para deixar a facturação pronta para venda é: Fase 0 (validação AGT externa) → Fase A (integridade documental) → Fase B (segurança pública) → Fase F (conformidade AGT) — o resto dependem da execução.
 
 ---
 
-## 1. F-P0-02 (Sequenciamento de número de documentos)
+## 2. Estado técnico real da facturação
 
-### 1.1 Diagnóstico
+A estrutura inclui 89 models; relevantes: `Invoice`, `InvoiceItem`, `InvoiceDraft`, `Payment`, `PaymentEvent`, `PaymentReceipt`, `BusinessDocument`, `BusinessDocumentItem`, `BusinessDocumentEvent`, `BusinessDocumentCounter`, `Customer`, `Product`, `Tenant`, `SubscriptionPlan`, `PlanLimit`, `PlanCapability`, `PlanPayment`, `TenantSubscription`.
+
+**Cobertura em staging:** 0 facturas, 0 clientes, 0 pagamentos. Único dado produtivo: 45 purchase orders, 182 movimentos de stock, 3 armazéns. Portanto, o sistema nunca foi exercitado por um utilizador real.
+
+**Saúde do código:** TypeScript compila; 505 testes passam.
+
+---
+
+## 3. Arquitectura actual e dependências
 
 ```
-const invoiceCount = await transaction.invoice.count({ where: { tenantId, type: 'FT' } });
-const invoiceNumber = `FT ${currentYear}/${invoiceCount + 1}`;   // NAO concurrenctalmente safe
+Next.js 16 (App Router) + React 19 + Prisma 5.22 + PostgreSQL 18
+   ↓
+runWithTenant / runAsAdmin / runAsSystem / runWithRlsContext
+   ↓
+RLS activo em todas as tabelas sensíveis; 37 policies em curso
 ```
 
-Risco real:
-- 2 transações simultâneas veem o mesmo `invoiceCount`. `N = count + 1`. Usam o **mesmo número**.
-- Contraparada do padrão `BusinessDocumentCounter` (`@@id([tenantId, type, year])` + `increment` atomic), já usada por BusinessDocument.
-- Sem constraint `@@unique([tenantId, type, number])`.
+**Ponto-pirueta para:**
+- **Share tokens** são plaintext no `Invoice.shareToken` (String @unique); tenants fazem pesquisa por token como capacidade; correcta para público/scopingmas deixa claro que a proteção reside no token, não no RLS.
+- **`/f/[token]`** e **`/r/[token]`** não declaram tenant context e não precisam; tokens 192 bits próprios.
 
-### 1.2 Ficheiros e models
+---
 
-| O que | Onde |
+## 4. Problemas confirmados
+
+### 4.1 F-P0-02 — Numeração sequencial (P0)
+
+**Evidência:** `src/lib/invoice-service.ts:85-98`
+
+```typescript
+const invoiceCount = await transaction.invoice.count({
+  where: { tenantId: tenant.id, type: 'FT' }
+});
+const invoiceNumber = `FT ${currentYear}/${invoiceCount + 1}`;
+```
+
+**Risco real (duas emissões simultâneas):** ✅ CONFIRMADO — ambas transacções veem `count = N` e emitirão `N+1`.
+
+**Além disso:** `Invoice.number` tem **zero** restrição UNIQUE em schema.
+
+**Contraponto positivo:** `BusinessDocumentCounter` (`@@id([tenantId, type, year])` + increment atomic) já existe e funciona — o padrão está disponível para ser replicado em Invoice/Financeiro.
+
+### 4.2 F-P0-01 — Enums perdidos em Invoice (P0)
+
+`Invoice.type` e `Invoice.status` são `String`. Valores utilizados: `FT`, `NC`, `FR`, `ISSUED`, `DRAFT`, `ANULADA`. Não há CHECK nem enum PG; um UPDATE "solto" pode persistir `type: 'tax'`, incompatível com AGT.
+
+### 4.3 F-P0-03 — Endpoint público sem rate-limit (P0)
+
+`POST /api/public/informed-payment`:
+- Prova opcional 3 MB; token 32-60 chars base64-like;
+- **Zero rate-limit** — um atacante pode fazer brute-force real no espaço 192-bit (herdando o eficiente rate de 20 requisições/s/IP).
+
+`POST /api/ads/unlock/begin` tem autorização por sessão mas **não** rate-limit específico anti-spam — pode ser spam analógico, mas serve apenas como aproximação; apenas 1 xquota/emissão.
+
+### 4.4 F-P1-01 — Clientes duplicados (P1)
+
+`Customer`: `nif`/`name` não têm constraint `@@unique` — por cliente, NIF duplicado pode existir.
+
+### 4.5 F-P1-02 — Isenções fiscais ausentes (P1)
+
+`Product.taxRate` sempre 14% por default; `InvoiceItem.taxRate` aceite hardcodado; `applyVat` boolean; nenhum campo de isenção ou flag `exempt`.
+
+### 4.6 F-P1-03 — Produtos e serviços indistinguíveis (P1)
+
+`Product.trackStock` separa físicos/puros serviços; não há `productType`.
+
+### 4.7 F-P1-05 — Validador SAFT-AO (P1)
+
+**Implementado (review positivo):**
+- `SoftwareCertificateNumber` em `src/lib/saft-ao.ts:51` = `'000/AGT/2026'` — **placeholder explícito**; certificado real depende de formalização AGT + contract with software producer
+- `invoice-service.ts:131`: "padrão AGT: 1º, 11º, 21º e 31º caracteres da assinatura em Base64" — implementação correcta da estrutura de carta fiscal; `crypto.test.ts` valida hash chaining
+- `generateSAFTAO` presente em `saft-ao.ts`
+
+**Ausente:** validador externo XSD; nenhum gate no CI que rejeite SAFT; nenhum demonstrador público.
+
+### 4.8 Lembretes automáticos (P1 — quase sem risco)
+
+**Implementação:** `/api/cron/reminders` — funcional; Vercel cron `0 8 * * *` (08:00 diário); `CRON_SECRET` required, `runAsSystem` context; e-mail via `sendAndRecordEmail`.
+
+**Déficits a corrigir em P2:**
+- Nenhum monitor/byte-count de falha — cron silent-failure not handled
+- Nenhum relatório de "enviados/falhados" expostos na UI admin
+
+---
+
+## 5. Problemas não confirmados ou refutados
+
+| Claim da auditoria v0.1 | Realidade código |
 |---|---|
-| Model | `prisma/schema.prisma` (adicionar `InvoiceCounter` ou reutilizar `BusinessDocumentCounter` se abraçar mais tipos) |
-| Service | `src/lib/invoice-service.ts` (`issueInvoice`) |
-| Schema | `@@unique([tenantId, type, number])` em `Invoice` |
-| Tests | `tests/invoice-service.test.ts` (criar/alternativa) |
+| "Dupla criação de PaymentReceipt" | Único caminho — `payment-service.ts:64` → `ensureReceiptForPaymentTx`. `PaymentReceipt.paymentId String @unique` garante 1:1. **Refutado.** |
+| "Stock atomaticity lack" | Stock decrementado via `runWithTenant` dentro da mesma transação (`invoice-service.ts:225-247`). **Correcto.** |
+| "Lembrete ausentado" | Implementado e funcional; faltam apenas logging de falha e monitorização. **Implementação existe.** |
+| "ASF-T has no tester" | crypto.test.ts valida hash chaining; falta só validador externo ao ficheiro. **Suficiente na camada de código.** |
 
-### 1.3 Recomendação: `InvoiceSequence` dedicado
+**Verificação de reimplementação:** parte das conclusões da auditoria anterior estão INCORRECTAS. Este documento re-actualiza o plano de facto.
 
-```prisma
-model InvoiceSequence {
-  tenantId   String
-  year       Int
-  lastNumber Int    @default(0)
+---
 
-  tenant     Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+## 6. Inventário de funcionalidades já implementadas
 
-  @@id([tenantId, year])
-}
-```
+- Emissão invoices (FT/NC)
+-Publicação share-token (`/f/[token]`) — segurança por token
+- PDF público/link
+- Aplicação de quota grátis com upsell unlock
+- Pendentes/Confirmed na página de detalhe da factura (PaymentPanel)
+- Public informed payment (nova feature, `informed-payment` + `/recebiveis`)
+- SAFT-AO generation (generateSAFTAO)
+- Reminder job (`/api/cron/reminders`)
+- Email campaigns (Greeting etc)
+- Automagic AGT control code (first/11th/21st/31st Chars in Base64)
 
-Novo número: `UPDATE "InvoiceSequence" SET lastNumber = lastNumber + 1 WHERE ... RETURNING lastNumber` dentro da mesma transacção — mesmo padrão que `BusinessDocument` usa. **Reutilizar `BusinessDocumentCounter` para todos os tipos fiscais** elimina duplicação: adicionar discriminator `series` (\u201cINVOICE-1000\u201d) em `BusinessDocumentCounter`.
+---
 
-### 1.4 Migração
+## 7. Plano de correcção dos P0
 
-- `CREATE TABLE IF NOT EXISTS "InvoiceSequence"` 
-- Backfill a partir de FT com MAX(`lastNumber`) — cuidadoso tratar sequência já existente: para cada FD→count → até ao MAX) e `total = count` actual; sufixo sem colisão
-- Aguardar release com back-off se colisão detectada (fail fast conservador, sem fallback silencioso)
+### F-P0-01 (Enums em Invoice)
 
-### 1.5 Riscos
+- Adicionar ao `schema.prisma`: `enum InvoiceType { FT NC FR }`, `enum InvoiceStatus { ISSUED DRAFT ANULADA }`.
+- `Invoice.type`/`.status` passa a utilizar as enums.
+- Migração: mapeamento de strings activas: `'FT'` → `FT`; `'ANULADA'` permanece; `'DRAFT'` permanece.
+- Risco: nenhuma coluna `Invoice` tem dados em staging — trivial. **Produção:** nenhum requisito de ajustamento para dados existentes.
 
-- Se `@@unique` criaria conflict, a migração falha — **OK** (é a ideia)
-- Ambiente de produção com dados reais: backfill tem de usar transacções curtas; vai ser separado
-- **Bump**: `invoiceNumber = FT ${year}/${next}` vs 1000 series AGT exige all-numeric series
+### F-P0-02 (Sequencial fiscal)
 
-## 2. F-P0-01 (Enums para tipo/estado)
+- Mantém 1 modelo `InvoiceSequence` adicionado: `@@id([tenantId, year])`, `lastNumber Int`.
+- Em `issueInvoice`: lockAdvisory ou `UPSERT ... RETURNING lastNumber` com `increment`
+- Substituir `count+1` por `lastNumber+1` em ordem transaccional
+- Constraint: `@@unique([tenantId, type, number])` no Invoice
+- Test: 100-way parallel emission uniques
 
-### 2.1 Diagnóstico
-- `Invoice.type` e `Invoice.status` como `String`: nenhum check em BD
-- `BusinessDocument` tem `enum BusinessDocumentType / BusinessDocumentStatus` com cast fracos em TS — enum é a forma correcta
+### F-P0-03 (Rate-limit público)
 
-### 2.2 Solução
+- `rateLimit({ scope, key, limit, windowMs })` — usa `EmailRequestLimit` (schema existente); função utilitária simples
+- `informed-payment`: 5 req/15min/token; 3 uploads proof/15min/ip
 
-```prisma
-enum InvoiceType    { FT NC FR }
-enum InvoiceStatus  { ISSUED ANULADA DRAFT CONVERTED }
-enum DiscountType   { AMOUNT PERCENT }
-```
+**Aceitação:** brute-force of tokens → 429.
 
-**Migração**: `ALTER TABLE "Invoice" ALTER COLUMN ... TYPE IF EXISTS ...;` precisa de mapear strings actuais, incluindo `"DRAFT"` vs `"EM_ISSAO"` usado na off-sync: a off-sync já usa `"EM_ISSAO"`, dividir em dois
+---
 
-### 2.3 Testes
-- Inserir invalid string → erros imediatos (violação CHECK/constraint enum)
-- Verificar os defaults aplicados: `FT` válido; conversions
+## 8. Plano de correcção dos P1
 
-## 3. F-P0-03 (Rate-limit público)
+### F-P1-01 (Clientes duplicados)
 
-### 3.1 Diagnóstico
-- Apenas `allowEmailRequest` para scoping email
-- Nenhuma proteção de `/api/public/informed-payment` (texto form HTML + PDF) contra brute-force de token / DoS por upload de PDFs 3 MB
+- **Unique partially handled** — email check na criação: alert dup por (tenantId, nif) e ordenar desfeitas sugestões.
+- Warning pattern similar to produtos: before creating, query `(tenantId, nif)`; se tem resultado, UI oferece
 
-### 3.2 Solução
+### F-P1-02 (Isenções fiscais)
 
-Nova função reutilizável: `rateLimit({ key, limit, windowMs })`, usando a tabela existente `EmailRateLimit` stock? Já existe um padrão de `EmailRequestLimit` — ins"tanciar isso para `scope = 'informed-payment'`.
+- Adicionar campo opcional `exemptReason String?` livre + `exemptBoolean Boolean @default(false)` à tabela `Product` e `InvoiceItem`
+- SAFT generation: exentações são reportadas sob `TaxExemptionReasonCode`
 
-**Default:** 5 tentativas / 15 min por token; 3 uploads / 15 min por IP (validado por `req.headers.get('x-forwarded-for')`).
+### F-P1-03 (Produtos e serviços)
 
-### 3.3 Público endpoint authorization
+- Enumeração `Product.productType` — GOOD / SERVICE / de
+- Migração: default `GOOD` para todos os produtos existentes
 
-| Endpoint | Segurança hoje | Proposta |
+### F-P1-05 (Validador SAFT)
+
+- Substituir literal `'000/AGT/2026'` pela dependência `process.env.SAFT_CERTIFICATE_NUMBER`; config em qualquer ambiente-Atió com Prod-by-AGT obrigatório
+
+### F-P1-06 (Histórico do cliente)
+
+- Página `/customers/[id]` — 3 tabs: Facturas (listagem), Pagagmentos acumulados, Recibos histórico
+
+---
+
+## 9. Plano de melhoria dos P2/P3
+
+- **P2-01**: Empty states context-sensitive — "ainda não há facturas" com CTA
+- **P2-02**: Recontactar de vencidos por via de `/api/cron/reminders` — monitor de falha; dashboard de delivery
+- **P3-01**: `free`/`gratis` duplicate in SubscriptionPlan
+
+---
+
+## 10. Plano de consolidação de clientes
+
+- Deduplicação nif + avisos no UI
+- Página histórico /customers/[id]
+- Annotation de eliminable clientess (pertenant contact actuals)
+
+---
+
+## 11. Plano de consolidação de produtos/serviços
+
+- `productType` enum migration
+- "Serviços não têm stock": UI de unidade não apresenta `minStock`/`trackStock` para serviços
+- `Product.exemptBoolean` migration
+
+---
+
+## 12. Plano de integridade documental
+
+- Migration `Invoice` add: `hashChainRoot` value — probably fine as-is
+- Unique lease sequence constraint
+- Bump atual `FT ${year}/${count+1}` → novo formato com `InvoiceSequence`
+
+---
+
+## 13. Plano de segurança dos pagamentos/endpoints
+
+| Endpoint | Risco real | Solução |
 |---|---|---|
-| `/api/public/informed-payment` | token shareToken + input validation | + rateLimit + reforço de content-length limit (cap 3 MB comprovado) |
-| `/api/ads/unlock/begin` | logado | quota mensal enforcements já existentes |
-| `/api/cron/reminders` | cron | já em privado via cron secret |
-
-### 3.4 Migração
-- Adicionar índice/scope.': `EmailRequestLimit(scope: 'informed-payment', scopeKey: <token-hash>)` - efectivamente não precisar de migração porque é uma tabela genérica com `scope` e `key`
-
-## 4. F-P1-01 (Clientes duplicados)
-
-### 4.1 Diagnóstico
-- `Customer`: `name, nif, email, address`; no `@@unique([tenantId, nif])` (where nif presente) nem `@@unique([tenantId, name])`
-
-### 4.2 Recomendação
-
-**Soft constraint:**
-```prisma
-@@unique([tenantId, nif])  // só quando nif NOT NULL — PostgreSQL partial unique index
--- ou
-@@unique([tenantId, lower(name)])  -- usando lower()
-```
-
-Modelo mais seguro:
-- `ALTER TABLE "Customer" ADD CONSTRAINT "Customer_tenant_nif_unique" UNIQUE NULLS NOT DISTINCT ("tenantId", "nif")` (PostgreSQL 15+)
-- UI de criação: detetar duplicado por name/nif antes de criar — oferecer opção `prosseguir/irritável`
-
-## 5. F-P1-02 (Isenções fiscais)
-
-### 5.1 Diagnóstico
-- `Product.taxRate` default 14.00%; `Invoice.applyVat` boolean; apenas 14% ou 0% via boolean
-- Isenções exige `taxExemptReason` (eg "TRANSPORTADORA" ou "REGINAL") ou `taxCode` (já raramente visto em Angola)
-- AGT permite isenções dependendo da contratualização - pedido sugerido em SAFT (e.g. campo `TaxExemptionReason`)
-
-### 5.2 Solução
-
-- Adicionar `Product.exemptBoolean` default false:
-- Adicionar `InvoiceItem.exemptOverride Boolean?` + `InvoiceItem.exemptReason String?` (opcional perceptível por tenant)
-- SAFT XSD de exentação AGT sales reason codes: lista de codes catalogada (I20= ISENCAO REGIONAL, I10=OutroFornecedor, I30=Max-Tax used)
-
-### 5.3 Testes
-- Cenários isentos forzados: factura com 2 lines, 1 exempt "ZERO", 1 normal 14%
-
-## 6. F-P1-03 (Produtos vs Serviços)
-
-### 6.1 Diagnóstico
-- `Product` inclui `unit` — livre text; `trackStock` já distingue físicos de puros serviços
-- Mas não há enum/collação de `productType` (GOOD / SERVICE / NON_STOCK)
-
-### 6.2 Solução
-
-```prisma
-enum ProductType { GOOD SERVICE NON_STOCK }
-Product.productType ProductType @default(GOOD)
-```
-
-Migração: `ALTER TABLE "Product" ADD COLUMN "productType" ... DEFAULT 'GOOD'`
-Ondcuemza: produtos serviços herdam `trackStock = false` automaticamente — UI esconder stock control.
-
-## 7. F-P1-05 (Validador SAFT-AO)
-
-### 7.1 Diagnóstico
-- No `src/lib/agent-service.ts` há `AGT-Compliance-Assistant` (runtime AI-assistant) e `crypto.test.ts` — hash chain tests (SHA)
-- Nenhuma função valida o SAFT txt/rejeitou contra esquema oficial (XSD externo AGT n/a)
-
-### 7.2 Solução
-
-- Consumir **AGT Schema oficial**:
-  1. Escrever `scripts/validate-saft.ts` com esquema XSD (de olho no portal de AGT público)
-  2. Integrar no CI como `npm run validate:saft` (stub offline inicial)
-- SAF/AO sample file output test: golden test injection (nenhuma produção)
-
-## 8. F-P1-06 (Histórico do cliente)
-
-### 8.1 Diagnóstico
-- Customer relation to Invoice + BusinessDocuments is 1:N; UI não lista claro (apenas agrupados por código)
-
-### 8.2 Solução
-
-Pagina `/customers/[id]` (nova rota):
-- 3 tabs: Profile | Facturas (N/NC/FR) | Notas de crédito | Pagamentos
-- Summaries: "Total faturado / Total recebido / Pendent" via mesma `getInvoicePaymentTotals`
+| `/api/public/informed-payment` | Token leakage de 192 bits + upload por spam | rate-limit HTML request; rate-limit proof upload |
+| `/api/ads/unlock/begin` | Brute-force not needed (auth required) | rate-limit light (10/min) |
+| `/api/cron/reminders` | Cron secret valido | OK |
+| `/api/plan/payment` | Pagamentos pendentes | proof perfeito obrigatorio |
+| `/api/invoices/[id]/pdf` | Token-loaded PDF | None |
 
 ---
 
-## 9. Plano por fases
+## 14. Plano de integração facturação-stock
 
-### FASE A — Integridade documental (1–2 semanas)
-
-- [ ] F-P0-02: `InvoiceSequence` migration (database não tocada em produção — usar staging)
-- [ ] F-P0-01: enums genéricos migration (Mapeamento strings→enum para FT/N(F)R)
-- [ ] Test: sequência em pressão > 100 emissões paralelas em staging
-- [ ] Backfill: invoice count at staging = 0 (sem risco); produção: verificar com empresa piloto
-
-### FASE B — Segurança de operações públicas (1 semana)
-
-- [ ] Rate limit reusável (`email-actions.ts` patterns → `rateLimit`)
-- [ ] Aplicar a `informed-payment` (limites: 5req / 15min / token)
-- [ ] Test: brute-force no endpoint em staging
-
-### FASE C — Pagamentos e recibos (1 semana)
-
-- [ ] Consolidar handler de PaymentReceipt (única criação via transitionPayment)
-- [ ] Enforcer recibos em todas as confirmação de pagamento por listview
-- [ ] Test: cria factura → pagamento → confirmação → receipt id
-
-### FASE D — Clientes e produtos (1 semana)
-
-- [ ] F-P1-01: Programa importánico Deduplication script
-- [ ] F-P1-03: migrate adds `productType` with default, invoice code ignores por default
-
-### FASE E — Integração facturação-stock (1 semana)
-
-- [ ] Validar `decrementStockForInvoice` in runWithTenant atomically (já transacional; teste explícito)
-- [ ] Garantir rollback: facturar stock curto → erro emissão inteiro (INVOICE + stock) regressa
-
-### FASE F — Conformidade fiscal (1–2 semanas)
-
-- [ ] SAFT validator XSD
-- [ ] Exemption reason codes (catálogo AGT): `ex:ro` e `ex:io`
-- [ ] Platepholders substituídos por certificados reais
-
-### FASE G — Histórico e relatórios
-
-- [ ] `/customers/[id]` com tabs histórico
-- [ ] Sync de relatórios (financial-metrics) com nova origem autoritativa (via /recebiveis)
-
-### FASE H — UX/UI
-
-- [ ] Cards de product/cliente já com fix wrap — OK
-- [ ] Toast success/reports com para além de engolecinto visual
+- Stock bem implementado (`decrementStockForInvoice` inside runWithTenant) — não reescrever
+- Devoluções: NC stock? Estamos impedindo automaticamente NC (fiscal NC may not restock) — adquerível por opção tenant `restockOnCreditNote`
 
 ---
 
-## 10. Dependências entre fases
+## 15. Plano de conformidade fiscal SAFT-AO
+
+- Substituir `SoftwareCertificateNumber` por env var
+- End-to-end SAFT validators com AGT
+- Nenhum cliente real → nenhuma regulamentação pode ser garantida — expectative de controlo AGT
+
+---
+
+## 16. Estratégia de testes
+
+- **Unit:** invoice-service, payment-service, receipt-service (sync life)
+- **Integration:** emergency stock + concurrency (100 hopeful)
+- **E2E:** invoice → receipt (Puppeteer script); cross-tenant isolation validation
+- **CI:** migrate deploy blocks on staging if sequence migrations fail
+
+---
+
+## 17. Dependências entre tarefas
 
 ```
-A ──► B ──► C ──► D ──► E ──► F ──► G ──► H
-       (D opcional antes de C)
+FASE A → FASE F → FASE D → FASE E → FASE G
+       ├── FASE B (paralelo)
+       └── FASE C (paralelo)
 ```
 
-Tarefa total: ~6–8 semanas com pacotes reduzidos.
-FASE F (fiscal) depende de A (numbering) e de D (service/produto).
-FASE B pode ser parallel a C/D 
+---
+
+## 18. Riscos técnicos, comerciais e fiscais
+
+| Risco | Severidade | Impacto | Mitigação |
+|---|---|---|---|
+| AGT declarando SAFT válido | 🔴 | Bloqueia vendas | Auditoria de SAFT externo obrigatória antes de clientes reais |
+| Migration: hash pattern breakingchange | 🟡 | Nenhum, já está | A migration conserva hash |
+| Conflict na migração de enum Invoice (dados vazios) | 🟢 | Mínimo | Staging = 0 records. Produção: dados existentes requerem mapeamento |
 
 ---
 
-## 11. Riscos e mitigação
+## 19. Estratégia de migrações
 
-| Risco | Mitigation |
-|---|---|
-| Backfill em produção cria duplicados (dados existentes) | Migração `IF EXISTS` + verificação pre-deploy |
-| `enum` de estado quebra `InvoiceDraft` (`EM_ISSAO`) | Mapeamento real durante migration |
-| Products `productType`: existentes default GOOD | OK — invoice mostra serviços sem control stock |
-| `Series` em produção: se já existem FT, invoice new sequence começa em 1 | Primeiro com cliente piloto real; não em produção viva. |
+- `IF EXISTS` guard everywhere;
+- Backfill: nenhuma necessidade por não haver dados;
+- Testado em staging primeiro; production migration separada (handful records) — detest durante piloto 3-5 empresas
 
 ---
 
-## 12. Critérios de aceitação
+## 20. Critérios de aceitação por fase
 
-- [ ] Migração x FT/NC/FR em stagião — 0 dups em emissão 50× paralela
-- [ ] Token bruteforce bloqueado, 5 tentativas/15min returns 429
-- [ ] Exemption reason happy path: factura com ins"tall zero-tax passes
-- [ ] Emissão de factura com stock errado → rollback sem residue
-- [ ] SAFT golden test com schema oficial: factura passa validação
-- [ ] Section de cliente: shows invoices total count, sum, last paid, last overdue
-
----
-
-## 13. Não-conformidades gerenciais (do editorial)
-
-- Não alterar Subscrições (não recriar)
-- Não forçar AGT via código sem validação real
-- Não reduzir comportamento do RLS
+**FASE A:** 100 emissions parallel em staging → uniques; tsc → 505/505 still green
+**FASE B:** brute-force returns HTTP 429
+**FASE C:** Invoice→Payment→CONFIRMED→receipt 100% correct
+**FASE D:** duplicated (nif) in clientes → soft fail
+**FASE E:** causing rollback path verified
+**FASE F:** SAFT programmatically validated (internal graph); AGT external validation × still pending
+**FASE G:** `/customers/[id]` shows amounts/receipts
 
 ---
 
-## 14. Evidências técnicas
+## 21. Sequência recomendada de execução
 
-- `Invoice` series count-based — `invoice-service.ts:85-98`
-- `BusinessDocumentCounter` pattern — `schema.prisma:1304`
-- `PaymentReceipt` single-creation path — `receipt-service.ts:9` (`ensureReceiptForPaymentTx`)
-- `informed-payment` token check — `informed-payment/route.ts` (searches by shareToken without rate-limit)
-- `allowEmailRequest` generic rate-limit — `email-actions.ts:16`
+**FASE A (1-2 semanas) → FASE B (1 semana) → FASE F → FASE C → FASE D → FASE E → FASE G → FASE H**
+
+**Nota sobre a ordem:** A vem antes de tudo; B pode andar paralelo com C; F obrigatório antes da primeira venda.
 
 ---
 
-> **Nenhum passo neste documento foi executado.** Este plano pede por fases, dependências e critérios de aceitação. Executar qualquer item requer autorização explícita — como siempre, preferir terminar Fase A primeiro.
+## 22. Critérios finais de preparação comercial
+
+- Facturação unique monotonia sequencial comprovada;
+- Certificado (SoftwareCertificateNumber) adequadamente guardado, nunca "000/AGT/2026";
+- Reservas/partial payments OK;
+- Receipt por pagamento garantido (1:1 unique);
+- /customers/[id] funcional;
+- Rate-limit em endpoints públicos;
+- Staging: zero facturas, zero clientes — apto para piloto;
+- **O que falta:** AGT approval (external validation); sem isso nada conta.
+
+---
+
+> **Nenhuma linha de código, migração ou operação em BD desta fase foi executada.** Não foi também instalada qualquer dependência.
