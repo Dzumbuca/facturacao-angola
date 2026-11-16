@@ -61,7 +61,7 @@ export function AppShell({ children, platformAdmin = false, plan = 'FREE', adHtm
             <ul className="space-y-0.5"><li><Link href="/admin" aria-current={pathname === '/admin' || pathname.startsWith('/admin/') ? 'page' : undefined} className={`relative flex items-center justify-center gap-0 rounded-xl px-2 py-2.5 text-[13px] font-medium transition-all lg:justify-start lg:gap-3 lg:px-3 lg:py-2 ${pathname === '/admin' || pathname.startsWith('/admin/') ? 'bg-white/10 font-semibold text-white before:absolute before:inset-y-1.5 before:left-0 before:w-[3px] before:rounded-full before:bg-gradient-to-b before:from-[#7795ff] before:to-[#2878d0]' : 'text-slate-300 hover:bg-white/[.07] hover:text-white'}`}><NavIcon name="building" /><span className="hidden lg:inline">Administração da plataforma</span></Link></li></ul>
           </section>}
         </nav>
-        <div className="mt-2 shrink-0 space-y-3 border-t border-white/10 px-2 pt-3 hidden md:block lg:px-3">
+        <div className="mt-2 shrink-0 space-y-2 border-t border-white/10 px-2 pt-2 hidden md:block lg:px-3">
           <div>
             <p className="text-[10px] uppercase tracking-[.12em] text-slate-500">Moeda da conta</p>
             <p className="mt-1 text-xs font-medium text-slate-300">Kwanza · AOA</p>
@@ -70,10 +70,10 @@ export function AppShell({ children, platformAdmin = false, plan = 'FREE', adHtm
           </div>
           {planExpired && <Link href="/pagamento" className="block rounded-lg border border-amber-400/40 bg-amber-500/10 px-3 py-2 text-[11px] font-semibold text-amber-300 transition hover:bg-amber-500/20">Plano expirou — Renovar →</Link>}
           {plan === 'PRO' && planDaysLeft !== null && planDaysLeft <= 14 && <Link href="/pagamento" className="block rounded-lg border border-amber-400/40 bg-amber-500/10 px-3 py-2 text-[11px] font-semibold text-amber-300 transition hover:bg-amber-500/20">Expira em {planDaysLeft} {planDaysLeft === 1 ? 'dia' : 'dias'} — Renovar →</Link>}
-          {plan !== 'PRO' && <div>
+          {plan !== 'PRO' && <div className="sidebar-optional-medium">
             <p className="text-[10px] uppercase tracking-[.12em] text-slate-500">Anúncio</p>
             {adHtml && <div className="mt-2 overflow-hidden rounded-lg bg-white p-2 text-[#1c2d3f]"><AdHtml html={adHtml} /></div>}
-            <div className="mt-2 overflow-hidden rounded-lg bg-gradient-to-br from-[#2878d0] to-[#102b46] p-3 text-white">
+            <div className="sidebar-optional-tall mt-2 overflow-hidden rounded-lg bg-gradient-to-br from-[#2878d0] to-[#102b46] p-3 text-white">
               <p className="text-xs font-bold">Pacotes pagos</p>
               <p className="mt-1 text-[11px] leading-4 text-blue-100">Sem anúncios, stock, relatórios e equipa. Básico desde 5.000 Kz/mês.</p>
               <Link href="/pagamento" className="mt-2 inline-flex rounded-md bg-white px-2.5 py-1.5 text-[11px] font-bold text-[#102b46] transition hover:bg-blue-50">Ver pacotes</Link>

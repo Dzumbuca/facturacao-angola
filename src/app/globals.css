@@ -730,6 +730,15 @@ body { font-family: Onest, "Segoe UI", Arial, sans-serif; }
 .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
 .sidebar-scroll::-webkit-scrollbar-thumb { background: rgb(255 255 255 / .25); border-radius: 3px; }
 
+/* Sidebar footer em ecrãs de baixa altura: esconde blocos de upsell por ordem de importância
+   (card "Pacotes pagos" primeiro, anúncio depois) para a navegação nunca ficar cortada */
+@media (max-height: 880px) {
+  .sidebar-optional-tall { display: none; }
+}
+@media (max-height: 700px) {
+  .sidebar-optional-medium { display: none; }
+}
+
 
 /* Formulário: branco no tema claro, surface elevado no escuro */
 .form-card-light { background-color: #ffffff !important; color: #18273c; }
