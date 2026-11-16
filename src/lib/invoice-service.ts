@@ -2,6 +2,8 @@ import { generateInvoiceHash, getInvoiceSigningKey } from './crypto';
 import crypto from 'crypto';
 import { Prisma } from '@prisma/client';
 import { runWithTenant } from './tenant-db';
+import { lockIntegrityChain, reserveInvoiceNumber, loadOrInitChainState } from './invoice-integrity';
+import { generateInvoiceHashV2 } from './invoice-integrity-core';
 import { calculateInvoiceTotals } from './tax';
 import { resolveInvoiceLimit, countInvoicesThisMonth, InvoiceQuotaExceededError } from './invoice-quota';
 import { decrementStockForInvoice } from './stock-service';
@@ -80,21 +82,20 @@ export const issueInvoice = async (
       });
     }
 
-    // 3. Obter a última fatura para a cadeia de Hash
-    const lastInvoice = await transaction.invoice.findFirst({
-      where: { tenantId: tenant.id },
-      orderBy: { createdAt: 'desc' }
-    });
-
-    const previousHash = lastInvoice ? lastInvoice.hash : null;
-
-    // 4. Calcular o número sequencial da fatura — feito dentro da transacao
-    //    com lock no Tenant para serializar emissoes concorrentes.
-    const invoiceCount = await transaction.invoice.count({
-      where: { tenantId: tenant.id, type: 'FT' }
-    });
-    const currentYear = new Date().getFullYear();
-    const invoiceNumber = `FT ${currentYear}/${invoiceCount + 1}`;
+    // 3-4. Cadeia documental e numeração atómica
+    //    Toda a emissão FT acontece sob advisory lock pelo tenant e usa
+    //    InvoiceSeries + InvoiceChainState para garantir que dois pedidos
+    //    concorrentes nunca produzem o mesmo número ou bifurcar a cadeia.
+    const issuedAt = new Date();
+    const year = issuedAt.getFullYear();
+    const seriesCode = 'A';
+    const documentType = 'FT' as const;
+    await lockIntegrityChain(transaction, tenant.id);
+    const reserved = await reserveInvoiceNumber(transaction, tenant.id, seriesCode, documentType, year);
+    const invoiceNumber = `FT ${year}/${String(reserved).padStart(4, '0')}`;
+    const chainState = await loadOrInitChainState(transaction, tenant.id);
+    const previousHash = chainState.lastHash;
+    const chainSequence = chainState.lastSequence + 1;
 
     // 5. Calcular totais
     const applyVat = invoiceData.applyVat !== false;
@@ -103,25 +104,39 @@ export const issueInvoice = async (
     const { subTotal, discountAmount, taxTotal, total } = calculateInvoiceTotals(invoiceData.items || [], { type: discountType, value: discountValue, applyVat });
     const observations = typeof invoiceData.observations === 'string' ? invoiceData.observations.trim() || null : null;
 
-    // 6. Gerar o Hash Fiscal
-    const issuedAt = new Date();
-    const hash = generateInvoiceHash({
-      ...invoiceData,
+    // 6. Gerar o Hash Fiscal — V2 (payload canonicalizado com cadeia)
+    const hash = generateInvoiceHashV2({
+      seriesCode,
+      documentType,
+      year,
+      number: invoiceNumber,
+      tenantId: tenant.id,
+      customerId: customer.id,
       customerName: customer.name,
       customerNif: customer.nif,
-      number: invoiceNumber,
-      subTotal,
+      currency: invoiceData.currency ?? 'AOA',
+      items: (invoiceData.items || []).map((item: any, idx: number) => ({
+        position: idx,
+        description: item.desc || 'Item sem descrição',
+        productCode: item.productId ?? null,
+        quantity: item.qty ?? 1,
+        unitPrice: item.rate ?? 0,
+        taxRate: item.taxRate ?? (applyVat ? 14.00 : 0),
+        total: (item.qty ?? 1) * (item.rate ?? 0),
+      })),
+      applyVat,
       discountAmount,
       discountType,
       discountValue,
-      applyVat,
       observations,
       includeCompanyProfile,
       companyProfileSnapshot,
       companyLogoId: companyLogo?.id ?? null,
+      subTotal,
+      taxTotal,
       total,
-      taxTotal
-    }, previousHash, issuedAt);
+      issuedAt: issuedAt.toISOString(),
+    }, previousHash, chainSequence);
 
     // 7. Gerar Assinatura Digital RSA
     const sign = crypto.createSign('SHA256');
@@ -173,6 +188,11 @@ export const issueInvoice = async (
         number: invoiceNumber,
         type: 'FT',
         status: 'ISSUED',
+        seriesCode,
+        documentType,
+        year,
+        chainSequence,
+        hashVersion: 2,
         subTotal: subTotal,
         discountAmount,
         discountType,
@@ -191,12 +211,13 @@ export const issueInvoice = async (
         dueAt: invoiceData.dueAt ? new Date(invoiceData.dueAt) : null,
         sourceDraftId: invoiceData.sourceDraftId ?? null,
         items: {
-          create: (invoiceData.items || []).map((item: any) => ({
+          create: (invoiceData.items || []).map((item: any, idx: number) => ({
             productId: item.productId || null,
             description: item.desc || 'Item sem descrição',
             quantity: item.qty || 1,
             unitPrice: item.rate || 0,
             taxRate: applyVat ? 14.00 : 0,
+            position: idx,
             total: (item.qty || 1) * (item.rate || 0),
           }))
         }
@@ -217,6 +238,11 @@ export const issueInvoice = async (
       if (usedThisMonth >= invoiceLimit) throw new InvoiceQuotaExceededError(usedThisMonth, invoiceLimit);
     }
     const saved = await transaction.invoice.create(invoiceCreateData);
+
+    // Avançar a cadeia criptográfica DEPOIS de criada a factura. Se falhar, a transação faz rollback completo.
+    await transaction.$executeRaw`UPDATE "InvoiceChainState"
+      SET "lastHash" = ${hash}, "lastSequence" = ${chainSequence}, "lastInvoiceId" = ${saved.id}
+      WHERE "tenantId" = ${tenant.id}`;
 
     // Baixa automatica de estoque apenas para produtos com controlo de stock e
     // tenants com o modulo WMS activo. O catalogo gratuito factura sem stock.

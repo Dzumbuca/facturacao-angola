@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import * as runtime from '@prisma/client/runtime/library.js';
-import { canonicalDecimal, generateInvoiceHashV2, canonical, sha256Hex } from './invoice-integrity-core';
+import { canonicalDecimal, generateInvoiceHashV2 } from './invoice-integrity-core';
 
 const Decimal = runtime.Decimal;
 
