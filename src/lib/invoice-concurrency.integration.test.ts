@@ -13,33 +13,40 @@ import { describe, it, expect } from 'vitest';
 import { issueInvoice, issueCreditNote } from './invoice-service';
 import { PrismaClient } from '@prisma/client';
 
-const url = process.env.DATABASE_URL_A1 || process.env.DATABASE_URL;
-if (!url) throw new Error('Defina DATABASE_URL_A1 com o caminho de uma base descartável');
-if (url.includes('supabase.com') || url.includes('pooler.supabase.com')) {
+const url = process.env.DATABASE_URL_A1;
+if (url && (url.includes('supabase.com') || url.includes('pooler.supabase.com'))) {
   throw new Error('DATABASE_URL_A1 aponta para Supabase — proibido nesta suite');
 }
 
-const prisma = new PrismaClient({
-  datasources: { db: { url } },
-  transactionOptions: { maxWait: 30_000, timeout: 90_000 },
-});
+let prisma: InstanceType<typeof PrismaClient> | null = null;
+if (url) {
+  prisma = new PrismaClient({
+    datasources: { db: { url } },
+    transactionOptions: { maxWait: 30_000, timeout: 90_000 },
+  });
+}
+
+const describeIfDisposable = url ? describe : describe.skip;
+
+
+
 
 const runId = () => `t-a1-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
 
 async function seedFreshTenant() {
   const id = runId();
-  await prisma.tenant.create({ data: { id, name: `QA ${id}`, plan: 'PRO', status: 'ACTIVE' } });
-  await prisma.customer.create({ data: { id: `${id}-c`, tenantId: id, name: 'QA Customer', nif: '5000000001' } });
+  await prisma!.tenant.create({ data: { id, name: `QA ${id}`, plan: 'PRO', status: 'ACTIVE' } });
+  await prisma!.customer.create({ data: { id: `${id}-c`, tenantId: id, name: 'QA Customer', nif: '5000000001' } });
   return { tenantId: id, customerId: `${id}-c` };
 }
 
-describe('A1 — concorrência de emissão fiscal (real PostgreSQL)', () => {
+describeIfDisposable('A1 — concorrência de emissão fiscal (real PostgreSQL)', () => {
   const FT_LOAD = 100;
   const MIX_LOAD = 50;
 
   it('100 FT concorrentes — sem duplicados nem quebra da cadeia', async () => {
     const { tenantId } = await seedFreshTenant();
-    const before = await prisma.invoiceChainState.findUnique({ where: { tenantId } });
+    const before = await prisma!.invoiceChainState.findUnique({ where: { tenantId } });
     const startingSeq = before?.lastSequence ?? 0;
 
     const numbers: string[] = [];
@@ -72,7 +79,7 @@ describe('A1 — concorrência de emissão fiscal (real PostgreSQL)', () => {
     const sorted = [...sequences].sort((a, b) => a - b);
     expect(sorted[sorted.length - 1] - startingSeq).toBe(FT_LOAD);
 
-    const chain = await prisma.invoiceChainState.findUnique({ where: { tenantId } });
+    const chain = await prisma!.invoiceChainState.findUnique({ where: { tenantId } });
     expect(chain?.lastSequence).toBe(startingSeq + FT_LOAD);
   }, 90000);
 
@@ -88,7 +95,7 @@ describe('A1 — concorrência de emissão fiscal (real PostgreSQL)', () => {
         observations: null, includeCompanyProfile: false, dueAt: null,
       }, tenantId));
     }
-    const before = await prisma.invoiceChainState.findUnique({ where: { tenantId } });
+    const before = await prisma!.invoiceChainState.findUnique({ where: { tenantId } });
     const startingSeq = before?.lastSequence ?? 0;
 
     const ops: Promise<any>[] = [];
@@ -109,7 +116,7 @@ describe('A1 — concorrência de emissão fiscal (real PostgreSQL)', () => {
     expect(results.length).toBe(ops.length);
     for (const r of results) expect(r.r).toBeTruthy();
 
-    const chain = await prisma.invoiceChainState.findUnique({ where: { tenantId } });
+    const chain = await prisma!.invoiceChainState.findUnique({ where: { tenantId } });
     expect(chain?.lastSequence).toBe(startingSeq + 2 * MIX_LOAD);
   }, 90000);
 
