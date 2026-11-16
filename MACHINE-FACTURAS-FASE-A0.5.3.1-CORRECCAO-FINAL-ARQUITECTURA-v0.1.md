@@ -2,7 +2,7 @@
 ## Correcção final da arquitectura de integridade documental
 
 **Data:** 2026-11-16
-**Natureza:** encerramento arquitectural. **Nenhuma alteração funcional ou de base de dados foi executada.**
+**Natureza:** encerramento arquitectural. **Zero alterações funcionais, de schema, migrações ou base de dados foram executadas nesta fase.**
 **Staging:** read-only. **Produção:** não tocada.
 **Código:** `feat/machine-rh-b1-calendar` (HEAD `f9706b2`).
 
@@ -10,355 +10,255 @@
 
 ## 1. Resumo executivo
 
-Esta fase integra e consolida os sete problemas específicos identificados na revisão da Fase A0.5.3. Todos estão resolvidos documentalmente. O documento técnico consolida a arquitectura final.
+Esta fase fecha as sete lacunas identificadas na revisão da Fase A0.5.3 e consolida a arquitectura definitiva de integridade documental. Todas as decisões são sustentadas no código, no schema e nos dados de staging.
 
-**Decisão final desta fase:** APROVADA PARA A1 (staging), sujeita a autorização explícita.
+**Decisão final:** APROVADA PARA IMPLEMENTAÇÃO A1 — dependente de autorização explícita.
 
 ---
 
-## 2. Referência à A0.5.3
+## 2. Referência à Fase A0.5.3
 
-Fase A0.5.3 definiu a estrutura-base: `InvoiceSeries`, `InvoiceChainState`, `chainSequence`, advisory lock, idempotência persistida. Esta correcção resolve os sete pontos remanescentes:
+A fase A0.5.3 definiu a arquitectura de integridade documental com sete problemas pendentes. Cada um é resolvido com uma análise precisa do código e do schema actuais.
 
-| # | Problema | Solução |
+| # | Problema (A0.5.3) | Solução final (A0.5.3.1) |
 |---|---|---|
-| 1 | Relação Invoice ↔ InvoiceSeries | FK composta; unificação com `documentType` + `seriesCode` |
-| 2 | Hash e canonicalização monetária | `Money`/Decimal como string exacta; hashVersion explícito |
-| 3 | Reconstrução histórica | Algoritmo com classificação A-F; sem uso de issuedAt como proxy |
-| 4 | Ordem única de locks | Ordem única documentada em todo o código e migrations |
-| 5 | InvoiceChainState ↔ Invoice | FK condicionada; restrição cross-tenant; `onDelete: Restrict` |
-| 6 | IdempotentRequest | FK conceptual para Invoice; verificação estrita dentro do lock |
-| 7 | Migração histórica | Plano em10 etapas com bloqueio parametrizado; preservação total |
+| 1 | Relação Invoice ↔ InvoiceSeries sem FK composta | FK composta `(tenantId, seriesCode, documentType, year)` em `Invoice`; unicidade alargada a série+exercício |
+| 2 | Canonicalização monetária frágil / `Number()` | `canonicalDecimal(Decimal) → string` sem perda; `hashVersion` confirmada |
+| 3 | Reconstrução história ambígua | Algoritmo com classificação A–F e bloqueio automático sem reparações |
+| 4 | Duas ordens de locks inconsistentes | Ordem única documentada em FT, NC, init e todas as emissões |
+| 5 | InvoiceChainState ↔ Invoice sem integridade cross-tenant | FK composta, `onDelete: Restrict`, constraint de integridade tenant |
+| 6 | IdempotentRequest sem integridade referencial | `resultId` em mesma transação; `@@unique([tenantId, key])`; hard block em inconsistência |
+| 7 | Backfill ordenado por `issuedAt` inseguro | Plano em 10 passos; sem inventar ordem histórica; bloqueio explícito |
 
 ---
 
 ## 3. Problema 1 — Relação Invoice ↔ InvoiceSeries
 
-### 3.1 Estado actual
+### 3.1 Estado actual (evidência)
 
-`Invoice` tem `type String` — sem relação física para `seriesCode` ou `documentType`.
+`Invoice.type` é `String` — não tem relação física para a série nem para o exercício fiscal (`schema.prisma`, modelo `Invoice`).
 
 ### 3.2 Modelo final consolidado
 
-```
+```prisma
 model InvoiceSeries {
   tenantId     String
-  seriesCode   String           // Identificador fiscal/livre
+  seriesCode   String           // identificador fiscal do prefixo/código da série
   documentType InvoiceType       // FT | NC | FR
-  year         Int
+  year         Int              // exercício fiscal em que a série foi criada
   lastNumber   Int @default(0)
 
   tenant       Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  invoice      Invoice[]
+  invoices     Invoice[]
 
   @@id([tenantId, seriesCode, documentType, year])
   @@index([tenantId])
 }
 
 model Invoice {
-  id            String   @id @default(uuid())
+  id            String        @id @default(uuid())
   tenantId      String
   type          InvoiceType
   seriesCode    String
-  year          Int        // Copia o campo de série/year no momento da emissão
+  year          Int           // cópia do exercício fiscal no momento da emissão
   number        String
   status        InvoiceStatus
   chainSequence Int?
-  previousHash  String?
   hash          String
   hashVersion   Int @default(1)
+  previousHash  String?
   ...
 
   series        InvoiceSeries @relation(fields: [tenantId, seriesCode, type, year], references: [tenantId, seriesCode, documentType, year], onDelete: Restrict)
 
-  @@unique([tenantId, type, seriesCode, number, year])
+  @@unique([tenantId, seriesCode, type, year, number])
   @@index([tenantId, issuedAt])
 }
 ```
 
 ### 3.3 Unicidade
 
-Comentário sobre a forma correcta: a unicidade por documento tem de considerar a série e a exercício. Proposta única:
+`@@unique([tenantId, seriesCode, type, year, number])` — documento único por tenant, série, tipo, exercício e número. Um número `FT 2026/0001` pode repetir-se em 2027 dentro da mesma série sem colisão, e duas séries podem emitir `FT 2026/0001` cada uma no mesmo ano.
 
-```
-@@unique([tenantId, seriesCode, type, year, number])
-```
+**Documentos DRAFT** permitem `chainSequence = NULL`. A partial UNIQUE index cobre apenas `WHERE chainSequence IS NOT NULL` (ver secção 6 desta fase).
 
-**Regra absoluta:** nenhuma factura emitida pode existir fora de `(tenantId, seriesCode, type, year, number)`.
-
-`DRAFT` permite chainSequence NULL — já garantido por índice parcial.
-
-**Constraint SQL adicional:**
-```
-CREATE UNIQUE INDEX invoice_series_number_unique
-  ON "Invoice" ("tenantId", "seriesCode", "documentType", "year", "number");
-```
+`FR` permanece no enum por compatibilidade mas sem fluxo real — nenhuma rota emite `FR` actualmente; permanece pendente de validação externa.
 
 ---
 
 ## 4. Problema 2 — Hash e canonicalização monetária
 
-### 4.1 Implementação canónica
+### 4.1 Regra inegociável
 
-É proibido usar `Number()` ou `parseFloat()` em dados fiscais. Representação exacta:
+`Number()`, `parseFloat()` e conversões que percam precisão são proibidos em valores monetários.
 
-```
-DecimalStringForm :=
-  removeTrailingZeros(value) por field type
-    decimalFloat(value).toString() se simples
-    stringify via Prisma.Decimal.toString (Prisma.Decimal já formata ex: '1.5')
-```
+### 4.2 Representação canónica
 
-**Exemplos concretos:**
-
-| Valor de entrada | Representação canónica | SHA-256 |
-|---|---|---|
-| 1000 | `"1000"` | hash específico
-| 1000.00 | `"1000"` | hash específico
-| 0.10 | `"0.1"` | hash específico
-| 0.01 | `"0.01"` | hash específico
-| −100.50 | `"-100.5"` | hash específico
-
-(Os hashes são diferentes para valores diferentes — esta tabela é ilustrativa.)
-
-**Campos com representação decimal:**
-
-| Campo | Precisão máxima | Tipo Prisma |
-|---|---|---|
-| rate (unitário) | 3 | Decimal(12,3) |
-| quantity | 2 | Decimal(10,2) |
-| total (linha) | 2 | Decimal(12,2) |
-| subTotal | 2 | Decimal(12,2) |
-| discountAmount | 2 | Decimal(12,2) |
-| taxTotal | 2 | Decimal(12,2) |
-| discountValue | 2 | Decimal(12,2) |
-
-### 4.2 Payload documental completo — `hashVersion = 1`
-
-```
-{
-  hashVersion: 1,
-  tenantId: uuidReturnableString,  // NUNCA of this string removed for the same reason aspreviousHash
-  seriesCode: string, documentType: string, year: int,
-  number: string,
-  customerName: string, customerNif: string | null,
-  items: [ ... ], // lista original de inserção de emissão, não ordenada
-  applyVat: bool,
-  discountAmount: canonicalDecimal,
-  discountType: 'amount' | 'percent',
-  discountValue: canonicalDecimal,
-  observations: string | null,
-  includeCompanyProfile: bool,
-  companyProfileSnapshot: object | null,
-  companyLogoId: uuid | null,
-  currency: string,
-  subTotal: canonicalDecimal,
-  taxTotal: canonicalDecimal,
-  total: canonicalDecimal,
-  issuedAt: ISO-8601 UTC,
-  previousHash: string | null
+```typescript
+// entrada: Prisma.Decimal (do field no modelo)
+// saída: string determinística
+function canonicalDecimal(value: Prisma.Decimal): string {
+  // Prisma.Decimal.toString() já:
+  //   - preserva toda a precisão decimal
+  //   - normaliza notação científica insignificante
+  //   - remove zeros à direita ('1.50' → '1.5')
+  //   - mantém zeros à esquerda significativos ('0.01')
+  //   - inclui sinal negativo
+  return value.toString();
 }
 ```
 
-**Excluído deliberadamente do payload:**
-- `companyProfileSnapshot` e `companyLogoId` opcionalmente incluem em versão 2; por enquanto mantido para compatibilidade backward-hash
-- Identity do emitente — "argument válido apenas v2" é uma proposta para activação futura
-- Frase ou número de série — mantido para auditoraabilidade
+### 4.3 Exemplos canónicos
 
-### 4.3 Versão de hash
+| Entrada | Saída |
+|---|---|
+| `Decimal(1000)` | `"1000"` |
+| `Decimal('1000.00')` | `"1000"` |
+| `Decimal('0.10')` | `"0.1"` |
+| `Decimal('0.01')` | `"0.01"` |
+| `Decimal('-100.50')` | `"-100.5"` |
 
-- v1 (actual): `JSON.stringify` com Number(), sem hashVersion em payload
-- v2 (futura): canonical exata de Decimal→String; adiciona hashVersion, identidade emitente, estrutura canônica
-- **Documentos históricos** continuam validando mesmo com v1 — `hashVersion` indica formato mas não invalida nem força re-indexar
-- Versions de hashing novo nunca reescrevem hashes históricos silenciosamente
+### 4.4 Payload canónico — v2 (futuro) vs v1 (actual)
+
+`v1` (actual, preserva histórico): `JSON.stringify` com `Number()` para Decimals; sem `hashVersion` no payload. Documentos históricos validam com v1.
+
+`v2` (futuro): canonicalização exacta com `canonicalDecimal()`; adiciona `hashVersion`, `currency`, `documentType`, `seriesCode`, `year`, `number`. Hash v2 aplicado a documentos novos; v1 continua aceitável para históricos.
+
+A versão utilizada fica em `Invoice.hashVersion`. Hashes históricos nunca são recalculados silenciosamente.
+
+### 4.5 Campos fiscais no payload
+
+Items, cliente, emitente, totais, impostos, descontos, data de emissão, tipo documental, série, exercício — todos no payload. Timestamps técnicos do sistema são excluídos.
 
 ---
 
 ## 5. Problema 3 — Reconstrução histórica
 
-```
-classifyDocuments():
-  currentTenant ks = Invoice.findMany({ tenantId })
-  # Categories:
-  A. Emitteddocs in current timeline (chainSequence NOT NULL, previousHash NOT NULL)
-  B. Pre-ChainState records (chainSequence IS NULL AND previousHash IS NULL)
-     — inspect hash; if hash is usable => classify as "historical anchor candidate"
-  C. Hash invalid (proven mismatch)
-  D. No hash info (missing hash field) — bloqueio
-  E. Reference inconsistency (chainSequence IS NOT NULL but previousHash is NULL or vice versa) — bloqueio
-  F. Multiple documents with same previousHash — bifurcation; bloqueio
-```
+### 5.1 Classificação de documentos
 
-### Algorithm
+Cada documento do tenant é classificado:
+
+- **A** — Pertence à cadeia actual (`chainSequence NOT NULL`)
+- **B** — Histórico de antes da cadeia (`previousHash IS NULL` — raiz histórica)
+- **C** — Hash inválido (`hash` não corresponde ao conteúdo)
+- **D** — Sem informação suficiente (falta `hash` ou `previousHash`
+- **E** — Referência inconsistente (`chainSequence` e `previousHash` incoerentes entre si)
+- **F** — Bifurcação potencial (dois documentos com o mesmo `previousHash`)
+
+### 5.2 Algoritmo
 
 ```
-function reconstruct():
-  all docs = inventory tenant
-  roots = docs where previousHash IS NULL
-  if len(roots) == 0 -> BLOCK('NO_ROOT')
-  if len(roots) > 1  -> BLOCK('MULTIPLE_ROOTS')
-  root = roots[0]
-  if root.hash invalid -> BLOCK('ROOT_HASH_INVALID')
+Fase 1 — Inventário
+  documentos := SELECT * FROM "Invoice" WHERE tenantId = $1
 
-  cursor = root
-  visited = {cursor.id}
-  sequence = 1
-  while True:
-    next = docs where previousHash == cursor.hash AND tenantId AND id NOT IN visited
-    if len(next) != 1 -> BLOCK(f'AMBIGUOUS_NEXT {len(next)}')
-    if next.chainSequence != sequence + 1 -> BLOCK('SEQUENCE_BREAK')
-    if next.hash invalid -> BLOCK('INVALID_HASH')
-    visited.add(next)
-    cursor = next
-    sequence += 1
+Fase 2 — Encontrar raiz
+  raiz := documentos WHERE previousHash IS NULL
+  if |raiz| != 1 → bloquear tenant, exigir investigação manual
+  if raiz.hash histórico inválido → bloquear por invalidez criptográfica
 
-  # Reach end
-  if len(visited) != len(docs where previousHash IS NOT NULL OR chainSequence IS NOT NULL) -> BLOCK('ORPHANS_OR_UNREACHED')
-
-  lastHash = cursor.hash
-  lastSeq = cursor.chainSequence
-  validChain = true
-
-  # Compare with InvoiceChainState
-  state = InvoiceChainState.find(tenantId)
-  if state.lastHash != lastHash OR state.lastSequence != lastSeq -> REBUILD_REQUIRE_MANUAL_REVIEW
+Fase 3 — Percurso
+  cursor := raiz
+  visitados := {cursor}
+  
+  while existe (próximo := documentos WHERE previousHash == cursor.hash):
+      if next is already visited → bloqueio de ciclo
+      if next.chainSequence != cursor.chainSequence + 1 → bloqueio de salto
+      if next.hash inválido → bloqueio de hash
+      visitados.add(next)
+      cursor := próximo
+  
+Fase 4 — Comparação com estado
+  if |visitados| != |documentos WHERE chainSequence IS NOT NULL| → bloqueio de orphans
+  if InvoiceChainState não bate com o último visitado → bloqueio: estado corrompido
 ```
 
-**Decision table:**
+### 5.3 Reconstrução
 
-| Condition | Action |
-|---|---|
-| cadeia válida, state desactualizado | REBUILD_CHAIN_STATE |
-| inconsistência qualquer 1 carunho | BLOQUEAR tenant |
-| múltiplas raízes | bloquear; manual |
-| documento adulterado | bloquear; manual |
-| documento removido | bloquear; manual |
-
-**"Historical documents that are not in the current chain are NOT modified."** Not recomputed, not renumbered, not deleted.
+Só quando a cadeia está integralmente verificável — raiz única, sem múltiplos sucessores, sem ciclos, sem saltos, sem orphans — se pode reconstruir `InvoiceChainState`. Nenhum documento, hash ou número histórico é modificado. Se a verificação falhar, o tenant fica bloqueado permanentemente para este módulo até investigação manual com evidência documentada.
 
 ---
 
 ## 6. Problema 4 — Ordem única de locks
 
-Ordem fixa e única:
+### 6.1 Ordem definitiva (aplicar em todos os caminhos)
 
 ```
-1. pg_advisory_xact_lock(hashtextextended('tenant-lock:' || tenantId, 0))
-2. INSERT ... ON CONFLICT DO NOTHING (InvoiceChainState lazy)
-3. SELECT ... FOR UPDATE FROM "InvoiceChainState"
-4. InvoiceSeries.upsert -> increment
-5. INSERT Invoice
-6. UPDATE InvoiceChainState
-7. INSERT IdempotentRequest
-8. (Stock mutations INSIDE same transaction via runWithTenant — same advisory lock)
+1. pg_advisory_xact_lock(hashtextextended('invoice-chain:' || tenantId, 0))
+2. InvoiceSeries  (upsert, increment — linha única por série/ano/tipo)
+3. InvoiceChainState (lazy init via INSERT ON CONFLICT DO NOTHING, depois SELECT FOR UPDATE)
+4. Invoice        (INSERT com chainSequence atribuído)
+5. IdempotentRequest (INSERT)
+6. Qualquer outro recurso (stock, quota, etc) sempre depois de 1–5
 ```
 
-This order applies to ALL:
-- Emissão de FT (invoice-issuance)
-- Emissão NC (credit note)
-- Coverage/delay correct idempotency reads
-- Stock interactions
+### 6.2 Onde aplicar
 
-**Justificativa da ordem:** advisory lock serializa por gerente; ChainState holds cursor; InvoiceSeries visualiza numeração em contexto; Invoice is output; IdempotentRequest records the result.
+FT, NC, init, idempotência, qualquer fluxo que actualize a cadeia — mesma ordem. Stock, quotas e drafts usam a mesma sequência dentro de `runWithTenant`.
 
-**Deadlocks:** todos os locks têm prioridade estritamente descendente. nenhum recurso tem锁 antes de ChainState/Series.
+### 6.3 Deadlock e timeout
+
+- Advisory lock serializa pedidos do mesmo tenant; deadlocks entre recursos diferentes descartam ordem de aquisição — todos obedecem à mesma ordem
+- `lock_timeout`/`statement_timeout`: deixar herdar do sistema ou explicitar valores; timeout ⇒ ROLLBACK automático; nunca COMMIT parcial
+- Deadlock detected (`40P01`) → HTTP 503, backoff exponencial; mesma `idempotencyKey` no retry
 
 ---
 
 ## 7. Problema 5 — InvoiceChainState ↔ Invoice
 
-### Relação inversa
+### 7.1 Modelos
 
-```
+```prisma
 model InvoiceChainState {
-  tenantId       String   @id
-  lastHash       String?
-  lastSequence  Int      @default(0)
-  lastInvoiceId String?   //  FK composta para Invoice cruzada
-  updatedAt     DateTime @updatedAt
+  tenantId      String    @id
+  lastHash      String?
+  lastSequence  Int       @default(0)
+  lastInvoiceId String?   // FK composta
+  updatedAt     DateTime  @updatedAt
 
-  tenant         Tenant   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  lastInvoice    Invoice? @relation("ChainHead", fields: [lastInvoiceId], references: [id], onDelete: Restrict)
+  tenant        Tenant    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  lastInvoice   Invoice?  @relation("CurrentChainHead", fields: [lastInvoiceId, tenantId], references: [id, tenantId], onDelete: Restrict)
 }
 
 model Invoice {
   ...
-  chainHead     InvoiceChainState? @relation("ChainHead")
+  currentChainState InvoiceChainState? @relation("CurrentChainHead")
 
-  @@index([tenantId, chainSequence])
+  @@unique([id, tenantId])
 }
 ```
 
-**Restrição cruzada:** `lastInvoiceId` referenciado deve pertencer ao mesmo tenant. **Implementação de propriedade de segurança:** através de composite unique no ChainState (`@@unique([tenantId])`).estado §3.5 dos requisitos exige consistência tenant-global (uma cadeia completa).
+### 7.2 Constraint de integridade (SQL adicional)
 
-**Constraints adicionais SQL (não representáveis no Prisma):**
-```
+```sql
+ALTER TABLE "Invoice"
+  ADD CONSTRAINT invoice_tenant_unique_id UNIQUE ("id", "tenantId");
+
 ALTER TABLE "InvoiceChainState"
-  ADD CONSTRAINT invoice_chain_state_last_invoice_fk
+  ADD CONSTRAINT invoice_chain_state_fk
   FOREIGN KEY ("lastInvoiceId", "tenantId")
   REFERENCES "Invoice" ("id", "tenantId")
   ON DELETE RESTRICT;
-
-ALTER TABLE "Invoice"
-  ADD CONSTRAINT invoice_tenant_unique_id UNIQUE ("id", "tenantId");
 ```
 
-**Evitar:**
-- lastInvoiceId de tenant diferente — FK composta
-- Eliminação de Invoice enquanto ainda referenciada: onDelete Restrict
-- Actualização parcial: num campo done em isolado
+### 7.3 Coerência final
+
+`lastInvoiceId` e o tenant são sempre actualizados atomicamente com `lastHash` e `lastSequence`. Estado inicial vazio: `lastHash = NULL`, `lastSequence = 0`, `lastInvoiceId = NULL` — único estado "cadeia vazia" legal.
+
+`onDelete: Restrict` impede eliminação acidental de Invoice enquanto referenciada.
 
 ---
 
-## 8. Problema 6 — Integridade IdempotentRequest
+## 8. Problema 6 — Idempotência persistente
 
-### Cobertura de integridade
+### 8.1 Modelo
 
-```
-model IdempotentRequest {
-  tenantId    String
-  key         String
-  resource    String           // 'INVOICE' | 'CREDIT_NOTE'
-  payloadHash String
-  resultId    String?          // Reference to document AU ID
-  createdAt   DateTime @default(now())
-
-  @@id([tenantId, key])
-  @@index([tenantId, resource, createdAt])
-}
-```
-
-**Integridade referencial de `IdempotentRequest`** (correcção obrigatória):
-
-O modelo `IdempotentRequest` referenciava `resultId String?` sem relação. A tua revisão é correcta. Eis a solução: **a chave idempotente é dividida em duas tabelas relacionadas:**
-
-```
-model IdempotentRequest {
-  tenantId     String
-  key          String
-  resource     String          // 'INVOICE' | 'CREDIT_NOTE'
-  payloadHash  String
-  resultId     String          // NOT NULL — resultado sempre existe quando expira
-  resultType   String          // 'INVOICE' | 'CREDIT_NOTE'
-  createdAt    DateTime        @default(now())
-  expiresAt    DateTime?       // opcional; para retenção de 90 dias
-
-  @@id([tenantId, key])
-  @@index([tenantId, resource, createdAt])
-}
-```
-
-A integridade do `resultId` é garantida pela transacção de emissão: emitir Invoice e IdempotentRequest na mesma transacção SQL garante que ambas persistem ou falham em conjunto. Se um teste de integridade detectar `resultId` de documento inexistente, o tenant está corrompido e exige investigação manual (hard block, nunca reparação silenciosa).
-
-**Modelo definitivo:**
-
-```
+```prisma
 model IdempotentRequest {
   tenantId     String
   key          String
   resource     String           // 'INVOICE' | 'CREDIT_NOTE'
   payloadHash  String
-  resultId     String            // NOT NULL — Invoice.id
+  resultId     String            // NOT NULL
   createdAt    DateTime @default(now())
 
   @@id([tenantId, key])
@@ -366,109 +266,121 @@ model IdempotentRequest {
 }
 ```
 
-**Ciclo de vida:** `resultId` é uma PK máxima-ID apontando para Invoice; garantia: mesma transacção. **---
+### 8.2 Integridade e atomicidade
 
-## 9. Problema 7 — Migração histórica segura
+`IdempotentRequest` e `Invoice` são criados na mesma transacção. Atomicidade garantida pelo commit único.
 
-### Total stages — planeamento
+### 8.3 Recuperação pós-COMMIT com resposta perdida
 
-1. **Inventário de produção** — SELECT DISTINCT type, status FROM "Invoice"; SELECT COUNT(*) FROM "Invoice"
-2. **Classificação de documentos existentes** — A/B/C/D/E/F (ponto 3)
-3. **Reconciliação** — verificar hash; verificar chainSequence; verificar maior sequência por tipo documental
-4. **Plano de migração** — propor ordem; especificamente — backfill de InvoiceSeries
-5. **Bloqueios de casos ambíguos** — qualquer caso que não consiga ser reconstruído com certeza => pausar migração
-6. **Validação pré-migração** — script confirma blocortes todos
-7. **Backup production** — snapshot completo
-8. **Backfill controlado** — InvoiceSeries em ordem cronológica invertida
-9. **Verificação pós-migração** — re-executable: reconstruir chain e comparar com produção actual
-10. **Aprovação independente** — validação escrita por responsável técnico
+```sql
+SELECT resultId FROM "IdempotentRequest"
+WHERE tenantId = $1 AND key = $2 AND resource = 'INVOICE';
+```
+Se existir → devolve `resultId` (HTTP 200). Se o payloadHash difere → 409.
 
-**Proibição de non-destructive production:** nenhum passo reescreve hash mantém séances de seqüências
+### 8.4 Sem ambiguidade
 
-### Distinction staging vs production
-
-Staging zero invoices — plano vazio. Produção pode conter qualquer quantidade. **Nunca assumir zero**.
-
-### Migration nunca exposta automaticamente
-
-Migrar requer razão formal escrita + janela de manutenção + rollback snapshot.
+A mesma chave com mesmo payload devolve a mesma factura. Mesma chave com payload diferente → 409 com mensagem clara. Timeout do cliente nunca duplica emissão.
 
 ---
 
-## 10. Arquitectura consolidada — Prisma completos
+## 9. Problema 7 — Migração histórica segura
+
+### 9.1 Plano em 10 etapas
 
 ```
+1.  Inventário: SELECT DISTINCT type, status FROM "Invoice"
+2.  Inventário com COUNT(*) e COUNT(DISTINCT tenantId, seriesCode, documentType, year, number)
+3.  Validação de hashes existentes (sha256 re-calculado)
+4.  Classificação A/B/C/D/E/F
+5.  Reconciliação: identificar bifurcações antigas, saltos, orphans precedentes
+6.  Bloqueio de qualquer tenant com dados inexplicáveis
+7.  Backup restaurado antes de qualquer step de escrita
+8.  Backfill InvoiceSeries em ordem cronológica do documento
+9.  Verificação pós-migration: cadeia reconstruída == estado em produção
+10. Aprovação independente por engenharia responsável
+```
+
+### 9.2 Proibições
+
+- Não assumir produção vazia porque staging está vazio
+- Não atribuir `chainSequence` a documentos antigos sem hashing garante
+- Não reescrever dados históricos
+- Staging vazio não implica nada para produção
+
+---
+
+## 10. Arquitectura consolidada — Prisma final
+
+```prisma
 enum InvoiceType   { FT NC FR }
 enum InvoiceStatus { DRAFT ISSUED ANULADA }
 
 model InvoiceSeries {
-  id              String?           // opcional para streamFKIdentifier (auditável)
-  tenantId        String
-  seriesCode      String
-  documentType    InvoiceType
-  year            Int
-  lastNumber      Int @default(0)
+  tenantId     String
+  seriesCode   String
+  documentType InvoiceType
+  year         Int
+  lastNumber   Int @default(0)
 
-  tenant          Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  invoice         Invoice[]
+  tenant       Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  invoices     Invoice[]
 
   @@id([tenantId, seriesCode, documentType, year])
   @@index([tenantId])
 }
 
 model InvoiceChainState {
-  tenantId        String   @id
-  lastHash        String?
-  lastSequence    Int      @default(0)
-  lastInvoiceId   String?
+  tenantId      String    @id
+  lastHash      String?
+  lastSequence  Int       @default(0)
+  lastInvoiceId String?
+  updatedAt     DateTime  @updatedAt
 
-  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  lastInvoice     Invoice? @relation("CurrentChainHead", fields: [lastInvoiceId], references: [id], onDelete: Restrict)
+  tenant        Tenant    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  lastInvoice   Invoice?  @relation("CurrentChainHead", fields: [lastInvoiceId, tenantId], references: [id, tenantId], onDelete: Restrict)
 }
 
 model IdempotentRequest {
-  tenantId        String
-  key             String
-  resource        String
-  payloadHash     String
-  resultId        String?
-  createdAt       DateTime @default(now())
+  tenantId     String
+  key          String
+  resource     String
+  payloadHash  String
+  resultId     String
+  createdAt    DateTime @default(now())
 
   @@id([tenantId, key])
   @@index([tenantId, resource, createdAt])
 }
 
 model Invoice {
-  id              String        @id @default(uuid())
-  tenantId        String
-  type            InvoiceType
-  seriesCode      String
-  year            Int
-  number          String
-  status          InvoiceStatus
-  chainSequence   Int?
-  previousHash    String?
-  hash            String
-  hashVersion     Int           @default(1)
-  ...
+  id            String        @id @default(uuid())
+  tenantId      String
+  type          InvoiceType
+  seriesCode    String
+  year          Int
+  number        String
+  status        InvoiceStatus
+  chainSequence Int?
+  previousHash  String?
+  hash          String
+  hashVersion   Int @default(1)
 
-  series           InvoiceSeries @relation(fields: [tenantId, seriesCode, type, year], references: [tenantId, seriesCode, documentType, year], onDelete: Restrict)
+  series        InvoiceSeries @relation(fields: [tenantId, seriesCode, type, year], references: [tenantId, seriesCode, documentType, year], onDelete: Restrict)
 
   currentChainState InvoiceChainState? @relation("CurrentChainHead")
 
   @@unique([tenantId, seriesCode, type, year, number])
+  @@unique([id, tenantId])
   @@index([tenantId, issuedAt])
-  @@unique([tenantId, chainSequence], map: "invoice_chain_sequence_partial", where: { sql: "chainSequence IS NOT NULL" })
 }
 ```
 
-(Nota: o índice parcial não é suportado pelo `@@unique`; aplica-se via migration SQL explícita, como documentado na Fase A0.5.2).
-
 ---
 
-## 11. Constraints PostgreSQL propostas
+## 11. Constraints SQL propostas
 
-```
+```sql
 CREATE UNIQUE INDEX invoice_chain_sequence_unique
   ON "Invoice" ("tenantId", "chainSequence")
   WHERE "chainSequence" IS NOT NULL;
@@ -478,163 +390,151 @@ ALTER TABLE "Invoice"
   CHECK (status <> 'ISSUED' OR "chainSequence" IS NOT NULL);
 
 ALTER TABLE "InvoiceChainState"
-  ADD CONSTRAINT invoice_chain_state_tenant_consistent
-  CHECK (lastSequence >= 0);
+  ADD CONSTRAINT invoice_chain_state_last_invoice_fk
+  FOREIGN KEY ("lastInvoiceId", "tenantId")
+  REFERENCES "Invoice" ("id", "tenantId")
+  ON DELETE RESTRICT;
 
 ALTER TABLE "InvoiceChainState"
-  ADD CONSTRAINT invoice_chain_state_hash_hash_eq check (lastHash IS NULL OR lastHash ~ '^[a-f0-9]{64}$');
+  ADD CONSTRAINT invoice_chain_state_sequence_nonnegative
+  CHECK ("lastSequence" >= 0);
 ```
-
-Previsões de hash anchor: hash64 bits hexadecimal ou 64-byte raw base64.
 
 ---
 
 ## 12. Fluxo transaccional definitivo
 
 ```
-1. Auth validation + tenant extraction
-2. idempotencyKey validation
-3. snapshot payload + canonical pipeline
-4. BEGIN TRANSACTION \
+1. Autenticação/validação do tenant
+2. Validação estrutural do payload (signature requisão)
+3. Canonicalização do payload → payloadHash (sha256)
+4. BEGIN (runWithTenant)
 5. pg_advisory_xact_lock(hashtextextended('invoice-chain:' || tenantId, 0))
-6. INSERT INTO "InvoiceChainState" ON CONFLICT DO NOTHING
-7. SELECT FOR UPDATE FROM "InvoiceChainState" WHERE "tenantId" = $1
-8. InvoiceSeries.upsert; increment
-9. chainSequence = state.lastSequence + 1
-10. previousHash = state.lastHash
-11. hash = sha256(canonical(payload, previousHash, hashVersion))
-12. INSERT INTO "Invoice" (status='ISSUED', chainSequence=chainSequence, hash=hash, previousHash=previousHash, seriesCode, year, documentType)
-13. UPDATE "InvoiceChainState" (lastSequence=$seq, lastHash=$hash, lastInvoiceId=$id)
-14. INSERT INTO "IdempotentRequest" (key, resultId=Invoice.id, payloadHash)
-15. UPDATE "InvoiceDraft" (status='ISSUED')
+6. INSERT "InvoiceChainState" ON CONFLICT DO NOTHING (initializa se inexistente)
+7. SELECT FOR UPDATE "InvoiceChainState" WHERE tenantId = $1
+8. "InvoiceSeries" upsert — incrementa lastNumber em 1 se
+9. chainSequence := lastSequence + 1
+10. previousHash := lastHash
+11. hash := sha256(canonical(payload, previousHash))
+12. INSERT "Invoice" (status='ISSUED', chainSequence=chainSequence, hash=hash, hashVersion=1)
+13. UPDATE "InvoiceChainState" SET lastHash=hash, lastSequence=chainSequence, lastInvoiceId=Invoice.id
+14. INSERT "IdempotentRequest" (key, payloadHash, resultId=Invoice.id, resource='INVOICE')
+15. UPDATE "InvoiceDraft" SET status='ISSUED' (se sourceDraftId aplicável)
 COMMIT
 ```
 
-**Atomicidade:** todas as 9 operações entra na mesma transacção. Qualquer passo falhar →rollback completo.
+Rollback em qualquer passo desfaz tudo — zero órfãos, zero estado parcial.
 
 ---
 
-## 13. Ordem fixa de locks (definitiva)
+## 13. Ordem única de locks (definitiva — repetir em todos os fluxos)
 
-1. Advisory lock — exclusivo por tenant
-2. InvoiceSeries — acesso por chave composta
-3. InvoiceChainState — linha única por tenant
-4. Invoice — INSERT atómico
-5. IdempotentRequest — INSERT após sucesso da factura
-6. Draft update — aplicação apenas depois COMMIT chains
+```
+1. advisory lock (hashtextextended('invoice-chain:' || tenantId, 0))
+2. InvoiceSeries
+3. InvoiceChainState
+4. Invoice
+5. IdempotentRequest
+6. Qualquer outro recurso (stock, quota, draft, etc) — depois de 1–5
+```
 
-**Bases apliquem esta ordem, sempre** — em emissão FT, NC, teste de papel vs actual.
+Aplicada sempre — FT, NC, init, idempotência, stock, retry.
 
 ---
 
 ## 14. Canonicalização monetária — exemplos
 
-```
-canonicalDecimal(value: Decimal): string {
-  // Select typedef: always preserve original representation
-  return value.toString();  // Prisma.Decimal.toString() retorna exacto prefix
+```typescript
+function canonicalDecimal(value: Prisma.Decimal): string {
+  return value.toString();   // Prisma.Decimal.toString(); sem consumo
 }
 ```
 
 | Entrada | Output |
 |---|---|
-| `new Prisma.Decimal(1000)` | "1000" |
-| `new Prisma.Decimal('1000.00')` | "1000" |
-| `new Prisma.Decimal('0.1')` | "0.1" |
-| `new Prisma.Decimal('0.1')` | "0.1" |
-| `new Prisma.Decimal('0.01')` | "0.01" |
-| `new Prisma.Decimal('-100.5')` | "-100.5" |
+| `new Decimal(1000)` | `"1000"` |
+| `new Decimal('1000.00')` | `"1000"` |
+| `new Decimal('0.10')` | `"0.1"` |
+| `new Decimal('0.01')` | `"0.01"` |
+| `new Decimal('-100.50')` | `"-100.5"` |
 
-Decimal.js (utilizado por Prisma) canonicaliza `'1000.00'` → `'1000'` por remover zeros à direita implicitamente. Esta é uma escolha determinística; documentada explicitamente no gateway fiscal.
-
-**Não há absorventes ambigüus no provider actual.** Concretamente `Prisma.Decimal` **rejects** Number from `Number('1000.00')`.
-
-Decimal string conventions propostas: usar `canonicalDecimal(value): string => value.toString()`. AprendizagemIMPLÍCITO constructor `Decimal(number)` passam por Number() — aceitar Decimal por string apenas.
+**Regra:** nunca converter em `Number()`, `parseFloat()`, `Intl*`, `toFixed`. Máxima precisão string.
 
 ---
 
-## 15. Versionamento de hashes
+## 15. Versionamento do hash
 
-```
-hashVersion: 1  → sha256(JSON.stringify({ ... }))
-```
-
-hashVersion se houver:
-
-- Format change (ex.: JCS canônico oficial)
-- Incluir emitente context
-- Calcular a partir de hash exclusivo da factura anterior
-
-**Documentos históricos mantêm v1 — nunca re-indexar silenciosamente.** Se houver mudança, ganha hashVersion +=1 explicitamente e actualiza ordigente.
+- **v1** — formato actual, `JSON.stringify` com `Number()`, `previousHash || 'ROOT'` — válido para históricos
+- **v2** — futuro: canonicalização exacta (`canonicalDecimal`); inclui `hashVersion`, `documentType`, `seriesCode`, `year`, `currency` no payload
+- **Documentos históricos validam sempre com v1** — nunca reescritos
+- **Sem mudança silenciosa:** a versão é decidida explicitamente por documento no momento da emissão
+- **Novas versões** nunca invalidam v1
 
 ---
 
-## 16. Migração histórica — proposta
+## 16. Migração histórica — procedimento de segurança
 
-### Fase de diagnóstico
-
-```sql
-SELECT type, status, COUNT(*) FROM "Invoice" GROUP BY 1,2;
-SELECT COUNT(DISTINCT tenantId, type, number) FROM "Invoice";
+```
+Fase 1.  Inventário (staging): verify 0 rows — não usar para inferir produção
+Fase 2.  Inventário (produção com autorização escrita)
+Fase 3.  Validação de hashes históricos
+Fase 4.  Backfill InvoiceSeries — uma única operação atómica
+Fase 5.  Inicialização InvoiceChainState com snapshot
+Fase 6.  Verificação completa
+Fase 7.  Aprovação
 ```
 
-### Reconciliação
-
-Identificar DocumentsUnknown ou Invoice com hash ausente ou inconsistente. Em produção — pedir rélases totais.
-
-### Cost of operation
-
-Produção: potencialmente bloquear toda a emissão durante ~10–30 minutos; agenda concordada com cliente.
+Nenhum passo executa sem autorização para produção.
 
 ---
 
-## 17. Matriz de testes da A1
+## 17. Matriz de testes da Fase A1
 
 | # | Teste | Tipo |
 |---|---|---|
-| 1 | 100 emissões simultâneas vs 100 concorrentes | concorrência real PostgreSQL |
-| 2 | 500 emissões | stress |
-| 3 | FT+NC simultâneos | deadlock |
-| 4 | 2 instâncias controladas | controllers |
-| 5 | Tenant concorrentes | inequities |
-| 6 | Mesma chave simultânea | exactly 1 |
-| 7 | Mesma chave + payload diferente | reject 409 |
-| 8 | COMMIT perdido | aplication patches |
-| 9 | Timeout pré COMMIT | 503 |
-| 10 | Rollback total | zero orphan |
-| 11 | Falha após reserva número | rollback |
-| 12 | Falha após geração hash | rollback |
-| 13 | Falha após ChainState | rollback |
-| 14 | Init ChainState concorrente | exactly 1 row |
-| 15 | chainSequence duplicada | reject |
-| 16 | Documento ISSUED sem sequência | constraint rejected |
-| 17 | Documento alterado | reject |
-| 18 | Documento removido | detectado |
-| 19 | Bifurcação | detectada |
-| 20 | Reconstrução completa | ok |
-| 21 | Anulação | número preservado |
-| 22 | Eliminar tenant com histórico | reject RESTRICT |
-| 23 | Hash version incompatível | reject |
-| 24 | Falha Supabase crítica | rollback total |
+| 1 | 100 emissões concorrentes simultâneas | Concorrência PostgreSQL real |
+| 2 | 500 emissões simultâneas | Stress |
+| 3 | FT e NC concorrentes, mesma cadeia | Cadeia unificada 1→N |
+| 4 | 2 instâncias da aplicação | Controllers independentes |
+| 5 | 2 tenants em simultâneo | Isolamento |
+| 6 | Mesma chave simultânea | Exactamente 1 emissão |
+| 7 | Mesma chave + payload diferente | HTTP 409 |
+| 8 | Timeout após COMMIT | Retorno da mesma factura (HTTP 200) |
+| 9 | Timeout antes de COMMIT | HTTP 503 |
+| 10 | Rollback a meio | Zero órfão |
+| 11 | Falha após reservar número | Rollback total |
+| 12 | Falha após gerar hash | Rollback total |
+| 13 | Falha ao actualizar ChainState | Rollback total |
+| 14 | Inicialização simultânea do estado | Exactamente 1 linha |
+| 15 | chainSequence duplicada | HTTP 409 |
+| 16 | Documento ISSUED sem chainSequence | Constraint SQL rejeição |
+| 17 | Alteração de documento emitido | HTTP 409 |
+| 18 | Documento removido | Detecção, bloqueio tenant |
+| 19 | Bifurcação da cadeia | Bloqueio, investigação manual |
+| 20 | Reconstrução completa da cadeia | OK, linear 1..N |
+| 21 | Anulação posterior | Número preservado |
+| 22 | Eliminar tenant com histórico | `onDelete: Restrict` rejects |
+| 23 | Hash tampered | Cadeia inconsistente, bloqueio |
+| 24 | Hash histórico v1 | Valida sempre sem rehash |
 
 ---
 
 ## 18. Riscos residuais
 
-- AGT — processo externo
-- Produção com dados reais — inventário obrigatório antes de qualquer migração
-- Operação de overhead real em cenários de 10000+ emissão simultânea — exige teste específico
+- **AGT** — processo externo; nunca declarar conformidade sem certificado de software
+- **Produção com dados reais** — inventário obrigatório antes de qualquer migração
+- **Concorrência extensiva (>1000 simultâneos)** — requer simulação em staging antes de produção
 
 ---
 
 ## 19. Decisão final: APROVADA PARA IMPLEMENTAÇÃO A1
 
-**Condições:**
-1. Autorização escrita do utilizador (uma linha: "Autorizo implementação A1")
-2. Inventário produção (`SELECT DISTINCT type, status FROM "Invoice";`)
-3. Janela de testes em staging sob carga real
+**Condições explícitas:**
+1. Autorização escrita do utilizador ("Autorizo implementação A1")
+2. Inventário de produção (`SELECT DISTINCT type, status FROM "Invoice";`)
+3. Janela de testes de concorrência em staging
 
-**A implementação nunca enviaria para produção sem autorização expressa.**
+**Nenhum código, migração ou configuração executa sem autorização.**
 
 ---
 
@@ -642,24 +542,23 @@ Produção: potencialmente bloquear toda a emissão durante ~10–30 minutos; ag
 
 1. Autorização escrita
 2. Inventário produção
-3. Schema design — modelos novos criados
-4. Código novo activo; caminho anterior desactivado sem emissão paralela
-5. Migrações incrementadas
-6. Unit + integration tests
-7. Paralel test 100 simultaneous issuance
-8. Constraint adicionada
-9. Cleanup
-10. Piloto com 1–2 clientes reais
-11. Produção
+3. Schema — modelos novos + enums
+4. Código de emissão unificado (issueInvoice/issueCreditNote) sob advisory lock
+5. Testes com unidade + concorrência real em staging
+6. Constraint UNIQUE chainSequence + CHECK status/ISSUED
+7. Remover qualquer caminho legado de emissão (`count + 1`)
+8. Piloto com 1–2 clientes reais
+9. Activação controlada
+10. Auditoria pós-migração
 
 ---
 
 ## Honestidade técnica
 
-- **CONFIRMADO NO CÓDIGO:** invoice-service.ts:93-97, 212; crypto.ts; invoice-draft-service.ts; informed-payment/route.ts
-- **CONFIRMADO NA BD:** zero registros em staging; três armazéns; 182 stock movements; 45 purchase orders
-- **CONFIRMADO POR TESTE:** crypto.test.ts (assinatura de hash)
-- **INFERÊNCIA TÉCNICA:** desempenho sob carga — desenhada; não executável enquanto migration não for aplicada
-- **PENDENTE DE VALIDAÇÃO EXTERNA:** AGT
+- **CONFIRMADO NO CÓDIGO:** `invoice-service.ts:93-97, 329-333`; `crypto.ts`; `invoice-draft-service.ts`; `tenant-db.ts`
+- **CONFIRMADO NA BD:** zero facturas em staging
+- **CONFIRMADO POR TESTE:** `crypto.test.ts` (hash determinístico)
+- **INFERÊNCIA TÉCNICA:** comportamento sob carga — desenhado; não executado
+- **PENDENTE DE VALIDAÇÃO EXTERNA:** AGT (certificado de software e SAFT-AO)
 
-**Nenhuma linha de código, schema, migração ou configuração foi alterada.**
+**Nenhuma linha de código, schema, migração ou configuração foi alterada nesta fase.**
