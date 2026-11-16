@@ -18,6 +18,32 @@ datasource db {
 
 
 
+enum InvoiceType {
+
+  FT
+
+  NC
+
+  FR
+
+}
+
+
+
+
+enum InvoiceStatus {
+
+  DRAFT
+
+  ISSUED
+
+  ANULADA
+
+}
+
+
+
+
 model Tenant {
 
   id                       String                    @id @default(uuid())
@@ -162,6 +188,12 @@ model Tenant {
   rhShifts                 RhShift[]
   rhLeaveRequests          RhLeaveRequest[]
   rhSettings               RhSettings?
+
+  invoiceSeries            InvoiceSeries[]
+
+  invoiceChainState        InvoiceChainState?
+
+  idempotentRequests       IdempotentRequest[]
 
   rhAuditLogs              RhAuditLog[]
 
@@ -1153,6 +1185,26 @@ model Invoice {
 
   payments               Payment[]
 
+  seriesCode             String?
+
+  year                   Int?
+
+  documentType           InvoiceType?
+
+  chainSequence          Int?
+
+  hashVersion            Int             @default(1)
+
+  currentChainState      InvoiceChainState?    @relation("CurrentChainHead")
+
+  idempotentResults      IdempotentRequest[]   @relation("IdempotentResult")
+
+  series                 InvoiceSeries?         @relation(fields: [tenantId, seriesCode, documentType, year], references: [tenantId, seriesCode, documentType, year], onDelete: Restrict)
+
+  @@unique([id, tenantId])
+
+  @@index([tenantId, issuedAt])
+
 }
 
 
@@ -1981,9 +2033,13 @@ model InvoiceItem {
 
   total       Decimal  @db.Decimal(12, 2)
 
+  position    Int               @default(0)
+
   invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
   product     Product? @relation(fields: [productId], references: [id])
+
+  @@index([invoiceId, position])
 
 }
 
@@ -3564,4 +3620,79 @@ model RhPerformanceReviewSelfAssessment {
 
   @@unique([cycleId, employeeId])
   @@index([tenantId, cycleId])
+}
+
+
+
+
+model InvoiceSeries {
+
+  tenantId     String
+
+  seriesCode   String
+
+  documentType InvoiceType
+
+  year         Int
+
+  lastNumber   Int @default(0)
+
+  tenant       Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  invoices     Invoice[]
+
+  @@id([tenantId, seriesCode, documentType, year])
+
+  @@index([tenantId])
+
+}
+
+
+
+
+model InvoiceChainState {
+
+  tenantId      String   @id
+
+  lastHash      String?
+
+  lastSequence  Int      @default(0)
+
+  lastInvoiceId String?
+
+  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  lastInvoice   Invoice? @relation("CurrentChainHead", fields: [lastInvoiceId], references: [id], onDelete: Restrict)
+
+  @@unique([lastInvoiceId])
+
+}
+
+
+
+
+model IdempotentRequest {
+
+  tenantId    String
+
+  key         String
+
+  resource    String
+
+  payloadHash String
+
+  resultId    String
+
+  createdAt   DateTime @default(now())
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  invoice     Invoice  @relation("IdempotentResult", fields: [resultId], references: [id], onDelete: Restrict)
+
+  @@id([tenantId, key])
+
+  @@index([tenantId, resource, createdAt])
+
+  @@index([resultId])
+
 }
