@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { createRlsPrismaAdapter } from '@/lib/auth-prisma-adapter';
 import { isAdminPagePath, isProtectedPagePath } from '@/lib/route-access';

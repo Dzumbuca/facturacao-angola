@@ -82,7 +82,7 @@ export async function acceptTeamInvite(input: { token?: unknown; name?: unknown;
     const name = typeof input?.name === 'string' ? input.name.trim() : '';
     const password = typeof input?.password === 'string' ? input.password : '';
     if (!/^[A-Za-z0-9_-]{40,60}$/.test(rawToken) || (name && name.length > 120) || (password && (password.length < 8 || password.length > 128))) return { ok: false, message: 'Convite inválido ou expirado.' };
-    const bcrypt = (await import('bcrypt')).default;
+    const bcrypt = (await import('bcryptjs')).default;
     const passwordHash = password ? await bcrypt.hash(password, 12) : null;
     const now = new Date();
     await db.$transaction(async (tx: any) => {
