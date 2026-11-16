@@ -10,6 +10,7 @@ export const generateSAFTAO = async (tenantId: string, month: number, year: numb
     const invoices = await tx.invoice.findMany({
       where: {
         tenantId,
+        status: { in: ['ISSUED', 'ANULADA'] },
         issuedAt: {
           gte: new Date(year, month - 1, 1),
           lt: new Date(year, month, 1)
