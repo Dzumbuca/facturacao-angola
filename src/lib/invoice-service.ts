@@ -344,6 +344,7 @@ export const issueCreditNote = async (params: {
   invoiceNumber?: string;
   reason: string;
   tenantId?: string;
+  idempotencyKey?: string;
 }) => {
   // O tenantId deve vir do contexto autenticado (ex.: sessão), nunca de um
   // identificador fornecido livremente pelo cliente. Quando nao fornecido,
@@ -388,7 +389,26 @@ export const issueCreditNote = async (params: {
     const year = issuedAt.getFullYear();
     const seriesCode = 'A';
     const documentType = 'NC' as const;
+
+    // idempotency (NC path)
+    const payloadHash = sha256Hex(JSON.stringify({
+      refInvoiceNumber: originalInvoice.number,
+      reason: params.reason,
+      tenantId,
+    }));
     await lockIntegrityChain(tx, tenantId);
+    if (params.idempotencyKey) {
+      const decision = await checkIdempotency(tx, tenantId, params.idempotencyKey, 'CREDIT_NOTE', payloadHash);
+      if (decision.kind === 'replay') {
+        const existing = await tx.invoice.findFirst({ where: { id: decision.resultId!, tenantId }, include: { items: true, customer: true, tenant: true } });
+        if (existing) return { existing, shortHash: '', customerName: originalInvoice.customer.name, customerNif: originalInvoice.customer.nif };
+      } else if (decision.kind === 'conflict') {
+        const err: any = new Error('IdempotencyConflict');
+        err.code = 'IDEMPOTENCY_CONFLICT';
+        err.status = 409;
+        throw err;
+      }
+    }
     const reserved = await reserveInvoiceNumber(tx, tenantId, seriesCode, documentType, year);
     const ncNumber = `NC ${year}/${String(reserved).padStart(4, '0')}`;
     const chainState = await loadOrInitChainState(tx, tenantId);
@@ -489,6 +509,10 @@ export const issueCreditNote = async (params: {
     await tx.$executeRaw`UPDATE "InvoiceChainState"
       SET "lastHash" = ${hash}, "lastSequence" = ${chainSequence}, "lastInvoiceId" = ${creditNote.id}
       WHERE "tenantId" = ${tenantId}`;
+
+    if (params.idempotencyKey) {
+      await persistIdempotency(tx, tenantId, params.idempotencyKey, 'CREDIT_NOTE', payloadHash, creditNote.id);
+    }
 
     // 7. Atualizar o estado da fatura original para ANULADA (dentro da mesma transacao)
     await tx.invoice.update({
