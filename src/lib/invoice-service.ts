@@ -2,8 +2,8 @@ import { getInvoiceSigningKey } from './crypto';
 import crypto from 'crypto';
 import { Prisma } from '@prisma/client';
 import { runWithTenant } from './tenant-db';
-import { lockIntegrityChain, reserveInvoiceNumber, loadOrInitChainState } from './invoice-integrity';
-import { generateInvoiceHashV2 } from './invoice-integrity-core';
+import { lockIntegrityChain, reserveInvoiceNumber, loadOrInitChainState, checkIdempotency, persistIdempotency } from './invoice-integrity';
+import { generateInvoiceHashV2, sha256Hex } from './invoice-integrity-core';
 import { calculateInvoiceTotals } from './tax';
 import { resolveInvoiceLimit, countInvoicesThisMonth, InvoiceQuotaExceededError } from './invoice-quota';
 import { decrementStockForInvoice } from './stock-service';
@@ -13,6 +13,7 @@ export const issueInvoice = async (
   invoiceData: any,
   tenantId: string,
   beforePersist?: (invoiceDraft: any) => Promise<void>,
+  idempotencyKey?: string,
 ) => {
   // Todas as operacoes de emissao executam dentro de uma transacao Prisma que
   // tambem define o contexto app.tenant_id para RLS. Uma transacao Prisma por
@@ -90,7 +91,43 @@ export const issueInvoice = async (
     const year = issuedAt.getFullYear();
     const seriesCode = 'A';
     const documentType = 'FT' as const;
+
+    // Compute a deterministic payload hash for idempotency
+    const canonicalPayload = JSON.stringify({
+      customerId: (customer && (customer.id ?? null)) ?? null,
+      customerName: invoiceData.customerName ?? null,
+      customerNif: invoiceData.customerNif ?? null,
+      items: (invoiceData.items || []).map((item: any) => ({
+        productId: item.productId ?? null,
+        desc: item.desc ?? null,
+        qty: item.qty ?? 1,
+        rate: item.rate ?? 0,
+      })),
+      applyVat: invoiceData.applyVat !== false,
+      discountType: invoiceData.discountType ?? 'amount',
+      discountValue: invoiceData.discountValue ?? 0,
+      observations: invoiceData.observations ?? null,
+      includeCompanyProfile: invoiceData.includeCompanyProfile === true,
+      currency: invoiceData.currency ?? 'AOA',
+      dueAt: invoiceData.dueAt ? new Date(invoiceData.dueAt).toISOString() : null,
+    });
+    const payloadHash = sha256Hex(canonicalPayload);
+
     await lockIntegrityChain(transaction, tenant.id);
+
+    // Idempotência: mesma chave + mesmo payload → devolve resultado; mesma chave + payload diferente → 409.
+    if (idempotencyKey) {
+      const decision = await checkIdempotency(transaction, tenant.id, idempotencyKey, 'INVOICE', payloadHash);
+      if (decision.kind === 'replay') {
+        const existing = await transaction.invoice.findUnique({ where: { id: decision.resultId! }, include: { items: true, customer: true, tenant: true } });
+        if (existing) return existing as any;
+      } else if (decision.kind === 'conflict') {
+        const err: any = new Error('IdempotencyConflict');
+        err.code = 'IDEMPOTENCY_CONFLICT';
+        err.status = 409;
+        throw err;
+      }
+    }
     const reserved = await reserveInvoiceNumber(transaction, tenant.id, seriesCode, documentType, year);
     const invoiceNumber = `FT ${year}/${String(reserved).padStart(4, '0')}`;
     const chainState = await loadOrInitChainState(transaction, tenant.id);
@@ -243,6 +280,10 @@ export const issueInvoice = async (
     await transaction.$executeRaw`UPDATE "InvoiceChainState"
       SET "lastHash" = ${hash}, "lastSequence" = ${chainSequence}, "lastInvoiceId" = ${saved.id}
       WHERE "tenantId" = ${tenant.id}`;
+
+    if (idempotencyKey) {
+      await persistIdempotency(transaction, tenant.id, idempotencyKey, 'INVOICE', payloadHash, saved.id);
+    }
 
     // Baixa automatica de estoque apenas para produtos com controlo de stock e
     // tenants com o modulo WMS activo. O catalogo gratuito factura sem stock.
