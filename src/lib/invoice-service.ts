@@ -471,7 +471,7 @@ export const issueCreditNote = async (params: {
         customerId: originalInvoice.customerId,
         number: ncNumber,
         type: 'NC',
-        status: 'ISSUED',
+        status: 'DRAFT',
         seriesCode,
         documentType,
         year,
@@ -511,7 +511,14 @@ export const issueCreditNote = async (params: {
       }
     });
 
-    // Codigo da cadeia avançada + anulação do original atomicamente
+    // Selar NC: transição DRAFT→ISSUED (itens e âmbito expiraram juntos).
+    // O trigger permite transição apenas com OLD.status='DRAFT'.
+    await tx.invoice.update({
+      where: { id: creditNote.id },
+      data: { status: 'ISSUED' },
+    });
+
+    // Avançar a cadeia criptográfica DEPOIS de criada a nota de crédito. Se falhar, rollback integral.
     await tx.$executeRaw`UPDATE "InvoiceChainState"
       SET "lastHash" = ${hash}, "lastSequence" = ${chainSequence}, "lastInvoiceId" = ${creditNote.id}
       WHERE "tenantId" = ${tenantId}`;
