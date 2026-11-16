@@ -1223,6 +1223,10 @@ model Payment {
 
   updatedAt       DateTime        @updatedAt
 
+  proofName       String?
+
+  proofData       String?
+
   createdBy       User?           @relation("PaymentCreatedBy", fields: [createdByUserId], references: [id])
 
   invoice         Invoice         @relation(fields: [invoiceId], references: [id])
