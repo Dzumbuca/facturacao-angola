@@ -1,4 +1,4 @@
-import { generateInvoiceHash, getInvoiceSigningKey } from './crypto';
+import { getInvoiceSigningKey } from './crypto';
 import crypto from 'crypto';
 import { Prisma } from '@prisma/client';
 import { runWithTenant } from './tenant-db';
@@ -342,34 +342,52 @@ export const issueCreditNote = async (params: {
     // O tenantId e obtido do contexto autenticado ou validado contra a fatura
     const tenantId = authenticatedTenantId || originalInvoice.tenantId;
 
-    // 2. Obter a última fatura/documento para a cadeia de Hash
-    const lastDocument = await tx.invoice.findFirst({
-      where: { tenantId },
-      orderBy: { createdAt: 'desc' }
-    });
+    // 2-3. Cadeia documental e numeracao atomica de Nota de Crédito
+    const issuedAt = new Date();
+    const year = issuedAt.getFullYear();
+    const seriesCode = 'A';
+    const documentType = 'NC' as const;
+    await lockIntegrityChain(tx, tenantId);
+    const reserved = await reserveInvoiceNumber(tx, tenantId, seriesCode, documentType, year);
+    const ncNumber = `NC ${year}/${String(reserved).padStart(4, '0')}`;
+    const chainState = await loadOrInitChainState(tx, tenantId);
+    const previousHash = chainState.lastHash;
+    const chainSequence = chainState.lastSequence + 1;
 
-    const previousHash = lastDocument ? lastDocument.hash : null;
-
-    // 3. Gerar numeração sequencial para Nota de Crédito (NC) dentro da transacao
-    //    para evitar numeracao duplicada em emissoes concorrentes.
-    const ncCount = await tx.invoice.count({
-      where: { tenantId, type: 'NC' }
-    });
-    const currentYear = new Date().getFullYear();
-    const ncNumber = `NC ${currentYear}/${ncCount + 1}`;
-
-    // 4. Gerar o Hash Fiscal da Nota de Crédito
-    const hash = generateInvoiceHash({
+    // 4. Gerar o Hash Fiscal — V2 (assinatura canónica derivada da cadeia)
+    const hash = generateInvoiceHashV2({
+      seriesCode,
+      documentType,
+      year,
+      number: ncNumber,
+      tenantId,
+      customerId: originalInvoice.customerId,
       customerName: originalInvoice.customer.name,
       customerNif: originalInvoice.customer.nif,
-      number: ncNumber,
+      currency: originalInvoice.currency ?? 'AOA',
+      items: originalInvoice.items.map((item: any, idx: number) => ({
+        position: idx,
+        description: item.description,
+        productCode: item.productId ?? null,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        taxRate: item.taxRate,
+        total: item.total,
+      })),
       refInvoiceNumber: originalInvoice.number,
       subTotal: originalInvoice.subTotal,
       taxTotal: originalInvoice.taxTotal,
       total: originalInvoice.total,
-      cancelReason: params.reason
-    }, previousHash);
-
+      cancelReason: params.reason,
+      includeCompanyProfile: originalInvoice.includeCompanyProfile,
+      companyProfileSnapshot: originalInvoice.companyProfileSnapshot ?? null,
+      companyLogoId: originalInvoice.companyLogoId ?? null,
+      discountAmount: originalInvoice.discountAmount,
+      discountType: originalInvoice.discountType,
+      discountValue: originalInvoice.discountValue,
+      applyVat: originalInvoice.applyVat,
+      issuedAt: issuedAt.toISOString(),
+    }, previousHash, chainSequence);
     // 5. Gerar Assinatura Digital RSA
     const sign = crypto.createSign('SHA256');
     sign.update(hash);
@@ -387,6 +405,11 @@ export const issueCreditNote = async (params: {
         number: ncNumber,
         type: 'NC',
         status: 'ISSUED',
+        seriesCode,
+        documentType,
+        year,
+        chainSequence,
+        hashVersion: 2,
         refInvoiceNumber: originalInvoice.number,
         cancelReason: params.reason,
         includeCompanyProfile: originalInvoice.includeCompanyProfile,
@@ -404,11 +427,12 @@ export const issueCreditNote = async (params: {
         previousHash,
         signature,
         items: {
-          create: originalInvoice.items.map((item: any) => ({
+          create: originalInvoice.items.map((item: any, idx: number) => ({
             description: `[Estorno] ${item.description}`,
             quantity: item.quantity,
             unitPrice: item.unitPrice,
             taxRate: item.taxRate,
+            position: idx,
             total: item.total
           }))
         }
@@ -419,6 +443,11 @@ export const issueCreditNote = async (params: {
         tenant: true
       }
     });
+
+    // Codigo da cadeia avançada + anulação do original atomicamente
+    await tx.$executeRaw`UPDATE "InvoiceChainState"
+      SET "lastHash" = ${hash}, "lastSequence" = ${chainSequence}, "lastInvoiceId" = ${creditNote.id}
+      WHERE "tenantId" = ${tenantId}`;
 
     // 7. Atualizar o estado da fatura original para ANULADA (dentro da mesma transacao)
     await tx.invoice.update({
