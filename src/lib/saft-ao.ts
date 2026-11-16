@@ -17,7 +17,7 @@ export const generateSAFTAO = async (tenantId: string, month: number, year: numb
       },
       include: {
         customer: true,
-        items: true
+        items: { orderBy: { position: 'asc' } }
       }
     });
 
