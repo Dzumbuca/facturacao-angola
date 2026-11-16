@@ -730,12 +730,16 @@ body { font-family: Onest, "Segoe UI", Arial, sans-serif; }
 .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
 .sidebar-scroll::-webkit-scrollbar-thumb { background: rgb(255 255 255 / .25); border-radius: 3px; }
 
-/* Sidebar footer em ecrãs de baixa altura: esconde blocos de upsell por ordem de importância
-   (card "Pacotes pagos" primeiro, anúncio depois) para a navegação nunca ficar cortada */
+/* Sidebar footer em ecrãs baixos: esconde o cartão de upgrade e COMPRIME o anúncio
+   (o anúncio continua visível); só esconde tudo abaixo de 560px.
+   O menu nunca pode ser cortado por blocos de upsell/anúncio. */
 @media (max-height: 880px) {
   .sidebar-optional-tall { display: none; }
 }
-@media (max-height: 700px) {
+@media (max-height: 720px) {
+  .sidebar-ad-cap { max-height: 96px; overflow: hidden; }
+}
+@media (max-height: 560px) {
   .sidebar-optional-medium { display: none; }
 }
 

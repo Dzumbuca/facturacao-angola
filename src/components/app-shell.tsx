@@ -72,7 +72,7 @@ export function AppShell({ children, platformAdmin = false, plan = 'FREE', adHtm
           {plan === 'PRO' && planDaysLeft !== null && planDaysLeft <= 14 && <Link href="/pagamento" className="block rounded-lg border border-amber-400/40 bg-amber-500/10 px-3 py-2 text-[11px] font-semibold text-amber-300 transition hover:bg-amber-500/20">Expira em {planDaysLeft} {planDaysLeft === 1 ? 'dia' : 'dias'} — Renovar →</Link>}
           {plan !== 'PRO' && <div className="sidebar-optional-medium">
             <p className="text-[10px] uppercase tracking-[.12em] text-slate-500">Anúncio</p>
-            {adHtml && <div className="mt-2 overflow-hidden rounded-lg bg-white p-2 text-[#1c2d3f]"><AdHtml html={adHtml} /></div>}
+            {adHtml && <div className="sidebar-ad-cap mt-2 overflow-hidden rounded-lg bg-white p-2 text-[#1c2d3f]"><AdHtml html={adHtml} /></div>}
             <div className="sidebar-optional-tall mt-2 overflow-hidden rounded-lg bg-gradient-to-br from-[#2878d0] to-[#102b46] p-3 text-white">
               <p className="text-xs font-bold">Pacotes pagos</p>
               <p className="mt-1 text-[11px] leading-4 text-blue-100">Sem anúncios, stock, relatórios e equipa. Básico desde 5.000 Kz/mês.</p>
