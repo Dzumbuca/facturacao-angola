@@ -207,6 +207,8 @@ model Tenant {
   accountingSequences  AccountingSequence[]
   reconciliationRuns   ReconciliationRun[]
   reconciliationIssues ReconciliationIssue[]
+  auditEvents          AuditEvent[]
+  distributedSlot      DistributedSlot?
 }
 
 
