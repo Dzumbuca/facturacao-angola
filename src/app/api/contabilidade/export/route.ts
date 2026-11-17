@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { getSessionTenantId } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
+import { logAuditEvent } from '@/lib/audit-log';
 
 function csvEscape(s: string): string {
   if (s.includes(';') || s.includes('"') || s.includes('\n')) return '"' + s.replace(/"/g, '""') + '"';
@@ -72,6 +73,20 @@ export async function GET(req: NextRequest) {
   }
 
   const csv = rows.map((r) => r.map(csvEscape).join(';')).join('\r\n');
+  try {
+    const session = await auth();
+    const actorUserId = (session?.user as any)?.id ?? null;
+    await logAuditEvent(tenantId, {
+      actorUserId,
+      action: 'REPORT_EXPORT_CSV',
+      entity: 'AccountingExport',
+      entityId: type,
+      source: '/api/contabilidade/export?type=' + type,
+      after: { type, tenantName, rows: rows.length } as any,
+    });
+  } catch (auditError) {
+    throw new Error('AUDIT_EVENT_FAILED: ' + String((auditError as any)?.message || 'unknown'));
+  }
   return new NextResponse(csv, {
     status: 200,
     headers: {

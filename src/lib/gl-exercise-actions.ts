@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma';
 import { getSessionTenantId } from '@/lib/session';
 import { apurarResultado, abrirProximoExercicio } from '@/lib/gl-exercise-closing';
 import { preValidateExercise } from './gl-exercise-precheck';
+import { logAuditEvent } from './audit-log';
 
 // A11 — in-process gates for apuramento/opening per exercise per tenant.
 // Complements the JE source/sourceId unique constraint (DB-level).
@@ -37,6 +38,20 @@ export async function closeExerciseAndApurar(exerciseId: string, justification: 
     }
 
     const result = await apurarResultado(tenantId, year, actorUserId, justification);
+    try {
+      await logAuditEvent(tenantId, {
+        actorUserId,
+        action: 'EXERCISE_CLOSED',
+        entity: 'AccountingExercise',
+        entityId: exerciseId,
+        justification,
+        after: { exerciseId, exerciceYear: year, result } as any,
+        source: 'closeExerciseAndApurar',
+      });
+    } catch (auditError) {
+      // The DRIFT audit-event path never silences — rethrow so the close is reversed
+      throw new Error('AUDIT_EVENT_FAILED: ' + ((auditError as any)?.message ?? 'unknown'));
+    }
     revalidatePath('/contabilidade');
     return result;
   })();
@@ -55,7 +70,23 @@ export async function openNextExercise(nextYear: number, justification: string) 
   const previous = openLocks.get(lockKey);
   if (previous) { try { await previous; } catch { /* previous settled */ } }
 
-  const myLock = abrirProximoExercicio(tenantId, nextYear, justification, actorUserId);
+  const myLock = (async () => {
+    const result = await abrirProximoExercicio(tenantId, nextYear, justification, actorUserId);
+    try {
+      await logAuditEvent(tenantId, {
+        actorUserId,
+        action: 'EXERCISE_OPENED',
+        entity: 'AccountingExercise',
+        entityId: result.exerciseId,
+        justification,
+        after: { openedNextYear: nextYear, result } as any,
+        source: 'openNextExercise',
+      });
+    } catch (auditError) {
+      throw new Error('AUDIT_EVENT_FAILED: ' + ((auditError as any)?.message ?? 'unknown'));
+    }
+    return result;
+  })();
   openLocks.set(lockKey, myLock);
   try { return await myLock; } finally { openLocks.delete(lockKey); }
 }
