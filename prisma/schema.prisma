@@ -205,6 +205,8 @@ model Tenant {
   glAccountHistories    GlAccountHistory[]
   accountingExercises  AccountingExercise[]
   accountingSequences  AccountingSequence[]
+  reconciliationRuns   ReconciliationRun[]
+  reconciliationIssues ReconciliationIssue[]
 }
 
 
@@ -3880,5 +3882,48 @@ model AccountingSequence {
   tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, prefix])
+}
+
+
+model ReconciliationRun {
+  id            String              @id @default(uuid())
+  tenantId      String
+  startedAt     DateTime            @default(now())
+  finishedAt    DateTime?
+  status        String              @default("RUNNING")
+  rulesClaimed  Int                 @default(0)
+  issuesFound   Int                 @default(0)
+  actorUserId   String?
+
+  tenant        Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  issues        ReconciliationIssue[]
+
+  @@unique([tenantId, id])
+  @@index([tenantId, startedAt])
+  @@index([tenantId, status])
+}
+
+model ReconciliationIssue {
+  id            String   @id @default(uuid())
+  tenantId      String
+  runId         String
+  issueType     String
+  docKind       String?
+  docId         String?
+  value         Decimal? @db.Decimal(12, 2)
+  description   String
+  severity      String   @default("MEDIUM")
+  state         String   @default("OPEN")
+  resolvedAt    DateTime?
+  resolvedBy    String?
+  justification String?
+  createdAt     DateTime @default(now())
+
+  tenant        Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  run           ReconciliationRun   @relation(fields: [tenantId, runId], references: [tenantId, id], onDelete: Cascade)
+
+  @@index([tenantId, runId])
+  @@index([tenantId, state])
+  @@index([tenantId, issueType])
 }
 
