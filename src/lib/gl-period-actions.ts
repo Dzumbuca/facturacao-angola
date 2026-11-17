@@ -40,6 +40,19 @@ export async function closeExercise(exerciseId: string, justification: string) {
   const actorUserId = (session?.user as any)?.id ?? null;
   if (!justification || justification.trim().length < 5) throw new Error('Motivo obrigatório para fechar o exercício.');
 
+  // A9 — block close if there are open blockers (compute year from the exercise id first)
+  const { preValidateExercise } = await import('./gl-exercise-precheck');
+  const exerciseFirst = await prisma.accountingExercise.findFirst({
+    where: { tenantId, id: exerciseId },
+    select: { year: true },
+  });
+  const yearForValidate = exerciseFirst?.year ?? new Date().getUTCFullYear();
+  const preCheck = await preValidateExercise(tenantId, yearForValidate);
+  const exerciseBlockers = preCheck.filter((b: any) => b.severity === 'BLOCKER');
+  if (exerciseBlockers.length > 0) {
+    throw new Error(`Exercício tem ${exerciseBlockers.length} bloqueador(es): ${exerciseBlockers.slice(0, 3).map((b: any) => b.code).join(', ')}`);
+  }
+
   return runWithTenant(tenantId, async (tx) => {
     // Pre-flight: verify balance — fetch all JE lines and check debit == credit
     const lines: { debit: number; credit: number }[] = await (tx as any).$queryRawUnsafe(

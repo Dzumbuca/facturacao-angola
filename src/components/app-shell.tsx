@@ -20,7 +20,7 @@ const groups: { title: string; links: NavLink[] }[] = [
   { title: 'Documentos', links: [{ href: '/invoices', label: 'Facturas', icon: 'file' }, { href: '/documentos', label: 'Documentos', icon: 'receipt' }, { href: '/customers', label: 'Clientes', icon: 'users' }, { href: '/produtos', label: 'Produtos', icon: 'package' }] },
   { title: 'Ferramentas', links: [{ href: '/ferramentas', label: 'Centro de ferramentas', icon: 'calculator' }] },
   { title: 'Operações', links: [{ href: '/warehouses', label: 'Armazéns', icon: 'building' }, { href: '/recebiveis', label: 'Recebimentos', icon: 'wallet' }, { href: '/pagar', label: 'Contas a pagar', icon: 'wallet' }] },
-  { title: 'Contabilidade', links: [{ href: '/contabilidade', label: 'Diário', icon: 'file' }, { href: '/contabilidade/plano-contas', label: 'Plano de contas', icon: 'package' }, { href: '/contabilidade/balancete', label: 'Balancete', icon: 'chart' }, { href: '/contabilidade/periodos', label: 'Períodos', icon: 'package' }, { href: '/contabilidade/razao', label: 'Razão por conta', icon: 'chart' }, { href: '/contabilidade/auditoria', label: 'Auditoria', icon: 'file' }, { href: '/contabilidade/reconciliar', label: 'Reconciliação', icon: 'chart' }, { href: '/contabilidade/statements', label: 'Balanço e DRE', icon: 'chart' }] },
+  { title: 'Contabilidade', links: [{ href: '/contabilidade', label: 'Diário', icon: 'file' }, { href: '/contabilidade/plano-contas', label: 'Plano de contas', icon: 'package' }, { href: '/contabilidade/balancete', label: 'Balancete', icon: 'chart' }, { href: '/contabilidade/periodos', label: 'Períodos', icon: 'package' }, { href: '/contabilidade/razao', label: 'Razão por conta', icon: 'chart' }, { href: '/contabilidade/auditoria', label: 'Auditoria', icon: 'file' }, { href: '/contabilidade/reconciliar', label: 'Reconciliação', icon: 'chart' }, { href: '/contabilidade/statements', label: 'Balanço e DRE', icon: 'chart' }, { href: '/contabilidade/exercicios', label: 'Exercícios', icon: 'package' }] },
   { title: 'Análise', links: [{ href: '/reports', label: 'Relatórios', icon: 'chart' }] },
   { title: 'Empresa', links: [{ href: '/empresa', label: 'Perfil da empresa', icon: 'building' }] },
 ];
@@ -45,6 +45,7 @@ const titles: Record<string, string> = {
   '/contabilidade/auditoria': 'Auditoria contabilística',
   '/contabilidade/statements': 'Balanço e DRE',
   '/contabilidade/reconciliar': 'Reconciliação',
+  '/contabilidade/exercicios': 'Exercícios',
 };
 
 export function AppShell({ children, platformAdmin = false, plan = 'FREE', adHtml = null, planDaysLeft = null, planExpired = false, wmsEnabled = false }: { children: ReactNode; platformAdmin?: boolean; plan?: string; adHtml?: string | null; planDaysLeft?: number | null; planExpired?: boolean; wmsEnabled?: boolean }) {
