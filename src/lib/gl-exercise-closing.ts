@@ -297,12 +297,19 @@ export async function abrirProximoExercicio(
       const net = round2(debit - credit);
       if (Math.abs(net) < 0.01) continue;
       const isDebitNature = NATURAL_DEBIT.has((acc.kind as string).toUpperCase());
-      if (Math.abs(net) > 0) {
-        if (isDebitNature) {
-          // Carry: debit in opening = balance carried from previous period
-          openingLines.push({ accountId: acc.id, debit: Math.abs(net), memo: `Abertura ${nextYear} (transporta do ${nextYear - 1})` });
-        } else {
-          openingLines.push({ accountId: acc.id, credit: Math.abs(net), memo: `Abertura ${nextYear} (transporta do ${nextYear - 1})` });
+      if (isDebitNature) {
+        // Debit-nature accounts: net >= 0 means debit-balance, net < 0 means credit-balance
+        if (net > 0.001) {
+          openingLines.push({ accountId: acc.id, debit: round2(net), memo: `Abertura ${nextYear} (transporta do ${nextYear - 1})` });
+        } else if (net < -0.001) {
+          openingLines.push({ accountId: acc.id, credit: round2(-net), memo: `Abertura ${nextYear} (transporta do ${nextYear - 1})` });
+        }
+      } else {
+        // Credit-nature accounts: net <= 0 means credit-balance, net > 0 means debit-balance
+        if (net < -0.001) {
+          openingLines.push({ accountId: acc.id, credit: round2(-net), memo: `Abertura ${nextYear} (transporta do ${nextYear - 1})` });
+        } else if (net > 0.001) {
+          openingLines.push({ accountId: acc.id, debit: round2(net), memo: `Abertura ${nextYear} (transporta do ${nextYear - 1})` });
         }
       }
     }
