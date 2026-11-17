@@ -119,10 +119,13 @@ export async function postJournalEntry(tenantId: string, input: JournalPost) {
       if (!codeToId.has(code)) throw new Error(`ACCOUNT_NOT_FOUND:${code}`);
     }
 
+    const { reserveJournalEntryNumberOnTx } = await import('./gl-sequence');
+    const number = await reserveJournalEntryNumberOnTx(tx, tenantId, 'JE');
+
     const entry = await tx.journalEntry.create({
       data: {
         tenantId,
-        number: `JE-${Date.now()}-${Math.floor(Math.random() * 1e6).toString().padStart(6, '0')}`,
+        number,
         postedOnDate: input.postedOnDate ?? new Date(),
         description: input.description.trim(),
         source: input.source,

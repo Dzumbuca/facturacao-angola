@@ -202,6 +202,9 @@ model Tenant {
 
   glAccounts        GlAccount[]
   journalEntries    JournalEntry[]
+  glAccountHistories    GlAccountHistory[]
+  accountingExercises  AccountingExercise[]
+  accountingSequences  AccountingSequence[]
 }
 
 
@@ -3750,6 +3753,7 @@ model GlAccount {
   parent       GlAccount? @relation("GlAccountTree", fields: [parentId], references: [id], onDelete: SetNull)
   children     GlAccount[] @relation("GlAccountTree")
   lines        JournalEntryLine[]
+  history      GlAccountHistory[]
 
   @@unique([tenantId, id])
   @@unique([tenantId, code])
@@ -3768,14 +3772,25 @@ model JournalEntry {
   createdBy    String?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+  exerciseId   String?
+  periodId     String?
+  entryType    String    @default("STANDARD")
+  status       String    @default("POSTED")
+  reversedFromId String?
 
-  tenant       Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant       Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  period       AccountingPeriod?   @relation(fields: [tenantId, periodId], references: [tenantId, id])
+  exercise     AccountingExercise? @relation(fields: [tenantId, exerciseId], references: [tenantId, id])
   lines        JournalEntryLine[]
 
   @@unique([tenantId, id])
   @@unique([tenantId, number])
   @@index([tenantId, postedOnDate])
   @@index([tenantId, source, sourceId])
+  @@index([tenantId, status])
+  @@index([tenantId, periodId])
+  @@index([tenantId, exerciseId])
+  @@unique([tenantId, reversedFromId])
 }
 
 model JournalEntryLine {
@@ -3793,5 +3808,77 @@ model JournalEntryLine {
   @@unique([tenantId, id])
   @@index([tenantId, accountId])
   @@index([tenantId, entryId])
+}
+
+
+model GlAccountHistory {
+  id           String       @id @default(uuid())
+  tenantId     String
+  accountId    String
+  action       String
+  actorUserId  String?
+  changedAt    DateTime     @default(now())
+  oldValues    Json?
+  newValues    Json?
+  account      GlAccount    @relation(fields: [tenantId, accountId], references: [tenantId, id], onDelete: Cascade)
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, accountId])
+}
+
+model AccountingExercise {
+  id          String   @id @default(uuid())
+  tenantId    String
+  year        Int
+  startDate   DateTime
+  endDate     DateTime
+  state       String   @default("OPEN")
+  openedAt    DateTime @default(now())
+  openedBy    String?
+  closedAt    DateTime?
+  closedBy    String?
+  createdAt   DateTime @default(now())
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  periods     AccountingPeriod[]
+  entries     JournalEntry[]
+
+  @@unique([tenantId, id])
+  @@unique([tenantId, year])
+  @@index([tenantId, state])
+}
+
+model AccountingPeriod {
+  id          String   @id @default(uuid())
+  tenantId    String
+  exerciseId  String
+  code        String
+  startDate   DateTime
+  endDate     DateTime
+  state       String   @default("OPEN")
+  openedAt    DateTime @default(now())
+  openedBy    String?
+  closedAt    DateTime?
+  closedBy    String?
+  createdAt   DateTime @default(now())
+
+  exercise    AccountingExercise @relation(fields: [tenantId, exerciseId], references: [tenantId, id], onDelete: Cascade)
+  entries     JournalEntry[]
+
+  @@unique([tenantId, id])
+  @@unique([tenantId, exerciseId, code])
+  @@index([tenantId, state])
+  @@index([tenantId, startDate, endDate])
+}
+
+model AccountingSequence {
+  id          String   @id @default(uuid())
+  tenantId    String
+  prefix      String
+  nextNumber  Int      @default(1)
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, prefix])
 }
 
