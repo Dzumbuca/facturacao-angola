@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { getSessionTenantId } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
+import { logAuditEvent } from '@/lib/audit-log';
 import { computeStatements } from '@/lib/accounting-statements';
 import { generateAccountingStatementPdf } from '@/lib/accounting-statement-pdf';
 
@@ -18,6 +19,16 @@ export async function GET(req: NextRequest) {
 
   const totals = await computeStatements(tenantId, year);
   const { assets, liabilities, equity, revenue, expenses, result, balanceOK } = totals;
+
+  try {
+    await logAuditEvent(tenantId, {
+      action: 'REPORT_EXPORT_PDF',
+      entity: 'AccountingExport',
+      entityId: `balanco-dre-${year}`,
+      source: '/api/contabilidade/export/pdf',
+      after: { year, format: 'pdf' } as any,
+    });
+  } catch (err) { throw new Error('AUDIT_EVENT_FAILED: ' + String((err as any)?.message)); }
 
   const pdf = await generateAccountingStatementPdf({
     companyName: tenantName,
