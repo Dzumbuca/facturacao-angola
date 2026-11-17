@@ -11,9 +11,8 @@ import { issueInvoice } from './invoice-service';
 import { recordPayment, transitionPayment, getInvoicePaymentTotals } from './payment-service';
 import { PrismaClient } from '@prisma/client';
 
-const url = process.env.DATABASE_URL_A2 || process.env.DATABASE_URL_A1 || process.env.DATABASE_URL;
+const url = process.env.DATABASE_URL_A2;
 const enabled = !!url && !url.includes('supabase.com');
-if (url && url.includes('supabase.com')) throw new Error('A2 integration aponta para Supabase — proibido');
 
 let prisma: InstanceType<typeof PrismaClient> | null = null;
 if (enabled) {

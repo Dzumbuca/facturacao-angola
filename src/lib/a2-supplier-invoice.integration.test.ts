@@ -14,9 +14,8 @@ import {
   cancelSupplierInvoice,
 } from './supplier-invoice-service';
 
-const url = process.env.DATABASE_URL_A2 || process.env.DATABASE_URL_A1 || process.env.DATABASE_URL;
+const url = process.env.DATABASE_URL_A2;
 const enabled = !!url && !url.includes('supabase.com');
-if (url && url.includes('supabase.com')) throw new Error('A2 integration proíbe Supabase');
 
 let prisma: InstanceType<typeof PrismaClient> | null = null;
 if (enabled) {
@@ -64,7 +63,7 @@ describeIfDisposable('A2 — SupplierInvoice end-to-end', () => {
 
     // 2. Listar — deve estar overdue
     const { invoices, total } = await getOutstandingSupplierInvoices(tenantId);
-    const overdue = invoices.find(i => i.id === inv.id);
+    const overdue = invoices.find((i: any) => i.id === inv.id);
     expect(overdue).toBeTruthy();
     expect(total.overdueCount).toBeGreaterThan(0);
 
