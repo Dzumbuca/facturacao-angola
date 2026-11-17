@@ -3931,3 +3931,36 @@ model ReconciliationIssue {
   @@index([tenantId, issueType])
 }
 
+
+model AuditEvent {
+  id            String   @id @default(uuid())
+  tenantId      String
+  actorUserId   String?
+  action        String
+  entity        String
+  entityId      String?
+  before        Json?
+  after         Json?
+  justification String?
+  result        String   @default("SUCCESS")
+  correlationId String?
+  source        String?
+  occurredAt    DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, occurredAt])
+  @@index([tenantId, entity, entityId])
+  @@index([tenantId, action])
+  @@index([correlationId])
+}
+
+model DistributedSlot {
+  tenantId   String   @id
+  inflight   Int      @default(0)
+  maxSlots   Int      @default(2)
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+}
