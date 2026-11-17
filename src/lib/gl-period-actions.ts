@@ -42,9 +42,9 @@ export async function closeExercise(exerciseId: string, justification: string) {
 
   return runWithTenant(tenantId, async (tx) => {
     // Pre-flight: verify balance — fetch all JE lines and check debit == credit
-    const lines = await tx.$queryRawUnsafe<{ debit: number; credit: number }[]>(
+    const lines: { debit: number; credit: number }[] = await (tx as any).$queryRawUnsafe(
       `SELECT COALESCE(SUM(l."debit"),0)::float AS debit, COALESCE(SUM(l."credit"),0)::float AS credit FROM "JournalEntryLine" l WHERE l."tenantId" = $1`,
-      [tenantId],
+      tenantId,
     );
     const totalD = Number(lines[0]?.debit ?? 0);
     const totalC = Number(lines[0]?.credit ?? 0);
