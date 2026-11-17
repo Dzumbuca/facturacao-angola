@@ -57,3 +57,39 @@ describe('aggregatePeriodMetrics/pendingYetDue', () => {
     expect(metrics.pendingYetDue).toBe(500);
   });
 });
+
+describe('aggregatePeriodMetrics/payables', () => {
+  it('returns payables balance aggregated from supplier invoices', () => {
+    const period = { start: new Date('2026-10-01T00:00:00.000Z'), endExclusive: new Date('2026-11-01T00:00:00.000Z'), key: 'thisMonth', timeZone: 'Africa/Luanda' as const };
+    const now = new Date('2026-10-15T12:00:00.000Z');
+    const metrics = aggregatePeriodMetrics({
+      invoices: [
+        { id: 'inv-ft-1', type: 'FT', status: 'ISSUED', total: 1000, issuedAt: new Date('2026-10-10'), dueAt: null, payments: [] },
+      ],
+      payables: [
+        { total: 500, paidAmount: 200, dueDate: new Date('2026-10-25'), status: 'PENDING' },
+        { total: 300, paidAmount: 300, dueDate: new Date('2026-10-12'), status: 'PAID' },
+        { total: 200, paidAmount: 0, dueDate: new Date('2026-10-05'), status: 'PENDING' },
+      ],
+      period,
+      now,
+    });
+    expect(metrics.payablesOutstanding).toBe(500); // 300 unpaid + 200 pending
+    expect(metrics.payablesOverdue).toBe(200); // 1 invoice due before 2026-10-15, total 200
+    expect(metrics.payablesOverdueCount).toBe(1);
+  });
+
+  it('payables defaults: missing payables arg → zero', () => {
+    const period = { start: new Date('2026-10-01T00:00:00.000Z'), endExclusive: new Date('2026-11-01T00:00:00.000Z'), key: 'thisMonth', timeZone: 'Africa/Luanda' as const };
+    const metrics = aggregatePeriodMetrics({
+      invoices: [
+        { id: 'inv-ft-1', type: 'FT', status: 'ISSUED', total: 1000, issuedAt: new Date('2026-10-10'), dueAt: null, payments: [] },
+      ],
+      period,
+    });
+    expect(metrics.payablesOutstanding).toBe(0);
+    expect(metrics.payablesOverdue).toBe(0);
+    expect(metrics.payablesOverdueCount).toBe(0);
+  });
+});
+

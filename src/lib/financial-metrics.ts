@@ -4,15 +4,17 @@ import type { ReportPeriod } from './report-period';
 
 type MetricInvoice = { id: string; number?: string; type: string; status: string; total: number | string; issuedAt: Date; dueAt: Date | null; customer?: { name: string }; payments: { amount: number | string; status: string; paymentDate: Date; method?: string }[] };
 type MetricPayment = { amount: number | string; status: string; paymentDate: Date; method?: string };
+type MetricPayable = { total: number | string; paidAmount: number | string; dueDate: Date | null; status: string };
 export type FinancialMetrics = {
   invoiced: number; invoicedPrevious: number; invoicedChangePercent: number | null; received: number; outstanding: number; pendingYetDue: number; overdue: number;
   dueSoon: number; invoiceCount: number; stateCounts: Record<InvoiceDisplayState, number>;
   invoiceSeries: { date: string; value: number }[]; receiptSeries: { date: string; value: number }[];
   paymentMethods: { method: string; confirmed: number; pending: number }[]; pendingTotal: number;
   recentInvoices: MetricInvoice[];
+  payablesOutstanding: number; payablesOverdue: number; payablesOverdueCount: number;
 };
 
-export function aggregatePeriodMetrics(input: { invoices: MetricInvoice[]; previousInvoices?: MetricInvoice[]; payments?: MetricPayment[]; period: ReportPeriod; now?: Date }): FinancialMetrics {
+export function aggregatePeriodMetrics(input: { invoices: MetricInvoice[]; previousInvoices?: MetricInvoice[]; payments?: MetricPayment[]; payables?: MetricPayable[]; period: ReportPeriod; now?: Date }): FinancialMetrics {
   const now = input.now ?? new Date();
   const invoices = input.invoices.filter((invoice) => invoice.type === 'FT' && invoice.status === 'ISSUED' && inRange(invoice.issuedAt, input.period));
   const payments = input.payments ?? input.invoices.flatMap((invoice) => invoice.payments);
@@ -47,6 +49,13 @@ export function aggregatePeriodMetrics(input: { invoices: MetricInvoice[]; previ
     if (balance > 0 && invoice.dueAt && dateKey(invoice.dueAt) >= dateKey(now) && dateKey(invoice.dueAt) <= dateKey(new Date(now.getTime() + 7 * 86400000))) dueSoon += balance;
   }
   const pendingYetDue = roundMoney(Math.max(0, outstanding - overdue));
+  const payables = input.payables ?? [];
+  const isOverdue = (dueDate: Date | null) => dueDate !== null && dueDate.getTime() < now.getTime();
+  const activePayables = payables.filter(p => p.status === 'PENDING' || p.status === 'OVERDUE');
+  const payablesOutstanding = roundMoney(activePayables.reduce((sum, p) => sum + Math.max(0, Number(p.total) - Number(p.paidAmount)), 0));
+  const overduePayables = activePayables.filter(p => isOverdue(p.dueDate));
+  const payablesOverdue = roundMoney(overduePayables.reduce((sum, p) => sum + Math.max(0, Number(p.total) - Number(p.paidAmount)), 0));
+  const payablesOverdueCount = overduePayables.length;
   return {
     invoiced, invoicedPrevious, invoicedChangePercent, received, outstanding: roundMoney(outstanding), pendingYetDue, overdue: roundMoney(overdue), dueSoon: roundMoney(dueSoon),
     paymentMethods, pendingTotal: roundMoney(paymentMethods.reduce((sum, method) => sum + method.pending, 0)),
@@ -54,13 +63,14 @@ export function aggregatePeriodMetrics(input: { invoices: MetricInvoice[]; previ
     invoiceSeries: series(invoices.map((invoice) => ({ date: invoice.issuedAt, value: Number(invoice.total) })), input.period),
     receiptSeries: series(payments.filter((payment) => payment.status === 'CONFIRMED' && inRange(payment.paymentDate, input.period)).map((payment) => ({ date: payment.paymentDate, value: Number(payment.amount) })), input.period),
     recentInvoices: [...invoices].sort((a, b) => b.issuedAt.getTime() - a.issuedAt.getTime()).slice(0, 8),
+    payablesOutstanding, payablesOverdue, payablesOverdueCount,
   };
 }
 
 export async function getTenantPeriodMetrics(tenantId: string, period: ReportPeriod): Promise<FinancialMetrics> {
   const duration = period.endExclusive.getTime() - period.start.getTime();
   const previousPeriod = { ...period, key: 'previous', start: new Date(period.start.getTime() - duration), endExclusive: period.start };
-  const [invoices, previousInvoices, payments] = await Promise.all([
+  const [invoices, previousInvoices, payments, payables] = await Promise.all([
     prisma.invoice.findMany({
       where: { tenantId, type: 'FT', status: 'ISSUED', issuedAt: { gte: period.start, lt: period.endExclusive } },
       orderBy: { issuedAt: 'desc' }, take: 1000,
@@ -68,8 +78,9 @@ export async function getTenantPeriodMetrics(tenantId: string, period: ReportPer
     }),
     prisma.invoice.findMany({ where: { tenantId, type: 'FT', status: 'ISSUED', issuedAt: { gte: previousPeriod.start, lt: previousPeriod.endExclusive } }, select: { id: true, type: true, status: true, total: true, issuedAt: true, dueAt: true, payments: { select: { amount: true, status: true, paymentDate: true } } } }),
     prisma.payment.findMany({ where: { tenantId, status: { in: ['CONFIRMED', 'PENDING'] }, paymentDate: { gte: period.start, lt: period.endExclusive } }, select: { amount: true, status: true, paymentDate: true, method: true } }),
+    prisma.supplierInvoice.findMany({ where: { tenantId, status: { in: ['PENDING', 'OVERDUE'] } }, select: { total: true, paidAmount: true, dueDate: true, status: true } }),
   ]);
-  return aggregatePeriodMetrics({ invoices, previousInvoices, payments, period });
+  return aggregatePeriodMetrics({ invoices, previousInvoices, payments, payables, period });
 }
 
 function inRange(date: Date, period: ReportPeriod) { return date >= period.start && date < period.endExclusive; }
