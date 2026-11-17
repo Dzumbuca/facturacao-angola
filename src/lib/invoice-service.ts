@@ -26,17 +26,21 @@ export const issueInvoice = async (
   beforePersist?: (invoiceDraft: any) => Promise<void>,
   idempotencyKey?: string,
 ) => {
-  // Retry on deadlock / serialization-failure up to 5 times
-  for (let attempt = 0; attempt < 5; attempt++) {
-    try {
-      return await issueInvoiceOnce(invoiceData, tenantId, beforePersist, idempotencyKey);
-    } catch (err) {
-      if (!isDeadlock(err) || attempt === 4) throw err;
-      // tiny jitter backoff before retrying
-      await new Promise((r) => setTimeout(r, 50 + attempt * 50));
+  // A11 — in-process semaphore gates concurrent FTs per tenant to DEFAULT_MAX
+  // (5) emissions in-flight at a time; the queue holds the rest. This does
+  // NOT change PG pooling or timeouts. FIFO.
+  const { withEmissionSlot } = await import('./invoice-emission-semaphore');
+  return withEmissionSlot(tenantId, async () => {
+    for (let attempt = 0; attempt < 5; attempt++) {
+      try {
+        return await issueInvoiceOnce(invoiceData, tenantId, beforePersist, idempotencyKey);
+      } catch (err) {
+        if (!isDeadlock(err) || attempt === 4) throw err;
+        await new Promise((r) => setTimeout(r, 50 + attempt * 50));
+      }
     }
-  }
-  throw new Error('issueInvoice exhausted retries');
+    throw new Error('issueInvoice exhausted retries');
+  });
 };
 
 const issueInvoiceOnce = async (

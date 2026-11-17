@@ -300,6 +300,8 @@ model Customer {
 
   invoices          Invoice[]
 
+  @@index([tenantId, nif])
+  @@index([tenantId, name])
 }
 
 
