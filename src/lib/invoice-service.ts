@@ -15,6 +15,7 @@ const isDeadlock = (err: any) => {
   if (err.code === 'P2010' && /40P01|40001/.test(err.message ?? '')) return true;
   if (err.code === 'P2024') return true;  // connection pool timeout
   if (err.code === 'P2025') return true;  // record not found (rare transient)
+  if (err.code === 'P2028') return true;  // interactive transaction couldn't start in time (pool contention) — transient
   if (err.meta && /40P01|40001/.test(JSON.stringify(err.meta))) return true;
   return false;
 };
