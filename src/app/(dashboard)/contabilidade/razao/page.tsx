@@ -72,6 +72,10 @@ export default async function RazaoPage({ searchParams }: { searchParams: Promis
         <p className="mt-1 text-xs text-[#708195]">Intervalo: <strong>{selExerciseLabel} · {selPeriodLabel}</strong></p>
       </div>
 
+      <div className="flex justify-end">
+        <a href={`/api/contabilidade/export?type=razao&accountCode=${encodeURIComponent(filterId ?? '')}`} className="rounded-xl border border-[#e2e9f1] bg-white px-3 py-2 text-xs font-semibold text-[#2878d0] hover:bg-[#f4f8ff]">Exportar CSV</a>
+      </div>
+
       <form action="/contabilidade/razao" method="get" className="flex flex-wrap items-center gap-2">
         <select name="accountCode" defaultValue={filterId ?? ''} className="h-9 max-w-[280px] rounded-xl border border-[#e2e9f1] bg-[#f7fbff] px-3 text-sm">
           {accounts.map((a: any) => <option key={a.code} value={a.code}>{a.code} — {a.name}</option>)}

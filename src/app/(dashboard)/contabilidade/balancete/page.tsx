@@ -75,6 +75,10 @@ export default async function BalancetePage({ searchParams }: { searchParams: Pr
         <p className="mt-1 text-xs text-[#708195]">Intervalo: <strong>{selExerciseLabel} · {selPeriodLabel}</strong></p>
       </div>
 
+      <div className="flex justify-end">
+        <a href="/api/contabilidade/export?type=balancete" className="rounded-xl border border-[#e2e9f1] bg-white px-3 py-2 text-xs font-semibold text-[#2878d0] hover:bg-[#f4f8ff]">Exportar CSV</a>
+      </div>
+
       <form action="/contabilidade/balancete" method="get" className="flex flex-wrap items-center gap-2">
         <select name="exerciseCode" defaultValue={selExercise ? String(selExercise.year) : ''} className="h-9 rounded-xl border border-[#e2e9f1] bg-[#f7fbff] px-3 text-sm">
           <option value="">Todos os exercícios</option>

@@ -32,6 +32,7 @@ export default async function ContabilidadePage() {
           <p className="mt-2 text-sm text-[#708195]">Lançamentos contabilísticos com débitos e créditos. Cada lançamento é imutável após confirmação; correções via estorno.</p>
         </div>
         <div className="flex items-center gap-3">
+          <a href="/api/contabilidade/export?type=diario" className="rounded-xl border border-[#e2e9f1] bg-white px-4 py-2 text-xs font-semibold text-[#2878d0] hover:bg-[#f4f8ff]">Exportar CSV</a>
           <Link href="/contabilidade/plano-contas" className="rounded-xl border border-[#e2e9f1] bg-white px-4 py-2 text-xs font-semibold text-[#2878d0] hover:bg-[#f4f8ff]">Plano de contas</Link>
           <Link href="/contabilidade/balancete" className="rounded-xl border border-[#e2e9f1] bg-white px-4 py-2 text-xs font-semibold text-[#2878d0] hover:bg-[#f4f8ff]">Balancete</Link>
         </div>
