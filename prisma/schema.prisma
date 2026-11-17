@@ -3748,6 +3748,8 @@ model GlAccount {
   kind         String    // ASSET | LIABILITY | EQUITY | REVENUE | EXPENSE
   parentId     String?
   isActive     Boolean   @default(true)
+  synthetic    Boolean   @default(false)
+  nature       String?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 

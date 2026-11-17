@@ -68,7 +68,7 @@ export default async function ExerciciosPage({ searchParams }: { searchParams: P
         )}
       </section>
 
-      {exercise.state === 'OPEN' ? <CloseExerciseButton year={exercise.year} exerciseId={exercise.id} disabled={blockerCount > 0} /> : <div className="rounded-2xl border border-emerald-300 bg-emerald-50 p-4 text-xs text-emerald-800">Exercício fechado. Para reabrir, contacte o contabilista. Reabertura implica auditoria.</div>}
+      <CloseExerciseButton exerciseId={exercise.id} year={exercise.year} disabled={blockerCount > 0} exerciseState={exercise.state} />
     </div>
   );
 }
