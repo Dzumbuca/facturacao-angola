@@ -384,7 +384,7 @@ const issueInvoiceOnce = async (
   };
 };
 
-export const issueCreditNote = async (params: {
+const issueCreditNoteOnce = async (params: {
   invoiceId?: string;
   invoiceNumber?: string;
   reason: string;
@@ -602,3 +602,23 @@ export const issueCreditNote = async (params: {
     shortHash: result.shortHash,
   };
 };
+
+
+export const issueCreditNote = async (params: {
+  invoiceId?: string;
+  invoiceNumber?: string;
+  reason: string;
+  tenantId?: string;
+  idempotencyKey?: string;
+}) => {
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      return await issueCreditNoteOnce(params);
+    } catch (err) {
+      if (!isDeadlock(err) || attempt === 4) throw err;
+      await new Promise((r) => setTimeout(r, 50 + attempt * 50));
+    }
+  }
+  throw new Error('issueCreditNote exhausted retries');
+};
+

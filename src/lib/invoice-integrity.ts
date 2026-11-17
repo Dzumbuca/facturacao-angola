@@ -49,7 +49,12 @@ export interface IntegrityEmitOutcome {
 const ADVISORY_LOCK_PREFIX = 'invoice-chain';
 
 export async function lockIntegrityChain(tx: any, tenantId: string): Promise<void> {
-  await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`${ADVISORY_LOCK_PREFIX}:${tenantId}`}, 0))`;
+  // A8: chain autonomo via row locks on InvoiceChainState (FOR UPDATE);
+  // advisory lock is intentionally REMOVED. The chain's semantics are
+  // preserved by the SELECT … FOR UPDATE in loadOrInitChainState below.
+  // This removes the advisory lock's cross-tx coupling and the 40P01
+  // deadlock observed under concurrent FT issuance.
+  await tx.$executeRaw`SELECT 1`; // no-op; serialization happens at loadOrInitChainState
 }
 
 export async function reserveInvoiceNumber(
