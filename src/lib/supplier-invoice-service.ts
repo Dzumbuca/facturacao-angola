@@ -160,7 +160,41 @@ export async function cancelSupplierInvoice(id: string, tenantId: string) {
   return runWithTenant(tenantId, async (tx) => {
     const invoice = await tx.supplierInvoice.findFirst({ where: { id, tenantId } });
     if (!invoice) throw new Error('SUPPLIER_INVOICE_NOT_FOUND');
-    if (invoice.status === 'PAID' || invoice.status === 'CANCELLED') throw new Error('INVOICE_FINAL');
+    if (invoice.status === 'PAID') throw new Error('INVOICE_FINAL');
+    if (invoice.status === 'CANCELLED') return invoice;
+
+    // Release the original payable — post a symmetrical entry to reverse the accrual.
+    // DR 2000 (payable) / CR 1300 (stock) — or, when previously paid partially, DR 1200 (receivable) / CR 1300.
+    try {
+      const { postJournalEntry } = await import('./gl-service');
+      const amount = Number(invoice.total);
+      const alreadyPaid = Number(invoice.paidAmount);
+      if (alreadyPaid > 0) {
+        // Already partially paid: reverse original by full amount, leaving prior payment as standing credit
+        await postJournalEntry(tenantId, {
+          description: `Reversão de fatura a cancelar ${invoice.id.slice(0, 8)}`,
+          source: 'SUPPLIER_INVOICE_CANCEL',
+          sourceId: invoice.id,
+          lines: [
+            { accountCode: '2000', debit: amount },
+            { accountCode: '1300', credit: amount },
+          ],
+        });
+      } else {
+        // Plain cancellation with no payments yet
+        await postJournalEntry(tenantId, {
+          description: `Cancelamento de fatura ${invoice.id.slice(0, 8)}`,
+          source: 'SUPPLIER_INVOICE_CANCEL',
+          sourceId: invoice.id,
+          lines: [
+            { accountCode: '2000', debit: amount },
+            { accountCode: '1300', credit: amount },
+          ],
+        });
+      }
+    } catch (e) {
+      console.error('GL_POST_FAILED for cancelSupplierInvoice', invoice.id, e);
+    }
 
     const updated = await tx.supplierInvoice.update({
       where: { id: invoice.id },
