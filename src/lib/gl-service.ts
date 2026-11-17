@@ -34,8 +34,16 @@ export type JournalPost = {
 
 export async function ensureChartOfAccounts(tenantId: string) {
   return runWithTenant(tenantId, async (tx) => {
+    // Acquire advisory lock on tenant to serialize the chart seeding across concurrent workers
+    try {
+      await (tx as any).$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`glSeed:` + tenantId}, 0))`;
+    } catch {
+      // advisory lock not supported / already held — proceed anyway
+    }
+
     const existing = await tx.glAccount.findFirst({ where: { tenantId } });
     if (existing) return;
+    // Idempotente — upsert cada conta por (tenantId, code)
     const accounts = [
       { code: '1000', name: 'Caixa', kind: 'ASSET' },
       { code: '1100', name: 'Banco', kind: 'ASSET' },
@@ -54,7 +62,16 @@ export async function ensureChartOfAccounts(tenantId: string) {
       { code: '5200', name: 'Serviços contratados', kind: 'EXPENSE' },
     ];
     for (const acc of accounts) {
-      await tx.glAccount.create({ data: { tenantId, ...acc, isActive: true } });
+      // Use update-then-create to avoid P2002 races under concurrency
+      const existing = await tx.glAccount.findFirst({ where: { tenantId, code: acc.code } });
+      if (!existing) {
+        try {
+          await tx.glAccount.create({ data: { tenantId, ...acc, isActive: true } });
+        } catch (createError: any) {
+          // Concurrent seed may have inserted between findFirst and create — tolerate P2002 only
+          if (createError?.code !== 'P2002') throw createError;
+        }
+      }
     }
   });
 }
@@ -105,7 +122,7 @@ export async function postJournalEntry(tenantId: string, input: JournalPost) {
     const entry = await tx.journalEntry.create({
       data: {
         tenantId,
-        number: `JE-${Date.now().toString().slice(-10)}`,
+        number: `JE-${Date.now()}-${Math.floor(Math.random() * 1e6).toString().padStart(6, '0')}`,
         postedOnDate: input.postedOnDate ?? new Date(),
         description: input.description.trim(),
         source: input.source,
