@@ -86,6 +86,12 @@ export async function createSupplierInvoice(input: SupplierInvoiceInput, tenantI
         notes: input.notes ?? null,
       },
     });
+    try {
+      const { postSupplierInvoiceToGL } = await import('./gl-service');
+      await postSupplierInvoiceToGL(tenantId, created.id, Number(created.total), Number(created.taxTotal));
+    } catch (e) {
+      console.error('GL_POST_FAILED for supplierInvoice', created.id, e);
+    }
     return created;
   });
 }
@@ -112,6 +118,12 @@ export async function recordSupplierInvoicePayment(id: string, amount: number, t
         status,
       },
     });
+    try {
+      const { postSupplierPaymentToGL } = await import('./gl-service');
+      await postSupplierPaymentToGL(tenantId, `${invoice.id}-${newPaid}`, amount, invoice.id);
+    } catch (e) {
+      console.error('GL_POST_FAILED for supplier payment', invoice.id, e);
+    }
     return updated;
   });
 }

@@ -336,6 +336,16 @@ export const issueInvoice = async (
     return { saved, tenantId, shortHash, customerName: customer.name, customerNif: customer.nif, items: invoiceData.items };
   });
 
+  // A3 — GL posting (auto-creção, não bloqueia o FT se falhar)
+  try {
+    const { postInvoiceToGL } = await import('./gl-service');
+    const total = Number(result.saved.total);
+    const taxTotal = Number((result.saved as any).taxTotal?.toString() ?? 0);
+    await postInvoiceToGL(result.tenantId, result.saved.id, total, taxTotal);
+  } catch (e) {
+    console.error('GL_POST_FAILED for FT', result.saved.id, e);
+  }
+
   return {
     ...result.saved,
     customerName: result.customerName,

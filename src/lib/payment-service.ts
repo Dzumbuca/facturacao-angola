@@ -61,7 +61,16 @@ export async function transitionPayment(paymentId: string, nextStatus: 'CONFIRME
       tenantId, paymentId: payment.id, eventType: nextStatus, previousStatus: payment.status, nextStatus, actorUserId: actorId,
       snapshot: { amount: Number(payment.amount), invoiceNumber: payment.invoice.number, reference: payment.reference },
     } });
-    if (nextStatus === 'CONFIRMED') await ensureReceiptForPaymentTx(tx, tenantId, payment.id);
+    if (nextStatus === 'CONFIRMED') {
+      await ensureReceiptForPaymentTx(tx, tenantId, payment.id);
+      // A3 — GL posting
+      try {
+        const { postCustomerPaymentToGL } = await import('./gl-service');
+        await postCustomerPaymentToGL(tenantId, payment.id, Number(payment.amount), payment.invoiceId, actorId);
+      } catch (e) {
+        console.error('GL_POST_FAILED for payment', payment.id, e);
+      }
+    }
     return result;
   }, { userId: actorId });
 }

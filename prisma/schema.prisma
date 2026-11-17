@@ -199,8 +199,10 @@ model Tenant {
 
 
   supplierInvoices SupplierInvoice[]
-}
 
+  glAccounts        GlAccount[]
+  journalEntries    JournalEntry[]
+}
 
 
 model PlanPayment {
@@ -3730,5 +3732,66 @@ model SupplierInvoice {
   @@index([tenantId, supplierId])
   @@index([tenantId, dueDate])
 
+}
+
+
+model GlAccount {
+  id           String    @id @default(uuid())
+  tenantId     String
+  code         String
+  name         String
+  kind         String    // ASSET | LIABILITY | EQUITY | REVENUE | EXPENSE
+  parentId     String?
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  tenant       Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  parent       GlAccount? @relation("GlAccountTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children     GlAccount[] @relation("GlAccountTree")
+  lines        JournalEntryLine[]
+
+  @@unique([tenantId, id])
+  @@unique([tenantId, code])
+  @@index([tenantId, kind])
+  @@index([tenantId, parentId])
+}
+
+model JournalEntry {
+  id           String    @id @default(uuid())
+  tenantId     String
+  number       String
+  postedOnDate DateTime  @db.Date
+  description  String
+  source       String?
+  sourceId     String?
+  createdBy    String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  tenant       Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  lines        JournalEntryLine[]
+
+  @@unique([tenantId, id])
+  @@unique([tenantId, number])
+  @@index([tenantId, postedOnDate])
+  @@index([tenantId, source, sourceId])
+}
+
+model JournalEntryLine {
+  id           String   @id @default(uuid())
+  tenantId     String
+  entryId      String
+  accountId    String
+  debit        Decimal  @default(0) @db.Decimal(12, 2)
+  credit       Decimal  @default(0) @db.Decimal(12, 2)
+  memo         String?
+
+  entry        JournalEntry @relation(fields: [tenantId, entryId], references: [tenantId, id], onDelete: Cascade)
+  account      GlAccount    @relation(fields: [tenantId, accountId], references: [tenantId, id], onDelete: Restrict)
+
+  @@unique([tenantId, id])
+  @@index([tenantId, accountId])
+  @@index([tenantId, entryId])
 }
 
