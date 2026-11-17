@@ -209,6 +209,8 @@ model Tenant {
   reconciliationIssues ReconciliationIssue[]
   auditEvents          AuditEvent[]
   distributedSlot      DistributedSlot?
+  approvalRequests     ApprovalRequest[]
+  emissionLeases       EmissionLease[]
 }
 
 
@@ -3933,6 +3935,54 @@ model ReconciliationIssue {
   @@index([tenantId, issueType])
 }
 
+
+model ApprovalRequest {
+  id              String    @id @default(uuid())
+  tenantId        String
+  operation       String
+  entityType      String
+  entityId        String
+  payload         Json      @default("{}")
+  requestedBy     String
+  requesterRole   String?
+  justification   String
+  state           String    @default("PENDING")
+  decidedBy       String?
+  decidedAt       DateTime?
+  decision        String?
+  decisionReason  String?
+  executedAt      DateTime?
+  executedSummary Json?
+  correlationId   String?
+  expiresAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  tenant          Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, id])
+  @@index([tenantId, state, createdAt])
+  @@index([tenantId, requestedBy, createdAt])
+  @@index([correlationId])
+}
+
+model EmissionLease {
+  id              String    @id @default(uuid())
+  tenantId        String
+  operationId     String
+  processId       String?
+  state           String    @default("ACTIVE")
+  acquiredAt      DateTime  @default(now())
+  expiresAt       DateTime
+  lastRenewedAt   DateTime  @default(now())
+  releasedAt      DateTime?
+
+  tenant          Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, id])
+  @@index([tenantId, state, acquiredAt])
+  @@index([expiresAt])
+}
 
 model AuditEvent {
   id            String   @id @default(uuid())
