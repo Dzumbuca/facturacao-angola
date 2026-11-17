@@ -556,8 +556,15 @@ export const issueCreditNote = async (params: {
     };
   });
 
-  // Efeitos secundarios somente apos o commit: nenhuma operacao adicional
-  // necessita de executar fora da transacao.
+  // A5 — post estorno for NC to GL (DR 4000/DR 2100/CR 1200)
+  try {
+    const { postCreditNoteToGL } = await import('./gl-service');
+    const total = Number(result.creditNote.total);
+    const taxTotal = Number((result.creditNote as any).taxTotal?.toString() ?? 0);
+    await postCreditNoteToGL(result.tenantId ?? authenticatedTenantId, result.creditNote.id, total, taxTotal);
+  } catch (e) {
+    console.error('GL_POST_FAILED for NC', result.creditNote.id, e);
+  }
 
   return {
     ...result.creditNote,

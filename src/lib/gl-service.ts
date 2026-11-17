@@ -231,3 +231,28 @@ export async function postSupplierPaymentToGL(tenantId: string, paymentId: strin
     ],
   });
 }
+
+/**
+ * A5 — Auto-post NC (Nota de Crédito / credit note) issuance:
+ *   DR 4000 Vendas (reverse revenue)
+ *   DR 2100 IVA a recolher (reverse VAT if any)
+ *   CR 1200 Contas a receber de clientes (reverse the receivable)
+ */
+export async function postCreditNoteToGL(tenantId: string, creditNoteId: string, total: number, taxTotal: number, createdBy?: string | null) {
+  const net = round2(total - taxTotal);
+  const lines: JournalPost['lines'] = [
+    { accountCode: '4000', debit: net, memo: `Reversão NC ${creditNoteId.slice(0, 8)}` },
+    { accountCode: '1200', credit: round2(total), memo: 'Cliente em dívida' },
+  ];
+  if (taxTotal > 0) {
+    lines.push({ accountCode: '2100', debit: round2(taxTotal), memo: 'Reversão IVA' });
+  }
+  return postJournalEntry(tenantId, {
+    description: `Estorno NC ${creditNoteId}`,
+    source: 'CREDIT_NOTE',
+    sourceId: creditNoteId,
+    createdBy: createdBy ?? null,
+    lines,
+  });
+}
+
