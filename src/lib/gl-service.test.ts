@@ -16,10 +16,24 @@ vi.mock('./tenant-db.js', () => ({
     const tx = {
       $executeRaw: vi.fn().mockResolvedValue(1),
       $executeRawUnsafe: vi.fn().mockResolvedValue(1),
+      $queryRaw: vi.fn().mockResolvedValue([{ nextNumber: 1 }]),
       glAccount: {
         findFirst: vi.fn().mockResolvedValue(null),
         findMany: vi.fn().mockResolvedValue(accounts),
         create: vi.fn().mockResolvedValue({}),
+      },
+      accountingExercise: {
+        findFirst: vi.fn().mockResolvedValue({ id: 'exercise-test', year: 2026, state: 'OPEN' }),
+        create: vi.fn().mockResolvedValue({ id: 'exercise-created', year: 2026, state: 'OPEN' }),
+      },
+      accountingPeriod: {
+        findFirst: vi.fn().mockResolvedValue({ id: 'period-test', state: 'OPEN', code: '2026-06' }),
+        create: vi.fn().mockResolvedValue({ id: 'period-created', state: 'OPEN', code: '2026-06' }),
+      },
+      accountingSequence: {
+        findFirst: vi.fn().mockResolvedValue(null),
+        create: vi.fn().mockResolvedValue({}),
+        update: vi.fn().mockResolvedValue({}),
       },
       journalEntry: {
         findFirst: vi.fn().mockResolvedValue(null),
