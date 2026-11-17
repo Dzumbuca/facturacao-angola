@@ -76,7 +76,7 @@ export default async function BalancetePage({ searchParams }: { searchParams: Pr
       </div>
 
       <div className="flex justify-end">
-        <a href="/api/contabilidade/export?type=balancete" className="rounded-xl border border-[#e2e9f1] bg-white px-3 py-2 text-xs font-semibold text-[#2878d0] hover:bg-[#f4f8ff]">Exportar CSV</a>
+        <a href="/api/contabilidade/export?type=balancete" className="rounded-xl border border-[#e2e9f1] bg-white px-3 py-2 text-xs font-semibold text-[#2878d0] hover:bg-[#f4f8ff]">Exportar CSV</a><a href="/api/contabilidade/export/xlsx?type=balancete" className="rounded-xl border border-[#e2e9f1] bg-white px-3 py-2 text-xs font-semibold text-[#2878d0] hover:bg-[#f4f8ff]">Exportar Excel</a>
       </div>
 
       <form action="/contabilidade/balancete" method="get" className="flex flex-wrap items-center gap-2">
