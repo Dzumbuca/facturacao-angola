@@ -24,7 +24,7 @@ describeIfDisposable('A8 — same tenant 100 FTs parallel (advisory lock removed
       }, tenantId).then((r) => results.push(r)).catch((e) => errors.push({ msg: e?.message?.slice(0, 200), code: e?.code })),
     );
     await Promise.all(ops);
-    console.log('ok:', results.length, 'errors:', errors.length, JSON.stringify(errors).slice(0, 400));
+    console.log('ok:', results.length, 'errors:', errors.length, JSON.stringify(errors.slice(0, 5)));
     expect(errors.length).toBe(0);
     expect(results.length).toBe(100);
   }, 300_000);
