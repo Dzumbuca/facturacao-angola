@@ -3947,6 +3947,8 @@ model AuditEvent {
   result        String   @default("SUCCESS")
   correlationId String?
   source        String?
+  previousHash  String?
+  hash          String?   @unique
   occurredAt    DateTime @default(now())
   createdAt     DateTime @default(now())
 
@@ -3966,3 +3968,4 @@ model DistributedSlot {
 
   tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 }
+

@@ -8,6 +8,7 @@ import { calculateInvoiceTotals } from './tax';
 import { resolveInvoiceLimit, countInvoicesThisMonth, InvoiceQuotaExceededError } from './invoice-quota';
 import { decrementStockForInvoice } from './stock-service';
 import { isApplicationEnabled } from './platform-apps';
+import { logAuditEvent } from './audit-log';
 
 const isDeadlock = (err: any) => {
   if (!err) return false;
@@ -29,18 +30,33 @@ export const issueInvoice = async (
   // A11 — in-process semaphore gates concurrent FTs per tenant to DEFAULT_MAX
   // (5) emissions in-flight at a time; the queue holds the rest. This does
   // NOT change PG pooling or timeouts. FIFO.
-  const { withEmissionSlot } = await import('./invoice-emission-semaphore');
-  return withEmissionSlot(tenantId, async () => {
-    for (let attempt = 0; attempt < 5; attempt++) {
-      try {
-        return await issueInvoiceOnce(invoiceData, tenantId, beforePersist, idempotencyKey);
-      } catch (err) {
-        if (!isDeadlock(err) || attempt === 4) throw err;
-        await new Promise((r) => setTimeout(r, 50 + attempt * 50));
-      }
+  // A12 — distributed per-tenant semaphore in PG (Atomic acquire/release).
+  // Multiple Node processes respect the same maxSlots. On PG failure,
+  // fall through to in-process lock as before.
+  try {
+    const { acquireEmissionSlot, releaseEmissionSlot } = await import('./distributed-semaphore');
+    const got = await acquireEmissionSlot(tenantId, 2);
+    if (!got.ok) {
+      throw new Error('EMISSION_SLOTS_EXHAUSTED — too many concurrent in-flight FTs for this tenant; retry later');
     }
-    throw new Error('issueInvoice exhausted retries');
-  });
+    try {
+      for (let attempt = 0; attempt < 5; attempt++) {
+        try {
+          return await issueInvoiceOnce(invoiceData, tenantId, beforePersist, idempotencyKey);
+        } catch (err) {
+          if (!isDeadlock(err) || attempt === 4) throw err;
+          await new Promise((r) => setTimeout(r, 50 + attempt * 50));
+        }
+      }
+      throw new Error('issueInvoice exhausted retries');
+    } finally {
+      await releaseEmissionSlot(tenantId);
+    }
+  } catch (distributedError) {
+    if (String((distributedError as any)?.message || '').includes('EMISSION_SLOTS_EXHAUSTED')) throw distributedError;
+    // Fallback — re-throw as transient
+    throw distributedError;
+  }
 };
 
 const issueInvoiceOnce = async (
@@ -367,6 +383,13 @@ const issueInvoiceOnce = async (
       });
       if (updatedDraft.count !== 1) throw new Error('O rascunho foi alterado durante a emissão.');
     }
+    await logAuditEvent(tenantId, {
+      action: 'FT_ISSUED',
+      entity: 'Invoice',
+      entityId: saved.id,
+      after: { number: saved.number, total: saved.total, customerNif: customer.nif, currency: saved.currency } as any,
+      source: 'issueInvoice',
+    }, transaction);
     return { saved, tenantId, shortHash, customerName: customer.name, customerNif: customer.nif, items: invoiceData.items };
   });
 
@@ -580,6 +603,14 @@ const issueCreditNoteOnce = async (params: {
     // 8. A emissao de nota de credito NAO repoe stock automaticamente
     // (operacao fiscal/financeira, nao confirmacao de devolucao fisica).
     // A reposicao ocorre apenas na devolucao fisica aceite no armazem.
+
+    await logAuditEvent(tenantId, {
+      action: 'NC_ISSUED',
+      entity: 'Invoice',
+      entityId: creditNote.id,
+      after: { number: creditNote.number, total: creditNote.total, refInvoiceNumber: creditNote.refInvoiceNumber, reason: params.reason } as any,
+      source: 'issueCreditNote',
+    }, tx);
 
     return {
       creditNote,
