@@ -34,6 +34,7 @@ export default async function PlanoContasPage() {
         <p className="text-sm text-[#708195]">Contabilidade</p>
         <h2 className="mt-1 text-2xl font-bold text-[#1c2d3f]">Plano de contas</h2>
         <p className="mt-2 text-sm text-[#708195]">Criação, edição e desactivação de contas. As alterações são registadas na auditoria.</p>
+        <a href="/contabilidade/plano-contas/importar" className="mt-2 inline-block text-xs font-semibold text-[#2878d0] hover:underline">Importar plano via CSV</a>
       </div>
 
       <section className="rounded-2xl border border-[#e2e9f1] bg-white p-5">
