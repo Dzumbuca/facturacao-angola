@@ -9,7 +9,36 @@ import { resolveInvoiceLimit, countInvoicesThisMonth, InvoiceQuotaExceededError 
 import { decrementStockForInvoice } from './stock-service';
 import { isApplicationEnabled } from './platform-apps';
 
+const isDeadlock = (err: any) => {
+  if (!err) return false;
+  // Retry timeouts (connection pool), deadlocks, and serialization failures
+  if (err.code === 'P2010' && /40P01|40001/.test(err.message ?? '')) return true;
+  if (err.code === 'P2024') return true;  // connection pool timeout
+  if (err.code === 'P2025') return true;  // record not found (rare transient)
+  if (err.meta && /40P01|40001/.test(JSON.stringify(err.meta))) return true;
+  return false;
+};
+
 export const issueInvoice = async (
+  invoiceData: any,
+  tenantId: string,
+  beforePersist?: (invoiceDraft: any) => Promise<void>,
+  idempotencyKey?: string,
+) => {
+  // Retry on deadlock / serialization-failure up to 5 times
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      return await issueInvoiceOnce(invoiceData, tenantId, beforePersist, idempotencyKey);
+    } catch (err) {
+      if (!isDeadlock(err) || attempt === 4) throw err;
+      // tiny jitter backoff before retrying
+      await new Promise((r) => setTimeout(r, 50 + attempt * 50));
+    }
+  }
+  throw new Error('issueInvoice exhausted retries');
+};
+
+const issueInvoiceOnce = async (
   invoiceData: any,
   tenantId: string,
   beforePersist?: (invoiceDraft: any) => Promise<void>,
@@ -297,7 +326,7 @@ export const issueInvoice = async (
       (item: any) => item.productId && item.qty > 0
     );
     if (invoiceItems.length > 0) {
-      const wmsEnabled = await isApplicationEnabled(tenant.id, 'wms');
+      const wmsEnabled = await isApplicationEnabled(tenant.id, 'wms', transaction);
       const trackedProducts = wmsEnabled
         ? await transaction.product.findMany({
             where: { tenantId: tenant.id, id: { in: invoiceItems.map((item: any) => item.productId) }, trackStock: true },
