@@ -161,27 +161,46 @@ export async function apurarResultado(
       };
     }
 
-    const entry = await tx.journalEntry.create({
-      data: {
-        tenantId,
-        number,
-        postedOnDate: endDate,
-        description: `Apuramento exercício ${year}: ${justification.slice(0, 200)}`,
-        source: 'EXERCISE_CLOSE',
-        sourceId: exercise.id,
-        exerciseId: exercise.id,
-        entryType: 'CLOSING',
-        lines: {
-          create: apLines.map((l) => ({
-            accountId: l.accountId,
-            debit: new Prisma.Decimal(l.debit ? round2(l.debit).toFixed(2) : '0.00'),
-            credit: new Prisma.Decimal(l.credit ? round2(l.credit).toFixed(2) : '0.00'),
-            memo: l.memo ?? null,
-          })),
+    let entry;
+    try {
+      entry = await tx.journalEntry.create({
+        data: {
+          tenantId,
+          number,
+          postedOnDate: endDate,
+          description: `Apuramento exercício ${year}: ${justification.slice(0, 200)}`,
+          source: 'EXERCISE_CLOSE',
+          sourceId: exercise.id,
+          exerciseId: exercise.id,
+          entryType: 'CLOSING',
+          lines: {
+            create: apLines.map((l) => ({
+              accountId: l.accountId,
+              debit: new Prisma.Decimal(l.debit ? round2(l.debit).toFixed(2) : '0.00'),
+              credit: new Prisma.Decimal(l.credit ? round2(l.credit).toFixed(2) : '0.00'),
+              memo: l.memo ?? null,
+            })),
+          },
         },
-      },
-      include: { lines: true },
-    });
+        include: { lines: true },
+      });
+    } catch (createError: any) {
+      // Two concurrent apuramentos raced; treat as no-op idempotent
+      if (createError?.code === 'P2002') {
+        const existing = await tx.journalEntry.findFirst({
+          where: { tenantId, source: 'EXERCISE_CLOSE', sourceId: exercise.id },
+          select: { number: true },
+        });
+        return {
+          exerciseId: exercise.id,
+          year: exercise.year,
+          totalRevenue, totalExpenses, resultBeforeApuramento,
+          entriesCreated: 0,
+          journalEntryNumber: existing?.number ?? null,
+        };
+      }
+      throw createError;
+    }
 
     // Mark exercise CLOSED
     await tx.accountingExercise.update({
@@ -310,27 +329,39 @@ export async function abrirProximoExercicio(
 
     const { reserveJournalEntryNumberOnTx } = await import('./gl-sequence');
     const number = await reserveJournalEntryNumberOnTx(tx, tenantId, 'JE');
-    const entry = await tx.journalEntry.create({
-      data: {
-        tenantId,
-        number,
-        postedOnDate: endDate,
-        description: `Abertura exercício ${nextYear}: ${justification.slice(0, 200)}`,
-        source: 'EXERCISE_OPEN',
-        sourceId: target.id,
-        exerciseId: target.id,
-        entryType: 'OPENING',
-        lines: {
-          create: openingLines.map((l) => ({
-            accountId: l.accountId,
-            debit: new Prisma.Decimal(l.debit ? round2(l.debit).toFixed(2) : '0.00'),
-            credit: new Prisma.Decimal(l.credit ? round2(l.credit).toFixed(2) : '0.00'),
-            memo: l.memo ?? null,
-          })),
+    let entry;
+    try {
+      entry = await tx.journalEntry.create({
+        data: {
+          tenantId,
+          number,
+          postedOnDate: endDate,
+          description: `Abertura exercício ${nextYear}: ${justification.slice(0, 200)}`,
+          source: 'EXERCISE_OPEN',
+          sourceId: target.id,
+          exerciseId: target.id,
+          entryType: 'OPENING',
+          lines: {
+            create: openingLines.map((l) => ({
+              accountId: l.accountId,
+              debit: new Prisma.Decimal(l.debit ? round2(l.debit).toFixed(2) : '0.00'),
+              credit: new Prisma.Decimal(l.credit ? round2(l.credit).toFixed(2) : '0.00'),
+              memo: l.memo ?? null,
+            })),
+          },
         },
-      },
-      include: { lines: true },
-    });
+        include: { lines: true },
+      });
+    } catch (createError: any) {
+      if (createError?.code === 'P2002') {
+        const existing = await tx.journalEntry.findFirst({
+          where: { tenantId, source: 'EXERCISE_OPEN', sourceId: target.id },
+          select: { number: true },
+        });
+        return { exerciseId: target.id, openingEntries: 0, journalEntryNumber: existing?.number ?? null };
+      }
+      throw createError;
+    }
 
     return { exerciseId: target.id, openingEntries: openingLines.length, journalEntryNumber: entry.number };
   });
