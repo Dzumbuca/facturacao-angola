@@ -28,7 +28,7 @@ export default async function RazaoPage({ searchParams }: { searchParams: Promis
   const idMap = new Map<string, { debit: number; credit: number }>();
   const accountByCode = new Map<string, typeof accounts[number]>();
   for (const acc of accounts as any[]) accountByCode.set(acc.code, acc);
-  const inlined = await prisma.glAccount.findMany({ where: { tenantId, code: { in: Array.from(new Set(totals.map((t) => t.accountId))) } }, select: { id: true, code: true } });
+  const inlined = await prisma.glAccount.findMany({ where: { tenantId, code: { in: Array.from(new Set(totals.map((t: any) => (t as any).accountId))) } }, select: { id: true, code: true } });
   // filterId refers to code — but JournalEntryLine.accountId is GlAccount.id. Map GlAccount.id → code
   const idToCode = new Map<string, string>();
   const allAccounts = await prisma.glAccount.findMany({ where: { tenantId }, select: { id: true, code: true } });
@@ -55,7 +55,7 @@ export default async function RazaoPage({ searchParams }: { searchParams: Promis
       });
       // compute running balance
       let running = 0;
-      accountEntries = lines.map((l) => {
+      accountEntries = lines.map((l: any) => {
         running += Number(l.debit) - Number(l.credit);
         return { ...l, balance: running };
       });
@@ -75,7 +75,7 @@ export default async function RazaoPage({ searchParams }: { searchParams: Promis
       <form id="filter-form" action="/contabilidade/razao" method="get" className="flex items-center gap-3">
         <label className="text-xs font-semibold text-[#627068]">Conta</label>
         <select name="accountCode" defaultValue={filterId} onChange={(e) => { (document.getElementById('filter-form') as HTMLFormElement)?.submit(); }} className="h-9 rounded-xl border border-[#e2e9f1] bg-[#f7fbff] px-3 text-sm">
-          {accounts.map((a) => (
+          {accounts.map((a: any) => (
             <option key={a.code} value={a.code}>{a.code} — {a.name}</option>
           ))}
         </select>

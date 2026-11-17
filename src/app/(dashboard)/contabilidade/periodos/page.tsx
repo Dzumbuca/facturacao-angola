@@ -66,7 +66,7 @@ export default async function PeriodosPage() {
           <h3 className="font-bold text-[#1c2d3f]">Períodos de {exercise.year}</h3>
         </div>
         <ul className="divide-y divide-[#edf1f5]">
-          {periods.map((period) => (
+          {periods.map((period: any) => (
             <li key={period.id} className="flex flex-col gap-3 px-5 py-4 md:flex-row md:items-center md:justify-between">
               <div className="min-w-0">
                 <p className="tabular-nums text-sm font-bold text-[#1c2d3f]">{period.code}</p>
