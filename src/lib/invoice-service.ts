@@ -638,14 +638,21 @@ export const issueCreditNote = async (params: {
   tenantId?: string;
   idempotencyKey?: string;
 }) => {
-  for (let attempt = 0; attempt < 5; attempt++) {
-    try {
-      return await issueCreditNoteOnce(params);
-    } catch (err) {
-      if (!isDeadlock(err) || attempt === 4) throw err;
-      await new Promise((r) => setTimeout(r, 50 + attempt * 50));
+  const { withEmissionLease } = await import('./emission-lease');
+  const tenantForLease = params.tenantId ?? 'anonymous';
+  // Use 'NC' as operationId so FT and NC share per-tenant max=2 capacity correctly
+  const result = await withEmissionLease(tenantForLease, 'NC', async () => {
+    for (let attempt = 0; attempt < 5; attempt++) {
+      try {
+        return await issueCreditNoteOnce(params);
+      } catch (err) {
+        if (!isDeadlock(err) || attempt === 4) throw err;
+        await new Promise((r) => setTimeout(r, 50 + attempt * 50));
+      }
     }
-  }
-  throw new Error('issueCreditNote exhausted retries');
+    throw new Error('issueCreditNote exhausted retries');
+  }, 2);
+  if ((result as any).busy) throw new Error('EMISSION_BUSY — too many concurrent NCs for this tenant; retry later');
+  return (result as any).value;
 };
 
