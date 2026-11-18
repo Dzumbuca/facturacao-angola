@@ -1,7 +1,7 @@
 // E2E HTTP — self-assessment (Meu RH).
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { login, authenticatedFetch } from './http-auth-harness';
 
 const prisma = new PrismaClient();

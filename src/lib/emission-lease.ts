@@ -88,7 +88,6 @@ export async function withEmissionLease<T>(
     if (!acquire.busy && acquire.leaseId) {
       if (crashAt === 'after_lease_acquire' || crashAt === 'any') {
         // OS-level SIGKILL from inside the test worker — atomic; least recoverable point
-        // eslint-disable-next-line no-restricted-process-env
         process.kill(process.pid, 'SIGKILL');
       }
       try {

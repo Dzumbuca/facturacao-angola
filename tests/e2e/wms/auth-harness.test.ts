@@ -1,7 +1,7 @@
 // tests/e2e/wms/auth-harness.test.ts
 import { describe, it, expect, afterAll } from 'vitest';
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 const TEST_TENANT_ID = 'e2e00000-0000-0000-0000-000000000001';
