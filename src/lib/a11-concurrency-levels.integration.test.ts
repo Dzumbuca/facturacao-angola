@@ -47,8 +47,7 @@ describeIfDisposable('A11 — Concurrency levels', () => {
     const r20 = await runLevel('20-concurrent', 20);
     const r50 = await runLevel('50-concurrent', 50);
     const r100 = await runLevel('100-concurrent', 100);
-    const r200 = await runLevel('200-concurrent', 200);
-    console.log('r20:', JSON.stringify(r20), 'r50:', JSON.stringify(r50), 'r100:', JSON.stringify(r100));
+    const r200 = await runLevel('200-concurrent', 200); console.log('r200:', r200.codeCount, r200.errCount); console.log('r20:', JSON.stringify(r20), 'r50:', JSON.stringify(r50), 'r100:', JSON.stringify(r100));
     expect(r20.okCount).toBe(20);
     expect(r50.okCount).toBe(50);
     expect(r100.okCount).toBe(100);

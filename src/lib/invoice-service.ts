@@ -33,9 +33,9 @@ export const issueInvoice = async (
   // A12 — distributed per-tenant semaphore in PG (Atomic acquire/release).
   // Multiple Node processes respect the same maxSlots. On PG failure,
   // fall through to in-process lock as before.
-  // A11 in-process semaphore (max 2 FTs in-flight per tenant, FIFO) — proven at 200 concurrent
-  const { withEmissionSlot } = await import('./invoice-emission-semaphore');
-  return withEmissionSlot(tenantId, async () => {
+  // A14 — distributed lease-based emission capacity (max 2 FTs/tenant globally)
+  const { withEmissionLease } = await import('./emission-lease');
+  const result = await withEmissionLease(tenantId, 'INVOICE', async () => {
     for (let attempt = 0; attempt < 5; attempt++) {
       try {
         return await issueInvoiceOnce(invoiceData, tenantId, beforePersist, idempotencyKey);
@@ -45,7 +45,9 @@ export const issueInvoice = async (
       }
     }
     throw new Error('issueInvoice exhausted retries');
-  });
+  }, 2);
+  if (result.busy) throw new Error('EMISSION_BUSY — too many concurrent FTs for this tenant; retry later');
+  return result.value;
 };
 
 const issueInvoiceOnce = async (
