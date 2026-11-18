@@ -50,6 +50,9 @@ export default async function RecebiveisPage() {
     .filter((row: { state: string; outstanding: number }) => row.state !== 'PAID' && row.state !== 'CANCELLED' && row.outstanding > 0);
 
   const outstandingTotal = outstanding.reduce((sum: number, item: { outstanding: number }) => sum + item.outstanding, 0);
+  const overdueRows = outstanding.filter((row: { state: string; outstanding: number }) => row.state === 'OVERDUE');
+  const pendingRows = outstanding.filter((row: { state: string; outstanding: number }) => row.state !== 'OVERDUE');
+  const overdueTotal = overdueRows.reduce((sum: number, row: { outstanding: number }) => sum + row.outstanding, 0);
 
   return <div className="space-y-8 pb-10">
     <div className="flex flex-wrap items-end justify-between gap-4">
@@ -58,10 +61,19 @@ export default async function RecebiveisPage() {
         <h2 className="mt-1 text-2xl font-bold text-[#1c2d3f]">Recebimentos</h2>
         <p className="mt-2 text-sm text-[#708195]">Confirma recebimentos reportados e acompanha os valores por cobrar.</p>
       </div>
-      <div className="flex items-center gap-3 rounded-2xl border border-[#cddeef] bg-[#f7fbff] px-4 py-2 text-sm">
-        <span className="text-[#708195]">Em dívida:</span>
-        <strong className="tabular-nums text-lg text-[#1c2d3f]">{money(outstandingTotal)}</strong>
-        <span className="text-xs text-[#708195]">{outstanding.length} factura{outstanding.length === 1 ? '' : 's'}</span>
+      <div className="flex flex-wrap items-stretch gap-2 sm:gap-3">
+        <div className="flex items-center gap-3 rounded-2xl border border-[#cddeef] bg-[#f7fbff] px-4 py-2 text-sm">
+          <span className="text-[#708195]">Em dívida:</span>
+          <strong className="tabular-nums text-lg text-[#1c2d3f]">{money(outstandingTotal)}</strong>
+          <span className="text-xs text-[#708195]">{outstanding.length} factura{outstanding.length === 1 ? '' : 's'}</span>
+        </div>
+        {overdueRows.length > 0 && (
+          <div className="flex items-center gap-3 rounded-2xl border border-[#fbe2cf] bg-[#fdf4f0] px-4 py-2 text-sm">
+            <span className="text-[#a83939]">Vencidas:</span>
+            <strong className="tabular-nums text-lg text-[#a83939]">{money(overdueTotal)}</strong>
+            <span className="text-xs text-[#a83939]">{overdueRows.length} factura{overdueRows.length === 1 ? '' : 's'}</span>
+          </div>
+        )}
       </div>
     </div>
 
@@ -103,19 +115,50 @@ export default async function RecebiveisPage() {
       )}
     </section>
 
+    <section className="overflow-hidden rounded-2xl border border-[#fbe2cf] bg-white">
+      <div className="border-b border-[#fbdec8] bg-[#fdf6ef] px-5 py-4 md:px-6">
+        <h3 className="font-bold text-[#a83939]">Vencidas (acção urgente)</h3>
+        <p className="mt-1 text-xs text-[#a83939]">Facturas cujo vencimento já passou — clica numa factura para confirmar o recebimento ou contactar o cliente.</p>
+      </div>
+      {overdueRows.length ? (
+        <div className="overflow-x-auto">
+          <table className="min-w-[820px] w-full text-left text-sm">
+            <thead className="bg-[#fbe2cf] text-xs uppercase tracking-wide text-[#a83939]">
+              <tr><th className="px-4 py-3">Factura</th><th className="px-4 py-3">Cliente</th><th className="px-4 py-3">Vencimento</th><th className="px-4 py-3 text-right">Total</th><th className="px-4 py-3 text-right">Recebido</th><th className="px-4 py-3 text-right">Em dívida</th><th className="px-4 py-3 text-right">Estado</th></tr>
+            </thead>
+            <tbody className="divide-y divide-[#f1d9c8]">
+              {overdueRows.map(({ invoice, state, confirmed, outstanding }: { invoice: any; state: string; confirmed: number; outstanding: number }) => (
+                <tr key={invoice.id} className="hover:bg-[#fdf6ef]">
+                  <td className="px-4 py-3"><Link href={`/invoices/${invoice.id}`} className="font-bold text-[#2878d0] underline-offset-2 hover:underline">{invoice.number}</Link></td>
+                  <td className="px-4 py-3 text-[#263c52]">{invoice.customer.name}</td>
+                  <td className="px-4 py-3 font-semibold text-[#a83939]">{invoice.dueAt?.toLocaleDateString('pt-AO', { timeZone: 'Africa/Luanda' }) ?? '—'}</td>
+                  <td className="px-4 py-3 text-right tabular-nums">{money(Number(invoice.total))}</td>
+                  <td className="px-4 py-3 text-right tabular-nums text-[#227958]">{money(confirmed)}</td>
+                  <td className="px-4 py-3 text-right tabular-nums font-bold">{money(outstanding)}</td>
+                  <td className={`px-4 py-3 text-right text-xs font-bold uppercase ${stateStyles[state] ?? ''}`}>{stateLabels[state] ?? state}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <p className="px-6 py-8 text-center text-sm text-[#708195]">Sem facturas vencidas. Bom trabalho.</p>
+      )}
+    </section>
+
     <section className="overflow-hidden rounded-2xl border border-[#e2e9f1] bg-white">
       <div className="border-b border-[#e7edf3] px-5 py-4 md:px-6">
-        <h3 className="font-bold text-[#1c2d3f]">Em dívida (saldo por cobrar)</h3>
-        <p className="mt-1 text-xs text-[#708195]">Facturas emitidas com saldo em aberto — clica numa factura para confirmar o recebimento no detalhe.</p>
+        <h3 className="font-bold text-[#1c2d3f]">Pendentes (ainda dentro do prazo)</h3>
+        <p className="mt-1 text-xs text-[#708195]">Facturas emitidas com saldo em aberto, mas ainda dentro do prazo de vencimento — clica numa factura para confirmar o recebimento no detalhe.</p>
       </div>
-      {outstanding.length ? (
+      {pendingRows.length ? (
         <div className="overflow-x-auto">
           <table className="min-w-[820px] w-full text-left text-sm">
             <thead className="bg-[#f7f9fc] text-xs uppercase tracking-wide text-[#708195]">
               <tr><th className="px-4 py-3">Factura</th><th className="px-4 py-3">Cliente</th><th className="px-4 py-3">Vencimento</th><th className="px-4 py-3 text-right">Total</th><th className="px-4 py-3 text-right">Recebido</th><th className="px-4 py-3 text-right">Em dívida</th><th className="px-4 py-3 text-right">Estado</th></tr>
             </thead>
             <tbody className="divide-y divide-[#edf1f5]">
-              {outstanding.map(({ invoice, state, confirmed, outstanding }: any) => (
+              {pendingRows.map(({ invoice, state, confirmed, outstanding }: { invoice: any; state: string; confirmed: number; outstanding: number }) => (
                 <tr key={invoice.id} className="hover:bg-[#f8fbff]">
                   <td className="px-4 py-3"><Link href={`/invoices/${invoice.id}`} className="font-bold text-[#2878d0] underline-offset-2 hover:underline">{invoice.number}</Link></td>
                   <td className="px-4 py-3 text-[#263c52]">{invoice.customer.name}</td>
@@ -130,7 +173,7 @@ export default async function RecebiveisPage() {
           </table>
         </div>
       ) : (
-        <p className="px-6 py-10 text-center text-sm text-[#708195]">Não há saldos por cobrar. Bom trabalho.</p>
+        <p className="px-6 py-10 text-center text-sm text-[#708195]">Não há saldos em aberto neste momento. Bom trabalho.</p>
       )}
     </section>
   </div>;
