@@ -33,30 +33,19 @@ export const issueInvoice = async (
   // A12 — distributed per-tenant semaphore in PG (Atomic acquire/release).
   // Multiple Node processes respect the same maxSlots. On PG failure,
   // fall through to in-process lock as before.
-  try {
-    const { acquireEmissionSlot, releaseEmissionSlot } = await import('./distributed-semaphore');
-    const got = await acquireEmissionSlot(tenantId, 2);
-    if (!got.ok) {
-      throw new Error('EMISSION_SLOTS_EXHAUSTED — too many concurrent in-flight FTs for this tenant; retry later');
-    }
-    try {
-      for (let attempt = 0; attempt < 5; attempt++) {
-        try {
-          return await issueInvoiceOnce(invoiceData, tenantId, beforePersist, idempotencyKey);
-        } catch (err) {
-          if (!isDeadlock(err) || attempt === 4) throw err;
-          await new Promise((r) => setTimeout(r, 50 + attempt * 50));
-        }
+  // A11 in-process semaphore (max 2 FTs in-flight per tenant, FIFO) — proven at 200 concurrent
+  const { withEmissionSlot } = await import('./invoice-emission-semaphore');
+  return withEmissionSlot(tenantId, async () => {
+    for (let attempt = 0; attempt < 5; attempt++) {
+      try {
+        return await issueInvoiceOnce(invoiceData, tenantId, beforePersist, idempotencyKey);
+      } catch (err) {
+        if (!isDeadlock(err) || attempt === 4) throw err;
+        await new Promise((r) => setTimeout(r, 50 + attempt * 50));
       }
-      throw new Error('issueInvoice exhausted retries');
-    } finally {
-      await releaseEmissionSlot(tenantId);
     }
-  } catch (distributedError) {
-    if (String((distributedError as any)?.message || '').includes('EMISSION_SLOTS_EXHAUSTED')) throw distributedError;
-    // Fallback — re-throw as transient
-    throw distributedError;
-  }
+    throw new Error('issueInvoice exhausted retries');
+  });
 };
 
 const issueInvoiceOnce = async (

@@ -48,9 +48,8 @@ CREATE TABLE "EmissionLease" (
   "lastRenewedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "releasedAt"    TIMESTAMP(3)
 );
-CREATE UNIQUE INDEX "EmissionLease_tenant_operation_active_uidx"
-  ON "EmissionLease"("tenantId", "operationId")
-  WHERE state = 'ACTIVE';
+CREATE INDEX "EmissionLease_tenant_operation_idx"
+  ON "EmissionLease"("tenantId", "operationId");
 CREATE INDEX "EmissionLease_tenant_state_idx" ON "EmissionLease"("tenantId", "state", "acquiredAt");
 CREATE INDEX "EmissionLease_expiresAt_idx"     ON "EmissionLease"("expiresAt");
 ALTER TABLE "EmissionLease"
