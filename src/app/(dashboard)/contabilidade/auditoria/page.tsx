@@ -7,7 +7,7 @@ export default async function AuditoriaPage() {
   const tenantId = getSessionTenantId(await auth());
   if (!tenantId) redirect('/onboarding');
 
-  const [history, entries] = await Promise.all([
+  const [history, entries, auditEvents] = await Promise.all([
     prisma.glAccountHistory.findMany({
       where: { tenantId },
       orderBy: { changedAt: 'desc' },
@@ -19,6 +19,12 @@ export default async function AuditoriaPage() {
       orderBy: { createdAt: 'desc' },
       take: 100,
       include: { lines: true },
+    }),
+    prisma.auditEvent.findMany({
+      where: { tenantId },
+      orderBy: { occurredAt: 'desc' },
+      take: 200,
+      select: { action: true, entity: true, entityId: true, result: true, justification: true, correlationId: true, occurredAt: true },
     }),
   ]);
 
@@ -83,6 +89,29 @@ export default async function AuditoriaPage() {
           )}
         </div>
       </section>
+
+      <section className="rounded-2xl border border-[#e2e9f1] bg-white overflow-hidden">
+        <div className="border-b border-[#e7edf3] px-5 py-4">
+          <h3 className="font-bold text-[#1c2d3f]">Audit log (A12/A13) — hash-chained</h3>
+          <p className="mt-1 text-xs text-[#708195]">FT, NC, apuramento, abertura, exportações. Cada evento liga-se ao anterior; tamper-evident, não tamper-proof.</p>
+        </div>
+        {auditEvents.length === 0 ? (
+          <p className="p-5 text-xs text-[#708195]">Sem eventos.</p>
+        ) : (
+          <ul className="divide-y divide-[#edf1f5]">
+            {auditEvents.map((a: any, i: number) => (
+              <li key={i} className="grid grid-cols-[auto_auto_1fr_auto] items-baseline gap-3 px-5 py-2 text-xs">
+                <span className="font-mono text-[#708195]">{new Date(a.occurredAt).toISOString().slice(0, 16).replace('T', ' ')}</span>
+                <span className="font-mono font-bold text-[#2878d0]">{a.action}</span>
+                <span className="truncate text-[#1c2d3f]">{a.entity} · {a.entityId?.slice(0, 12) ?? '—'}{a.justification ? ` · ${a.justification.slice(0, 40)}` : ''}</span>
+                <span className={`text-[10px] font-bold ${a.result === 'SUCCESS' ? 'text-emerald-700' : 'text-red-700'}`}>{a.result}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <p className="text-[11px] text-[#708195]">Hash chain per tenant (SHA-256 + previousHash). Tamper-EVIDENT, not tamper-PROOF.</p>
     </div>
   );
 }
