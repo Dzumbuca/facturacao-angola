@@ -20,7 +20,10 @@ export async function GET() {
       });
     }, { userId: getSessionUserId(session) }),
   ]);
-  const suppliersOut = suppliers.map((supplier: any) => ({ ...supplier, outstanding: aggregateOutstandingBySupplier(payableRows.map((r) => ({ supplierId: r.supplierId, total: r.total, paidAmount: r.paidAmount, payments: [] }))).get(supplier.id) ?? 0 }));
+  const supplierBalanceById = aggregateOutstandingBySupplier(
+    payableRows.map((r: { supplierId: string; total: any; paidAmount: any }) => ({ supplierId: r.supplierId, total: r.total, paidAmount: r.paidAmount, payments: [] })),
+  );
+  const suppliersOut = suppliers.map((supplier: any) => ({ ...supplier, outstanding: supplierBalanceById.get(supplier.id) ?? 0 }));
   return NextResponse.json(suppliersOut);
 }
 

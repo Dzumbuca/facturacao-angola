@@ -7,6 +7,7 @@ export type OutstandingInvoice = {
   supplierId?: string | null;
   total: number | string | { toNumber(): number };
   payments: { amount: number | string | { toNumber(): number }; status: string }[];
+  paidAmount?: number | string | { toNumber(): number };
 };
 
 const toMoney = (value: OutstandingInvoice['total']): number => {
@@ -32,8 +33,8 @@ export function aggregateOutstandingBySupplier(invoices: OutstandingInvoice[]): 
     if (!invoice.supplierId) continue;
     // supplierInvoice has no payments relation; use paidAmount semantic stored in total.
     const total = toMoney(invoice.total);
-    const paid = (invoice as { paidAmount?: number | string }).paidAmount;
-    const confirmed = paid === undefined ? 0 : toMoney(paid);
+    const paidField = (invoice as { paidAmount?: number | string | { toNumber(): number } }).paidAmount;
+    const confirmed = paidField === undefined ? 0 : toMoney(paidField);
     const balance = Math.max(0, total - confirmed);
     if (balance > 0) result.set(invoice.supplierId, (result.get(invoice.supplierId) ?? 0) + balance);
   }
