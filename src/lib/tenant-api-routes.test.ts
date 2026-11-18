@@ -12,6 +12,7 @@ const routes: [string, string[]][] = [
   ['src/app/api/invoices/drafts/route.ts', ['getTenantReadAccess', 'getTenantWriteAccess()']],
   ['src/app/api/invoices/drafts/[id]/route.ts', ['getTenantReadAccess', 'getTenantWriteAccess()']],
   ['src/app/api/invoices/drafts/[id]/issue/route.ts', ['getTenantWriteAccess()']],
+  ['src/app/api/invoices/[id]/credit-note/route.ts', ['getTenantWriteAccess()']],
   ['src/app/api/invoices/generate-pdf/route.ts', ['getTenantWriteAccess()']],
   ['src/app/api/invoices/generate-saft/route.ts', ['getTenantReadAccess']],
   ['src/app/api/invoices/[id]/payments/route.ts', ['getTenantReadAccess', 'getTenantWriteAccess()']],
