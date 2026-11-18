@@ -19,6 +19,42 @@
 import { runWithTenant } from './tenant-db';
 import crypto from 'crypto';
 
+// A18 — in-process capacity semaphore per (tenant, operation). The PG lease is
+// the global, cross-process enforcement; this gate avoids burning the connection
+// pool with polling transactions when many callers from the same Node process want
+// the same tenant slot. The queueing is strict FIFO within this process.
+const localGates = new Map<string, { current: number; queue: Array<() => void> }>();
+const MAX_LOCAL_SLOTS = 2;
+
+function localAcquire(key: string): Promise<void> {
+  const state = localGates.get(key) ?? { current: 0, queue: [] };
+  if (state.current < MAX_LOCAL_SLOTS) {
+    state.current += 1;
+    localGates.set(key, state);
+    return Promise.resolve();
+  }
+  return new Promise((resolve) => {
+    state.queue.push(() => { state.current += 1; resolve(); });
+    localGates.set(key, state);
+  });
+}
+
+function localRelease(key: string): void {
+  const state = localGates.get(key);
+  if (!state) return;
+  if (state.queue.length > 0) {
+    const next = state.queue.shift()!;
+    state.current -= 1;
+    // Allow the local waiter in, but keep current at MAX_LOCAL_SLOTS by keeping the handoff consistent.
+    state.current += 0; // next will flip back to MAX_LOCAL_SLOTS on entry
+    next();
+  } else {
+    state.current = Math.max(0, state.current - 1);
+    if (state.current === 0 && state.queue.length === 0) localGates.delete(key);
+    else localGates.set(key, state);
+  }
+}
+
 export async function acquireEmissionLease(
   tenantId: string,
   operationId: string,
@@ -79,11 +115,15 @@ export async function withEmissionLease<T>(
   // ======================================================================
   const crashAt = process.env.A17_CRASH_AT;
 
+  const localKey = `${tenantId}|${operationId}`;
+  await localAcquire(localKey);
+
   // Polling with backoff: retry up to 120s total
   const deadline = Date.now() + 120_000;
   let backoffMs = 10;
 
-  while (Date.now() < deadline) {
+  try {
+    while (Date.now() < deadline) {
     const acquire = await acquireEmissionLease(tenantId, operationId, maxSlots);
     if (!acquire.busy && acquire.leaseId) {
       if (crashAt === 'after_lease_acquire' || crashAt === 'any') {
@@ -103,9 +143,12 @@ export async function withEmissionLease<T>(
         try { await releaseEmissionLease(tenantId, acquire.leaseId); } catch { /* best-effort release */ }
       }
     }
-    // Wait before retry — short backoff so FTs make progress under contention
-    await new Promise((r) => setTimeout(r, backoffMs));
-    backoffMs = Math.min(backoffMs * 1.4, 150);
+      // Wait before retry — short backoff so FTs make progress under contention
+      await new Promise((r) => setTimeout(r, backoffMs));
+      backoffMs = Math.min(backoffMs * 1.4, 150);
+    }
+    return { value: null, busy: true, leaseId: null };
+  } finally {
+    localRelease(localKey);
   }
-  return { value: null, busy: true, leaseId: null };
 }
