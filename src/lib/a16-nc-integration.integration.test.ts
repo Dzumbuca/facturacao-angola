@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { PrismaClient } from '@prisma/client';
-import { issueCreditNote } from './invoice-service';
+import { issueCreditNote, issueInvoice } from './invoice-service';
 
 const url = process.env.DATABASE_URL;
 const enabled = !!url && !url.includes('supabase.com');
@@ -28,6 +28,19 @@ describeIfDisposable('A16 — NC integrated with distributed leases', () => {
       create: { id: productId, tenantId, name: 'p', price: 100, stock: 1000, trackStock: false },
       update: {},
     });
+    // Emitir uma FT fresca sempre em beforeAll: assim o teste nunca reutiliza uma FT já
+    // anulada por NCs anteriores.
+    await issueInvoice({
+      customerName: 'a15-http-stress',
+      customerNif: '5000000001',
+      items: [{ productId, desc: 'FT fixture ' + Date.now(), qty: 1, rate: 100 }],
+      applyVat: true,
+      discountType: 'amount',
+      discountValue: 0,
+      observations: null,
+      includeCompanyProfile: false,
+      dueAt: null,
+    }, tenantId);
     // ensure InvoiceChainState is restored from latest issued FT
     const lastInv = await prisma.invoice.findFirst({ where: { tenantId }, orderBy: { chainSequence: 'desc' }, select: { chainSequence: true } });
     if (lastInv) {
@@ -47,7 +60,7 @@ describeIfDisposable('A16 — NC integrated with distributed leases', () => {
   it('NC issuance produces sequential document and balances ledger', async () => {
     if (!prisma) return;
     // Find any FT invoice to use as a reference for the NC
-    const originalFT = await prisma.invoice.findFirst({ where: { tenantId, type: 'FT' }, orderBy: { chainSequence: 'asc' } });
+    const originalFT = await prisma.invoice.findFirst({ where: { tenantId, type: 'FT', status: { not: 'ANULADA' } }, orderBy: { chainSequence: 'desc' } });
     expect(originalFT).toBeTruthy();
     const ncResult = await issueCreditNote({
       invoiceId: originalFT!.id,
