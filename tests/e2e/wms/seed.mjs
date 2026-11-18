@@ -2,7 +2,7 @@
 // Uso: DATABASE_URL=postgresql://... node tests/e2e/wms/seed.mjs
 // NUNCA apontar para staging/produção: a BD alvo deve ser exclusivamente descartável.
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
