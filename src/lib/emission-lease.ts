@@ -68,6 +68,17 @@ export async function withEmissionLease<T>(
   fn: () => Promise<T>,
   maxSlots = 2,
 ): Promise<{ value: T | null; busy: boolean; leaseId: string | null }> {
+  // === A17 crash-recovery failpoint (test-only) ==========================
+  // Opt-in via A17_CRASH_AT environment variable. NEVER activates in
+  // production because there is no production-side path to set it.
+  //   A17_CRASH_AT=after_lease_acquire — exit the process hard without
+  //     releasing the lease (simulates SIGKILL during the half-second
+  //     between acquire and business work).
+  //   A17_CRASH_AT=any — same effect.
+  // Leaving the lease ACTIVE lets the test observe recoverability.
+  // ======================================================================
+  const crashAt = process.env.A17_CRASH_AT;
+
   // Polling with backoff: retry up to 120s total
   const deadline = Date.now() + 120_000;
   let backoffMs = 10;
@@ -75,10 +86,21 @@ export async function withEmissionLease<T>(
   while (Date.now() < deadline) {
     const acquire = await acquireEmissionLease(tenantId, operationId, maxSlots);
     if (!acquire.busy && acquire.leaseId) {
+      if (crashAt === 'after_lease_acquire' || crashAt === 'any') {
+        // OS-level SIGKILL from inside the test worker — atomic; least recoverable point
+        // eslint-disable-next-line no-restricted-process-env
+        process.kill(process.pid, 'SIGKILL');
+      }
       try {
         const value = await fn();
+        if (crashAt === 'after_commit' || crashAt === 'any') {
+          process.kill(process.pid, 'SIGKILL');
+        }
         return { value, busy: false, leaseId: acquire.leaseId };
       } finally {
+        if (crashAt === 'before_release' || crashAt === 'any') {
+          process.kill(process.pid, 'SIGKILL');
+        }
         try { await releaseEmissionLease(tenantId, acquire.leaseId); } catch { /* best-effort release */ }
       }
     }

@@ -61,6 +61,12 @@ const issueInvoiceOnce = async (
   // si so NAO ativa o contexto RLS; e necessario definir app.tenant_id
   // explicitamente dentro da mesma transacao.
   const result = await runWithTenant(tenantId, async (transaction: any) => {
+    // === A17 crash failpoint (test-only, opt-in via A17_CRASH_AT=during_tx) ===
+    // Simulates death mid-transaction: process dies here, the enclosing
+    // PostgreSQL transaction must roll back entirely (no partial writes).
+    if (process.env.A17_CRASH_AT === 'during_tx') {
+      process.kill(process.pid, 'SIGKILL');
+    }
     const tenant = await transaction.tenant.findUnique({ where: { id: tenantId } });
     if (!tenant) throw new Error('Empresa autenticada nao encontrada.');
     const includeCompanyProfile = invoiceData.includeCompanyProfile !== false;
@@ -161,7 +167,7 @@ const issueInvoiceOnce = async (
       const decision = await checkIdempotency(transaction, tenant.id, idempotencyKey, 'INVOICE', payloadHash);
       if (decision.kind === 'replay') {
         const existing = await transaction.invoice.findUnique({ where: { id: decision.resultId! }, include: { items: true, customer: true, tenant: true } });
-        if (existing) return existing as any;
+        if (existing) return { saved: existing, tenantId: tenant.id, customerName: existing.customer?.name ?? '', customerNif: existing.customer?.nif ?? '', shortHash: undefined as any, items: existing.items, _replay: true } as any;
       } else if (decision.kind === 'conflict') {
         const err: any = new Error('IdempotencyConflict');
         err.code = 'IDEMPOTENCY_CONFLICT';
@@ -385,13 +391,17 @@ const issueInvoiceOnce = async (
   });
 
   // A3 — GL posting (auto-creção, não bloqueia o FT se falhar)
-  try {
-    const { postInvoiceToGL } = await import('./gl-service');
-    const total = Number(result.saved.total);
-    const taxTotal = Number((result.saved as any).taxTotal?.toString() ?? 0);
-    await postInvoiceToGL(result.tenantId, result.saved.id, total, taxTotal);
-  } catch (e) {
-    console.error('GL_POST_FAILED for FT', result.saved.id, e);
+  // Skip when the inner transaction returned a replay payload (idempotent reemit);
+  // the original FT already posted to GL on its initial commit.
+  if ((result as any)?.saved) {
+    try {
+      const { postInvoiceToGL } = await import('./gl-service');
+      const total = Number((result as any).saved.total);
+      const taxTotal = Number(((result as any).saved.taxTotal?.toString()) ?? 0);
+      await postInvoiceToGL((result as any).tenantId, (result as any).saved.id, total, taxTotal);
+    } catch (e) {
+      console.error('GL_POST_FAILED for FT', (result as any)?.saved?.id, e);
+    }
   }
 
   return {
