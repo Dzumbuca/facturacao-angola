@@ -24,8 +24,39 @@ type AuditEntry = {
   source?: string | null;
 };
 
-const canonical = (entry: Partial<AuditEntry>, previousHash: string | null, tenantId: string): string =>
-  JSON.stringify({
+const cleanJsValue = (value: any): any => {
+  if (value === null || value === undefined) return null;
+  if (typeof value === 'bigint') return value.toString();
+  if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'string') return value;
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === 'object') {
+    // Detect Prisma Decimal via toString + constructor check via valueOf (works for minified "i" class too)
+    if (typeof value.toString === 'function' && /^-?\d+(\.\d+)?$/.test(value.toString()) && typeof value.toFixed === 'function') {
+      const n = Number(value.toString());
+      return Number.isInteger(n) ? Math.trunc(n) : n;
+    }
+    if (Array.isArray(value)) return value.map(cleanJsValue);
+    const out: Record<string, any> = {};
+    for (const key of Object.keys(value)) out[key] = cleanJsValue(value[key]);
+    return out;
+  }
+  return JSON.parse(JSON.stringify(value));
+};
+const cleanJson = <T,>(value: T): any => cleanJsValue(value);
+
+const sortObject = (value: any): any => {
+  if (value === null || value === undefined) return value;
+  if (Array.isArray(value)) return value.map(sortObject);
+  if (typeof value !== 'object') return value;
+  const out: Record<string, any> = {};
+  for (const key of Object.keys(value).sort()) {
+    out[key] = sortObject(value[key]);
+  }
+  return out;
+};
+
+const canonical = (entry: Partial<AuditEntry>, previousHash: string | null, tenantId: string): string => {
+  const snapshot = cleanJson({
     tenantId,
     action: entry.action ?? null,
     entity: entry.entity ?? null,
@@ -39,6 +70,8 @@ const canonical = (entry: Partial<AuditEntry>, previousHash: string | null, tena
     result: entry.result ?? 'SUCCESS',
     previousHash: previousHash ?? '',
   });
+  return JSON.stringify(sortObject(snapshot));
+};
 
 const sha256 = (s: string): string => createHash('sha256').update(s).digest('hex');
 
