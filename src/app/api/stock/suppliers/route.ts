@@ -3,15 +3,28 @@ import { auth } from '@/lib/auth';
 import { getSessionTenantId, getSessionUserId } from '@/lib/session';
 import { runWithTenant } from '@/lib/tenant-db';
 import { getCountLimitStatus } from '@/lib/entitlements';
+import { aggregateOutstandingBySupplier } from '@/lib/outstanding';
 
 export async function GET() {
   const session = await auth();
   const tenantId = getSessionTenantId(session);
   if (!tenantId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const suppliers = await runWithTenant(tenantId, async (tx) => {
-    return tx.supplier.findMany({ where: { tenantId }, orderBy: { name: 'asc' }, select: { id: true, name: true, nif: true, email: true, contact: true, address: true } });
-  }, { userId: getSessionUserId(session) });
-  return NextResponse.json(suppliers);
+  const [suppliers, payableRows] = await Promise.all([
+    runWithTenant(tenantId, async (tx) => {
+      return tx.supplier.findMany({ where: { tenantId }, orderBy: { name: 'asc' }, select: { id: true, name: true, nif: true, email: true, contact: true, address: true } });
+    }, { userId: getSessionUserId(session) }),
+    runWithTenant(tenantId, async (tx) => {
+      return tx.supplierInvoice.findMany({
+        where: { tenantId, status: { in: ['PENDING', 'OVERDUE'] } },
+        select: { supplierId: true, total: true, paidAmount: true },
+      });
+    }, { userId: getSessionUserId(session) }),
+  ]);
+  const supplierBalanceById = aggregateOutstandingBySupplier(
+    payableRows.map((r: { supplierId: string; total: any; paidAmount: any }) => ({ supplierId: r.supplierId, total: r.total, paidAmount: r.paidAmount, payments: [] })),
+  );
+  const suppliersOut = suppliers.map((supplier: any) => ({ ...supplier, outstanding: supplierBalanceById.get(supplier.id) ?? 0 }));
+  return NextResponse.json(suppliersOut);
 }
 
 export async function POST(req: Request) {

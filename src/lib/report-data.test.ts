@@ -22,3 +22,34 @@ describe('buildReportRows', () => {
     expect(buildReportRows('invoices', { invoices: [issued], now: new Date('2026-11-20'), state: 'PAID' }).rows).toHaveLength(0);
   });
 });
+
+import { aggregateOutstandingBySupplier } from './outstanding';
+import { buildReportRows as buildRows } from './report-data';
+
+describe('buildReportRows payables', () => {
+  const now = new Date('2026-12-31T12:00:00Z');
+  it('returns payables rows with the right schema and totals', () => {
+    const rows = buildRows('payables', {
+      invoices: [], now,
+      payables: [
+        { number: 'SFT 2026/01', total: 1000, paidAmount: 200, status: 'PENDING', issuedAt: new Date('2026-12-01'), dueDate: new Date('2027-01-15'), supplier: { name: 'Fornecedor A' } },
+        { number: 'SFT 2026/02', total: 500, paidAmount: 500, status: 'PAID', issuedAt: new Date('2026-12-15'), dueDate: new Date('2026-12-30'), supplier: { name: 'Fornecedor B' } },
+      ],
+    });
+    expect(rows.headers).toContain('Fornecedor');
+    expect(rows.rows.length).toBe(2);
+    expect(rows.rows[0]).toEqual(['SFT 2026/01', 'Fornecedor A', '01/12/2026', '15/01/2027', 'No prazo', 1000, 200, 800, 'PENDING']);
+    expect(rows.rows[1]).toEqual(['SFT 2026/02', 'Fornecedor B', '15/12/2026', '30/12/2026', '1 dias', 500, 500, 0, 'PAID']);
+  });
+  it('hides supplier filter when payables is selected', () => {
+    const rows = buildRows('payables', { invoices: [], now, payables: [] });
+    expect(rows.rows).toEqual([]);
+  });
+});
+
+describe('aggregateOutstandingBySupplier smoke', () => {
+  it('totals directly', () => {
+    const map = aggregateOutstandingBySupplier([{ supplierId: 'S1', total: 100, paidAmount: 0, payments: [] }]);
+    expect(map.get('S1')).toBe(100);
+  });
+});

@@ -1,7 +1,7 @@
 // E2E HTTP — fornecedores e plano com max_suppliers.
 import { afterAll, describe, expect, it, beforeAll } from 'vitest';
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { login, authenticatedFetch } from './http-auth-harness';
 
 const prisma = new PrismaClient();

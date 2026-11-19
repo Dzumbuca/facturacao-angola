@@ -1,12 +1,13 @@
 ﻿import { prisma } from './prisma';
 
-export async function isApplicationEnabled(tenantId: string, slug: string): Promise<boolean> {
-  const app = await prisma.platformApplication.findUnique({ where: { slug } });
+export async function isApplicationEnabled(tenantId: string, slug: string, tx?: any): Promise<boolean> {
+  const db = tx ?? prisma;
+  const app = await db.platformApplication.findUnique({ where: { slug } });
   if (!app || app.status !== 'ACTIVE') return false;
   // Aplicacoes core (ex.: Machine Facturas) preservam o acesso existente
   // mesmo antes de existir registo TenantApplication.
   if (app.isCore) {
-    const ta = await prisma.tenantApplication.findUnique({
+    const ta = await db.tenantApplication.findUnique({
       where: { tenantId_applicationId: { tenantId, applicationId: app.id } },
     });
     if (!ta) return true;
@@ -15,11 +16,11 @@ export async function isApplicationEnabled(tenantId: string, slug: string): Prom
   // Módulos pagos: o interruptor por tenant decide o acesso.
   // A subscrição serve para a VALIDADE: se existir uma subscrição expirada,
   // os módulos pagos ficam bloqueados (os dados preservam-se).
-  const ta = await prisma.tenantApplication.findUnique({
+  const ta = await db.tenantApplication.findUnique({
     where: { tenantId_applicationId: { tenantId, applicationId: app.id } },
   });
   if (!ta?.enabled) return false;
-  const subscription = await prisma.tenantSubscription.findFirst({
+  const subscription = await db.tenantSubscription.findFirst({
     where: { tenantId },
     orderBy: { startsAt: 'desc' },
   });

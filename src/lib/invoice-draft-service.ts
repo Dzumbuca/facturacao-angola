@@ -71,7 +71,7 @@ export async function listInvoiceDrafts(tenantId: string, userId?: string) {
   return runWithTenant(tenantId, (tx) => tx.invoiceDraft.findMany({ where: { tenantId }, orderBy: { updatedAt: 'desc' }, include: { issuedInvoice: { select: { id: true, number: true, issuedAt: true } } } }), { userId });
 }
 
-export async function issueInvoiceDraft(id: string, tenantId: string, beforePersist?: (draft: any) => Promise<void>, userId?: string) {
+export async function issueInvoiceDraft(id: string, tenantId: string, beforePersist?: (draft: any) => Promise<void>, userId?: string, idempotencyKey?: string) {
   const prepared = await runWithTenant(tenantId, async (tx) => {
     const draft = await tx.invoiceDraft.findFirst({ where: { id, tenantId } });
     if (!draft) throw new InvoiceDraftServiceError('Rascunho não encontrado.', 404);
@@ -98,7 +98,7 @@ export async function issueInvoiceDraft(id: string, tenantId: string, beforePers
       discountValue: Number(prepared.draft.discountValue), observations: prepared.draft.observations,
       includeCompanyProfile: prepared.draft.includeCompanyProfile, dueAt: prepared.draft.dueAt,
       sourceDraftId: prepared.draft.id, companyBankAccountId: prepared.draft.companyBankAccountId,
-    }, tenantId, beforePersist);
+    }, tenantId, beforePersist, idempotencyKey);
   } catch (error) {
     const raced = await runWithTenant(tenantId, async (tx) => {
       const raced = await tx.invoice.findFirst({ where: { sourceDraftId: id, tenantId }, include: { customer: true, items: true, tenant: true } });

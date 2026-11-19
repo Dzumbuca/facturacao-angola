@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { validateRegistration } from '@/lib/registration-validation';
 import { sendEmailActionToken } from '@/lib/email-actions';
 import { createUnsubscribeToken, hashEmailToken } from '@/lib/email-actions';

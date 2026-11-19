@@ -3,7 +3,7 @@
 // Nunca apontar para produção/Supabase — esses testes são descartáveis.
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { createHmac, randomInt } from 'node:crypto';
 import { getRhReportDataset } from './rh-reports';
 

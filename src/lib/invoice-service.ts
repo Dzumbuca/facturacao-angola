@@ -1,22 +1,72 @@
-import { generateInvoiceHash, getInvoiceSigningKey } from './crypto';
+import { getInvoiceSigningKey } from './crypto';
 import crypto from 'crypto';
 import { Prisma } from '@prisma/client';
 import { runWithTenant } from './tenant-db';
+import { lockIntegrityChain, reserveInvoiceNumber, loadOrInitChainState, checkIdempotency, persistIdempotency } from './invoice-integrity';
+import { generateInvoiceHashV2, sha256Hex } from './invoice-integrity-core';
 import { calculateInvoiceTotals } from './tax';
 import { resolveInvoiceLimit, countInvoicesThisMonth, InvoiceQuotaExceededError } from './invoice-quota';
 import { decrementStockForInvoice } from './stock-service';
 import { isApplicationEnabled } from './platform-apps';
+import { logAuditEvent } from './audit-log';
+
+const isDeadlock = (err: any) => {
+  if (!err) return false;
+  // Retry timeouts (connection pool), deadlocks, and serialization failures
+  if (err.code === 'P2010' && /40P01|40001/.test(err.message ?? '')) return true;
+  if (err.code === 'P2024') return true;  // connection pool timeout
+  if (err.code === 'P2025') return true;  // record not found (rare transient)
+  if (err.code === 'P2028') return true;  // interactive transaction couldn't start in time (pool contention) — transient
+  if (err.meta && /40P01|40001/.test(JSON.stringify(err.meta))) return true;
+  return false;
+};
 
 export const issueInvoice = async (
   invoiceData: any,
   tenantId: string,
   beforePersist?: (invoiceDraft: any) => Promise<void>,
+  idempotencyKey?: string,
+) => {
+  // A11 — in-process semaphore gates concurrent FTs per tenant to DEFAULT_MAX
+  // (5) emissions in-flight at a time; the queue holds the rest. This does
+  // NOT change PG pooling or timeouts. FIFO.
+  // A12 — distributed per-tenant semaphore in PG (Atomic acquire/release).
+  // Multiple Node processes respect the same maxSlots. On PG failure,
+  // fall through to in-process lock as before.
+  // A14 — distributed lease-based emission capacity (max 2 FTs/tenant globally)
+  const { withEmissionLease } = await import('./emission-lease');
+  const result = await withEmissionLease(tenantId, 'INVOICE', async () => {
+    for (let attempt = 0; attempt < 5; attempt++) {
+      try {
+        return await issueInvoiceOnce(invoiceData, tenantId, beforePersist, idempotencyKey);
+      } catch (err) {
+        if (!isDeadlock(err) || attempt === 4) throw err;
+        await new Promise((r) => setTimeout(r, 50 + attempt * 50));
+      }
+    }
+    throw new Error('issueInvoice exhausted retries');
+  }, 2);
+  if (result.busy) throw new Error('EMISSION_BUSY — too many concurrent FTs for this tenant; retry later');
+  return result.value;
+};
+
+const issueInvoiceOnce = async (
+  invoiceData: any,
+  tenantId: string,
+  beforePersist?: (invoiceDraft: any) => Promise<void>,
+  idempotencyKey?: string,
 ) => {
   // Todas as operacoes de emissao executam dentro de uma transacao Prisma que
   // tambem define o contexto app.tenant_id para RLS. Uma transacao Prisma por
   // si so NAO ativa o contexto RLS; e necessario definir app.tenant_id
   // explicitamente dentro da mesma transacao.
   const result = await runWithTenant(tenantId, async (transaction: any) => {
+    // === A17 crash failpoint (test-only, opt-in via A17_CRASH_AT=during_tx) ===
+    // Simulates death mid-transaction: process dies here, the enclosing
+    // PostgreSQL transaction must roll back entirely (no partial writes).
+    if (process.env.A17_CRASH_AT === 'during_tx') {
+      process.kill(process.pid, 'SIGKILL');
+    }
     const tenant = await transaction.tenant.findUnique({ where: { id: tenantId } });
     if (!tenant) throw new Error('Empresa autenticada nao encontrada.');
     const includeCompanyProfile = invoiceData.includeCompanyProfile !== false;
@@ -80,21 +130,56 @@ export const issueInvoice = async (
       });
     }
 
-    // 3. Obter a última fatura para a cadeia de Hash
-    const lastInvoice = await transaction.invoice.findFirst({
-      where: { tenantId: tenant.id },
-      orderBy: { createdAt: 'desc' }
-    });
+    // 3-4. Cadeia documental e numeração atómica
+    //    Toda a emissão FT acontece sob advisory lock pelo tenant e usa
+    //    InvoiceSeries + InvoiceChainState para garantir que dois pedidos
+    //    concorrentes nunca produzem o mesmo número ou bifurcar a cadeia.
+    const issuedAt = new Date();
+    const year = issuedAt.getFullYear();
+    const seriesCode = 'A';
+    const documentType = 'FT' as const;
 
-    const previousHash = lastInvoice ? lastInvoice.hash : null;
-
-    // 4. Calcular o número sequencial da fatura — feito dentro da transacao
-    //    com lock no Tenant para serializar emissoes concorrentes.
-    const invoiceCount = await transaction.invoice.count({
-      where: { tenantId: tenant.id, type: 'FT' }
+    // Compute a deterministic payload hash for idempotency
+    const canonicalPayload = JSON.stringify({
+      customerId: (customer && (customer.id ?? null)) ?? null,
+      customerName: invoiceData.customerName ?? null,
+      customerNif: invoiceData.customerNif ?? null,
+      items: (invoiceData.items || []).map((item: any) => ({
+        productId: item.productId ?? null,
+        desc: item.desc ?? null,
+        qty: item.qty ?? 1,
+        rate: item.rate ?? 0,
+      })),
+      applyVat: invoiceData.applyVat !== false,
+      discountType: invoiceData.discountType ?? 'amount',
+      discountValue: invoiceData.discountValue ?? 0,
+      observations: invoiceData.observations ?? null,
+      includeCompanyProfile: invoiceData.includeCompanyProfile === true,
+      currency: invoiceData.currency ?? 'AOA',
+      dueAt: invoiceData.dueAt ? new Date(invoiceData.dueAt).toISOString() : null,
     });
-    const currentYear = new Date().getFullYear();
-    const invoiceNumber = `FT ${currentYear}/${invoiceCount + 1}`;
+    const payloadHash = sha256Hex(canonicalPayload);
+
+    await lockIntegrityChain(transaction, tenant.id);
+
+    // Idempotência: mesma chave + mesmo payload → devolve resultado; mesma chave + payload diferente → 409.
+    if (idempotencyKey) {
+      const decision = await checkIdempotency(transaction, tenant.id, idempotencyKey, 'INVOICE', payloadHash);
+      if (decision.kind === 'replay') {
+        const existing = await transaction.invoice.findUnique({ where: { id: decision.resultId! }, include: { items: true, customer: true, tenant: true } });
+        if (existing) return { saved: existing, tenantId: tenant.id, customerName: existing.customer?.name ?? '', customerNif: existing.customer?.nif ?? '', shortHash: undefined as any, items: existing.items, _replay: true } as any;
+      } else if (decision.kind === 'conflict') {
+        const err: any = new Error('IdempotencyConflict');
+        err.code = 'IDEMPOTENCY_CONFLICT';
+        err.status = 409;
+        throw err;
+      }
+    }
+    const reserved = await reserveInvoiceNumber(transaction, tenant.id, seriesCode, documentType, year);
+    const invoiceNumber = `FT ${year}/${String(reserved).padStart(4, '0')}`;
+    const chainState = await loadOrInitChainState(transaction, tenant.id);
+    const previousHash = chainState.lastHash;
+    const chainSequence = chainState.lastSequence + 1;
 
     // 5. Calcular totais
     const applyVat = invoiceData.applyVat !== false;
@@ -103,25 +188,39 @@ export const issueInvoice = async (
     const { subTotal, discountAmount, taxTotal, total } = calculateInvoiceTotals(invoiceData.items || [], { type: discountType, value: discountValue, applyVat });
     const observations = typeof invoiceData.observations === 'string' ? invoiceData.observations.trim() || null : null;
 
-    // 6. Gerar o Hash Fiscal
-    const issuedAt = new Date();
-    const hash = generateInvoiceHash({
-      ...invoiceData,
+    // 6. Gerar o Hash Fiscal — V2 (payload canonicalizado com cadeia)
+    const hash = generateInvoiceHashV2({
+      seriesCode,
+      documentType,
+      year,
+      number: invoiceNumber,
+      tenantId: tenant.id,
+      customerId: customer.id,
       customerName: customer.name,
       customerNif: customer.nif,
-      number: invoiceNumber,
-      subTotal,
+      currency: invoiceData.currency ?? 'AOA',
+      items: (invoiceData.items || []).map((item: any, idx: number) => ({
+        position: idx,
+        description: item.desc || 'Item sem descrição',
+        productCode: item.productId ?? null,
+        quantity: item.qty ?? 1,
+        unitPrice: item.rate ?? 0,
+        taxRate: item.taxRate ?? (applyVat ? 14.00 : 0),
+        total: (item.qty ?? 1) * (item.rate ?? 0),
+      })),
+      applyVat,
       discountAmount,
       discountType,
       discountValue,
-      applyVat,
       observations,
       includeCompanyProfile,
       companyProfileSnapshot,
       companyLogoId: companyLogo?.id ?? null,
+      subTotal,
+      taxTotal,
       total,
-      taxTotal
-    }, previousHash, issuedAt);
+      issuedAt: issuedAt.toISOString(),
+    }, previousHash, chainSequence);
 
     // 7. Gerar Assinatura Digital RSA
     const sign = crypto.createSign('SHA256');
@@ -172,7 +271,12 @@ export const issueInvoice = async (
         customerId: customer.id,
         number: invoiceNumber,
         type: 'FT',
-        status: 'ISSUED',
+        status: 'DRAFT',
+        seriesCode,
+        documentType,
+        year,
+        chainSequence,
+        hashVersion: 2,
         subTotal: subTotal,
         discountAmount,
         discountType,
@@ -191,12 +295,13 @@ export const issueInvoice = async (
         dueAt: invoiceData.dueAt ? new Date(invoiceData.dueAt) : null,
         sourceDraftId: invoiceData.sourceDraftId ?? null,
         items: {
-          create: (invoiceData.items || []).map((item: any) => ({
+          create: (invoiceData.items || []).map((item: any, idx: number) => ({
             productId: item.productId || null,
             description: item.desc || 'Item sem descrição',
             quantity: item.qty || 1,
             unitPrice: item.rate || 0,
             taxRate: applyVat ? 14.00 : 0,
+            position: idx,
             total: (item.qty || 1) * (item.rate || 0),
           }))
         }
@@ -217,6 +322,21 @@ export const issueInvoice = async (
       if (usedThisMonth >= invoiceLimit) throw new InvoiceQuotaExceededError(usedThisMonth, invoiceLimit);
     }
     const saved = await transaction.invoice.create(invoiceCreateData);
+    // Selar documento: transição DRAFT→ISSUED dentro da mesma transação.
+    // O trigger só permite transição documental com OLD.status ≠ ISSUED/ANULADA.
+    await transaction.invoice.update({
+      where: { id: saved.id },
+      data: { status: 'ISSUED' },
+    });
+
+    // Avançar a cadeia criptográfica DEPOIS de criada a factura. Se falhar, a transação faz rollback completo.
+    await transaction.$executeRaw`UPDATE "InvoiceChainState"
+      SET "lastHash" = ${hash}, "lastSequence" = ${chainSequence}, "lastInvoiceId" = ${saved.id}
+      WHERE "tenantId" = ${tenant.id}`;
+
+    if (idempotencyKey) {
+      await persistIdempotency(transaction, tenant.id, idempotencyKey, 'INVOICE', payloadHash, saved.id);
+    }
 
     // Baixa automatica de estoque apenas para produtos com controlo de stock e
     // tenants com o modulo WMS activo. O catalogo gratuito factura sem stock.
@@ -224,7 +344,7 @@ export const issueInvoice = async (
       (item: any) => item.productId && item.qty > 0
     );
     if (invoiceItems.length > 0) {
-      const wmsEnabled = await isApplicationEnabled(tenant.id, 'wms');
+      const wmsEnabled = await isApplicationEnabled(tenant.id, 'wms', transaction);
       const trackedProducts = wmsEnabled
         ? await transaction.product.findMany({
             where: { tenantId: tenant.id, id: { in: invoiceItems.map((item: any) => item.productId) }, trackStock: true },
@@ -260,8 +380,29 @@ export const issueInvoice = async (
       });
       if (updatedDraft.count !== 1) throw new Error('O rascunho foi alterado durante a emissão.');
     }
+    await logAuditEvent(tenantId, {
+      action: 'FT_ISSUED',
+      entity: 'Invoice',
+      entityId: saved.id,
+      after: { number: saved.number, total: saved.total, customerNif: customer.nif, currency: saved.currency } as any,
+      source: 'issueInvoice',
+    }, transaction);
     return { saved, tenantId, shortHash, customerName: customer.name, customerNif: customer.nif, items: invoiceData.items };
   });
+
+  // A3 — GL posting (auto-creção, não bloqueia o FT se falhar)
+  // Skip when the inner transaction returned a replay payload (idempotent reemit);
+  // the original FT already posted to GL on its initial commit.
+  if ((result as any)?.saved) {
+    try {
+      const { postInvoiceToGL } = await import('./gl-service');
+      const total = Number((result as any).saved.total);
+      const taxTotal = Number(((result as any).saved.taxTotal?.toString()) ?? 0);
+      await postInvoiceToGL((result as any).tenantId, (result as any).saved.id, total, taxTotal);
+    } catch (e) {
+      console.error('GL_POST_FAILED for FT', (result as any)?.saved?.id, e);
+    }
+  }
 
   return {
     ...result.saved,
@@ -272,11 +413,12 @@ export const issueInvoice = async (
   };
 };
 
-export const issueCreditNote = async (params: {
+const issueCreditNoteOnce = async (params: {
   invoiceId?: string;
   invoiceNumber?: string;
   reason: string;
   tenantId?: string;
+  idempotencyKey?: string;
 }) => {
   // O tenantId deve vir do contexto autenticado (ex.: sessão), nunca de um
   // identificador fornecido livremente pelo cliente. Quando nao fornecido,
@@ -316,34 +458,71 @@ export const issueCreditNote = async (params: {
     // O tenantId e obtido do contexto autenticado ou validado contra a fatura
     const tenantId = authenticatedTenantId || originalInvoice.tenantId;
 
-    // 2. Obter a última fatura/documento para a cadeia de Hash
-    const lastDocument = await tx.invoice.findFirst({
-      where: { tenantId },
-      orderBy: { createdAt: 'desc' }
-    });
+    // 2-3. Cadeia documental e numeracao atomica de Nota de Crédito
+    const issuedAt = new Date();
+    const year = issuedAt.getFullYear();
+    const seriesCode = 'A';
+    const documentType = 'NC' as const;
 
-    const previousHash = lastDocument ? lastDocument.hash : null;
+    // idempotency (NC path)
+    const payloadHash = sha256Hex(JSON.stringify({
+      refInvoiceNumber: originalInvoice.number,
+      reason: params.reason,
+      tenantId,
+    }));
+    await lockIntegrityChain(tx, tenantId);
+    if (params.idempotencyKey) {
+      const decision = await checkIdempotency(tx, tenantId, params.idempotencyKey, 'CREDIT_NOTE', payloadHash);
+      if (decision.kind === 'replay') {
+        const existing = await tx.invoice.findFirst({ where: { id: decision.resultId!, tenantId }, include: { items: true, customer: true, tenant: true } });
+        if (existing) return { existing, shortHash: '', customerName: originalInvoice.customer.name, customerNif: originalInvoice.customer.nif };
+      } else if (decision.kind === 'conflict') {
+        const err: any = new Error('IdempotencyConflict');
+        err.code = 'IDEMPOTENCY_CONFLICT';
+        err.status = 409;
+        throw err;
+      }
+    }
+    const reserved = await reserveInvoiceNumber(tx, tenantId, seriesCode, documentType, year);
+    const ncNumber = `NC ${year}/${String(reserved).padStart(4, '0')}`;
+    const chainState = await loadOrInitChainState(tx, tenantId);
+    const previousHash = chainState.lastHash;
+    const chainSequence = chainState.lastSequence + 1;
 
-    // 3. Gerar numeração sequencial para Nota de Crédito (NC) dentro da transacao
-    //    para evitar numeracao duplicada em emissoes concorrentes.
-    const ncCount = await tx.invoice.count({
-      where: { tenantId, type: 'NC' }
-    });
-    const currentYear = new Date().getFullYear();
-    const ncNumber = `NC ${currentYear}/${ncCount + 1}`;
-
-    // 4. Gerar o Hash Fiscal da Nota de Crédito
-    const hash = generateInvoiceHash({
+    // 4. Gerar o Hash Fiscal — V2 (assinatura canónica derivada da cadeia)
+    const hash = generateInvoiceHashV2({
+      seriesCode,
+      documentType,
+      year,
+      number: ncNumber,
+      tenantId,
+      customerId: originalInvoice.customerId,
       customerName: originalInvoice.customer.name,
       customerNif: originalInvoice.customer.nif,
-      number: ncNumber,
+      currency: originalInvoice.currency ?? 'AOA',
+      items: originalInvoice.items.map((item: any, idx: number) => ({
+        position: idx,
+        description: item.description,
+        productCode: item.productId ?? null,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        taxRate: item.taxRate,
+        total: item.total,
+      })),
       refInvoiceNumber: originalInvoice.number,
       subTotal: originalInvoice.subTotal,
       taxTotal: originalInvoice.taxTotal,
       total: originalInvoice.total,
-      cancelReason: params.reason
-    }, previousHash);
-
+      cancelReason: params.reason,
+      includeCompanyProfile: originalInvoice.includeCompanyProfile,
+      companyProfileSnapshot: originalInvoice.companyProfileSnapshot ?? null,
+      companyLogoId: originalInvoice.companyLogoId ?? null,
+      discountAmount: originalInvoice.discountAmount,
+      discountType: originalInvoice.discountType,
+      discountValue: originalInvoice.discountValue,
+      applyVat: originalInvoice.applyVat,
+      issuedAt: issuedAt.toISOString(),
+    }, previousHash, chainSequence);
     // 5. Gerar Assinatura Digital RSA
     const sign = crypto.createSign('SHA256');
     sign.update(hash);
@@ -360,7 +539,12 @@ export const issueCreditNote = async (params: {
         customerId: originalInvoice.customerId,
         number: ncNumber,
         type: 'NC',
-        status: 'ISSUED',
+        status: 'DRAFT',
+        seriesCode,
+        documentType,
+        year,
+        chainSequence,
+        hashVersion: 2,
         refInvoiceNumber: originalInvoice.number,
         cancelReason: params.reason,
         includeCompanyProfile: originalInvoice.includeCompanyProfile,
@@ -378,11 +562,12 @@ export const issueCreditNote = async (params: {
         previousHash,
         signature,
         items: {
-          create: originalInvoice.items.map((item: any) => ({
+          create: originalInvoice.items.map((item: any, idx: number) => ({
             description: `[Estorno] ${item.description}`,
             quantity: item.quantity,
             unitPrice: item.unitPrice,
             taxRate: item.taxRate,
+            position: idx,
             total: item.total
           }))
         }
@@ -394,6 +579,22 @@ export const issueCreditNote = async (params: {
       }
     });
 
+    // Selar NC: transição DRAFT→ISSUED (itens e âmbito expiraram juntos).
+    // O trigger permite transição apenas com OLD.status='DRAFT'.
+    await tx.invoice.update({
+      where: { id: creditNote.id },
+      data: { status: 'ISSUED' },
+    });
+
+    // Avançar a cadeia criptográfica DEPOIS de criada a nota de crédito. Se falhar, rollback integral.
+    await tx.$executeRaw`UPDATE "InvoiceChainState"
+      SET "lastHash" = ${hash}, "lastSequence" = ${chainSequence}, "lastInvoiceId" = ${creditNote.id}
+      WHERE "tenantId" = ${tenantId}`;
+
+    if (params.idempotencyKey) {
+      await persistIdempotency(tx, tenantId, params.idempotencyKey, 'CREDIT_NOTE', payloadHash, creditNote.id);
+    }
+
     // 7. Atualizar o estado da fatura original para ANULADA (dentro da mesma transacao)
     await tx.invoice.update({
       where: { id: originalInvoice.id },
@@ -404,6 +605,14 @@ export const issueCreditNote = async (params: {
     // (operacao fiscal/financeira, nao confirmacao de devolucao fisica).
     // A reposicao ocorre apenas na devolucao fisica aceite no armazem.
 
+    await logAuditEvent(tenantId, {
+      action: 'NC_ISSUED',
+      entity: 'Invoice',
+      entityId: creditNote.id,
+      after: { number: creditNote.number, total: creditNote.total, refInvoiceNumber: creditNote.refInvoiceNumber, reason: params.reason } as any,
+      source: 'issueCreditNote',
+    }, tx);
+
     return {
       creditNote,
       tenantId,
@@ -413,8 +622,15 @@ export const issueCreditNote = async (params: {
     };
   });
 
-  // Efeitos secundarios somente apos o commit: nenhuma operacao adicional
-  // necessita de executar fora da transacao.
+  // A5 — post estorno for NC to GL (DR 4000/DR 2100/CR 1200)
+  try {
+    const { postCreditNoteToGL } = await import('./gl-service');
+    const total = Number(result.creditNote.total);
+    const taxTotal = Number((result.creditNote as any).taxTotal?.toString() ?? 0);
+    await postCreditNoteToGL(result.tenantId ?? authenticatedTenantId, result.creditNote.id, total, taxTotal);
+  } catch (e) {
+    console.error('GL_POST_FAILED for NC', result.creditNote.id, e);
+  }
 
   return {
     ...result.creditNote,
@@ -423,3 +639,30 @@ export const issueCreditNote = async (params: {
     shortHash: result.shortHash,
   };
 };
+
+
+export const issueCreditNote = async (params: {
+  invoiceId?: string;
+  invoiceNumber?: string;
+  reason: string;
+  tenantId?: string;
+  idempotencyKey?: string;
+}) => {
+  const { withEmissionLease } = await import('./emission-lease');
+  const tenantForLease = params.tenantId ?? 'anonymous';
+  // Use 'NC' as operationId so FT and NC share per-tenant max=2 capacity correctly
+  const result = await withEmissionLease(tenantForLease, 'NC', async () => {
+    for (let attempt = 0; attempt < 5; attempt++) {
+      try {
+        return await issueCreditNoteOnce(params);
+      } catch (err) {
+        if (!isDeadlock(err) || attempt === 4) throw err;
+        await new Promise((r) => setTimeout(r, 50 + attempt * 50));
+      }
+    }
+    throw new Error('issueCreditNote exhausted retries');
+  }, 2);
+  if ((result as any).busy) throw new Error('EMISSION_BUSY — too many concurrent NCs for this tenant; retry later');
+  return (result as any).value;
+};
+

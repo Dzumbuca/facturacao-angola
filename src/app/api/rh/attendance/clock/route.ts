@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { runWithTenant } from '@/lib/tenant-db';
 import { requireRhAccess, rhAccessResponse } from '@/lib/rh-access';
 import { rhAudit } from '@/lib/rh-service';

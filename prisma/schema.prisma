@@ -18,6 +18,32 @@ datasource db {
 
 
 
+enum InvoiceType {
+
+  FT
+
+  NC
+
+  FR
+
+}
+
+
+
+
+enum InvoiceStatus {
+
+  DRAFT
+
+  ISSUED
+
+  ANULADA
+
+}
+
+
+
+
 model Tenant {
 
   id                       String                    @id @default(uuid())
@@ -163,10 +189,29 @@ model Tenant {
   rhLeaveRequests          RhLeaveRequest[]
   rhSettings               RhSettings?
 
+  invoiceSeries            InvoiceSeries[]
+
+  invoiceChainState        InvoiceChainState?
+
+  idempotentRequests       IdempotentRequest[]
+
   rhAuditLogs              RhAuditLog[]
 
-}
 
+  supplierInvoices SupplierInvoice[]
+
+  glAccounts        GlAccount[]
+  journalEntries    JournalEntry[]
+  glAccountHistories    GlAccountHistory[]
+  accountingExercises  AccountingExercise[]
+  accountingSequences  AccountingSequence[]
+  reconciliationRuns   ReconciliationRun[]
+  reconciliationIssues ReconciliationIssue[]
+  auditEvents          AuditEvent[]
+  distributedSlot      DistributedSlot?
+  approvalRequests     ApprovalRequest[]
+  emissionLeases       EmissionLease[]
+}
 
 
 model PlanPayment {
@@ -259,6 +304,8 @@ model Customer {
 
   invoices          Invoice[]
 
+  @@index([tenantId, nif])
+  @@index([tenantId, name])
 }
 
 
@@ -517,6 +564,8 @@ model Supplier {
 
   @@index([nif])
 
+  supplierInvoices SupplierInvoice[]
+
 }
 
 
@@ -560,6 +609,8 @@ model PurchaseOrder {
   @@index([supplierId])
 
   @@index([status])
+
+  supplierInvoices SupplierInvoice[]
 
 }
 
@@ -1153,6 +1204,26 @@ model Invoice {
 
   payments               Payment[]
 
+  seriesCode             String?
+
+  year                   Int?
+
+  documentType           InvoiceType?
+
+  chainSequence          Int?
+
+  hashVersion            Int             @default(1)
+
+  currentChainState      InvoiceChainState?    @relation("CurrentChainHead")
+
+  idempotentResults      IdempotentRequest[]   @relation("IdempotentResult")
+
+  series                 InvoiceSeries?         @relation(fields: [tenantId, seriesCode, documentType, year], references: [tenantId, seriesCode, documentType, year], onDelete: Restrict)
+
+  @@unique([id, tenantId])
+
+  @@index([tenantId, issuedAt])
+
 }
 
 
@@ -1222,6 +1293,10 @@ model Payment {
   createdAt       DateTime        @default(now())
 
   updatedAt       DateTime        @updatedAt
+
+  proofName       String?
+
+  proofData       String?
 
   createdBy       User?           @relation("PaymentCreatedBy", fields: [createdByUserId], references: [id])
 
@@ -1977,9 +2052,13 @@ model InvoiceItem {
 
   total       Decimal  @db.Decimal(12, 2)
 
+  position    Int               @default(0)
+
   invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
   product     Product? @relation(fields: [productId], references: [id])
+
+  @@index([invoiceId, position])
 
 }
 
@@ -3561,3 +3640,382 @@ model RhPerformanceReviewSelfAssessment {
   @@unique([cycleId, employeeId])
   @@index([tenantId, cycleId])
 }
+
+
+
+
+model InvoiceSeries {
+
+  tenantId     String
+
+  seriesCode   String
+
+  documentType InvoiceType
+
+  year         Int
+
+  lastNumber   Int @default(0)
+
+  tenant       Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  invoices     Invoice[]
+
+  @@id([tenantId, seriesCode, documentType, year])
+
+  @@index([tenantId])
+
+}
+
+
+
+
+model InvoiceChainState {
+
+  tenantId      String   @id
+
+  lastHash      String?
+
+  lastSequence  Int      @default(0)
+
+  lastInvoiceId String?
+
+  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  lastInvoice   Invoice? @relation("CurrentChainHead", fields: [lastInvoiceId], references: [id], onDelete: Restrict)
+
+  @@unique([lastInvoiceId])
+
+}
+
+
+
+
+model IdempotentRequest {
+
+  tenantId    String
+
+  key         String
+
+  resource    String
+
+  payloadHash String
+
+  resultId    String
+
+  createdAt   DateTime @default(now())
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  invoice     Invoice  @relation("IdempotentResult", fields: [resultId], references: [id], onDelete: Restrict)
+
+  @@id([tenantId, key])
+
+  @@index([tenantId, resource, createdAt])
+
+  @@index([resultId])
+
+}
+
+model SupplierInvoice {
+
+  id              String       @id @default(uuid())
+  tenantId        String
+  number          String
+  supplierId      String
+  purchaseOrderId String?
+  total           Decimal      @db.Decimal(12, 2)
+  taxTotal        Decimal      @db.Decimal(12, 2)
+  paidAmount      Decimal      @default(0) @db.Decimal(12, 2)
+  currency        String       @default("AOA")
+  issuedAt        DateTime
+  dueDate         DateTime?
+  status          String       @default("PENDING")
+  notes           String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  tenant          Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  supplier        Supplier       @relation(fields: [tenantId, supplierId], references: [tenantId, id], onDelete: Restrict)
+  purchaseOrder   PurchaseOrder? @relation(fields: [tenantId, purchaseOrderId], references: [tenantId, id], onDelete: SetNull)
+
+  @@unique([tenantId, number])
+  @@index([tenantId, status])
+  @@index([tenantId, supplierId])
+  @@index([tenantId, dueDate])
+
+}
+
+
+model GlAccount {
+  id           String    @id @default(uuid())
+  tenantId     String
+  code         String
+  name         String
+  kind         String    // ASSET | LIABILITY | EQUITY | REVENUE | EXPENSE
+  parentId     String?
+  isActive     Boolean   @default(true)
+  synthetic    Boolean   @default(false)
+  nature       String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  tenant       Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  parent       GlAccount? @relation("GlAccountTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children     GlAccount[] @relation("GlAccountTree")
+  lines        JournalEntryLine[]
+  history      GlAccountHistory[]
+
+  @@unique([tenantId, id])
+  @@unique([tenantId, code])
+  @@index([tenantId, kind])
+  @@index([tenantId, parentId])
+}
+
+model JournalEntry {
+  id           String    @id @default(uuid())
+  tenantId     String
+  number       String
+  postedOnDate DateTime  @db.Date
+  description  String
+  source       String?
+  sourceId     String?
+  createdBy    String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  exerciseId   String?
+  periodId     String?
+  entryType    String    @default("STANDARD")
+  status       String    @default("POSTED")
+  reversedFromId String?
+
+  tenant       Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  period       AccountingPeriod?   @relation(fields: [tenantId, periodId], references: [tenantId, id])
+  exercise     AccountingExercise? @relation(fields: [tenantId, exerciseId], references: [tenantId, id])
+  lines        JournalEntryLine[]
+
+  @@unique([tenantId, id])
+  @@unique([tenantId, number])
+  @@index([tenantId, postedOnDate])
+  @@index([tenantId, source, sourceId])
+  @@index([tenantId, status])
+  @@index([tenantId, periodId])
+  @@index([tenantId, exerciseId])
+  @@unique([tenantId, reversedFromId])
+}
+
+model JournalEntryLine {
+  id           String   @id @default(uuid())
+  tenantId     String
+  entryId      String
+  accountId    String
+  debit        Decimal  @default(0) @db.Decimal(12, 2)
+  credit       Decimal  @default(0) @db.Decimal(12, 2)
+  memo         String?
+
+  entry        JournalEntry @relation(fields: [tenantId, entryId], references: [tenantId, id], onDelete: Cascade)
+  account      GlAccount    @relation(fields: [tenantId, accountId], references: [tenantId, id], onDelete: Restrict)
+
+  @@unique([tenantId, id])
+  @@index([tenantId, accountId])
+  @@index([tenantId, entryId])
+}
+
+
+model GlAccountHistory {
+  id           String       @id @default(uuid())
+  tenantId     String
+  accountId    String
+  action       String
+  actorUserId  String?
+  changedAt    DateTime     @default(now())
+  oldValues    Json?
+  newValues    Json?
+  account      GlAccount    @relation(fields: [tenantId, accountId], references: [tenantId, id], onDelete: Cascade)
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, accountId])
+}
+
+model AccountingExercise {
+  id          String   @id @default(uuid())
+  tenantId    String
+  year        Int
+  startDate   DateTime
+  endDate     DateTime
+  state       String   @default("OPEN")
+  openedAt    DateTime @default(now())
+  openedBy    String?
+  closedAt    DateTime?
+  closedBy    String?
+  createdAt   DateTime @default(now())
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  periods     AccountingPeriod[]
+  entries     JournalEntry[]
+
+  @@unique([tenantId, id])
+  @@unique([tenantId, year])
+  @@index([tenantId, state])
+}
+
+model AccountingPeriod {
+  id          String   @id @default(uuid())
+  tenantId    String
+  exerciseId  String
+  code        String
+  startDate   DateTime
+  endDate     DateTime
+  state       String   @default("OPEN")
+  openedAt    DateTime @default(now())
+  openedBy    String?
+  closedAt    DateTime?
+  closedBy    String?
+  createdAt   DateTime @default(now())
+
+  exercise    AccountingExercise @relation(fields: [tenantId, exerciseId], references: [tenantId, id], onDelete: Cascade)
+  entries     JournalEntry[]
+
+  @@unique([tenantId, id])
+  @@unique([tenantId, exerciseId, code])
+  @@index([tenantId, state])
+  @@index([tenantId, startDate, endDate])
+}
+
+model AccountingSequence {
+  id          String   @id @default(uuid())
+  tenantId    String
+  prefix      String
+  nextNumber  Int      @default(1)
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, prefix])
+}
+
+
+model ReconciliationRun {
+  id            String              @id @default(uuid())
+  tenantId      String
+  startedAt     DateTime            @default(now())
+  finishedAt    DateTime?
+  status        String              @default("RUNNING")
+  rulesClaimed  Int                 @default(0)
+  issuesFound   Int                 @default(0)
+  actorUserId   String?
+
+  tenant        Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  issues        ReconciliationIssue[]
+
+  @@unique([tenantId, id])
+  @@index([tenantId, startedAt])
+  @@index([tenantId, status])
+}
+
+model ReconciliationIssue {
+  id            String   @id @default(uuid())
+  tenantId      String
+  runId         String
+  issueType     String
+  docKind       String?
+  docId         String?
+  value         Decimal? @db.Decimal(12, 2)
+  description   String
+  severity      String   @default("MEDIUM")
+  state         String   @default("OPEN")
+  resolvedAt    DateTime?
+  resolvedBy    String?
+  justification String?
+  createdAt     DateTime @default(now())
+
+  tenant        Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  run           ReconciliationRun   @relation(fields: [tenantId, runId], references: [tenantId, id], onDelete: Cascade)
+
+  @@index([tenantId, runId])
+  @@index([tenantId, state])
+  @@index([tenantId, issueType])
+}
+
+
+model ApprovalRequest {
+  id              String    @id @default(uuid())
+  tenantId        String
+  operation       String
+  entityType      String
+  entityId        String
+  payload         Json      @default("{}")
+  requestedBy     String
+  requesterRole   String?
+  justification   String
+  state           String    @default("PENDING")
+  decidedBy       String?
+  decidedAt       DateTime?
+  decision        String?
+  decisionReason  String?
+  executedAt      DateTime?
+  executedSummary Json?
+  correlationId   String?
+  expiresAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  tenant          Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, id])
+  @@index([tenantId, state, createdAt])
+  @@index([tenantId, requestedBy, createdAt])
+  @@index([correlationId])
+}
+
+model EmissionLease {
+  id              String    @id @default(uuid())
+  tenantId        String
+  operationId     String
+  processId       String?
+  state           String    @default("ACTIVE")
+  acquiredAt      DateTime  @default(now())
+  expiresAt       DateTime
+  lastRenewedAt   DateTime  @default(now())
+  releasedAt      DateTime?
+
+  tenant          Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, id])
+  @@index([tenantId, state, acquiredAt])
+  @@index([expiresAt])
+}
+
+model AuditEvent {
+  id            String   @id @default(uuid())
+  tenantId      String
+  actorUserId   String?
+  action        String
+  entity        String
+  entityId      String?
+  before        Json?
+  after         Json?
+  justification String?
+  result        String   @default("SUCCESS")
+  correlationId String?
+  source        String?
+  previousHash  String?
+  hash          String?   @unique
+  occurredAt    DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, occurredAt])
+  @@index([tenantId, entity, entityId])
+  @@index([tenantId, action])
+  @@index([correlationId])
+}
+
+model DistributedSlot {
+  tenantId   String   @id
+  inflight   Int      @default(0)
+  maxSlots   Int      @default(2)
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+}
+
