@@ -92,6 +92,57 @@ CREATE UNIQUE INDEX "Invoice_tenantId_chainSequence_key"
   ON "Invoice" ("tenantId", "chainSequence")
   WHERE "chainSequence" IS NOT NULL;
 
+-- A18 FIX: backfill determinístico de "chainSequence" para facturas ISSUED históricas.
+-- Âmbito: uma cadeia por TENANT (InvoiceChainState PK = tenantId), confirmado em
+-- src/lib/invoice-service.ts:182 (chainSequence = lastSequence + 1) e
+-- src/lib/invoice-integrity.ts:76-88 (loadOrInitChainState por tenantId).
+-- Ordenação por (issuedAt, createdAt, id) reproduz a ordem cronológica de emissão.
+-- Apenas ISSUED recebe sequência; DRAFT/ANULADA ficam NULL (coerente com a CHECK).
+-- Idempotente: só actua onde chainSequence IS NULL.
+WITH ordenado AS (
+  SELECT
+    i.id,
+    ROW_NUMBER() OVER (
+      PARTITION BY i."tenantId"
+      ORDER BY i."issuedAt" ASC, i."createdAt" ASC, i.id ASC
+    ) - 1 AS sequencia
+  FROM "Invoice" i
+  WHERE i."status" = 'ISSUED'
+    AND i."chainSequence" IS NULL
+)
+UPDATE "Invoice" AS alvo
+SET "chainSequence" = ordenado.sequencia
+FROM ordenado
+WHERE alvo.id = ordenado.id
+  AND alvo."chainSequence" IS NULL;
+
+-- Alinhar InvoiceChainState com o maior chainSequence atribuído, para que a
+-- próxima emissão continue em +1 em vez de recomeçar. GREATEST nunca reduz.
+INSERT INTO "InvoiceChainState" ("tenantId", "lastHash", "lastSequence", "lastInvoiceId")
+SELECT
+  distinto."tenantId",
+  ultima."hash",
+  distinto."maxSequence",
+  ultima."id"
+FROM (
+  SELECT "tenantId", MAX("chainSequence") AS "maxSequence"
+  FROM "Invoice"
+  WHERE "chainSequence" IS NOT NULL
+  GROUP BY "tenantId"
+) AS distinto
+JOIN LATERAL (
+  SELECT "hash", "id"
+  FROM "Invoice"
+  WHERE "tenantId" = distinto."tenantId"
+    AND "chainSequence" = distinto."maxSequence"
+  ORDER BY "issuedAt" ASC, "createdAt" ASC, "id" ASC
+  LIMIT 1
+) AS ultima ON TRUE
+ON CONFLICT ("tenantId") DO UPDATE
+  SET "lastSequence"  = GREATEST("InvoiceChainState"."lastSequence", EXCLUDED."lastSequence"),
+      "lastHash"      = COALESCE("InvoiceChainState"."lastHash", EXCLUDED."lastHash"),
+      "lastInvoiceId" = COALESCE("InvoiceChainState"."lastInvoiceId", EXCLUDED."lastInvoiceId");
+
 -- Check that an ISSUED invoice has a chainSequence
 ALTER TABLE "Invoice"
   ADD CONSTRAINT "invoice_issued_requires_chain_sequence"
