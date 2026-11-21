@@ -99,14 +99,21 @@ CREATE UNIQUE INDEX "Invoice_tenantId_chainSequence_key"
 -- Ordenação por (issuedAt, createdAt, id) reproduz a ordem cronológica de emissão.
 -- Apenas ISSUED recebe sequência; DRAFT/ANULADA ficam NULL (coerente com a CHECK).
 -- Idempotente: só actua onde chainSequence IS NULL.
-WITH ordenado AS (
+WITH bases AS (
+  SELECT "tenantId", COALESCE(MAX("chainSequence"), 0) AS base
+  FROM "Invoice"
+  WHERE "chainSequence" IS NOT NULL
+  GROUP BY "tenantId"
+),
+ordenado AS (
   SELECT
     i.id,
-    ROW_NUMBER() OVER (
+    COALESCE(b.base, 0) + ROW_NUMBER() OVER (
       PARTITION BY i."tenantId"
       ORDER BY i."issuedAt" ASC, i."createdAt" ASC, i.id ASC
-    ) - 1 AS sequencia
+    ) AS sequencia
   FROM "Invoice" i
+  LEFT JOIN bases b ON b."tenantId" = i."tenantId"
   WHERE i."status" = 'ISSUED'
     AND i."chainSequence" IS NULL
 )
