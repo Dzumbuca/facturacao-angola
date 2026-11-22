@@ -322,7 +322,7 @@ Todos os 7 testes existentes continuam a passar após a correção.
 
 ## 14. COMMIT FINAL
 
-- **SHA:** `XXXXXXXX` (será preenchido no commit)
+- **SHA:** `916f52607beb23bb293ea9a940c50e1385a8b6d1`
 - **Mensagem:** `fix(A18): make distributed invoice idempotency atomic`
 - **Ficheiros incluídos:** apenas a correção de idempotency, testes e relatório técnico
 
