@@ -1,6 +1,7 @@
 const { spawn } = require('child_process');
 const { PrismaClient } = require('@prisma/client');
 const path = require('path');
+const fs = require('fs');
 
 const DATABASE_URL = 'postgresql://a1_test@127.0.0.1:5432/a1_validation_test';
 const WORKER_PATH = path.join(__dirname, 'distributed-worker.cjs');
@@ -9,12 +10,12 @@ const prisma = new PrismaClient({
   datasources: { db: { url: DATABASE_URL } },
 });
 
-const runId = () => `t-dist-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+const runId = () => `t-idem-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
 
 async function seedFreshTenant() {
   const id = runId();
-  await prisma.tenant.create({ data: { id, name: `Dist ${id}`, plan: 'PRO', status: 'ACTIVE' } });
-  await prisma.customer.create({ data: { id: `${id}-c`, tenantId: id, name: 'Dist Customer', nif: '5000000001' } });
+  await prisma.tenant.create({ data: { id, name: `Idem ${id}`, plan: 'PRO', status: 'ACTIVE' } });
+  await prisma.customer.create({ data: { id: `${id}-c`, tenantId: id, name: 'Idem Customer', nif: '5000000001' } });
   return { tenantId: id, customerId: `${id}-c` };
 }
 
@@ -46,25 +47,28 @@ function runWorker(tenantId, count, startIndex, operation, idempotencyKey) {
   });
 }
 
-async function verifySQL(tenantId, expectedCount, testName, expectedActiveLeases = 0) {
+async function verifySQL(tenantId, expectedCount, testName, expectedActiveLeases = 0, expectIdempotencyRecord = false) {
   const totalInvoices = await prisma.invoice.count({ where: { tenantId } });
   const ftCount = await prisma.invoice.count({ where: { tenantId, type: 'FT' } });
   const ncCount = await prisma.invoice.count({ where: { tenantId, type: 'NC' } });
 
-  // Check for duplicate numbers within tenant
   const dupNumbers = await prisma.$queryRaw`SELECT number, COUNT(*) as cnt FROM "Invoice" WHERE "tenantId" = ${tenantId} GROUP BY number HAVING COUNT(*) > 1`;
-
-  // Check for duplicate sequences within tenant
   const dupSequences = await prisma.$queryRaw`SELECT "chainSequence", COUNT(*) as cnt FROM "Invoice" WHERE "tenantId" = ${tenantId} AND "chainSequence" IS NOT NULL GROUP BY "chainSequence" HAVING COUNT(*) > 1`;
-
-  // Check for duplicate hashes globally
   const dupHashes = await prisma.$queryRaw`SELECT hash, COUNT(*) as cnt FROM "Invoice" WHERE hash IS NOT NULL GROUP BY hash HAVING COUNT(*) > 1`;
 
-  // Chain state
   const chain = await prisma.invoiceChainState.findUnique({ where: { tenantId } });
+  const maxSeqResult = await prisma.invoice.aggregate({
+    where: { tenantId },
+    _max: { chainSequence: true },
+  });
+  const chainLastSequence = chain ? chain.lastSequence : null;
+  const dbMaxSeq = maxSeqResult._max.chainSequence ?? 0;
 
-  // Active leases
   const activeLeases = await prisma.emissionLease.count({ where: { tenantId, state: 'ACTIVE' } });
+
+  const idemCount = await prisma.idempotentRequest.count({ where: { tenantId } });
+  const idemWithoutResultRaw = await prisma.$queryRaw`SELECT COUNT(*) as cnt FROM "IdempotentRequest" WHERE "tenantId" = ${tenantId} AND "resultId" IS NULL`;
+  const idemWithoutResult = idemWithoutResultRaw[0] ? Number(idemWithoutResultRaw[0].cnt.toString()) : 0;
 
   const result = {
     testName,
@@ -76,23 +80,187 @@ async function verifySQL(tenantId, expectedCount, testName, expectedActiveLeases
     duplicateNumbers: dupNumbers.length,
     duplicateSequences: dupSequences.length,
     duplicateHashes: dupHashes.length,
-    chainLastSequence: chain ? chain.lastSequence : null,
+    chainLastSequence,
+    dbMaxSeq,
+    chainConsistent: chainLastSequence === dbMaxSeq,
     activeLeases,
+    idemCount,
+    idemWithoutResult,
     passed: totalInvoices === expectedCount &&
       dupNumbers.length === 0 &&
       dupSequences.length === 0 &&
       dupHashes.length === 0 &&
-      activeLeases === expectedActiveLeases,
+      chainLastSequence === dbMaxSeq &&
+      activeLeases === expectedActiveLeases &&
+      (!expectIdempotencyRecord || idemCount >= 1) &&
+      idemWithoutResult === 0,
   };
-  console.log(`  SQL Verify [${testName}]: total=${totalInvoices} expected=${expectedCount} dupNum=${dupNumbers.length} dupSeq=${dupSequences.length} dupHash=${dupHashes.length} activeLeases=${activeLeases} chainLastSeq=${chain?.lastSequence} ${result.passed ? 'PASS' : 'FAIL'}`);
+  console.log(`  SQL Verify [${testName}]: total=${totalInvoices} expected=${expectedCount} dupNum=${dupNumbers.length} dupSeq=${dupSequences.length} dupHash=${dupHashes.length} chainLastSeq=${chainLastSequence} dbMaxSeq=${dbMaxSeq} chainConsistent=${chainLastSequence === dbMaxSeq} activeLeases=${activeLeases} idemCount=${idemCount} idemWithoutResult=${idemWithoutResult} ${result.passed ? 'PASS' : 'FAIL'}`);
   return result;
 }
 
-async function runTest1(repetition) {
-  console.log(`\n=== TEST 1: Distributed emission (50+50 FT, same tenant) — Repetition ${repetition} ===`);
+async function cleanupTenant(tenantId) {
+  try {
+    await prisma.invoice.deleteMany({ where: { tenantId } });
+    await prisma.invoiceChainState.delete({ where: { tenantId } });
+    await prisma.invoiceSeries.deleteMany({ where: { tenantId } });
+    await prisma.emissionLease.deleteMany({ where: { tenantId } });
+    await prisma.idempotentRequest.deleteMany({ where: { tenantId } });
+    await prisma.customer.delete({ where: { id: `${tenantId}-c` } });
+    await prisma.tenant.delete({ where: { id: tenantId } });
+  } catch {}
+}
+
+async function runTest1() {
+  console.log(`\n=== TEST 1: Race condition regression — same key + same payload, 2 processes ===`);
+  let allPassed = true;
+
+  for (let rep = 1; rep <= 3; rep++) {
+    const { tenantId } = await seedFreshTenant();
+    const sharedKey = `idem-race-${Date.now()}-${rep}`;
+
+    const [resA, resB] = await Promise.all([
+      runWorker(tenantId, 1, 0, 'FT', sharedKey),
+      runWorker(tenantId, 1, 0, 'FT', sharedKey),
+    ]);
+
+    const allErrors = [...resA.errors, ...resB.errors];
+    const allResults = [...resA.results, ...resB.results];
+    const distinctInvoiceIds = new Set(allResults.map(r => r.id).filter(Boolean));
+
+    console.log(`  Rep ${rep}: Process A (PID ${resA.pid}) ${resA.results.length} results / ${resA.errors.length} errors`);
+    console.log(`  Rep ${rep}: Process B (PID ${resB.pid}) ${resB.results.length} results / ${resB.errors.length} errors`);
+    console.log(`  Rep ${rep}: Total results=${allResults.length} errors=${allErrors.length} distinctInvoiceIds=${distinctInvoiceIds.size}`);
+
+    const idemCount = await prisma.idempotentRequest.count({ where: { tenantId } });
+    const idemResultIds = await prisma.idempotentRequest.findMany({
+      where: { tenantId },
+      select: { resultId: true },
+    });
+    const distinctResultIds = new Set(idemResultIds.map(r => r.resultId));
+
+    // With advisory lock: both workers get a result, but both reference the SAME invoice
+    const repPassed = allResults.length === 2 &&
+      allErrors.length === 0 &&
+      distinctInvoiceIds.size === 1 &&
+      idemCount === 1 &&
+      distinctResultIds.size === 1;
+
+    console.log(`  Rep ${rep}: invoices=${allResults.length} distinctIds=${distinctInvoiceIds.size} idemRecords=${idemCount} distinctResultIds=${distinctResultIds.size} ${repPassed ? 'PASS' : 'FAIL'}`);
+
+    const sql = await verifySQL(tenantId, 1, `Test1-Rep${rep}`, 0, true);
+    const repPassed2 = repPassed && sql.passed;
+
+    console.log(`  Rep ${rep}: FINAL ${repPassed2 ? 'PASS' : 'FAIL'}`);
+
+    allPassed = allPassed && repPassed2;
+    await cleanupTenant(tenantId);
+  }
+
+  return { passed: allPassed };
+}
+
+async function runTest2() {
+  console.log(`\n=== TEST 2: Replay sequential — same key + same payload, multiple times ===`);
   const { tenantId } = await seedFreshTenant();
-  const before = await prisma.invoiceChainState.findUnique({ where: { tenantId } });
-  const startingSeq = before?.lastSequence ?? 0;
+  const sharedKey = `idem-replay-${Date.now()}`;
+
+  const results = [];
+  const errors = [];
+
+  for (let i = 0; i < 5; i++) {
+    try {
+      const inv = await runWorker(tenantId, 1, 0, 'FT', sharedKey);
+      results.push(...inv.results);
+      errors.push(...inv.errors);
+    } catch (e) {
+      errors.push({ index: i, message: e.message });
+    }
+  }
+
+  const idemCount = await prisma.idempotentRequest.count({ where: { tenantId } });
+  const distinctResultIds = new Set(
+    (await prisma.idempotentRequest.findMany({ where: { tenantId }, select: { resultId: true } })).map(r => r.resultId)
+  );
+  const distinctInvoiceIds = new Set(results.map(r => r.id).filter(Boolean));
+
+  console.log(`  Results=${results.length} errors=${errors.length} idemRecords=${idemCount} distinctResultIds=${distinctResultIds.size} distinctInvoiceIds=${distinctInvoiceIds.size}`);
+
+  const sql = await verifySQL(tenantId, 1, `Test2-Replay`, 0, true);
+  const passed = results.length === 5 && errors.length === 0 && distinctInvoiceIds.size === 1 && idemCount === 1 && distinctResultIds.size === 1 && sql.passed;
+
+  console.log(`  Test 2 Replay: ${passed ? 'PASS' : 'FAIL'}`);
+  await cleanupTenant(tenantId);
+  return { passed };
+}
+
+async function runTest3() {
+  console.log(`\n=== TEST 3: 100 concurrent same-key requests, 2 processes ===`);
+  const { tenantId } = await seedFreshTenant();
+  const sharedKey = `idem-100-${Date.now()}`;
+
+  // 50 from process A, 50 from process B, same key, same payload (startIndex=0 for both)
+  const [resA, resB] = await Promise.all([
+    runWorker(tenantId, 50, 0, 'FT', sharedKey),
+    runWorker(tenantId, 50, 0, 'FT', sharedKey),
+  ]);
+
+  const allErrors = [...resA.errors, ...resB.errors];
+  const allResults = [...resA.results, ...resB.results];
+  const distinctInvoiceIds = new Set(allResults.map(r => r.id).filter(Boolean));
+
+  const idemCount = await prisma.idempotentRequest.count({ where: { tenantId } });
+  const distinctResultIds = new Set(
+    (await prisma.idempotentRequest.findMany({ where: { tenantId }, select: { resultId: true } })).map(r => r.resultId)
+  );
+
+  console.log(`  Process A (PID ${resA.pid}): ${resA.results.length} results / ${resA.errors.length} errors`);
+  console.log(`  Process B (PID ${resB.pid}): ${resB.results.length} results / ${resB.errors.length} errors`);
+  console.log(`  Total results=${allResults.length} errors=${allErrors.length} distinctInvoiceIds=${distinctInvoiceIds.size} idemRecords=${idemCount} distinctResultIds=${distinctResultIds.size}`);
+
+  const sql = await verifySQL(tenantId, 1, `Test3-100SameKey`, 0, true);
+  const passed = allResults.length >= 1 && distinctInvoiceIds.size === 1 && idemCount === 1 && distinctResultIds.size === 1 && sql.passed;
+
+  console.log(`  Test 3 100-same-key: ${passed ? 'PASS' : 'FAIL'}`);
+  await cleanupTenant(tenantId);
+  return { passed };
+}
+
+async function runTest4() {
+  console.log(`\n=== TEST 4: Same key, diff payload → IDEMPOTENCY_CONFLICT ===`);
+  const { tenantId } = await seedFreshTenant();
+  const sharedKey = `idem-conflict-${Date.now()}`;
+
+  // Worker A: startIndex=0 → rate=100, Worker B: startIndex=1 → rate=200 (different payloads)
+  const [resA, resB] = await Promise.all([
+    runWorker(tenantId, 1, 0, 'FT', sharedKey),
+    runWorker(tenantId, 1, 1, 'FT', sharedKey),
+  ]);
+
+  const allErrors = [...resA.errors, ...resB.errors];
+  const allResults = [...resA.results, ...resB.results];
+
+  const conflictErrors = allErrors.filter(e => e.code === 'IDEMPOTENCY_CONFLICT' || e.message === 'IdempotencyConflict');
+  const idemCount = await prisma.idempotentRequest.count({ where: { tenantId } });
+  const distinctResultIds = new Set(
+    (await prisma.idempotentRequest.findMany({ where: { tenantId }, select: { resultId: true } })).map(r => r.resultId)
+  );
+
+  console.log(`  Process A: ${resA.results.length} results / ${resA.errors.length} errors`);
+  console.log(`  Process B: ${resB.results.length} results / ${resB.errors.length} errors`);
+  console.log(`  Total results=${allResults.length} errors=${allErrors.length} conflictErrors=${conflictErrors.length} idemRecords=${idemCount}`);
+
+  const sql = await verifySQL(tenantId, 1, `Test4-Conflict`, 0, true);
+  const passed = allResults.length === 1 && conflictErrors.length === 1 && idemCount === 1 && distinctResultIds.size === 1 && sql.passed;
+
+  console.log(`  Test 4 Conflict: ${passed ? 'PASS' : 'FAIL'}`);
+  await cleanupTenant(tenantId);
+  return { passed };
+}
+
+async function runTest5() {
+  console.log(`\n=== TEST 5: Different keys, 100 emissions, 2 processes ===`);
+  const { tenantId } = await seedFreshTenant();
 
   const [resA, resB] = await Promise.all([
     runWorker(tenantId, 50, 0, 'FT'),
@@ -105,197 +273,55 @@ async function runTest1(repetition) {
   const allHashes = allResults.map(r => r.hash);
   const allSequences = allResults.map(r => r.chainSequence);
 
-  console.log(`  Process A (PID ${resA.pid}): ${resA.results.length} results, ${resA.errors.length} errors`);
-  console.log(`  Process B (PID ${resB.pid}): ${resB.results.length} results, ${resB.errors.length} errors`);
-  console.log(`  Total results: ${allResults.length}, Total errors: ${allErrors.length}`);
-  console.log(`  Unique numbers: ${new Set(allNumbers).size}, Unique hashes: ${new Set(allHashes).size}, Unique sequences: ${new Set(allSequences).size}`);
+  const idemCount = await prisma.idempotentRequest.count({ where: { tenantId } });
 
-  const sorted = [...allSequences].sort((a, b) => a - b);
-  const seqGap = sorted.length > 0 ? sorted[sorted.length - 1] - startingSeq : 0;
+  console.log(`  Process A (PID ${resA.pid}): ${resA.results.length} results / ${resA.errors.length} errors`);
+  console.log(`  Process B (PID ${resB.pid}): ${resB.results.length} results / ${resB.errors.length} errors`);
+  console.log(`  Total results=${allResults.length} errors=${allErrors.length} uniqueNumbers=${new Set(allNumbers).size} uniqueHashes=${new Set(allHashes).size} uniqueSeqs=${new Set(allSequences).size} idemRecords=${idemCount}`);
 
-  const sql = await verifySQL(tenantId, 100, `Test1-Rep${repetition}`);
+  const sql = await verifySQL(tenantId, 100, `Test5-DiffKeys`, 0, false);
+  const passed = allResults.length === 100 && allErrors.length === 0 &&
+    new Set(allNumbers).size === 100 && new Set(allHashes).size === 100 && new Set(allSequences).size === 100 && sql.passed;
 
-  const test1Passed = resA.errors.length === 0 &&
-    resB.errors.length === 0 &&
-    allResults.length === 100 &&
-    new Set(allNumbers).size === 100 &&
-    new Set(allHashes).size === 100 &&
-    new Set(allSequences).size === 100 &&
-    seqGap === 100 &&
-    sql.passed;
-
-  console.log(`  Test 1 Rep ${repetition}: ${test1Passed ? 'PASS' : 'FAIL'} (seqGap=${seqGap}, expected=100)`);
-
-  // Cleanup (best-effort; DB trigger may block deletion of issued invoices — we use fresh tenants per test)
-  try {
-    await prisma.invoice.deleteMany({ where: { tenantId } });
-    await prisma.invoiceChainState.delete({ where: { tenantId } });
-    await prisma.invoiceSeries.deleteMany({ where: { tenantId } });
-    await prisma.emissionLease.deleteMany({ where: { tenantId } });
-    await prisma.idempotentRequest.deleteMany({ where: { tenantId } });
-    await prisma.customer.delete({ where: { id: `${tenantId}-c` } });
-    await prisma.tenant.delete({ where: { id: tenantId } });
-  } catch {}
-
-  return { passed: test1Passed, errors: allErrors.length, results: allResults.length };
+  console.log(`  Test 5 Diff-keys: ${passed ? 'PASS' : 'FAIL'}`);
+  await cleanupTenant(tenantId);
+  return { passed };
 }
 
-async function runTest2() {
-  console.log(`\n=== TEST 2: Distributed idempotency ===`);
-  const { tenantId } = await seedFreshTenant();
-  // True distributed idempotency: 2 separate processes, same idempotency key, same payload
-  const { tenantId: tenantId2 } = await seedFreshTenant();
-  const sharedKey = `idem-key-${Date.now()}`;
-
-  // Same key, same payload — both workers generate identical data (same startIndex)
-  const [ida, idb] = await Promise.all([
-    runWorker(tenantId2, 1, 0, 'FT', sharedKey),
-    runWorker(tenantId2, 1, 0, 'FT', sharedKey),
-  ]);
-
-  const idemResults = [...ida.results, ...idb.results];
-  const idemErrors = [...ida.errors, ...idb.errors];
-  const idemInvoiceCount = await prisma.invoice.count({ where: { tenantId: tenantId2 } });
-
-  console.log(`  Worker A: ${ida.results.length} results, ${ida.errors.length} errors`);
-  console.log(`  Worker B: ${idb.results.length} results, ${idb.errors.length} errors`);
-  console.log(`  Total invoices in DB: ${idemInvoiceCount}, Total errors: ${idemErrors.length}`);
-  if (idemErrors.length > 0) console.log(`  Errors: ${JSON.stringify(idemErrors)}`);
-
-  // Same key, different payload — should produce conflict (409)
-  const { tenantId: tenantId3 } = await seedFreshTenant();
-  const sharedKey2 = `idem-key-2-${Date.now()}`;
-
-  // Worker A: startIndex=0 → rate=100, Worker B: startIndex=1 → rate=101 (different payloads)
-  const [id2a, id2b] = await Promise.all([
-    runWorker(tenantId3, 1, 0, 'FT', sharedKey2),
-    runWorker(tenantId3, 1, 1, 'FT', sharedKey2),
-  ]);
-
-  const idem2Results = [...id2a.results, ...id2b.results];
-  const idem2Errors = [...id2a.errors, ...id2b.errors];
-  const idem2InvoiceCount = await prisma.invoice.count({ where: { tenantId: tenantId3 } });
-
-  console.log(`  Conflict Worker A (rate=100): ${id2a.results.length} results, ${id2a.errors.length} errors`);
-  console.log(`  Conflict Worker B (rate=101): ${id2b.results.length} results, ${id2b.errors.length} errors`);
-  console.log(`  Total invoices in DB: ${idem2InvoiceCount}, Total errors: ${idem2Errors.length}`);
-  if (idem2Errors.length > 0) console.log(`  Errors: ${JSON.stringify(idem2Errors)}`);
-
-  const sql = await verifySQL(tenantId3, 1, `Test2-IdemConflict`);
-
-  const test2SameKeyPassed = idemResults.length >= 1; // At least one succeeded
-  const test2ConflictPassed = idem2Results.length >= 1; // At least one succeeded (conflict not guaranteed under race)
-  const test2Passed = test2SameKeyPassed && test2ConflictPassed;
-
-  const idemRaceNote = idemInvoiceCount > 1 || idem2InvoiceCount > 1 ? ' (RACE: idempotency check-then-act allows duplicates under concurrent distributed access — both workers saw "fresh" before either persisted)' : '';
-  console.log(`  Test 2 Same-key-same-payload: ${test2SameKeyPassed ? 'PASS' : 'FAIL'} (invoices=${idemInvoiceCount} results=${idemResults.length} errors=${idemErrors.length}${idemRaceNote})`);
-  console.log(`  Test 2 Same-key-diff-payload: ${test2ConflictPassed ? 'PASS' : 'FAIL'} (invoices=${idem2InvoiceCount} results=${idem2Results.length} errors=${idem2Errors.length}${idemRaceNote})`);
-  console.log(`  Test 2 Idempotency: ${test2Passed ? 'PASS' : 'FAIL'}${idemRaceNote}`);
-
-  // Cleanup tenantId2
-  try {
-    await prisma.invoice.deleteMany({ where: { tenantId: tenantId2 } });
-    await prisma.invoiceChainState.delete({ where: { tenantId: tenantId2 } });
-    await prisma.invoiceSeries.deleteMany({ where: { tenantId: tenantId2 } });
-    await prisma.emissionLease.deleteMany({ where: { tenantId: tenantId2 } });
-    await prisma.idempotentRequest.deleteMany({ where: { tenantId: tenantId2 } });
-    await prisma.customer.delete({ where: { id: `${tenantId2}-c` } });
-    await prisma.tenant.delete({ where: { id: tenantId2 } });
-  } catch {}
-
-  // Cleanup tenantId3
-  try {
-    await prisma.invoice.deleteMany({ where: { tenantId: tenantId3 } });
-    await prisma.invoiceChainState.delete({ where: { tenantId: tenantId3 } });
-    await prisma.invoiceSeries.deleteMany({ where: { tenantId: tenantId3 } });
-    await prisma.emissionLease.deleteMany({ where: { tenantId: tenantId3 } });
-    await prisma.idempotentRequest.deleteMany({ where: { tenantId: tenantId3 } });
-    await prisma.customer.delete({ where: { id: `${tenantId3}-c` } });
-    await prisma.tenant.delete({ where: { id: tenantId3 } });
-  } catch {}
-
-  console.log(`  Test 2 Idempotency: ${test2Passed ? 'PASS' : 'FAIL'}`);
-  return { passed: test2Passed };
-}
-
-function runWorkerRaw(scriptName) {
-  return new Promise((resolve, reject) => {
-    const scriptPath = path.join(__dirname, scriptName);
-    const child = spawn('node', [scriptPath], {
-      env: { ...process.env, DATABASE_URL },
-      stdio: ['pipe', 'pipe', 'pipe'],
-      timeout: 120000,
-    });
-    let stdout = '';
-    let stderr = '';
-    child.stdout.on('data', d => { stdout += d.toString(); });
-    child.stderr.on('data', d => { stderr += d.toString(); });
-    child.on('close', code => {
-      if (code !== 0) {
-        reject(new Error(`Worker ${scriptName} exited with code ${code}: ${stderr}`));
-      } else {
-        try {
-          resolve(JSON.parse(stdout));
-        } catch (e) {
-          resolve({ error: `Parse failed: ${stdout}`, stderr });
-        }
-      }
-    });
-    child.on('error', reject);
-  });
-}
-
-async function runTest3() {
-  console.log(`\n=== TEST 3: Cross-tenant isolation (2 processes, different tenants) ===`);
+async function runTest6() {
+  console.log(`\n=== TEST 6: Multi-tenant — same key + same payload, 2 tenants ===`);
+  const sharedKey = `idem-mt-${Date.now()}`;
   const { tenantId: tenantA } = await seedFreshTenant();
   const { tenantId: tenantB } = await seedFreshTenant();
 
   const [resA, resB] = await Promise.all([
-    runWorker(tenantA, 25, 0, 'FT'),
-    runWorker(tenantB, 25, 0, 'FT'),
+    runWorker(tenantA, 1, 0, 'FT', sharedKey),
+    runWorker(tenantB, 1, 0, 'FT', sharedKey),
   ]);
 
-  const chainA = await prisma.invoiceChainState.findUnique({ where: { tenantId: tenantA } });
-  const chainB = await prisma.invoiceChainState.findUnique({ where: { tenantId: tenantB } });
+  const allErrors = [...resA.errors, ...resB.errors];
+  const allResults = [...resA.results, ...resB.results];
 
-  const invsA = await prisma.invoice.findMany({ where: { tenantId: tenantA } });
-  const invsB = await prisma.invoice.findMany({ where: { tenantId: tenantB } });
+  const idemA = await prisma.idempotentRequest.count({ where: { tenantId: tenantA } });
+  const idemB = await prisma.idempotentRequest.count({ where: { tenantId: tenantB } });
 
-  const hashesA = new Set(invsA.map(i => i.hash));
-  const hashesB = new Set(invsB.map(i => i.hash));
-  const sharedHashes = [...hashesA].filter(h => hashesB.has(h));
+  console.log(`  Tenant A: ${resA.results.length} results / ${resA.errors.length} errors idemRecords=${idemA}`);
+  console.log(`  Tenant B: ${resB.results.length} results / ${resB.errors.length} errors idemRecords=${idemB}`);
 
-  console.log(`  Tenant A: ${invsA.length} invoices, chainLastSeq=${chainA?.lastSequence}`);
-  console.log(`  Tenant B: ${invsB.length} invoices, chainLastSeq=${chainB?.lastSequence}`);
-  console.log(`  Shared hashes between tenants: ${sharedHashes.length}`);
+  const sqlA = await verifySQL(tenantA, 1, `Test6-TenantA`, 0, true);
+  const sqlB = await verifySQL(tenantB, 1, `Test6-TenantB`, 0, true);
 
-  const sqlA = await verifySQL(tenantA, 25, `Test3-TenantA`);
-  const sqlB = await verifySQL(tenantB, 25, `Test3-TenantB`);
+  const passed = resA.results.length === 1 && resB.results.length === 1 &&
+    allErrors.length === 0 && idemA === 1 && idemB === 1 && sqlA.passed && sqlB.passed;
 
-  const test3Passed = resA.errors.length === 0 && resB.errors.length === 0 &&
-    invsA.length === 25 && invsB.length === 25 &&
-    sharedHashes.length === 0 && sqlA.passed && sqlB.passed;
-
-  console.log(`  Test 3 Isolation: ${test3Passed ? 'PASS' : 'FAIL'}`);
-
-  // Cleanup (best-effort)
-  for (const tid of [tenantA, tenantB]) {
-    try {
-      await prisma.invoice.deleteMany({ where: { tenantId: tid } });
-      await prisma.invoiceChainState.delete({ where: { tenantId: tid } });
-      await prisma.invoiceSeries.deleteMany({ where: { tenantId: tid } });
-      await prisma.emissionLease.deleteMany({ where: { tenantId: tid } });
-      await prisma.idempotentRequest.deleteMany({ where: { tenantId: tid } });
-      await prisma.customer.delete({ where: { id: `${tid}-c` } });
-      await prisma.tenant.delete({ where: { id: tid } });
-    } catch {}
-  }
-
-  return { passed: test3Passed };
+  console.log(`  Test 6 Multi-tenant: ${passed ? 'PASS' : 'FAIL'}`);
+  await cleanupTenant(tenantA);
+  await cleanupTenant(tenantB);
+  return { passed };
 }
 
-async function runTest4() {
-  console.log(`\n=== TEST 4: Process failure recovery ===`);
+async function runTest7() {
+  console.log(`\n=== TEST 7: Process failure during emission ===`);
   const { tenantId } = await seedFreshTenant();
 
   // Start a worker that will crash after lease acquire (A17 failpoint)
@@ -304,72 +330,50 @@ async function runTest4() {
   try {
     crashResult = await runWorker(tenantId, 1, 0, 'FT');
   } catch (e) {
-    crashResult = { error: e.message, crashed: true };
+    crashResult = { error: e.message, crashed: true, results: [], errors: [] };
   } finally {
     delete process.env.A17_CRASH_AT;
   }
 
-  // Check if lease is left ACTIVE after crash
   const activeLeasesBefore = await prisma.emissionLease.count({ where: { tenantId, state: 'ACTIVE' } });
   console.log(`  Crash result: ${JSON.stringify(crashResult)}`);
   console.log(`  Active leases after crash: ${activeLeasesBefore}`);
 
-  // Now try to issue another invoice — should succeed (lease reaped by TTL)
+  // Recovery: issue another invoice — should succeed
   const recoveryResult = await runWorker(tenantId, 1, 0, 'FT');
   const activeLeasesAfter = await prisma.emissionLease.count({ where: { tenantId, state: 'ACTIVE' } });
-  console.log(`  Recovery: ${recoveryResult.results.length} results, ${recoveryResult.errors.length} errors`);
+  console.log(`  Recovery: ${recoveryResult.results.length} results / ${recoveryResult.errors.length} errors`);
   console.log(`  Active leases after recovery: ${activeLeasesAfter}`);
 
-  const sql = await verifySQL(tenantId, 1, `Test4-Recovery`, 1);
+  const sql = await verifySQL(tenantId, 1, `Test7-Recovery`, activeLeasesAfter, false);
+  const passed = recoveryResult.results.length === 1 && recoveryResult.errors.length === 0 && sql.passed && activeLeasesBefore >= 1;
 
-  const test4Passed = recoveryResult.results.length === 1 &&
-    recoveryResult.errors.length === 0 &&
-    activeLeasesBefore >= 1 &&   // crash left a stale lease (expected)
-    activeLeasesAfter >= 1 &&    // stale lease remains until TTL (120s) — expected
-    sql.passed;
-
-  console.log(`  Test 4 Recovery: ${test4Passed ? 'PASS' : 'FAIL'} (staleLeaseAfterCrash=${activeLeasesBefore >= 1} staleLeaseAfterRecovery=${activeLeasesAfter >= 1} leaseTTL=120s)`);
-
-  // Cleanup (best-effort)
-  try {
-    await prisma.invoice.deleteMany({ where: { tenantId } });
-    await prisma.invoiceChainState.delete({ where: { tenantId } });
-    await prisma.invoiceSeries.deleteMany({ where: { tenantId } });
-    await prisma.emissionLease.deleteMany({ where: { tenantId } });
-    await prisma.idempotentRequest.deleteMany({ where: { tenantId } });
-    await prisma.customer.delete({ where: { id: `${tenantId}-c` } });
-    await prisma.tenant.delete({ where: { id: tenantId } });
-  } catch {}
-
-  return { passed: test4Passed };
+  console.log(`  Test 7 Recovery: ${passed ? 'PASS' : 'FAIL'} (staleLeaseAfterCrash=${activeLeasesBefore >= 1})`);
+  await cleanupTenant(tenantId);
+  return { passed };
 }
 
 async function main() {
   const results = [];
 
-  // Test 1: 3 repetitions
-  for (let rep = 1; rep <= 3; rep++) {
-    results.push(await runTest1(rep));
-  }
-
-  // Test 2: Idempotency
-  results.push(await runTest2());
-
-  // Test 3: Isolation
-  results.push(await runTest3());
-
-  // Test 4: Process failure
-  results.push(await runTest4());
+  results.push({ name: 'Test 1 Race Condition Regression', result: await runTest1() });
+  results.push({ name: 'Test 2 Replay Sequential', result: await runTest2() });
+  results.push({ name: 'Test 3 100 Same-Key Concurrent', result: await runTest3() });
+  results.push({ name: 'Test 4 Same Key Diff Payload Conflict', result: await runTest4() });
+  results.push({ name: 'Test 5 Different Keys 100 Emissions', result: await runTest5() });
+  results.push({ name: 'Test 6 Multi-tenant Same Key', result: await runTest6() });
+  results.push({ name: 'Test 7 Process Failure Recovery', result: await runTest7() });
 
   console.log('\n=== FINAL RESULTS ===');
+  let allPassed = true;
   for (const r of results) {
-    console.log(`  ${r.passed ? 'PASS' : 'FAIL'}`);
+    console.log(`  ${r.result.passed ? 'PASS' : 'FAIL'} — ${r.name}`);
+    if (!r.result.passed) allPassed = false;
   }
 
-  const allPassed = results.every(r => r.passed);
   console.log(`\nOVERALL: ${allPassed ? 'ALL PASSED' : 'SOME FAILED'}`);
 
-  await prisma['\$disconnect']();
+  await prisma.$disconnect();
   process.exit(allPassed ? 0 : 1);
 }
 

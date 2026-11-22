@@ -2,7 +2,7 @@ import { getInvoiceSigningKey } from './crypto';
 import crypto from 'crypto';
 import { Prisma } from '@prisma/client';
 import { runWithTenant } from './tenant-db';
-import { lockIntegrityChain, reserveInvoiceNumber, loadOrInitChainState, checkIdempotency, persistIdempotency } from './invoice-integrity';
+import { lockIntegrityChain, reserveInvoiceNumber, loadOrInitChainState, checkIdempotency, persistIdempotency, acquireIdempotencyLock } from './invoice-integrity';
 import { generateInvoiceHashV2, sha256Hex } from './invoice-integrity-core';
 import { calculateInvoiceTotals } from './tax';
 import { resolveInvoiceLimit, countInvoicesThisMonth, InvoiceQuotaExceededError } from './invoice-quota';
@@ -161,6 +161,13 @@ const issueInvoiceOnce = async (
     const payloadHash = sha256Hex(canonicalPayload);
 
     await lockIntegrityChain(transaction, tenant.id);
+
+    // A18 — acquire transaction-level advisory lock on (tenant, idempotencyKey)
+    // BEFORE checking idempotency. Serialises concurrent access to the same
+    // key across processes, eliminating the check-then-act race.
+    if (idempotencyKey) {
+      await acquireIdempotencyLock(transaction, tenant.id, idempotencyKey);
+    }
 
     // Idempotência: mesma chave + mesmo payload → devolve resultado; mesma chave + payload diferente → 409.
     if (idempotencyKey) {
@@ -471,6 +478,14 @@ const issueCreditNoteOnce = async (params: {
       tenantId,
     }));
     await lockIntegrityChain(tx, tenantId);
+
+    // A18 — acquire transaction-level advisory lock on (tenant, idempotencyKey)
+    // BEFORE checking idempotency. Serialises concurrent access to the same
+    // key across processes.
+    if (params.idempotencyKey) {
+      await acquireIdempotencyLock(tx, tenantId, params.idempotencyKey);
+    }
+
     if (params.idempotencyKey) {
       const decision = await checkIdempotency(tx, tenantId, params.idempotencyKey, 'CREDIT_NOTE', payloadHash);
       if (decision.kind === 'replay') {

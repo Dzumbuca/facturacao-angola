@@ -592,6 +592,9 @@ async function loadOrInitChainState(tx, tenantId2) {
   }
   return rows[0];
 }
+async function acquireIdempotencyLock(tx, tenantId2, idempotencyKey2) {
+  await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${tenantId2}), hashtext(${idempotencyKey2}))`;
+}
 async function checkIdempotency(tx, tenantId2, key, resource, payloadHash) {
   const rows = await tx.$queryRaw`SELECT "payloadHash", "resultId" FROM "IdempotentRequest" WHERE "tenantId" = ${tenantId2} AND "key" = ${key} AND "resource" = ${resource}`;
   if (rows.length === 0) return { kind: "fresh" };
@@ -1085,6 +1088,9 @@ var issueInvoiceOnce = async (invoiceData, tenantId2, beforePersist, idempotency
     });
     const payloadHash = sha256Hex(canonicalPayload);
     await lockIntegrityChain(transaction, tenant.id);
+    if (idempotencyKey2) {
+      await acquireIdempotencyLock(transaction, tenant.id, idempotencyKey2);
+    }
     if (idempotencyKey2) {
       const decision = await checkIdempotency(transaction, tenant.id, idempotencyKey2, "INVOICE", payloadHash);
       if (decision.kind === "replay") {
