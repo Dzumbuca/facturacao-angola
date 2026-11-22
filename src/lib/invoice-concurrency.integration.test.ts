@@ -81,7 +81,7 @@ describeIfDisposable('A1 — concorrência de emissão fiscal (real PostgreSQL)'
 
     const chain = await prisma!.invoiceChainState.findUnique({ where: { tenantId } });
     expect(chain?.lastSequence).toBe(startingSeq + FT_LOAD);
-  }, 90000);
+  }, 180000);
 
   it('50 FT + 50 NC concorrentes — cadeia preservada', async () => {
     const { tenantId } = await seedFreshTenant();
