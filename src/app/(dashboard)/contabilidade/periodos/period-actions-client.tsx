@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { closePeriod, reopenPeriod } from '@/lib/gl-period-actions';
@@ -12,32 +12,32 @@ export function PeriodActions({ periodId, state, code }: { periodId: string; sta
   if (state === 'OPEN') {
     return (
       <button disabled={isPending} onClick={async () => {
-        const reason = prompt(`Fechar o período ${code}?\n\nJustifique:`, '');
+        const reason = prompt('Fechar o periodo ' + code + '?\n\nJustifique:', '');
         if (!reason) return;
-        setError(''); setSuccess('');
+        
         try {
           await closePeriod(periodId, reason);
-          setSuccess('Período fechado.');
+          setSuccess('Periodo fechado.');
           start(() => router.refresh());
         } catch (e: any) {
-          setError(e?.message ?? 'Falha ao fechar período.');
+          setError(e?.message ?? 'Falha ao fechar periodo.');
         }
-      }} className="h-9 rounded-xl border border-[#a83939] bg-white px-4 text-xs font-semibold text-[#a83939] hover:bg-[#fff4f4] disabled:opacity-60">Fechar período</button>
+      }} className="h-9 rounded-xl border border-[#a83939] bg-white px-4 text-xs font-semibold text-[#a83939] hover:bg-[#fff4f4] disabled:opacity-60">Fechar periodo</button>
     );
   }
 
   return (
     <button disabled={isPending} onClick={async () => {
-      const reason = prompt(`Reabrir o período ${code}?\n\nJustifique (mín. 10 caracteres):`, '');
+      const reason = prompt('Reabrir o periodo ' + code + '?\n\nJustifique (min. 10 caracteres):', '');
       if (!reason) return;
-      setError(''); setSuccess('');
+      
       try {
         await reopenPeriod(periodId, reason);
-        setSuccess('Período reaberto.');
+        setSuccess('Periodo reaberto.');
         start(() => router.refresh());
       } catch (e: any) {
-        setError(e?.message ?? 'Falha ao reabrir período.');
+        setError(e?.message ?? 'Falha ao reabrir periodo.');
       }
-    }} className="h-9 rounded-xl border border-[#2878d0] bg-white px-4 text-xs font-semibold text-[#2878d0] hover:bg-[#f4f8ff] disabled:opacity-60">Reabrir período</button>
+    }} className="h-9 rounded-xl border border-[#2878d0] bg-white px-4 text-xs font-semibold text-[#2878d0] hover:bg-[#f4f8ff] disabled:opacity-60">Reabrir periodo</button>
   );
 }

@@ -90,6 +90,27 @@ export interface IdempotencyDecision {
   payloadHash?: string;
 }
 
+/**
+ * A18 — atomic idempotency guard for distributed emission.
+ *
+ * Acquires a PostgreSQL transaction-level advisory lock keyed by
+ * (tenantId, idempotencyKey) BEFORE checkIdempotency is called.
+ * This serialises all concurrent access to the same idempotency key
+ * across processes/instances, eliminating the check-then-act race
+ * where two transactions both observe "fresh" and both emit.
+ *
+ * pg_advisory_xact_lock is automatically released on COMMIT, ROLLBACK
+ * or session termination (crash) — no stale locks, no cleanup needed.
+ * No schema migration required.
+ */
+export async function acquireIdempotencyLock(
+  tx: any,
+  tenantId: string,
+  idempotencyKey: string,
+): Promise<void> {
+  await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${tenantId}), hashtext(${idempotencyKey}))`;
+}
+
 export async function checkIdempotency(
   tx: any,
   tenantId: string,
