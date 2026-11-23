@@ -1,8 +1,7 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { listRecentReconciliations } from '@/lib/reconciliation-service';
 import { auth } from '@/lib/auth';
 import { getSessionTenantId } from '@/lib/session';
-import { runReconciliation, listRecentReconciliations } from '@/lib/reconciliation-service';
 import { ReconciliationRunButton } from './run-button';
 
 const severityColour: Record<string, string> = { HIGH: 'text-[#a83939]', MEDIUM: 'text-[#8a5a10]', LOW: 'text-[#708195]' };

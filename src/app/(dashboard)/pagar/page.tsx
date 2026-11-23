@@ -6,7 +6,6 @@ import { prisma } from '@/lib/prisma';
 import { PayableActions } from './payable-actions';
 
 const money = (value: number) => new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA' }).format(value);
-const stateStyles: Record<string, string> = { PENDING: 'text-[#8a5a10]', PAID: 'text-[#227958]', OVERDUE: 'text-[#a83939]', CANCELLED: 'text-slate-500' };
 const stateLabels: Record<string, string> = { PENDING: 'Pendente', PAID: 'Paga', OVERDUE: 'Vencida', CANCELLED: 'Cancelada' };
 
 export default async function PagarPage() {
