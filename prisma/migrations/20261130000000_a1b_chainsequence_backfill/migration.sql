@@ -17,23 +17,33 @@
 --
 -- Regra de reconstrução:
 --   Ordenar as facturas históricas de cada tenant por (issuedAt, createdAt, id)
---   e atribuir 0..N-1. Isto reproduz exactamente a ordem em que teriam sido
---   emitidas se a cadeia já existisse. Não altera number, total, datas, cliente,
---   estado, hash nem previousHash.
+--   e atribuir 1..N (continuação a partir do maior chainSequence existente).
+--   Isto reproduz exatamente a ordem em que teriam sido emitidas se a cadeia já existisse.
+--   Não altera number, total, datas, cliente, estado, hash nem previousHash.
 --   Apenas facturas ISSUED recebem sequência (as DRAFT/ANULADA ficam NULL,
 --   coerente com a CHECK que só exige sequência a documentos emitidos).
+--
+-- FIX: Corrigido para numeração 1-based (compatível com A1 e código da aplicação)
+--      e para continuar a partir do maior chainSequence existente por tenant.
 
 -- 1. Backfill idempotente: só actua onde "chainSequence" IS NULL.
 --    A janela "WHERE chainSequence IS NULL" garante idempotência total.
-WITH ordenado AS (
+--    Usa base do maior chainSequence existente por tenant (igual à migration A1).
+WITH bases AS (
+  SELECT "tenantId", COALESCE(MAX("chainSequence"), 0) AS base
+  FROM "Invoice"
+  WHERE "chainSequence" IS NOT NULL
+  GROUP BY "tenantId"
+),
+ordenado AS (
   SELECT
     i.id,
-    i."tenantId",
-    ROW_NUMBER() OVER (
+    COALESCE(b.base, 0) + ROW_NUMBER() OVER (
       PARTITION BY i."tenantId"
       ORDER BY i."issuedAt" ASC, i."createdAt" ASC, i.id ASC
-    ) - 1 AS sequencia
+    ) AS sequencia
   FROM "Invoice" i
+  LEFT JOIN bases b ON b."tenantId" = i."tenantId"
   WHERE i."status" = 'ISSUED'
     AND i."chainSequence" IS NULL
 )
