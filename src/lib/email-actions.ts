@@ -1,6 +1,6 @@
 import 'server-only';
 import { createHash, createHmac, randomBytes } from 'node:crypto';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { runAsSystem, PRIVILEGED_RLS } from '@/lib/tenant-db';
 import { createPublicEmailUrl, escapeEmailHtml, sendSmtpEmail, type EmailActionPurpose } from './email-core';
 

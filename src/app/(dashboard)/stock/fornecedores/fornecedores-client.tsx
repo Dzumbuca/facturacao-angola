@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { FormField } from '@/components/rh/form-kit';
 
-type Supplier = { id: string; name: string; nif: string | null; email: string | null; phone: string | null; contact?: string | null; address?: string | null };
+type Supplier = { id: string; name: string; nif: string | null; email: string | null; phone: string | null; contact?: string | null; address?: string | null; outstanding?: number };
 
 export function SuppliersClient() {
   const [editing, setEditing] = useState<Supplier | null>(null);
@@ -41,7 +41,7 @@ export function SuppliersClient() {
       const data = await response.json().catch(() => ({}));
       if (!response.ok) { setError(data?.error ?? 'Não foi possível criar o fornecedor.'); setBusy(false); return; }
       event.currentTarget.reset();
-      setSuppliers((current) => [...current, { id: data.id, name: data.name, nif: data.nif ?? null, email: data.email ?? null, phone: data.phone ?? null }]);
+      setSuppliers((current) => [...current, { id: data.id, name: data.name, nif: data.nif ?? null, email: data.email ?? null, phone: data.phone ?? null, outstanding: 0 }]);
       setInfo(`Fornecedor "${data.name}" criado.`);
     } catch (exception: any) { setError(exception.message); } finally { setBusy(false); }
   }
@@ -123,7 +123,7 @@ export function SuppliersClient() {
 
       <section><h2 className="text-base font-semibold text-[#1c2d3f]">Fornecedores registados ({suppliers.length})</h2>
       <div className="mt-3 overflow-hidden rounded-xl border border-[#e3e9ef] bg-white"><div className="overflow-x-auto">
-        <table className="data-table min-w-[760px]"><thead><tr><th>Nome</th><th>NIF</th><th>Email</th><th>Telefone</th><th>Acções</th></tr></thead><tbody>{loading ? <tr><td colSpan={5} className="p-6 text-center text-[#708195]">A carregar…</td></tr> : suppliers.length === 0 ? <tr><td colSpan={5} className="p-6 text-center text-[#708195]">Sem fornecedores.</td></tr> : suppliers.map((s) => <tr key={s.id}><td className="font-semibold text-[#1c2d3f]">{s.name}</td><td>{s.nif ?? '—'}</td><td>{s.email ?? '—'}</td><td>{s.phone ?? '—'}</td><td className="whitespace-nowrap"><button type="button" onClick={() => setEditing(s)} className="text-xs font-semibold text-[#021f87] hover:underline">Editar</button><button type="button" onClick={() => deleteSupplier(s)} className="ml-3 text-xs font-semibold text-[#a83939] hover:underline">Eliminar</button></td></tr>)}</tbody></table>
+        <table className="data-table min-w-[920px]"><thead><tr><th>Nome</th><th>NIF</th><th>Email</th><th>Telefone</th><th>Em dívida</th><th>Acções</th></tr></thead><tbody>{loading ? <tr><td colSpan={6} className="p-6 text-center text-[#708195]">A carregar…</td></tr> : suppliers.length === 0 ? <tr><td colSpan={6} className="p-6 text-center text-[#708195]">Sem fornecedores.</td></tr> : suppliers.map((s) => <tr key={s.id}><td className="font-semibold text-[#1c2d3f]">{s.name}</td><td>{s.nif ?? '—'}</td><td>{s.email ?? '—'}</td><td>{s.phone ?? '—'}</td><td className="whitespace-nowrap text-sm tabular-nums font-semibold">{(s.outstanding ?? 0) > 0 ? <span className="text-[#a83939]">{new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', maximumFractionDigits: 0 }).format(s.outstanding!)}</span> : <span className="text-[#227958]">0 Kz</span>}</td><td className="whitespace-nowrap"><button type="button" onClick={() => setEditing(s)} className="text-xs font-semibold text-[#021f87] hover:underline">Editar</button><button type="button" onClick={() => deleteSupplier(s)} className="ml-3 text-xs font-semibold text-[#a83939] hover:underline">Eliminar</button></td></tr>)}</tbody></table>
       </div></div></section>
     </div>
   );

@@ -2,7 +2,7 @@ import { getInvoicePaymentTotals } from './payment-rules';
 import { getInvoiceState } from './invoice-state';
 import type { ReportPeriod } from './report-period';
 
-export type ReportKind = 'invoices' | 'receipts' | 'debt' | 'customers' | 'products';
+export type ReportKind = 'invoices' | 'receipts' | 'debt' | 'customers' | 'products' | 'payables';
 export type StockReportKind = 'stock_balances' | 'stock_movements' | 'stock_low' | 'stock_transfers' | 'stock_valuation';
 export type AnyReportKind = ReportKind | StockReportKind;
 export const STOCK_REPORT_KINDS: readonly StockReportKind[] = ['stock_balances', 'stock_movements', 'stock_low', 'stock_transfers', 'stock_valuation'];
@@ -14,7 +14,31 @@ export type ReportDataset = {
   headers: string[]; rows: (string | number | null)[][]; totals: (string | number | null)[];
 };
 
-export function buildReportRows(kind: ReportKind, input: { invoices: any[]; payments?: any[]; now: Date; state?: string | null }) {
+export function buildReportRows(kind: ReportKind, input: { invoices: any[]; payments?: any[]; now: Date; state?: string | null; payables?: any[] }) {
+  if (kind === 'payables') {
+    const payables = input.payables ?? [];
+    if (payables.length === 0) return { headers: ['Documento', 'Fornecedor', 'Emissão', 'Vencimento', 'Antiguidade', 'Total (AOA)', 'Já pago (AOA)', 'Em aberto (AOA)', 'Estado'], rows: [] as (string | number | null)[][] };
+    const round = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
+    return {
+      headers: ['Documento', 'Fornecedor', 'Emissão', 'Vencimento', 'Antiguidade', 'Total (AOA)', 'Já pago (AOA)', 'Em aberto (AOA)', 'Estado'],
+      rows: payables.map((invoice: any) => {
+        const total = Number(invoice.total);
+        const paid = Number(invoice.paidAmount ?? 0);
+        const outstanding = Math.max(0, total - paid);
+        const dueAt = invoice.dueDate ?? null;
+        const ageing = (() => {
+          if (!dueAt) return 'Sem vencimento';
+          const dayMs = 86400000;
+          const ymd = (d: Date) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Luanda', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
+          const dueDays = Math.floor((Date.parse(`${ymd(input.now)}T00:00:00Z`) - Date.parse(`${ymd(new Date(dueAt))}T00:00:00Z`)) / dayMs);
+          if (dueDays > 0) return `${dueDays} dias`;
+          return 'No prazo';
+        })();
+        const status = invoice.status === 'PAID' ? 'PAID' : dueAt && new Date(dueAt) < input.now ? 'OVERDUE' : 'PENDING';
+        return [invoice.number, invoice.supplier?.name ?? '—', new Date(invoice.issuedAt).toLocaleDateString('pt-AO'), dueAt ? new Date(dueAt).toLocaleDateString('pt-AO') : '—', ageing, round(total), round(paid), round(outstanding), status];
+      }),
+    };
+  }
   const invoices = input.invoices.filter((invoice) => {
     if (invoice.type !== 'FT' || invoice.status !== 'ISSUED') return false;
     if (!input.state) return true;
@@ -57,10 +81,10 @@ export function buildReportRows(kind: ReportKind, input: { invoices: any[]; paym
   return { headers: ['Artigo/serviço', 'Quantidade facturada', 'Facturado (AOA)'], rows: [...products.values()].sort((a, b) => b.total - a.total).map((row) => [row.description, round(row.qty), round(row.total)]) };
 }
 
-export function buildReportDataset(params: { kind: ReportKind; company: { name: string; nif: string | null }; period: ReportPeriod; customerId?: string | null; state?: string | null; invoices: any[]; payments?: any[]; now?: Date }): ReportDataset {
+export function buildReportDataset(params: { kind: ReportKind; company: { name: string; nif: string | null }; period: ReportPeriod; customerId?: string | null; state?: string | null; invoices: any[]; payments?: any[]; now?: Date; payables?: any[] }): ReportDataset {
   const now = params.now ?? new Date();
-  const { headers, rows } = buildReportRows(params.kind, { invoices: params.invoices, payments: params.payments, now, state: params.state });
-  const title = ({ invoices: 'Relatório de facturação', receipts: 'Relatório de recebimentos', debt: 'Relatório de dívida e antiguidade', customers: 'Relatório de clientes', products: 'Relatório de artigos facturados' } satisfies Record<ReportKind, string>)[params.kind];
+  const { headers, rows } = buildReportRows(params.kind, { invoices: params.invoices, payments: params.payments, now, state: params.state, payables: params.payables });
+  const title = ({ invoices: 'Relatório de facturação', receipts: 'Relatório de recebimentos', debt: 'Relatório de dívida e antiguidade', customers: 'Relatório de clientes', products: 'Relatório de artigos facturados', payables: 'Relatório de contas a pagar' } satisfies Record<ReportKind, string>)[params.kind];
   const totals = headers.map((_, index) => {
     if (index === 0) return 'TOTAL';
     const sum = rows.reduce((total, row) => total + (typeof row[index] === 'number' ? row[index] as number : 0), 0);

@@ -176,7 +176,13 @@ export const generateInvoicePDF = async (invoiceData: any): Promise<Buffer> => {
     const customerNif = textValue(invoiceData.customerNif) || textValue(customer.nif);
     const customerAddress = textValue(invoiceData.customerAddress) || textValue(customer.address);
     const customerEmail = textValue(invoiceData.customerEmail) || textValue(customer.email);
-    const items = (Array.isArray(invoiceData.items) ? invoiceData.items : []).map((item: PdfItem) => ({
+    const itemList = Array.isArray(invoiceData.items) ? invoiceData.items : [];
+    const sortedItems = [...itemList].sort((a: any, b: any) => {
+      const pa = typeof a?.position === 'number' ? a.position : Number.MAX_SAFE_INTEGER;
+      const pb = typeof b?.position === 'number' ? b.position : Number.MAX_SAFE_INTEGER;
+      return pa - pb;
+    });
+    const items = sortedItems.map((item: PdfItem) => ({
       description: textValue(item.desc) || textValue(item.description),
       qty: amount(item.qty ?? item.quantity),
       rate: amount(item.rate ?? item.unitPrice),

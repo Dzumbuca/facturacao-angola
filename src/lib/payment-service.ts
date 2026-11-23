@@ -61,7 +61,33 @@ export async function transitionPayment(paymentId: string, nextStatus: 'CONFIRME
       tenantId, paymentId: payment.id, eventType: nextStatus, previousStatus: payment.status, nextStatus, actorUserId: actorId,
       snapshot: { amount: Number(payment.amount), invoiceNumber: payment.invoice.number, reference: payment.reference },
     } });
-    if (nextStatus === 'CONFIRMED') await ensureReceiptForPaymentTx(tx, tenantId, payment.id);
+    if (nextStatus === 'CONFIRMED') {
+      await ensureReceiptForPaymentTx(tx, tenantId, payment.id);
+      try {
+        const { postCustomerPaymentToGL } = await import('./gl-service');
+        await postCustomerPaymentToGL(tenantId, payment.id, Number(payment.amount), payment.invoiceId, actorId);
+      } catch (e) {
+        console.error('GL_POST_FAILED for payment', payment.id, e);
+      }
+    } else if (nextStatus === 'REVERSED') {
+      // A4 — post a symmetric estorno: DR 1200 / CR 1100 (receivable back, bank out)
+      try {
+        const { postJournalEntry } = await import('./gl-service');
+        const amount = Number(payment.amount);
+        await postJournalEntry(tenantId, {
+          description: `Estorno do pagamento ${payment.invoice.number}`,
+          source: 'CUSTOMER_PAYMENT_REVERSED',
+          sourceId: payment.id,
+          createdBy: actorId,
+          lines: [
+            { accountCode: '1200', debit: Math.round(amount * 100) / 100 },
+            { accountCode: '1100', credit: Math.round(amount * 100) / 100 },
+          ],
+        });
+      } catch (e) {
+        console.error('GL_POST_FAILED for payment reversed', payment.id, e);
+      }
+    }
     return result;
   }, { userId: actorId });
 }

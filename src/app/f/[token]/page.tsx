@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { PrintButton } from './print-button';
+import { ClientReportPayment } from './ClientReportPayment';
 import { ThemeToggle } from '@/components/theme-toggle';
 
 type Props = { params: Promise<{ token: string }> };
@@ -117,6 +118,11 @@ export default async function SharedInvoicePage({ params }: Props) {
 
         {invoice.observations && <p className="border-t border-[#e2e9f1] px-6 py-4 text-sm leading-6 text-[#607286] md:px-8"><strong>Observações:</strong> {invoice.observations}</p>}
 
+        {(invoice.type === 'FT' && invoice.status === 'ISSUED' && confirmed < Number(invoice.total)) && (
+          <div className="border-t border-[#e2e9f1] px-6 py-4 md:px-8 print:hidden">
+            <ClientReportPayment token={token} outstanding={Math.max(0, Number(invoice.total) - confirmed)} currency={invoice.currency} />
+          </div>
+        )}
         <footer className="border-t border-[#e2e9f1] bg-[#f7f9fc] px-6 py-4 text-xs leading-5 text-[#708195] md:px-8">
           {isCancelled
             ? 'Este documento foi anulado.'

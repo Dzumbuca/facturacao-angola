@@ -22,11 +22,12 @@ export async function POST(req: NextRequest) {
     if (!compliance.isValid) {
       return NextResponse.json({ error: 'Fatura inválida', warnings: compliance.warnings }, { status: 400 });
     }
+    const idempotencyKey = req.headers.get('Idempotency-Key')?.trim() || data.idempotencyKey || undefined;
 
     let pdfBuffer: Buffer | undefined;
     const finalizedInvoice = await issueInvoice(data, tenantId, async (draft) => {
       pdfBuffer = await generateInvoicePDF(draft);
-    });
+    }, idempotencyKey);
     if (!pdfBuffer) throw new Error('O PDF não foi gerado.');
 
     const response = new NextResponse(pdfBuffer as any, {
@@ -39,9 +40,12 @@ export async function POST(req: NextRequest) {
       },
     });
     return response;
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof InvoiceQuotaExceededError) {
       return NextResponse.json({ error: error.message, reason: 'INVOICE_QUOTA_EXCEEDED', used: error.used, limit: error.limit, upgrade: true }, { status: 402 });
+    }
+    if (error?.code === 'IDEMPOTENCY_CONFLICT' || error?.status === 409) {
+      return NextResponse.json({ error: 'Idempotency-Key conflict: a chave já foi usada com um payload diferente.', reason: 'IDEMPOTENCY_CONFLICT' }, { status: 409 });
     }
     console.error('Erro ao emitir fatura:', error);
     const message = getInvoiceServerErrorMessage(error);

@@ -19,7 +19,7 @@ export async function getReportDataset(
   }
 
   return runWithTenant(tenantId, async (tx) => {
-    const [tenant, invoices, payments] = await Promise.all([
+    const [tenant, invoices, payments, payables] = await Promise.all([
       tx.tenant.findUnique({ where: { id: tenantId }, select: { name: true, nif: true } }),
       tx.invoice.findMany({
         where: {
@@ -31,17 +31,22 @@ export async function getReportDataset(
       }),
       kind === 'receipts' ? tx.payment.findMany({
         where: { tenantId, paymentDate: { gte: period.start, lt: period.endExclusive }, ...(customerId ? { invoice: { customerId } } : {}), ...(state && ['PENDING', 'CONFIRMED', 'CANCELLED', 'REVERSED'].includes(state) ? { status: state } : {}) },
-        orderBy: { paymentDate: 'asc' }, take: 10000,
+        orderBy: { paymentDate: 'asc' }, take: 5000,
         include: { invoice: { select: { number: true, customer: { select: { name: true } } } } },
       }) : Promise.resolve([]),
+      kind === 'payables' ? tx.supplierInvoice.findMany({
+        where: { tenantId, issuedAt: { gte: period.start, lt: period.endExclusive } },
+        orderBy: { issuedAt: 'asc' }, take: 5000,
+        include: { supplier: { select: { id: true, name: true, nif: true } } },
+      }) : Promise.resolve([]),
     ]);
-    return buildReportDataset({ kind: kind as ReportKind, company: { name: tenant?.name ?? '', nif: tenant?.nif ?? null }, period, customerId, state, invoices, payments });
+    return buildReportDataset({ kind: kind as ReportKind, company: { name: tenant?.name ?? '', nif: tenant?.nif ?? null }, period, customerId, state, invoices, payments, payables });
   });
 }
 
 export function parseReportKind(value: string | null | undefined): AnyReportKind {
   const kinds: AnyReportKind[] = [
-    'invoices', 'receipts', 'debt', 'customers', 'products',
+    'invoices', 'receipts', 'debt', 'customers', 'products', 'payables',
     'stock_balances', 'stock_movements', 'stock_low', 'stock_transfers', 'stock_valuation',
   ];
   return kinds.includes(value as AnyReportKind) ? (value as AnyReportKind) : 'invoices';

@@ -6,7 +6,7 @@ const SearchIcon = (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-type Customer = { id: string; name: string; nif: string | null; email: string | null; address: string | null };
+type Customer = { id: string; name: string; nif: string | null; email: string | null; address: string | null; outstanding?: number };
 
 export function CustomerManagement({ initialCustomers }: { initialCustomers: Customer[] }) {
   const [customers, setCustomers] = useState(initialCustomers);
@@ -127,6 +127,11 @@ export function CustomerManagement({ initialCustomers }: { initialCustomers: Cus
                       <span className="ml-3 text-sm text-[var(--text-muted)]">NIF:</span>{' '}
                       {customer.nif ? <span className="text-sm font-medium text-[var(--text)]">{customer.nif}</span> : <span className="inline-flex items-center gap-1 rounded-full border border-[#f6d37a] bg-[#fdf6e9] px-2 py-0.5 text-[10px] font-bold uppercase text-[#8a5a10]">Sem NIF</span>}
                       {customer.email && <span className="ml-3 hidden text-sm text-[var(--text-muted)] xl:inline">{customer.email}</span>}
+                      {(customer.outstanding ?? 0) > 0 && (
+                        <span className="ml-3 inline-flex items-center rounded-full bg-[#fef2e2] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[.10em] text-[#8a5a10]" title="Saldo em dívida (facturas não pagas)">
+                          Em dívida · {new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', maximumFractionDigits: 0 }).format(customer.outstanding!)}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="flex shrink-0 gap-2">

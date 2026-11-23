@@ -158,7 +158,7 @@ export default async function DashboardPage({ searchParams }: Props) {
       <p className="mt-3 text-xs text-[var(--text-muted)]">Datas no fuso Africa/Luanda · valores em Kz</p>
     </form>
 
-    <section aria-label="Indicadores principais" className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+    <section aria-label="Indicadores principais" className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-5">
       <PremiumKpi
         label="Facturação do período"
         value={money(metrics.invoiced)}
@@ -186,6 +186,13 @@ export default async function DashboardPage({ searchParams }: Props) {
         detail={metrics.dueSoon > 0 ? `${money(metrics.dueSoon)} a vencer em 7 dias` : 'Saldo vencido pendente'}
         tone="danger"
         icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>}
+      />
+      <PremiumKpi
+        label="A pagar"
+        value={money(metrics.payablesOutstanding)}
+        detail={metrics.payablesOverdueCount > 0 ? `${money(metrics.payablesOverdue)} vencido em ${metrics.payablesOverdueCount} fatura${metrics.payablesOverdueCount > 1 ? 's' : ''}` : 'Sem facturas vencidas'}
+        tone={metrics.payablesOverdueCount > 0 ? 'danger' : 'warning'}
+        icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>}
       />
     </section>
 
