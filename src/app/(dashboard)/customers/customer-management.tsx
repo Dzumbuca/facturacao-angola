@@ -37,7 +37,7 @@ export function CustomerManagement({ initialCustomers }: { initialCustomers: Cus
     setError('');
     setNotice('');
     try {
-      const response = await fetch(`/api/customers/${customer.id}`, { method: 'DELETE' });
+      const response = await fetch(`/api/customers/${customer.id}`, { method: 'DELETE', credentials: 'include' });
       const data = await response.json().catch(() => null);
       if (!response.ok) {
         setError(data?.error ?? 'Não foi possível apagar o cliente.');
@@ -69,6 +69,7 @@ export function CustomerManagement({ initialCustomers }: { initialCustomers: Cus
       const response = await fetch(editingCustomer ? `/api/customers/${editingCustomer.id}` : '/api/customers', {
         method: editingCustomer ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(payload),
       });
       const data = await response.json().catch(() => null);

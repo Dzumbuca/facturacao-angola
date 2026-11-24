@@ -95,7 +95,7 @@ export function InvoiceForm({ initialCustomers, initialProducts, hasCompanyProfi
     setCustomerCreateError('');
     setIsCreatingCustomer(true);
     try {
-      const response = await fetch('/api/customers', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const response = await fetch('/api/customers', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(payload) });
       const data = await response.json().catch(() => null);
       if (!response.ok) {
         setCustomerCreateError(data?.error ?? 'Não foi possível criar o cliente. Tente novamente.');
