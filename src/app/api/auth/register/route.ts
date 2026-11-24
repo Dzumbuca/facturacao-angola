@@ -50,7 +50,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, message: 'Se o registo puder ser concluído, receberá instruções no email indicado.' });
   } catch (error) {
     if ((error as { code?: string })?.code === 'P2002') return NextResponse.json({ success: true, message: 'Se o registo puder ser concluído, receberá instruções no email indicado.' });
-    console.error('Erro ao registar utilizador.');
+    console.error('Erro ao registar utilizador:', error);
     return NextResponse.json({ error: 'Não foi possível concluir o registo. Tente novamente.' }, { status: 500 });
   }
 }
