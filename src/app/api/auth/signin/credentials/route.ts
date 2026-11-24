@@ -4,8 +4,17 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { runWithRlsContext } from '@/lib/tenant-db';
 
+const COOKIE_NAME = 'authjs.session-token';
+const SECURE_COOKIE_NAME = '__Secure-authjs.session-token';
+
+function getCookieNames(isSecure: boolean) {
+  return isSecure ? { name: SECURE_COOKIE_NAME, salt: SECURE_COOKIE_NAME } : { name: COOKIE_NAME, salt: COOKIE_NAME };
+}
+
 export async function POST(request: Request) {
   try {
+    const isSecure = request.url.startsWith('https://');
+    const { name: cookieName, salt: cookieSalt } = getCookieNames(isSecure);
     const body = await request.text();
     const params = new URLSearchParams(body);
     const email = params.get('email')?.trim().toLowerCase();
@@ -39,7 +48,7 @@ export async function POST(request: Request) {
         sessionVersion: user.sessionVersion,
       },
       secret: process.env.NEXTAUTH_SECRET!,
-      salt: 'authjs.session-token',
+      salt: cookieSalt,
     });
 
     const response = NextResponse.json({
@@ -47,7 +56,7 @@ export async function POST(request: Request) {
       url: callbackUrl,
     });
 
-    response.cookies.set('authjs.session-token', token, {
+    response.cookies.set(cookieName, token, {
       httpOnly: true,
       secure: true,
       sameSite: 'lax',
