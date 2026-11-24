@@ -23,7 +23,7 @@ describe('platform administration schema contract', () => {
   });
 
   it('creates a tenant owner without granting platform access in the registration transaction', () => {
-    expect(registration).toContain('$transaction');
+    expect(registration).toContain('runAsSystem');
     expect(registration).toMatch(/tenantRole:\s*'COMPANY_ADMIN'/);
     expect(registration).toMatch(/platformRole:\s*'NONE'/);
   });
