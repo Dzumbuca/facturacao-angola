@@ -17,7 +17,7 @@ const nextAuth = NextAuth({
   // definido no ambiente), por isso o host do pedido pode ser confiado.
   // O cálculo anterior devolvia false em produção sem NEXTAUTH_URL, o que
   // bloqueava o callback OAuth com "There is a problem with the server".
-  trustHost: true,
+  // trustHost: true,
   pages: { signIn: '/login' },
   session: { strategy: 'jwt' },
   providers: [
