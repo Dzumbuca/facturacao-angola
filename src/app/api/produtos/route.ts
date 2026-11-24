@@ -121,7 +121,7 @@ export async function POST(req: Request) {
       id: produto.id,
       produto: { ...produto, price: Number(produto.price) },
     });
-  } catch {
-    return NextResponse.json({ error: 'Erro ao criar produto' }, { status: 500 });
+  } catch (e: any) {
+    return NextResponse.json({ error: 'Erro ao criar produto', detail: e?.message ?? String(e) }, { status: 500 });
   }
 }
