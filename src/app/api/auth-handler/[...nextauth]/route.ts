@@ -12,7 +12,12 @@ async function cloneRequestWithRewrittenPath(request: NextRequest): Promise<Next
     method: request.method,
     headers: request.headers,
     body,
-  }) as unknown as NextRequest;
+  }) as NextRequest;
+  // Ensure nextUrl is computed from the rewritten URL
+  Object.defineProperty(newRequest, 'nextUrl', {
+    get: () => new URL(url.toString()),
+    configurable: true,
+  });
   return newRequest;
 }
 
