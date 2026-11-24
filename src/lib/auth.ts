@@ -89,7 +89,7 @@ const nextAuth = NextAuth({
       if (session.user) {
         // RLS: session validation reads the authenticated user by id (self policy allows app.user_id=id).
         const currentUser = typeof token.sub === 'string'
-          ? await runWithRlsContext((tx) => (tx.user as any).findUnique({ where: { id: token.sub }, select: { status: true, sessionVersion: true, emailVerified: true, emailVerificationRequired: true, tenantId: true } }), { userId: token.sub, tenantId: null, isAdmin: false }) as any
+          ? await runWithRlsContext((tx) => (tx.user as any).findUnique({ where: { id: token.sub }, select: { status: true, sessionVersion: true, emailVerified: true, emailVerificationRequired: true, tenantId: true } }), { userId: token.sub, tenantId: typeof token.tenantId === 'string' ? token.tenantId : null, isAdmin: false }) as any
           : null;
         const valid = currentUser?.status === 'ACTIVE'
           && currentUser.sessionVersion === token.sessionVersion
