@@ -13,7 +13,11 @@ function rewriteAuth(request: NextRequest): NextResponse | null {
   if (pathname.startsWith('/api/auth/')) {
     const newUrl = new URL(request.url);
     newUrl.pathname = pathname.replace('/api/auth/', '/api/auth-handler/');
-    return NextResponse.rewrite(newUrl);
+    const response = NextResponse.rewrite(newUrl);
+    response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    return response;
   }
   return null;
 }
