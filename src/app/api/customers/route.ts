@@ -51,7 +51,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json(result.customer);
-  } catch (e: any) {
-    return NextResponse.json({ error: 'Erro ao criar cliente', detail: e?.message ?? String(e) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: 'Erro ao criar cliente' }, { status: 500 });
   }
 }
