@@ -10,6 +10,7 @@ import { runWithRlsContext } from '@/lib/tenant-db';
 
 const nextAuth = NextAuth({
   secret: process.env.NEXTAUTH_SECRET,
+  basePath: '/api/auth',
   debug: true,
   // RLS-aware adapter wrapper: NextAuth server-controlled adapter ops run in transaction-local RLS contexts.
   // 5437 prototype: adapter tables RLS OFF; User RLS ON. OAuth/pooling/DB-session strategy NOT proven for production.
