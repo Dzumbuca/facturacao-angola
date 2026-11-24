@@ -93,7 +93,7 @@ export async function getTenantWmsLimits(tenantId: string, db: any = prisma, now
   }
 
   // Compatibilidade com o modelo legado: quem já tem o módulo activo mantém acesso.
-  if (await isApplicationEnabled(tenantId, 'wms')) return GRANDFATHERED;
+  if (await isApplicationEnabled(tenantId, 'wms', db)) return GRANDFATHERED;
   return GRATIS;
 }
 
