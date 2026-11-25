@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import NextAuth from 'next-auth';
+import { skipCSRFCheck } from '@auth/core';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import bcrypt from 'bcryptjs';
@@ -13,6 +14,7 @@ const nextAuth = NextAuth({
   // 5437 prototype: adapter tables RLS OFF; User RLS ON. OAuth/pooling/DB-session strategy NOT proven for production.
   adapter: createRlsPrismaAdapter(prisma as any),
   secret: process.env.NEXTAUTH_SECRET,
+  skipCSRFCheck,
   // A app corre sempre atrás do proxy da Vercel (e AUTH_TRUST_HOST=true está
   // definido no ambiente), por isso o host do pedido pode ser confiado.
   // O cálculo anterior devolvia false em produção sem NEXTAUTH_URL, o que
