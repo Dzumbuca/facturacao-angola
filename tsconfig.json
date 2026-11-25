@@ -37,6 +37,17 @@
     "**/*.mts",
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "electron/**",
+    "e2e/**",
+    "tests/**",
+    "desktop/**",
+    "vitest.config.ts",
+    "vitest.e2e.config.ts",
+    "playwright.config.ts"
   ]
 }

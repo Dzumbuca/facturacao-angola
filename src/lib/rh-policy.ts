@@ -8,12 +8,13 @@ export type RhPermission =
   | 'payroll:write'
   | 'documents:write'
   | 'settings:write'
-  | 'members:write';
+  | 'members:write'
+  | 'salaries:read';
 
 export type RhMemberRole = 'ADMIN' | 'MANAGER' | 'FINANCE';
 
 export const ALL_RH_PERMISSIONS: RhPermission[] = [
-  'employees:write', 'attendance:write', 'leaves:write', 'payroll:write', 'documents:write', 'settings:write', 'members:write',
+  'employees:write', 'attendance:write', 'leaves:write', 'payroll:write', 'documents:write', 'settings:write', 'members:write', 'salaries:read',
 ];
 
 /** Regra pura: admin da empresa/plataforma tem acesso total ao RH. */

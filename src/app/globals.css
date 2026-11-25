@@ -128,13 +128,12 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .ds-input:focus, .app-input:focus {
   outline: 0;
   border-color: var(--blue);
-  background: #fff;
+  background: var(--field);
   box-shadow: 0 0 0 3px rgb(2 31 135 / 14%);
 }
 .ds-input:hover:not(:disabled):not(:focus), .app-input:hover:not(:disabled):not(:focus) { border-color: #b8c5d5; }
 .app-input::placeholder { color: var(--text-muted); opacity: .68; }
 .app-input:hover:not(:disabled):not(:focus) { border-color: #c6d1df; }
-.app-label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: .8rem; font-weight: 650; letter-spacing: .03em; }
 .app-label { display: block; margin-bottom: 7px; color: var(--text-muted); font-size: .82rem; font-weight: 650; }
 .premium-card { border: 1px solid var(--line); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow-soft); }
 .premium-sidebar { border: 1px solid var(--line); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow-card); position: sticky; top: 1rem; }
@@ -335,6 +334,12 @@ button, a { -webkit-tap-highlight-color: transparent; }
 :root[data-theme="dark"] [class~="divide-[#e5e9ef]"] > :not(:last-child),
 :root[data-theme="dark"] [class~="divide-[#edf1f5]"] > :not(:last-child) { border-color: var(--line) !important; }
 :root[data-theme="dark"] .app-input { border-color: var(--line); background: var(--field); color: var(--text); }
+:root[data-theme="dark"] .ds-input { border-color: var(--line); background: var(--field); color: var(--text); }
+:root[data-theme="dark"] .ds-input:focus { border-color: var(--blue); background: var(--field); box-shadow: 0 0 0 3px rgb(120 170 255 / 25%); }
+:root[data-theme="dark"] .ds-input:hover:not(:disabled):not(:focus) { border-color: #4a5a7a; }
+:root[data-theme="dark"] .ds-input::placeholder { color: var(--text-muted); opacity: .7; }
+:root[data-theme="dark"] select.ds-input, :root[data-theme="dark"] textarea.ds-input { border-color: var(--line); background: var(--field); color: var(--text); }
+:root[data-theme="dark"] select.ds-input:focus, :root[data-theme="dark"] textarea.ds-input:focus { border-color: var(--blue); background: var(--field); box-shadow: 0 0 0 3px rgb(120 170 255 / 25%); }
 :root[data-theme="dark"] .data-table th,
 :root[data-theme="dark"] .data-table td { border-color: var(--line); }
 :root[data-theme="dark"] .company-profile-section { border-color: var(--line); }

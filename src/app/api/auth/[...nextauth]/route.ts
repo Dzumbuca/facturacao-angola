@@ -1,17 +1,4 @@
-import type { NextRequest } from 'next/server';
 import { handlers } from '@/lib/auth';
-import { clientIp, rateLimit, tooManyRequestsResponse } from '@/lib/rate-limit';
-
-// Barreira contra força-bruta em todas as acções POST do NextAuth
-// (login com password, login Google, logout, etc.).
-// AUTH_RATE_LIMIT_MAX permite elevar o limite apenas em ambientes de teste.
-const configuredMax = Number(process.env.AUTH_RATE_LIMIT_MAX);
-const MAX_AUTH_POSTS_PER_MINUTE = Number.isFinite(configuredMax) && configuredMax > 0 ? configuredMax : 30;
 
 export const GET = handlers.GET;
-
-export const POST: typeof handlers.POST = async (request: NextRequest) => {
-  const limiter = rateLimit(`auth-post:${clientIp(request)}`, MAX_AUTH_POSTS_PER_MINUTE, 60_000);
-  if (!limiter.ok) return tooManyRequestsResponse(limiter.retryAfterSeconds);
-  return handlers.POST(request);
-};
+export const POST = handlers.POST;

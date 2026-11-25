@@ -23,9 +23,9 @@ export async function POST(req: Request) {
     if (existingUser) return NextResponse.json({ success: true, message: 'Se o registo puder ser concluído, receberá instruções no email indicado.' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = await runAsSystem((tx) => tx.$transaction(async (inner: any) => {
-      const tenant = await inner.tenant.create({ data: { name: tenantName, nif: null } });
-      const user = await inner.user.create({
+    const newUser = await runAsSystem(async (tx) => {
+      const tenant = await tx.tenant.create({ data: { name: tenantName, nif: null } });
+      const user = await tx.user.create({
         data: {
           name,
           email,
@@ -38,19 +38,21 @@ export async function POST(req: Request) {
         select: { id: true, name: true, email: true },
       });
       if (body.marketingConsent === true) {
-        const preference = await inner.marketingPreference.create({ data: {
+        const preference = await tx.marketingPreference.create({ data: {
           userId: user.id, email, subscribed: true, consentAt: new Date(), consentSource: 'registration', consentVersion: '2026-01',
         }, select: { id: true } });
-        await inner.marketingPreference.update({ where: { id: preference.id }, data: { unsubscribeTokenHash: hashEmailToken(createUnsubscribeToken(preference.id)) } });
+        await tx.marketingPreference.update({ where: { id: preference.id }, data: { unsubscribeTokenHash: hashEmailToken(createUnsubscribeToken(preference.id)) } });
       }
       return user;
-    }), PRIVILEGED_RLS) as any;
+    }, PRIVILEGED_RLS) as any;
 
-    await sendEmailActionToken(newUser, 'VERIFY_EMAIL');
+    await sendEmailActionToken(newUser, 'VERIFY_EMAIL').catch((emailError) => {
+      console.error('[register] Email verification send failed:', (emailError as Error)?.message);
+    });
     return NextResponse.json({ success: true, message: 'Se o registo puder ser concluído, receberá instruções no email indicado.' });
   } catch (error) {
     if ((error as { code?: string })?.code === 'P2002') return NextResponse.json({ success: true, message: 'Se o registo puder ser concluído, receberá instruções no email indicado.' });
-    console.error('Erro ao registar utilizador.');
+    console.error('Erro ao registar utilizador:', error);
     return NextResponse.json({ error: 'Não foi possível concluir o registo. Tente novamente.' }, { status: 500 });
   }
 }
