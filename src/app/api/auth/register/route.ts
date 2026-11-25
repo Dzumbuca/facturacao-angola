@@ -46,7 +46,9 @@ export async function POST(req: Request) {
       return user;
     }, PRIVILEGED_RLS) as any;
 
-    await sendEmailActionToken(newUser, 'VERIFY_EMAIL');
+    await sendEmailActionToken(newUser, 'VERIFY_EMAIL').catch((emailError) => {
+      console.error('[register] Email verification send failed:', (emailError as Error)?.message);
+    });
     return NextResponse.json({ success: true, message: 'Se o registo puder ser concluído, receberá instruções no email indicado.' });
   } catch (error) {
     if ((error as { code?: string })?.code === 'P2002') return NextResponse.json({ success: true, message: 'Se o registo puder ser concluído, receberá instruções no email indicado.' });
