@@ -60,6 +60,11 @@ const nextAuth = NextAuth({
     }),
   ],
   callbacks: {
+    // Permite que qualquer utilizador autenticado pelo provider prossiga; a
+    // validação de sessão é feita no callback `session` e no middleware `authorized`.
+    async signIn({ user, account, profile, email, credentials }: any) {
+      return true;
+    },
     authorized({ auth, request }: any) {
       const pathname = request.nextUrl.pathname;
       // Já autenticado nas páginas de entrada: enviar para a aplicação em vez
