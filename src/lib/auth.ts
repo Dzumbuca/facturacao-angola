@@ -12,6 +12,7 @@ const nextAuth = NextAuth({
   // RLS-aware adapter wrapper: NextAuth server-controlled adapter ops run in transaction-local RLS contexts.
   // 5437 prototype: adapter tables RLS OFF; User RLS ON. OAuth/pooling/DB-session strategy NOT proven for production.
   adapter: createRlsPrismaAdapter(prisma as any),
+  secret: process.env.NEXTAUTH_SECRET,
   // A app corre sempre atrás do proxy da Vercel (e AUTH_TRUST_HOST=true está
   // definido no ambiente), por isso o host do pedido pode ser confiado.
   // O cálculo anterior devolvia false em produção sem NEXTAUTH_URL, o que
