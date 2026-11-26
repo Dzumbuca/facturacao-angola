@@ -6,33 +6,29 @@ const EMAIL = 'e2e-test@machinefacturas.test';
 const PASSWORD = 'TestPass123!';
 
 async function loginViaApi(page: Page) {
-  // Authenticate via NextAuth credentials API to obtain session cookie
-  const res = await page.request.post('http://localhost:3002/api/auth/signin/credentials', {
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  // Use Auth.js' native double-submit CSRF flow and credentials callback.
+  const baseUrl = 'http://localhost:3002';
+  const csrfResponse = await page.request.get(`${baseUrl}/api/auth/csrf`);
+  expect(csrfResponse.ok()).toBeTruthy();
+  const { csrfToken } = await csrfResponse.json();
+  expect(typeof csrfToken).toBe('string');
+  expect(csrfToken.length).toBeGreaterThan(0);
+
+  const res = await page.request.post(`${baseUrl}/api/auth/callback/credentials`, {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'X-Auth-Return-Redirect': '1',
+    },
     form: {
       email: EMAIL,
       password: PASSWORD,
-      callbackUrl: '/',
+      csrfToken,
+      callbackUrl: `${baseUrl}/`,
     },
   });
   expect(res.status()).toBe(200);
-  // Extract session cookie from response and set it on the browser context
-  const setCookie = res.headers()['set-cookie'];
-  if (setCookie) {
-    const cookieString = Array.isArray(setCookie) ? setCookie.join('; ') : setCookie;
-    const match = cookieString.match(/authjs\.session-token=([^;]+)/);
-    if (match) {
-      await page.context().addCookies([{
-        name: 'authjs.session-token',
-        value: match[1],
-        domain: 'localhost',
-        path: '/',
-        httpOnly: true,
-        secure: false,
-        sameSite: 'Lax',
-      }]);
-    }
-  }
+  const response = await res.json();
+  expect(response.url).toBe(`${baseUrl}/`);
 }
 
 function captureNetwork(page: Page) {

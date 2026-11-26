@@ -7,6 +7,13 @@ import { prisma } from '@/lib/prisma';
 import { createRlsPrismaAdapter } from '@/lib/auth-prisma-adapter';
 import { isAdminPagePath, isProtectedPagePath } from '@/lib/route-access';
 import { runWithRlsContext } from '@/lib/tenant-db';
+import { getPreviewAuthOrigin, resolveAuthRedirect } from '@/lib/auth-deployment-url';
+
+// Auth.js v5 honours AUTH_URL/NEXTAUTH_URL over the request host. Vercel's
+// VERCEL_URL is unique to this Preview deployment; normalising AUTH_URL here
+// prevents an inherited old Preview URL from stealing OAuth callbacks.
+const previewAuthOrigin = getPreviewAuthOrigin(process.env.VERCEL_ENV, process.env.VERCEL_URL);
+if (previewAuthOrigin) process.env.AUTH_URL = previewAuthOrigin;
 
 const nextAuth = NextAuth({
   // RLS-aware adapter wrapper: NextAuth server-controlled adapter ops run in transaction-local RLS contexts.
@@ -64,6 +71,9 @@ const nextAuth = NextAuth({
     // validação de sessão é feita no callback `session` e no middleware `authorized`.
     async signIn({ user, account, profile, email, credentials }: any) {
       return true;
+    },
+    async redirect({ url, baseUrl }: { url: string; baseUrl: string }) {
+      return resolveAuthRedirect(url, baseUrl);
     },
     authorized({ auth, request }: any) {
       const pathname = request.nextUrl.pathname;

@@ -1,28 +1,66 @@
-const url = 'https://facturacao-angola-friup0sdf-dzumbucas-projects.vercel.app';
+const url = (process.env.PREVIEW_URL || '').replace(/\/$/, '');
+const email = process.env.PREVIEW_AUTH_EMAIL;
+const password = process.env.PREVIEW_AUTH_PASSWORD;
+
+function cookiePairs(response) {
+  return (response.headers.getSetCookie?.() || [])
+    .map((value) => value.split(';', 1)[0])
+    .filter(Boolean);
+}
 
 async function test() {
-  // Get CSRF token using vercel curl bypass
-  const csrfResponse = await fetch(url + '/api/auth/csrf', {
-    method: 'GET',
-    headers: {
-      'x-vercel-protection-bypass': process.env.VERCEL_BYPASS_TOKEN || ''
-    }
-  });
+  if (!url || !email || !password) {
+    throw new Error('Define PREVIEW_URL, PREVIEW_AUTH_EMAIL e PREVIEW_AUTH_PASSWORD no ambiente.');
+  }
+
+  const headers = process.env.VERCEL_BYPASS_TOKEN
+    ? { 'x-vercel-protection-bypass': process.env.VERCEL_BYPASS_TOKEN }
+    : {};
+  const csrfResponse = await fetch(`${url}/api/auth/csrf`, { headers });
   const csrfData = await csrfResponse.json();
-  console.log('CSRF:', csrfData.csrfToken);
-  
-  // Try signin with form data
-  const signin = await fetch(url + '/api/auth/signin/credentials', {
+  const csrfCookies = cookiePairs(csrfResponse);
+  if (!csrfResponse.ok || typeof csrfData.csrfToken !== 'string' || !csrfData.csrfToken) {
+    throw new Error(`Auth.js CSRF endpoint failed (${csrfResponse.status}).`);
+  }
+
+  const signin = await fetch(`${url}/api/auth/callback/credentials`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
-      'x-vercel-protection-bypass': process.env.VERCEL_BYPASS_TOKEN || ''
+      'X-Auth-Return-Redirect': '1',
+      ...headers,
+      Cookie: csrfCookies.join('; '),
     },
-    body: 'email=test-preview-95961fb4@machinefaturas.test&password=8bNIuDPnsRIX7VUbA1!&csrfToken=' + csrfData.csrfToken
+    body: new URLSearchParams({
+      email,
+      password,
+      csrfToken: csrfData.csrfToken,
+      callbackUrl: `${url}/`,
+    }),
   });
-  console.log('Signin status:', signin.status);
-  const text = await signin.text();
-  console.log('Signin body:', text.substring(0, 2000));
+  const signinData = await signin.json();
+  const sessionCookies = cookiePairs(signin);
+  const cookies = [...new Map([...csrfCookies, ...sessionCookies].map((pair) => [pair.split('=', 1)[0], pair])).values()];
+  const sessionResponse = await fetch(`${url}/api/auth/session`, {
+    headers: { ...headers, Cookie: cookies.join('; ') },
+  });
+  const session = await sessionResponse.json();
+
+  console.log(JSON.stringify({
+    csrfStatus: csrfResponse.status,
+    callbackStatus: signin.status,
+    callbackUrl: signinData.url,
+    sessionStatus: sessionResponse.status,
+    authenticated: Boolean(session.user?.id),
+    hasTenant: Boolean(session.user?.tenantId),
+  }, null, 2));
+
+  if (!signin.ok || !sessionResponse.ok || !session.user?.id) {
+    throw new Error('Preview credentials sign-in did not produce a valid Auth.js session.');
+  }
 }
 
-test().catch(console.error);
+test().catch((error) => {
+  console.error(error.message);
+  process.exitCode = 1;
+});

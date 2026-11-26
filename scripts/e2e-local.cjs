@@ -48,7 +48,10 @@ async function waitForServer(url, timeoutMs = 120000) {
   while (Date.now() < deadline) {
     try {
       const res = await fetch(`${url}/api/auth/csrf`);
-      if (res.ok) return;
+      if (res.ok) {
+        const body = await res.json();
+        if (typeof body.csrfToken === 'string' && body.csrfToken.length > 0) return;
+      }
     } catch { /* servidor ainda a arrancar */ }
     await new Promise((r) => setTimeout(r, 1000));
   }

@@ -81,7 +81,7 @@ export default function LoginPage() {
             <button
               type="button"
               disabled={loading}
-              onClick={() => signIn('google', { callbackUrl: '/' })}
+              onClick={() => signIn('google', { redirectTo: '/' })}
               className="mt-6 flex min-h-12 w-full items-center justify-center gap-3 rounded-lg border border-[#d7dee8] bg-white px-4 py-3 font-semibold text-[#1c2d3f] transition hover:bg-[#f6f9fc] disabled:cursor-wait disabled:opacity-60"
             >
               <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
